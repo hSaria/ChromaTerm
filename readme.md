@@ -1,7 +1,14 @@
 ## About
-Chromaterm runs on linux. It essentially acts as a wrapper for the linux shell. Once it starts it then starts a new shell. Any activity within that new shell will be ran through Chromaterm. Chromaterm listens for keywords, that are user defined, and will highlight them with user defined colors.
+Chromaterm is a terminal colorization tool that runs on linux and is produced by TunnelsUp.com. It essentially acts as a wrapper for the linux shell. Once it starts it then starts a new shell. Any activity within that new shell will be ran through Chromaterm. Chromaterm listens for keywords, that are user defined, and will highlight them with user defined colors.
 
 This can be extremely helpful especially when accessing Cisco routers and firewalls from a central Linux server. Colorizing the ssh screen of a Cisco CLI output is very convenient. 
+
+## Screenshots
+Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.<br>
+![Chromaterm IMG](http://tunnelsup.com/images/chroma1.PNG)<br>
+![Chromaterm IMG](http://tunnelsup.com/images/chroma2.PNG)<br>
+![Chromaterm IMG](http://tunnelsup.com/images/chroma3.PNG)
+
 
 ## Install
 Installation is easy.
