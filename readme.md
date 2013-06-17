@@ -16,7 +16,7 @@ Installation is easy.
 
 - `make install` Optional. It will move ct to the ~ directory.
 
-Once installation is complete a new file called `chromaterm` will be in the src/ directory. Move this to your home directory. You can start the program by doing the following:
+Once installation is complete a new file called `ct` will be in the src/ directory. Move this to your home directory. You can start the program by doing the following:
 
 `./ct <config_file>`
 
@@ -48,6 +48,8 @@ The `substitute` keyword will search and replace text display. %1, %2 etc are va
 
 
 ## Usage
+You will need a terminal program that can handle VT100 and ANSI color codes. Such programs that can do this are putty, SecureCRT, or any native Linux terminal.
+
 Start chromaterm using the following command: `./ct ct.cfg`
 
 Once Chromaterm is running use the `#help` command to display help. Some useful help commands:
@@ -58,6 +60,8 @@ Once Chromaterm is running use the `#help` command to display help. Some useful 
 `#help colordemo`
 
 You can then edit the ct.cfg file to your satisfaction to add more keyword highlighting or change colors. A sample ct.cfg file is included in the files which is what I use as my config.
+
+Now that it's running you can test it by telnetting or ssh'ing into a device and watch how higlighted keywords defined in the config file will become colorized.
 
 
 
