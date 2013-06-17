@@ -1,22 +1,24 @@
 ## About
 Chromaterm runs on linux. It essentially acts as a wrapper for the linux shell. Once it starts it then starts a new shell. Any activity within that new shell will be ran through Chromaterm. Chromaterm listens for keywords, that are user defined, and will highlight them with user defined colors.
 
+This can be extremely helpful especially when accessing Cisco routers and firewalls from a central Linux server. Colorizing the ssh screen of a Cisco CLI output is very convenient. 
+
 ## Install
 Installation is easy.
 
-- Download the files from github.
+- Download the files from github. Either by using the download link or by doing `git clone https://github.com/tunnelsup/chromaterm.git`
 
-- `cd src/` Go into the src directory.
+- `cd chromaterm/src/` Go into the src directory.
 
 - `./configure` Configure the program.
 
-- `make` Create the binary.
+- `make` Create the binary called ct.
 
-- `make install` Optional. It will move chromaterm to the ~ directory.
+- `make install` Optional. It will move ct to the ~ directory.
 
 Once installation is complete a new file called `chromaterm` will be in the src/ directory. Move this to your home directory. You can start the program by doing the following:
 
-`./chromaterm <config_file>`
+`./ct <config_file>`
 
 ## Creating the Config file
 Use your text editor of choice to create a file called ct.cfg and put the following in it.
@@ -46,7 +48,7 @@ The `substitute` keyword will search and replace text display. %1, %2 etc are va
 
 
 ## Usage
-Start chromaterm using the following command: `./chromaterm ct.cfg`
+Start chromaterm using the following command: `./ct ct.cfg`
 
 Once Chromaterm is running use the `#help` command to display help. Some useful help commands:
 
@@ -55,7 +57,7 @@ Once Chromaterm is running use the `#help` command to display help. Some useful 
 `#help colors`<br>
 `#help colordemo`
 
-You can then edit the ct.cfg file to your satisfaction to add more keyword highlighting or change colors.
+You can then edit the ct.cfg file to your satisfaction to add more keyword highlighting or change colors. A sample ct.cfg file is included in the files which is what I use as my config.
 
 
 
