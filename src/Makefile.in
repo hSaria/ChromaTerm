@@ -1,0 +1,98 @@
+###############################################################################
+#   This program is protected under the GNU GPL (See COPYING)                 #
+#                                                                             #
+#   This program is free software; you can redistribute it and/or modify      #
+#   it under the terms of the GNU General Public License as published by      #
+#   the Free Software Foundation; either version 2 of the License, or         #
+#   (at your option) any later version.                                       #
+#                                                                             #
+#   This program is distributed in the hope that it will be useful,           #
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+#   GNU General Public License for more details.                              #
+#                                                                             #
+#   You should have received a copy of the GNU General Public License         #
+#   along with this program; if not, write to the Free Software               #
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA #
+###############################################################################
+
+DEFINES = -D_GNU_SOURCE @DEFS@
+
+CC = @CC@ -Wall
+MAKE = @MAKE@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = ${DESTDIR}@bindir@
+docdir = @prefix@/doc
+
+#this is the standard CFLAGS options, this is what most people should use
+
+CFLAGS += $(DEFINES) @BIG5@
+
+LDFLAGS = @LDFLAGS@
+
+INCS = @MYINCLUDE@
+
+LIBS = @LIBS@
+
+# If you prefer to be able to enter ISO latin-1 characters instead
+# of being able to use the meta key for special emacs-like commands
+# uncomment the following line.
+#F1 = -DUSE_ISO_LATIN_ONE
+
+# If you need to make connections through a SOCKS server, uncomment
+# these 2 lines.  You also need to modify LIBSOCKS to point to the location
+# of your SOCKS library.
+#F6 = -DSOCKS
+#LIBSOCKS = -lsocks5
+
+
+# DEFAULT_FILE_DIR = @HOME@
+DEFAULT_FILE_DIR = $(HOME)
+
+FFLAGS= $(F1) $(F6)
+
+
+OFILES = action.o alias.o files.o help.o highlight.o input.o log.o \
+         main.o misc.o net.o parse.o update.o vt102.o \
+         terminal.o session.o function.o text.o substitute.o tick.o \
+         math.o debug.o regexp.o tables.o \
+         class.o  event.o utils.o macro.o  config.o gag.o variable.o \
+         list.o forkpty.o cursor.o memory.o system.o line.o tokenize.o \
+         data.o nest.o
+
+
+default: all
+
+all:	chromaterm
+
+
+chromaterm: Makefile $(OFILES) defs.h
+	@echo "---- Linking..."
+	$(CC) $(INCS) $(CFLAGS) $(FFLAGS) $(LDFLAGS) -o $@ $(OFILES) $(LIBS) ${LIBSOCKS}
+
+
+Makefile: Makefile.in
+	@echo "You need to run ./configure first; then try make."
+	@exit 1
+
+
+install: chromaterm
+	-mkdir -p $(bindir)
+	cp chromaterm $(bindir)
+#	-mkdir -p $(docdir)
+#	cp ../docs/* ../[A-Z][A-Z]* $(docdir)
+
+
+# Autocompile all .c files into .o files using this rule:
+.c.o:
+	$(CC) $(PIPE) $(CFLAGS) $(FFLAGS) $(INCS) -c $<
+
+
+clean:
+	rm -f *.o *~ ../*~ ../mods/*~ chromaterm*
+
+
+distclean:
+	rm -f *.o *~ ../*~ ../mods/*~ chromaterm* Makefile config.h config.status config.log
