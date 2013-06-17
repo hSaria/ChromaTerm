@@ -59,6 +59,9 @@ Once Chromaterm is running use the `#help` command to display help. Some useful 
 `#help colors`<br>
 `#help colordemo`
 
+To exit chromaterm type:<br>
+`#end`
+
 You can then edit the ct.cfg file to your satisfaction to add more keyword highlighting or change colors. A sample ct.cfg file is included in the files which is what I use as my config.
 
 Now that it's running you can test it by telnetting or ssh'ing into a device and watch how higlighted keywords defined in the config file will become colorized.
