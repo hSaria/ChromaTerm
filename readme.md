@@ -73,5 +73,9 @@ You can then edit the ct.cfg file to your satisfaction to add more keyword highl
 
 Now that it's running you can test it by telnetting or ssh'ing into a device and watch how higlighted keywords defined in the config file will become colorized.
 
+## Further Help
+Official website is found here:<br>
+[http://www.tunnelsup.com/tup/2013/06/16/chromaterm](http://www.tunnelsup.com/tup/2013/06/16/chromaterm)<br>
+Use the comment section on the bottom of the page to ask questions or submit bugs.
 
 
