@@ -31,7 +31,6 @@ Once installation is complete a new file called `ct` will be in the src/ directo
 Use your text editor of choice to create a file called .chromatermrc and put the following in it.
 
 ```
-#run session bash
 #config regex on
 #event {SESSION DISCONNECTED} {#end}
 
