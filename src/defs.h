@@ -110,7 +110,7 @@
 #define LIST_SIZE                        2
 
 #define CLIENT_NAME          "ChromaTerm++"
-#define CLIENT_VERSION           "0.1     "
+#define CLIENT_VERSION           "0.01.0  "
 
 #define ESCAPE                          27
 

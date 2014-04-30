@@ -41,11 +41,16 @@ DO_COMMAND(do_run)
 	arg = sub_arg_in_braces(ses, arg, left,  GET_ONE, SUB_VAR|SUB_FUN);
 	arg = sub_arg_in_braces(ses, arg, right, GET_ALL, SUB_VAR|SUB_FUN);
 
-	if (*left == 0 || *right == 0)
+	if (*left == 0)
 	{
-		display_printf2(ses, "#RUN: TWO ARGUMENTS REQUIRED.");
+		display_printf2(ses, "#RUN: PROVIDE A SESSION NAME.");
 
 		return ses;
+	}
+
+	if (*right == 0)
+	{
+		strcpy(right, getenv("SHELL") ? getenv("SHELL") : "");
 	}
 
 	size.ws_row = get_scroll_size(ses);

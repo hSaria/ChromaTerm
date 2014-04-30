@@ -136,6 +136,7 @@ void trap_handler(int signal)
 int main(int argc, char **argv)
 {
 	int greeting = TRUE;
+	int shell = TRUE;
 
 	#ifdef SOCKS
 		SOCKSinit(argv[0]);
@@ -187,7 +188,7 @@ int main(int argc, char **argv)
 	{
 		int c;
 
-		while ((c = getopt(argc, argv, "e: G h r: s: t: v")) != EOF)
+		while ((c = getopt(argc, argv, "c e: G h r: s: t: v")) != EOF)
 		{
 			if (c == 'G')
 			{
@@ -206,10 +207,14 @@ int main(int argc, char **argv)
 
 		optind = 1;
 
-		while ((c = getopt(argc, argv, "e: G h r: s: t: v")) != EOF)
+		while ((c = getopt(argc, argv, "c e: G h r: s: t: v")) != EOF)
 		{
 			switch (c)
 			{
+				case 'c':
+					shell = FALSE;
+					break;
+
 				case 'e':
 					gtd->ses = script_driver(gtd->ses, -1, optarg);
 					break;
@@ -220,10 +225,12 @@ int main(int argc, char **argv)
 				case 'h':
 					display_printf(NULL, "Usage: %s [OPTION]... [FILE]...", argv[0]);
 					display_printf(NULL, "");
+					display_printf(NULL, "  -c  Stay in interactive command shell.");
 					display_printf(NULL, "  -e  Execute given command.");
 					display_printf(NULL, "  -G  Do not show the greeting screen.");
 					display_printf(NULL, "  -h  This help section.");
-					display_printf(NULL, "  -r  Read given file.");
+					display_printf(NULL, "  -r  Read given command file.");
+					display_printf(NULL, "  -s  Use given rand seed."); 
 					display_printf(NULL, "  -t  Set given title.");
 					display_printf(NULL, "  -v  Enable verbose mode.");
 
@@ -258,8 +265,35 @@ int main(int argc, char **argv)
 			gtd->ses = do_read(gtd->ses, argv[optind]);
 		}
 	}
+
+	if (getenv("HOME") != NULL)
+	{
+		char filename[256];
+
+		sprintf(filename, "%s", ".chromatermrc");
+
+		if (access(filename, R_OK) != -1)
+		{
+			gtd->ses = do_read(gtd->ses, filename);
+		}
+		else
+		{
+			sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
+
+			if (access(filename, R_OK) != -1)
+			{
+				gtd->ses = do_read(gtd->ses, filename);
+			}
+		}
+	}
+
 	check_all_events(gts, SUB_ARG|SUB_SEC, 0, 2, "PROGRAM START", CLIENT_NAME, CLIENT_VERSION);
 	check_all_events(gts, SUB_ARG|SUB_SEC, 0, 2, "SCREEN RESIZE", ntos(gts->cols), ntos(gts->rows));
+
+	if (shell && getenv("SHELL") != NULL)
+	{
+		gtd->ses = do_run(gtd->ses, "shell");
+	}
 
 	mainloop();
 
@@ -353,6 +387,10 @@ void quitmsg(char *message)
 	if (message)
 	{
 		printf("\n%s\n", message);
+	}
+	else
+	{
+		printf("\nChromaTerm ended.\n");
 	}
 
 	fflush(NULL);
