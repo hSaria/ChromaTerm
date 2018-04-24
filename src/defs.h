@@ -237,8 +237,6 @@ struct session {
   char *name;
   char *group;
   char *command;
-  FILE *logfile;
-  FILE *logline;
   struct listroot *list[LIST_MAX];
   int rows;
   int cols;
