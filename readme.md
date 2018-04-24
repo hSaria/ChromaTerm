@@ -64,7 +64,9 @@ ct
 This example will open up `ct`, create a new highlight rule, write all rules and configuration to a file, run a binary (ping, in this case) under a session called PING_SESSION, then exit.
 
 - After `ct` initialises, directly run commands. CT will exit <b>as soon as the session ends</b>. This is a good option if you're using `ct` as part of a script. For example:
-```ct -e "#highlight {%d.%d.%d.%d} {bold green}; #write {./chromatermrc_for_ipv4}; #run PING_SESSION bash"```
+```
+ct -e "#highlight {%d.%d.%d.%d} {bold green}; #write {./chromatermrc_for_ipv4}; #run PING_SESSION bash"
+```
 The outcome of this example is the same as the previous one, except that it will exit as soon as the wrapped process dies.
 
 
