@@ -518,10 +518,9 @@ extern int exit_after_session;
 extern int main(int argc, char **argv);
 extern void help_menu(int error, char c, char *proc_name);
 extern void winch_handler(int signal);
-extern void abort_handler(int signal);
+extern void abort_and_trap_handler(int signal);
 extern void pipe_handler(int signal);
 extern void suspend_handler(int signal);
-extern void trap_handler(int signal);
 extern void init_program();
 extern void quitmsg(char *message);
 

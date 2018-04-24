@@ -26,21 +26,12 @@ void winch_handler(int signal) {
   }
 }
 
-void abort_handler(int signal) {
-  static char crashed = FALSE;
-
-  if (crashed) {
-    exit(-1);
-  }
-  crashed = TRUE;
-
+void abort_and_trap_handler(int signal) {
   restore_terminal();
 
   fflush(NULL);
 
   exit(-1);
-
-  socket_printf(gtd->ses, 1, "%c", 3);
 }
 
 void suspend_handler(int signal) {
@@ -57,44 +48,29 @@ void suspend_handler(int signal) {
   display_puts(NULL, "#WELCOME BACK.");
 }
 
-void trap_handler(int signal) {
-  static char crashed = FALSE;
-
-  if (crashed) {
-    exit(-1);
-  }
-  crashed = TRUE;
-
-  restore_terminal();
-
-  fflush(NULL);
-
-  exit(-1);
-}
-
 // main() - setup signals - init lists - readcoms - mainloop()
 int main(int argc, char **argv) {
 #ifdef SOCKS
   SOCKSinit(argv[0]);
 #endif
 
-  if (signal(SIGTERM, trap_handler) == BADSIG) {
+  if (signal(SIGTERM, abort_and_trap_handler) == BADSIG) {
     syserr("signal SIGTERM");
   }
 
-  if (signal(SIGSEGV, trap_handler) == BADSIG) {
+  if (signal(SIGSEGV, abort_and_trap_handler) == BADSIG) {
     syserr("signal SIGSEGV");
   }
 
-  if (signal(SIGHUP, trap_handler) == BADSIG) {
+  if (signal(SIGHUP, abort_and_trap_handler) == BADSIG) {
     syserr("signal SIGHUP");
   }
 
-  if (signal(SIGABRT, abort_handler) == BADSIG) {
+  if (signal(SIGABRT, abort_and_trap_handler) == BADSIG) {
     syserr("signal SIGTERM");
   }
 
-  if (signal(SIGINT, abort_handler) == BADSIG) {
+  if (signal(SIGINT, abort_and_trap_handler) == BADSIG) {
     syserr("signal SIGINT");
   }
 
