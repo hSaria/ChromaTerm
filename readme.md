@@ -4,14 +4,14 @@ ChromaTerm listens for keywords that act as functions that allow you to configur
 
 This tools can be extremely helpful for getting you to notice specific keywords by coloring them. 
 
-<br><br>
+<br>
 ## Screenshots
 Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.<br><br>
 ![Chromaterm IMG](http://tunnelsup.com/images/chroma1.PNG)<br><br>
 ![Chromaterm IMG](http://tunnelsup.com/images/chroma2.PNG)<br><br>
 ![Chromaterm IMG](http://tunnelsup.com/images/chroma3.PNG)
 
-<br><br>
+<br>
 ## Install
 - Download the files from github. Either by using the download link or by Git:<br>
 `git clone https://github.com/hSaria/ChromaTerm--.git`
@@ -33,7 +33,7 @@ You can start the program by doing the following:<br>
 
 - NOTE: You may install the pcre library from http://pcre.org (`homebrew install pcre` works).
 
-<br><br>
+<br>
 ## Creating the Config file
 Use your text editor of your choice to create a file called .chromatermrc and put the following in it.
 ```
@@ -49,7 +49,7 @@ Use your text editor of your choice to create a file called .chromatermrc and pu
 
 The `highlight` keyword will simply look for the text in the first argument and colorize it using the color chosen in the second argument.
 
-<br><br>
+<br>
 ## Usage
 You will need a terminal program that can handle VT100 and ANSI color codes. Such programs that can do this are putty, SecureCRT, or any native Linux terminal.
 
@@ -93,11 +93,11 @@ To exit chromaterm type:
 
 You can edit the .chromatermrc file to your satisfaction to add more keyword highlighting or change colors. A sample .chromatermrc file is included in the files which is what the original author used for his config.
 
-<br><br>
+<br>
 ## Further Help
 To ask questions or submit bugs, please create an issue.
 
-<br><br>
+<br>
 ## Final words
 By reading and modifying the code, I can tell you that the authors of original tool (`tunnelsup/chromaterm` fork) are very talented and passionate about what they made. If you are interested in a version that has more feature and far more extensible that this one, please go check them out. Official website of original tool is found here:
 [http://www.tunnelsup.com/tup/2013/06/16/chromaterm](http://www.tunnelsup.com/tup/2013/06/16/chromaterm)
