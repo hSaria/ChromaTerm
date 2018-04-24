@@ -14,7 +14,7 @@ Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.<br>
 
 ## Install
 - Download the files from github. Either by using the download link or by Git:
-`git clone https://github.com/tunnelsup/chromaterm.git`
+`git clone https://github.com/hSaria/ChromaTerm--.git`
 
 - Go into the src directory:
 `cd chromaterm/src/`
