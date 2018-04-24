@@ -62,15 +62,19 @@ ct
  #exit
 ```
 This example will open up `ct`, create a new highlight rule, write all rules and configuration to a file, run a binary (ping, in this case) under a session called PING_SESSION, then exit.
-
+<br>
 - After `ct` initialises, directly run commands. CT will exit <b>as soon as the session ends</b>. This is a good option if you're using `ct` as part of a script. For example:
 ```
 ct -e "#highlight {%d.%d.%d.%d} {bold green}; #write {./chromatermrc_for_ipv4}; #run PING_SESSION bash"
 ```
 The outcome of this example is the same as the previous one, except that it will exit as soon as the wrapped process dies.
+<br>
 
-
-Upon running `ct`, the program will look for `.chromatermrc` in your current directory then your home directory, and will load the first one it finds. Addtionally, you can specify the location of the file to load
+Upon running `ct`, the program will look for `.chromatermrc` in your current directory then your home directory, and will load the first one it finds. Addtionally, you can specify the location of the file to load by:
+```
+ct -c $HOME/.config/chromaterm/.chromatermrc 
+```
+<br>
 
 Once ChromaTerm is running use the `#help` command to display more information about the ChromaTerm. Some useful help commands:
 ```
@@ -96,5 +100,5 @@ To ask questions or submit bugs, please create an issue.
 ## Final words
 By reading and modifying the code, I can tell you that the authors of original tool (`tunnelsup/chromaterm` fork) are very talented and passionate about what they made. If you are interested in a version that has more feature and far more extensible that this one, please go check them out. Official website of original tool is found here:
 [http://www.tunnelsup.com/tup/2013/06/16/chromaterm](http://www.tunnelsup.com/tup/2013/06/16/chromaterm)
-
+<br>
 My reason for slimming down ChromaTerm: I only need a tool that colors the output of a shell; nothing more, nothing less. Any supplement code must support the coloring funtionality. Therefore, I removed much of the original functionality and features, modified some of the parameters and code, and added a bit of code here and there.
