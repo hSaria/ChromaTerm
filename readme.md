@@ -13,22 +13,22 @@ Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.<br>
 
 
 ## Install
-- Download the files from github. Either by using the download link or by Git:
+- Download the files from github. Either by using the download link or by Git:<br>
 `git clone https://github.com/hSaria/ChromaTerm--.git`
 
-- Go into the src directory:
-`cd chromaterm/src/`
+- Go into the src directory:<br>
+`cd ChromaTerm--/src/`
 
-- Configure the program.
+- Configure the program:<br>
 `./configure`
 
-- Create the binary called ct.
+- Create the binary called ct:<br>
 `make`
 
-- Optional: Move ct to the /usr/local/bin directory.
+- Optional: Move ct to the /usr/local/bin directory:<br>
 `make install` 
 
-You can start the program by doing the following:
+You can start the program by doing the following:<br>
 `./ct` or just `ct` if installed to the /usr/local/bin directory.
 
 - NOTE: You may install the pcre library from http://pcre.org. (`homebrew install pcre` works.)
