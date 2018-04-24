@@ -1,6 +1,3 @@
-#config regex on
-#event {SESSION DISCONNECTED} {#end}
-
 #high {255.%d.%d.%d} {yellow}
 #high {192.168.%d.%d} {bold yellow}
 #high {10.%d.%d.%d} {bold yellow}
@@ -49,30 +46,6 @@
 #high {changed state to down} {bold red}
 #high {(hitcnt=%d)} {pink}
 #high {(hitcnt=0)} {light black}
-
-#sub {^%S#%2} {<178>%1<158>#<088>%2}
 #high {>} {magenta}
-#sub {^%1(config)#%2} {<170>%1<150>(<110>config<150>)#<088>%2}
-
-#sub {%1pkts encaps: %d, %3} {%1pkts encaps: <150>%2<088>, %3}
-#sub {%1pkts decaps: %d, %3} {%1pkts decaps: <120>%2<088>, %3}
-
-#sub {%1 uptime is %2} {%1 uptime is <150>%2<088>}
-#sub {{%d.%d.%d.%d} {.*} {%d.%d.%d.%d}} {<130>%1<088> %2 <130>%3<088>}
-#sub {^Cisco %1 Version %2, %3} {Cisco %1 <134>Version %2<088>, %3}
-#sub {^Cisco %S (%2} {Cisco<134> %1 <088>(%2}
-#sub {Cisco Adaptive Security Appliance Software Version %1} {Cisco Adaptive Security Appliance Software Version <134>%1<088>}
-#sub {Cisco PIX Security Appliance Software Version %1} {Cisco PIX Security Appliance Software Version <134>%1<088>}
-#sub {Cisco Intrusion Prevention System, Version %1} {Cisco Intrusion Prevention System, Version <134>%1<088>}
-#sub {Cisco PIX Firewall Version %1} {Cisco PIX Firewall Version <134>%1<088>}
-#sub {Licensed, expires: %1} {Licensed, expires: <130>%1<088>}
-#sub {^MainApp %1 Running} {MainApp %1 <120>Running<088>}
 #high {NotRunning} {bold red underscore}
-#sub {^AnalysisEngine %1 Running} {AnalysisEngine %1 <120>Running<088>}
-#sub {%1 remark %2} {%1 remark <028>%2<088>}
-#sub {%1description %2} {%1description <028>%2<088>}
-#sub {%1 object-group %S %3} {%1 <050>object-group %2<088> %3}
 #high {object-group} {bold cyan}
-#sub {^object-group network %1} {object-group network <050>%1<088>}
-#sub {^object-group service %1} {object-group service <050>%1<088>}
-#sub {^crypto map %1 match address %2} {crypto map %1 match address <160>%2<088>}
