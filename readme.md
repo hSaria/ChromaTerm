@@ -1,7 +1,9 @@
 ## About
-Chromaterm is a terminal colorization tool that runs on linux and is produced by TunnelsUp.com. It essentially acts as a wrapper for the linux shell. Once it starts it then starts a new shell. Any activity within that new shell will be ran through Chromaterm. Chromaterm listens for keywords, that are user defined, and will highlight them with user defined colors.
+ChromaTerm-- is a slimmed-down version of ChromaTerm, the terminal colorization tool that runs on Linux and is produced by TunnelsUp.com. It essentially acts as a wrapper for the Linux shell. Once it starts it then starts a new shell. Any activity within that new shell will be ran through ChromaTerm. 
+ChromaTerm listens for keywords that act as functions that allow you to configure ChromaTerm. and will highlight them with user defined colors.
 
-This can be extremely helpful especially when accessing Cisco routers and firewalls from a central Linux server. Colorizing the ssh screen of a Cisco CLI output is very convenient. 
+This tools can be extremely helpful for getting you to notice specific keywords by coloring them. 
+
 
 ## Screenshots
 Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.<br>
@@ -11,29 +13,30 @@ Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.<br>
 
 
 ## Install
-Installation is easy.
+- Download the files from github. Either by using the download link or by Git:
+`git clone https://github.com/tunnelsup/chromaterm.git`
 
-- Download the files from github. Either by using the download link or by doing `git clone https://github.com/tunnelsup/chromaterm.git`
+- Go into the src directory:
+`cd chromaterm/src/`
 
-- `cd chromaterm/src/` Go into the src directory.
+- Configure the program.
+`./configure`
 
-- `./configure` Configure the program.
+- Create the binary called ct.
+`make`
 
-- `make` Create the binary called ct.
+- Optional: Move ct to the /usr/local/bin directory.
+`make install` 
 
-- `make install` Optional. It will move ct to the /usr/local/bin directory.
-
-Once installation is complete a new file called `ct` will be in the src/ directory. Move this to your home directory. You can start the program by doing the following:
-
+You can start the program by doing the following:
 `./ct` or just `ct` if installed to the /usr/local/bin directory.
 
+- NOTE: You may install the pcre library from http://pcre.org. (`homebrew install pcre` works.)
+
+
 ## Creating the Config file
-Use your text editor of choice to create a file called .chromatermrc and put the following in it.
-
+Use your text editor of your choice to create a file called .chromatermrc and put the following in it.
 ```
-#config regex on
-#event {SESSION DISCONNECTED} {#end}
-
 #highlight {%d.%d.%d.%d} {bold yellow}
 #highlight { any } {bold white}
 #highlight {{permit(ted)*}} {bold green}
@@ -42,39 +45,54 @@ Use your text editor of choice to create a file called .chromatermrc and put the
 #highlight {INSIDE} {bold blue}
 #highlight {OUTSIDE} {bold green}
 #highlight {DMZ} {bold magenta}
-
-#substitute {^Cisco %1 Version %2, %3} {Cisco %1 <134>Version %2<088>, %3}
-#substitute {%1pkts encaps: %d, %3} {%1pkts encaps: <150>%2<088>, %3}
-#substitute {%1pkts decaps: %d, %3} {%1pkts decaps: <120>%2<088>, %3}
-#substitute {%1 uptime is %2} {%1 uptime is <150>%2<088>}
 ```
+
 The `highlight` keyword will simply look for the text in the first argument and colorize it using the color chosen in the second argument.
-
-The `substitute` keyword will search and replace text display. %1, %2 etc are variables that are stored. They can then be called later to colorize a variable.
-
 
 ## Usage
 You will need a terminal program that can handle VT100 and ANSI color codes. Such programs that can do this are putty, SecureCRT, or any native Linux terminal.
 
-Upon running the `ct` file, the program will look for .chromatermrc to load the configuration.
+You have two options for for running this modified version of Chromaterm:
+- Open a standalone instance and use its internal commands. For example:
+```
+ct
+ #highlight {%d.%d.%d.%d} {bold green}
+ write {./chromatermrc_for_ipv4}
+ #run PING_SESSION ping 1.1.1.1 -c 3
+ #exit
+```
+This example will open up `ct`, create a new highlight rule, write all rules and configuration to a file, run a binary (ping, in this case) under a session called PING_SESSION, then exit.
 
-Once Chromaterm is running use the `#help` command to display help. Some useful help commands:
+- After `ct` initialises, directly run commands. CT will exit <b>as soon as the session ends</b>. This is a good option if you're using `ct` as part of a script. For example:
+`ct -e "#highlight {%d.%d.%d.%d} {bold green}; #write {./chromatermrc_for_ipv4}; #run PING_SESSION bash"`
+The outcome of this example is the same as the previous one, except that it will exit as soon as the wrapped process dies.
 
-`#help highlight`<br>
-`#help substitute`<br>
-`#help colors`<br>
-`#help colordemo`
 
-To exit chromaterm type:<br>
-`#end`
+Upon running `ct`, the program will look for `.chromatermrc` in your current directory then your home directory, and will load the first one it finds. Addtionally, you can specify the location of the file to load
 
-You can then edit the .chromatermrc file to your satisfaction to add more keyword highlighting or change colors. A sample .chromatermrc file is included in the files which is what I use as my config.
+Once ChromaTerm is running use the `#help` command to display more information about the ChromaTerm. Some useful help commands:
+```
+#help
+#help {topic name}
+#help %*
+#commands
+#read ./custom_chromatermrc_file
+#highlight {%d.%d.%d.%d} {bold green}
+#write ./custom_chromatermrc_file
+```
 
-Now that it's running you can test it by telnetting or ssh'ing into a device and watch how higlighted keywords defined in the config file will become colorized.
+To exit chromaterm type:
+`#exit`
+
+You can edit the .chromatermrc file to your satisfaction to add more keyword highlighting or change colors. A sample .chromatermrc file is included in the files which is what the original author used for his config.
+
 
 ## Further Help
-Official website is found here:<br>
-[http://www.tunnelsup.com/tup/2013/06/16/chromaterm](http://www.tunnelsup.com/tup/2013/06/16/chromaterm)<br>
-Use the comment section on the bottom of the page to ask questions or submit bugs.
+To ask questions or submit bugs, please create an issue.
 
 
+## Final words
+By reading and modifying the code, I can tell you that the authors of original tool (`tunnelsup/chromaterm` fork) are very talented and passionate about what they made. If you are interested in a version that has more feature and far more extensible that this one, please go check them out. Official website of original tool is found here:
+[http://www.tunnelsup.com/tup/2013/06/16/chromaterm](http://www.tunnelsup.com/tup/2013/06/16/chromaterm)
+
+My reason for slimming down ChromaTerm: I only need a tool that colors the output of a shell; nothing more, nothing less. Any supplement code must support the coloring funtionality. Therefore, I removed much of the original functionality and features, modified some of the parameters and code, and added a bit of code here and there.
