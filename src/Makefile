@@ -1,24 +1,24 @@
 ## This program is protected under the GNU GPL (See COPYING)
 
-DEFINES = -D_GNU_SOURCE @DEFS@
+DEFINES = -D_GNU_SOURCE -DHAVE_CONFIG_H
 
-CC = @CC@ -Wall
-MAKE = @MAKE@
+CC = gcc -Wall
+MAKE = make
 
-prefix = @prefix@
-exec_prefix = @exec_prefix@
-bindir = ${DESTDIR}@bindir@
-docdir = @prefix@/doc
+prefix = /usr/local
+exec_prefix = ${prefix}
+bindir = ${DESTDIR}${exec_prefix}/bin
+docdir = /usr/local/doc
 
 #this is the standard CFLAGS options, this is what most people should use
 
-CFLAGS += $(DEFINES) @BIG5@
+CFLAGS += $(DEFINES) 
 
-LDFLAGS = @LDFLAGS@
+LDFLAGS = 
 
-INCS = @MYINCLUDE@
+INCS = 
 
-LIBS = @LIBS@
+LIBS = -lpcre -lutil -lpthread -lz 
 
 # If you prefer to be able to enter ISO latin-1 characters instead
 # of being able to use the meta key for special emacs-like commands

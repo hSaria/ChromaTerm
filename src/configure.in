@@ -1,20 +1,4 @@
-###############################################################################
-#   This program is protected under the GNU GPL (See COPYING)                 #
-#                                                                             #
-#   This program is free software; you can redistribute it and/or modify      #
-#   it under the terms of the GNU General Public License as published by      #
-#   the Free Software Foundation; either version 2 of the License, or         #
-#   (at your option) any later version.                                       #
-#                                                                             #
-#   This program is distributed in the hope that it will be useful,           #
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of            #
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
-#   GNU General Public License for more details.                              #
-#                                                                             #
-#   You should have received a copy of the GNU General Public License         #
-#   along with this program; if not, write to the Free Software               #
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA #
-###############################################################################
+## This program is protected under the GNU GPL (See COPYING) 
 
 AM_INIT_AUTOMAKE
 
@@ -27,7 +11,7 @@ AC_MSG_RESULT([Configuring ChromaTerm])
 
 
 AC_SUBST(MYINCLUDE)
-AC_SUBST(MYLIB)    
+AC_SUBST(MYLIB)
 AC_SUBST(mybindir)
 AC_SUBST(BIG5)
 
@@ -65,7 +49,7 @@ AC_PROG_MAKE_SET
 
 AC_HEADER_STDC
 
-AC_CHECK_HEADERS([arpa/inet.h ctype.h fcntl.h net/errno.h netdb.h netinet/in.h param.h pthread.h socks.h stdlib.h string.h strings.h sys/ioctl.h sys/param.h sys/ptem.h sys/socket.h sys/termio.h sys/time.h time.h unistd.h util.h pty.h]) 
+AC_CHECK_HEADERS([arpa/inet.h ctype.h fcntl.h net/errno.h netdb.h netinet/in.h param.h pthread.h socks.h stdlib.h string.h strings.h sys/ioctl.h sys/param.h sys/ptem.h sys/socket.h sys/termio.h sys/time.h time.h unistd.h util.h pty.h])
 AC_CHECK_HEADERS([zlib.h],,
 	[AC_MSG_ERROR([zlib header file not found, is the development part present])])
 AC_CHECK_HEADERS([pcre.h],,
@@ -106,7 +90,7 @@ AC_CHECK_PROGS(MAKE, gmake make)
 AC_CHECK_FILES([/dev/ptmx])
 
 AC_FUNC_GETMNTENT
-AC_HEADER_DIRENT 
+AC_HEADER_DIRENT
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
