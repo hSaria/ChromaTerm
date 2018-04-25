@@ -145,12 +145,6 @@ enum operators {
 #define SES_FLAG_RUN (1 << 25)
 #define SES_FLAG_UTF8 (1 << 26)
 
-#define LIST_FLAG_READ (1 << 5)
-#define LIST_FLAG_WRITE (1 << 6)
-#define LIST_FLAG_SHOW (1 << 7)
-#define LIST_FLAG_INHERIT (1 << 8)
-#define LIST_FLAG_NEST (1 << 9)
-
 #define NODE_FLAG_META (1 << 0)
 
 // Some macros to deal with double linked lists
@@ -262,12 +256,10 @@ struct global_data {
   struct session *dispose_next;
   struct session *dispose_prev;
   struct termios old_terminal;
-  struct termios new_terminal;
   char *mud_output_buf;
   int mud_output_max;
   int mud_output_len;
   char input_buf[BUFFER_SIZE];
-  char input_tmp[BUFFER_SIZE];
   char macro_buf[BUFFER_SIZE];
   char paste_buf[BUFFER_SIZE];
   int input_off;
@@ -278,8 +270,6 @@ struct global_data {
   char *term;
   long long time;
   long long timer[TIMER_CPU][5];
-  long long total_io_exec;
-  long long total_io_delay;
   int command_ref[26];
   int flags;
   int quiet;
@@ -327,7 +317,6 @@ struct list_type {
   char *name_multi;
   int mode;
   int args;
-  int flags;
 };
 
 struct cursor_type {

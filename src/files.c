@@ -35,9 +35,7 @@ DO_COMMAND(do_read) {
   ungetc(temp[0], fp);
 
   for (cnt = 0; cnt < LIST_MAX; cnt++) {
-    if (HAS_BIT(list_table[cnt].flags, LIST_FLAG_READ)) {
-      counter[cnt] = ses->list[cnt]->used;
-    }
+    counter[cnt] = ses->list[cnt]->used;
   }
 
   stat(filename, &filedata);
@@ -242,7 +240,7 @@ DO_COMMAND(do_read) {
     *pto = 0;
 
     if (strlen(bufi) >= BUFFER_SIZE) {
-      gtd->quiet--;
+      gtd->quiet--; // can delete; --'ed for error message
 
       bufi[20] = 0;
 
@@ -259,7 +257,7 @@ DO_COMMAND(do_read) {
     }
 
     if (bufi[0]) {
-      ses = script_driver(ses, -1, bufi);
+      ses = script_driver(ses, -1, bufi); // check this
     }
 
     pto = bufi;
@@ -269,22 +267,20 @@ DO_COMMAND(do_read) {
   gtd->quiet--;
 
   for (cnt = 0; cnt < LIST_MAX; cnt++) {
-    if (HAS_BIT(list_table[cnt].flags, LIST_FLAG_READ)) {
-      switch (ses->list[cnt]->used - counter[cnt]) {
-      case 0:
-        break;
+    switch (ses->list[cnt]->used - counter[cnt]) {
+    case 0:
+      break;
 
-      case 1:
-        show_message(ses, LIST_MESSAGE, "#OK: %3d %s LOADED.",
-                     ses->list[cnt]->used - counter[cnt], list_table[cnt].name);
-        break;
+    case 1:
+      show_message(ses, LIST_MESSAGE, "#OK: %3d %s LOADED.",
+                   ses->list[cnt]->used - counter[cnt], list_table[cnt].name);
+      break;
 
-      default:
-        show_message(ses, LIST_MESSAGE, "#OK: %3d %s LOADED.",
-                     ses->list[cnt]->used - counter[cnt],
-                     list_table[cnt].name_multi);
-        break;
-      }
+    default:
+      show_message(ses, LIST_MESSAGE, "#OK: %3d %s LOADED.",
+                   ses->list[cnt]->used - counter[cnt],
+                   list_table[cnt].name_multi);
+      break;
     }
   }
 
@@ -312,11 +308,6 @@ DO_COMMAND(do_write) {
 
   for (i = 0; i < LIST_MAX; i++) {
     root = ses->list[i];
-
-    if (!HAS_BIT(root->flags, LIST_FLAG_WRITE)) {
-      continue;
-    }
-
     for (j = 0; j < root->used; j++) {
       if (*root->list[j]->group == 0) {
         write_node(ses, i, root->list[j], file);

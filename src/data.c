@@ -16,8 +16,6 @@ struct listroot *init_list(struct session *ses, int type, int size) {
   listhead->size = size;
   listhead->type = type;
 
-  listhead->flags = list_table[type].flags;
-
   return listhead;
 }
 
@@ -41,24 +39,21 @@ struct listroot *copy_list(struct session *ses, struct listroot *sourcelist,
 
   ses->list[type] = init_list(ses, type, sourcelist->size);
 
-  if (HAS_BIT(sourcelist->flags, LIST_FLAG_INHERIT)) {
-    for (i = 0; i < sourcelist->used; i++) {
-      node = (struct listnode *)calloc(1, sizeof(struct listnode));
+  for (i = 0; i < sourcelist->used; i++) {
+    node = (struct listnode *)calloc(1, sizeof(struct listnode));
 
-      node->left = strdup(sourcelist->list[i]->left);
-      node->right = strdup(sourcelist->list[i]->right);
-      node->pr = strdup(sourcelist->list[i]->pr);
-      node->group = strdup(sourcelist->list[i]->group);
+    node->left = strdup(sourcelist->list[i]->left);
+    node->right = strdup(sourcelist->list[i]->right);
+    node->pr = strdup(sourcelist->list[i]->pr);
+    node->group = strdup(sourcelist->list[i]->group);
 
-      switch (type) {
-      case LIST_HIGHLIGHT:
-        break;
-      }
-      ses->list[type]->list[i] = node;
+    switch (type) {
+    case LIST_HIGHLIGHT:
+      break;
     }
-    ses->list[type]->used = sourcelist->used;
+    ses->list[type]->list[i] = node;
   }
-  ses->list[type]->flags = sourcelist->flags;
+  ses->list[type]->used = sourcelist->used;
 
   return ses->list[type];
 }
@@ -243,22 +238,6 @@ int bsearch_alpha_list(struct listroot *root, char *text, int seek) {
   bot = 0;
   top = root->used - 1;
   val = top;
-
-  //	toi = get_number(root->ses, text);
-
-  if (seek == 0 && (*text == '+' || *text == '-') &&
-      HAS_BIT(list_table[root->type].flags, LIST_FLAG_NEST)) {
-    toi = get_number(root->ses, text);
-
-    if (toi > 0 && toi <= root->used) {
-      return toi - 1;
-    }
-    if (toi < 0 && toi + root->used >= 0) {
-      return root->used + toi;
-    } else {
-      return -1;
-    }
-  }
 
   toi = is_number(text) ? get_number(root->ses, text) : 0;
 

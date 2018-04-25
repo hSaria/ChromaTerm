@@ -156,7 +156,6 @@ void read_line() {
       }
 
       gtd->macro_buf[0] = 0;
-      gtd->input_tmp[0] = 0;
       gtd->input_buf[gtd->input_len] = 0;
 
       cursor_check_line_modified("");

@@ -154,9 +154,6 @@ int mathexp_tokenize(struct session *ses, char *str) {
 
       case '"':
         if (pta != buf3) {
-          //							show_message(ses,
-          //-1, "MATH EXP:
-          //\" FOUND INSIDE A NUMBER");
           return FALSE;
         }
         *pta++ = *pti++;
@@ -165,9 +162,6 @@ int mathexp_tokenize(struct session *ses, char *str) {
 
       case '(':
         if (pta != buf3) {
-          //							show_message(ses,
-          //-1,
-          //"#MATH EXP: PARANTESES FOUND INSIDE A NUMBER");
           return FALSE;
         }
         *pta++ = *pti++;
@@ -186,9 +180,6 @@ int mathexp_tokenize(struct session *ses, char *str) {
       case '.':
         *pta++ = *pti++;
         if (point >= 0) {
-          //							show_message(ses,
-          //-1,
-          //"#MATH EXP: MORE THAN ONE POINT FOUND INSIDE A NUMBER");
           precision = 0;
           return FALSE;
         }
@@ -369,8 +360,6 @@ int mathexp_tokenize(struct session *ses, char *str) {
         break;
 
       default:
-        //						show_message(ses, -1,
-        //"#MATH EXP: UNKNOWN OPERATOR: %c", *pti);
         return FALSE;
       }
       break;
@@ -378,8 +367,6 @@ int mathexp_tokenize(struct session *ses, char *str) {
   }
 
   if (level != 0) {
-    //		show_message(ses, -1, "#MATH EXP: UNMATCHED PARENTHESES, LEVEL:
-    //%d", level);
     return FALSE;
   }
 
@@ -439,8 +426,6 @@ void mathexp_compute(struct session *ses, struct link_data *node) {
   switch (node->str3[0]) {
   case 'd':
     if (tintoi(node->next->str3) <= 0) {
-      //				show_message(ses, -1, "#MATHEXP: INVALID
-      // DICE: %s", node->next->str3);
       value = 0;
     } else {
       value = tindice(node->prev->str3, node->next->str3);
@@ -451,8 +436,6 @@ void mathexp_compute(struct session *ses, struct link_data *node) {
     break;
   case '/':
     if (tintoi(node->next->str3) == 0) {
-      //				show_message(ses, -1, "#MATH ERROR:
-      // DIVISION ZERO.");
       value = tintoi(node->prev->str3);
     } else {
       if (precision) {
@@ -465,8 +448,6 @@ void mathexp_compute(struct session *ses, struct link_data *node) {
     break;
   case '%':
     if (tintoi(node->next->str3) == 0) {
-      //				show_message(ses, -1, "#MATH ERROR:
-      // MODULO ZERO.");
       value = tintoi(node->prev->str3);
     } else {
       value = (long long)tintoi(node->prev->str3) %
@@ -551,8 +532,6 @@ void mathexp_compute(struct session *ses, struct link_data *node) {
     value = (tineval(ses, node->prev->str3, node->next->str3) == 0);
     break;
   default:
-    //			show_message(ses, -1, "#COMPUTE EXP: UNKNOWN OPERATOR:
-    //%c%c", node->str3[0], node->str3[1]);
     value = 0;
     break;
   }

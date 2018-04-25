@@ -290,7 +290,6 @@ void display_puts2(struct session *ses, char *string) {
   }
 
   if (gtd->quiet) {
-
     return;
   }
 
