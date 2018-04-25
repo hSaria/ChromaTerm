@@ -61,7 +61,6 @@
 
 #define PRIORITY 0
 #define ALPHA 1
-#define APPEND 2
 
 #define DEFAULT_OPEN '{'
 #define DEFAULT_CLOSE '}'

@@ -106,19 +106,12 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
         return insert_node_list(root, ltext, rtext, prtext);
       }
       break;
-
-    case APPEND:
-      delete_index_list(root, index);
-      return insert_node_list(root, ltext, rtext, prtext);
-      break;
-
     case ALPHA:
       if (strcmp(node->pr, prtext) != 0) {
         free(node->pr);
         node->pr = strdup(prtext);
       }
       break;
-
     default:
       display_printf2(root->ses, "#BUG: update_node_list: unknown mode: %d",
                       list_table[root->type].mode);
