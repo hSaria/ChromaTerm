@@ -307,8 +307,7 @@ struct command_type {
 
 struct config_type {
   char *name;
-  char *msg_on;
-  char *msg_off;
+  char *description;
   CONFIG *config;
 };
 
