@@ -42,7 +42,6 @@ DO_COMMAND(do_highlight) {
 
 DO_COMMAND(do_unhighlight) {
   delete_node_with_wild(ses, LIST_HIGHLIGHT, arg);
-
   return ses;
 }
 
