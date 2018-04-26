@@ -44,7 +44,7 @@ struct session *new_session(struct session *ses, char *name, char *command,
 
   gtd->ses = newsession;
 
-  SET_BIT(newsession->flags, SES_FLAG_CONNECTED | SES_FLAG_RUN);
+  SET_BIT(newsession->flags, SES_FLAG_CONNECTED);
 
   gtd->ses = newsession;
 
@@ -65,9 +65,7 @@ void cleanup_session(struct session *ses) {
       syserr("close in cleanup");
     }
 
-    if (HAS_BIT(ses->flags, SES_FLAG_RUN)) {
-      kill(ses->pid, SIGKILL);
-    }
+    kill(ses->pid, SIGKILL);
 
     DEL_BIT(ses->flags, SES_FLAG_CONNECTED);
   }

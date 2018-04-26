@@ -26,7 +26,6 @@ void read_key(void) {
     read_line();
     return;
   }
-
   len = read(0, buffer, 1);
 
   buffer[len] = 0;
@@ -45,13 +44,8 @@ void read_key(void) {
       gtd->macro_buf[0] = 0;
       gtd->input_len = 0;
 
-      if (HAS_BIT(gtd->ses->flags, SES_FLAG_RUN)) {
-        socket_printf(gtd->ses, 1, "%c", '\r');
-      } else {
-        socket_printf(gtd->ses, 2, "%c%c", '\r', '\n');
-      }
+      socket_printf(gtd->ses, 1, "%c", '\r');
       break;
-
     default:
       if (gtd->macro_buf[cnt] == gtd->command_char && gtd->input_buf[0] == 0) {
         if (gtd->input_len != gtd->input_cur) {

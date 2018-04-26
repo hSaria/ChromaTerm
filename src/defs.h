@@ -72,18 +72,7 @@
 #define NUMBER_SIZE 100
 #define LIST_SIZE 2
 
-#define CLIENT_NAME "ChromaTerm--"
-#define CLIENT_VERSION "0.02.0  "
-
 #define ESCAPE 27
-
-#define TIMER_POLL_INPUT 0
-#define TIMER_POLL_SESSIONS 1
-#define TIMER_UPDATE_PACKETS 4
-#define TIMER_UPDATE_TERMINAL 5
-#define TIMER_UPDATE_MEMORY 7
-#define TIMER_STALL_PROGRAM 8
-#define TIMER_CPU 9
 
 #define PULSE_PER_SECOND 100
 
@@ -141,7 +130,6 @@ enum operators {
 #define SES_FLAG_READMUD (1 << 8)
 #define SES_FLAG_CONNECTED (1 << 11)
 #define SES_FLAG_CONVERTMETA (1 << 24)
-#define SES_FLAG_RUN (1 << 25)
 #define SES_FLAG_UTF8 (1 << 26)
 
 #define NODE_FLAG_META (1 << 0)
@@ -268,7 +256,6 @@ struct global_data {
   int input_hid;
   char *term;
   long long time;
-  long long timer[TIMER_CPU][5];
   int command_ref[26];
   int flags;
   int quiet;
