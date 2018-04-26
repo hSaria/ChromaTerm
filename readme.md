@@ -45,10 +45,12 @@ You have two options for running ChromaTerm--:
 
 The only difference is that the **direct** mode runs with the `-e` flag. For example:
 ```
-ct -e "#highlight {%d.%d.%d.%d} {bold green}; #write {./chromatermrc_for_ipv4}; #run BASH_SESSION bash"
+ct -e "#highlight {%d.%d.%d.%d} {bold green}; #write {./chromatermrc_for_ipv4}; #run /bin/bash"
 ```
 
-This example will open up CT--, create a new highlight rule, write all rules and configuration to a file, run a process (bash, in this case) under a session called BASH_SESSION. Once the BASH_SESSION ends (process closes), CT-- will close. You can still run commands even when you're in the middle of a session; just prefix your command just as you would normally do, with a #, or the configured command character (it can be changed; see `#help config`).
+This example will open up CT--, create a new highlight rule, write all rules and configuration to a file, run a process (bash, in this case). Once the process closes, CT-- will close, too. 
+
+You can still run commands even while a process is running; type # on a new line that is empty then follow it with the require command. You can change the default command character (#); see `#help config`.
 
 ## Commands
 Below are quick summaries for some of the important commands.
@@ -77,8 +79,8 @@ The first will remove a specific rule, while the second will remove all highligh
 #### `#read {file}` and `#write {file}`
 You can read a configuration file while inside a session. Any rules will be **merged** with the existing ones. Furthermore, you can write the configuration of the current session to a file.
 
-#### `#run {name} {process} ...`
-This command will create a session and run a process with any parameters.
+#### `#run {process} ...`
+This command will run a process and pass any arguments to it.
 
 #### `#exit`
 Exits CT--. The child process is terminated, too. If the child process dies, CT-- will automatically exit.
