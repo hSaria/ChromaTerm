@@ -1,104 +1,119 @@
-## About
-ChromaTerm-- is a slimmed-down version of ChromaTerm, the terminal colorization tool that runs on Linux and is produced by TunnelsUp.com. It essentially acts as a wrapper for the Linux shell. Once it starts it then starts a new shell. Any activity within that new shell will be ran through ChromaTerm. 
-ChromaTerm listens for keywords that act as functions that allow you to configure ChromaTerm. and will highlight them with user defined colors.
+# ChromaTerm--
+A tool for colorizing the output of a terminal.
 
-This tools can be extremely helpful for getting you to notice specific keywords by coloring them. 
+- [About](#about)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Help](#help)
 
+
+# About
+ChromaTerm-- (CT--) is a slimmed-down version of [ChromaTerm](https://github.com/tunnelsup/chromaterm). It essentially acts as a wrapper for a process (e.g. a shell). Any activity within the process is ran through CT--. 
+While running,  CT-- listens for keywords and executes commands that allow you to configure CT--. Primarily, the `#highlight` command is the one you are after.
+
+The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has way more features if you are interested. This fork just removes a lot of those features (I am only interested in the #highlight and any supporting commands for it).
 
 ## Screenshots
-Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.<br><br>
-![Chromaterm IMG](http://tunnelsup.com/images/chroma1.PNG)<br><br>
-![Chromaterm IMG](http://tunnelsup.com/images/chroma2.PNG)<br><br>
+Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.
+
+![Chromaterm IMG](http://tunnelsup.com/images/chroma1.PNG)
+
+![Chromaterm IMG](http://tunnelsup.com/images/chroma2.PNG)
+
 ![Chromaterm IMG](http://tunnelsup.com/images/chroma3.PNG)
 
 
-## Install
-- Download the files from github. Either by using the download link or by Git:<br>
-`git clone https://github.com/hSaria/ChromaTerm--.git`
-
-- Go into the src directory:<br>
-`cd ChromaTerm--/src/`
-
-- Configure the program:<br>
-`./configure`
-
-- Create the binary called ct:<br>
-`make`
-
-- Optional: Move ct to the /usr/local/bin directory:<br>
-`make install` 
-
-You can start the program by doing the following:<br>
-`./ct` or just `ct` if installed to the /usr/local/bin directory.
-
-- NOTE: You may install the pcre library from http://pcre.org (`homebrew install pcre` works).
-
-
-## Creating the Config file
-Use your text editor of your choice to create a file called .chromatermrc and put the following in it.
+# Installation
 ```
-#highlight {%d.%d.%d.%d} {bold yellow}
-#highlight { any } {bold white}
-#highlight {{permit(ted)*}} {bold green}
-#highlight {{(d|D)eny}} {bold red}
-#highlight {{ (E|e)rr..}} {bold white}
-#highlight {INSIDE} {bold blue}
-#highlight {OUTSIDE} {bold green}
-#highlight {DMZ} {bold magenta}
+git clone https://github.com/hSaria/ChromaTerm--.git
+cd ChromaTerm--/src/
+./configure
+make
+make install  # Optional: Move ct to the /usr/local/bin 
 ```
+> NOTE: the [pcre library](https://pcre.org) is required. (`homebrew install pcre` works.)
 
-The `highlight` keyword will simply look for the text in the first argument and colorize it using the color chosen in the second argument.
 
+# Usage
+You will need a terminal program that can handle VT100 and ANSI color codes (many of them do).
+- You can start CT-- by `./ct` or just `ct` if installed to /usr/local/bin.
 
-## Usage
-You will need a terminal program that can handle VT100 and ANSI color codes. Such programs that can do this are putty, SecureCRT, or any native Linux terminal.
+## Modes
+You have two options for running ChromaTerm--:
+- Interactive: Open up CT-- without running any process. Good for testing commands.
+- Direct: Run your commands then exit. Great for using `ct` as part of a script.
 
-You have two options for for running this modified version of Chromaterm:
-- Interactive: In this mode, you can manually type in commands (this is great to test their effects). For example:
-```
-ct
-  #highlight {%d.%d.%d.%d} {bold green}
-  #write {./chromatermrc_for_ipv4}
-  #run BASH_SESSION bash
-```
-This example will open up `ct`, create a new highlight rule, write all rules and configuration to a file, run a binary (bash, in this case) under a session called BASH_SESSION. Once the BASH_SESSION ends (binary closes), `ct` will close. You can still run commands even when you're in the middle of a session; just prefix your command just as you would normally do, with a #, or the configured command character (it can be changed; see `#help config`).
-<br/>
-
-- Direct: `ct` will run your commands then exit. This is a good option if you're using `ct` as part of a script. For example:
+The only difference is that the **direct** mode runs with the `-e` flag. For example:
 ```
 ct -e "#highlight {%d.%d.%d.%d} {bold green}; #write {./chromatermrc_for_ipv4}; #run BASH_SESSION bash"
 ```
-The outcome of this example is the same as the previous one, except that it will exit when the session ends.
-<br/>
 
-Upon running `ct`, the program will look for `.chromatermrc` in your current directory then your home directory, and will load the first one it finds. You can specify the location of the file to load by using the `-c` parameter. For example:
-```
-ct -c $HOME/.config/chromaterm/.chromatermrc 
-```
-<br/>
+This example will open up CT--, create a new highlight rule, write all rules and configuration to a file, run a process (bash, in this case) under a session called BASH_SESSION. Once the BASH_SESSION ends (process closes), CT-- will close. You can still run commands even when you're in the middle of a session; just prefix your command just as you would normally do, with a #, or the configured command character (it can be changed; see `#help config`).
 
-Once ChromaTerm is running use the `#help` command to display more information about the ChromaTerm. Some useful commands:
+## Commands
+Below are quick summaries for some of the important commands.
+
+> All commands are:
+> - autocompleted to the closest match
+> - case-insensitive
+
+> Before writing a CT-- command, be sure to hit enter first. This is a limitation which I documenated in `read_key` function in input.c.
+
+### `#highlight {condition} {action}` and `#unhighlight {condition}`
+The output is scanned according to the condition. If a part of the text matches the condition, the action is takes on that text. 
+```
+#highlight {%d.%d.%d.%d} {bold green}
+#highlight {{(E|e)rr..}} {bold red}
+```
+The first will find four digits separated by dots then highlight them bold yellow. The second has a regular expression (enclosed by two sets of curly backets).
+
+You can remove a rule by using the `#unhighlight`.
+```
+#unhighlight {{(E|e)rr..}}
+#unhighlight %*
+```
+The first will remove a specific rule, while the second will remove all highlight rules.
+
+### `#read {file}` and `#write {file}`
+You can read a configuration file while inside a session. Any rules will be **merged** with the existing ones. Furthermore, you can write the configuration of the current session to a file.
+
+### `#run {name} {process} ...`
+This command will create a session and run a process with any parameters.
+
+### `#exit`
+Exits CT--. The child process is terminated, too. If the child process dies, CT-- will automatically exit.
+
+## Configuration File
+CT-- will look for a configuration file called `.chromatermrc` in the current directory then the home directory, and will load the first one it finds. The file should contain CT-- commands.
+
+You may also override which configuration file is loaded by using the `-c` parameter. For example:
+```
+ct -c $HOME/.config/chromaterm--/.chromatermrc 
+```
+
+There is a sample file in the project. Feel free to use it.
+
+
+# Help
+
+## Parameters
+For a list of the available CT-- parameters:
+```
+ct -h
+```
+
+## Commands
+To get a list of the available CT-- commands:
+```
+#commands
+```
+
+Additionally, there are help topics within the tool. The following commands show (1) the list of help topics, (2) the help for the `#highlight` command, and (3) all of content of the help topics, respectively:
 ```
 #help
-#help {topic name}
+#help highlight
 #help %*
-#commands
-#read ./custom_chromatermrc_file
-#highlight {%d.%d.%d.%d} {bold green}
-#write ./custom_chromatermrc_file
 ```
 
-To exit chromaterm type:
-`#exit`
-
-You can edit the .chromatermrc file to your satisfaction to add more keyword highlighting or change colors. A sample .chromatermrc file is included in the files which is what the original author used for his config.
-
-
-## Further Help
-To ask questions or submit bugs, please create an issue.
-
-
-## Final words
-By reading and modifying the code, I can tell you that the authors of original tool (`tunnelsup/chromaterm` fork) are very talented and passionate about what they made. If you are interested in a version that has more feature and is far more extensible that this one, please go check them out. Official website of original tool is found here:
-[www.tunnelsup.com/chromaterm/](www.tunnelsup.com/chromaterm/) <br/>
-My reason for slimming down ChromaTerm: I only need a tool that colors the output of a shell; nothing more, nothing less. Any supplement code must support the coloring funtionality. Therefore, I removed much of the original functionality and features, modified some of the parameters and code, and added a bit of code here and there.
+## Questions or Bugs
+To ask questions or submit bugs, please create an issue on **this** fork.
