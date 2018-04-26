@@ -240,7 +240,7 @@ DO_COMMAND(do_read) {
     *pto = 0;
 
     if (strlen(bufi) >= BUFFER_SIZE) {
-      gtd->quiet--; // can delete; --'ed for error message
+      gtd->quiet--;
 
       bufi[20] = 0;
 
@@ -257,7 +257,7 @@ DO_COMMAND(do_read) {
     }
 
     if (bufi[0]) {
-      ses = script_driver(ses, -1, bufi); // check this
+      ses = script_driver(ses, -1, bufi);
     }
 
     pto = bufi;
