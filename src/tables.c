@@ -18,19 +18,15 @@ struct command_type command_table[] = {
     {"", NULL, TOKEN_TYPE_COMMAND}};
 
 struct list_type list_table[LIST_MAX] = {
-    {"CONFIG", "CONFIGURATIONS", ALPHA, 2,
-     LIST_FLAG_SHOW | LIST_FLAG_READ | LIST_FLAG_WRITE | LIST_FLAG_INHERIT},
-    {"HIGHLIGHT", "HIGHLIGHTS", PRIORITY, 3,
-     LIST_FLAG_SHOW | LIST_FLAG_READ | LIST_FLAG_WRITE | LIST_FLAG_INHERIT}};
+    {"CONFIG", "CONFIGURATIONS", ALPHA, 2},
+    {"HIGHLIGHT", "HIGHLIGHTS", PRIORITY, 3}};
 
 struct config_type config_table[] = {
-    {"CHARSET", "", "The character set encoding used", config_charset},
-    {"COMMAND CHAR", "", "The character used for commands", config_commandchar},
-    {"CONVERT META", "Convert meta and control characters",
-     "Do not convert meta and control characters", config_convertmeta},
-    {"PACKET PATCH", "", "Seconds to wait to patch broken packets",
-     config_packetpatch},
-    {"", "", 0, 0}};
+    {"CHARSET", "The character set encoding used", config_charset},
+    {"COMMAND CHAR", "The character used for commands", config_commandchar},
+    {"CONVERT META", "Convert meta and control characters", config_convertmeta},
+    {"PACKET PATCH", "Seconds to wait to patch broken packets",
+     config_packetpatch}};
 
 struct color_type color_table[] = {{"azure", "<abd>"},
                                    {"ebony", "<g04>"},

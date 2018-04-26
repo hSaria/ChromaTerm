@@ -36,12 +36,6 @@ void init_terminal() {
 
     exit(errno);
   }
-
-  if (tcgetattr(0, &gtd->new_terminal)) {
-    perror("tcgetattr");
-
-    exit(errno);
-  }
 }
 
 void restore_terminal(void) { tcsetattr(0, TCSANOW, &gtd->old_terminal); }

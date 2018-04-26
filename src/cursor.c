@@ -360,7 +360,6 @@ DO_CURSOR(cursor_enter) {
   gtd->input_pos = 0;
   gtd->input_off = 1;
   gtd->macro_buf[0] = 0;
-  gtd->input_tmp[0] = 0;
 
   SET_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
 

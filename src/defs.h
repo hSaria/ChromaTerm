@@ -61,7 +61,6 @@
 
 #define PRIORITY 0
 #define ALPHA 1
-#define APPEND 2
 
 #define DEFAULT_OPEN '{'
 #define DEFAULT_CLOSE '}'
@@ -73,18 +72,7 @@
 #define NUMBER_SIZE 100
 #define LIST_SIZE 2
 
-#define CLIENT_NAME "ChromaTerm--"
-#define CLIENT_VERSION "0.02.0  "
-
 #define ESCAPE 27
-
-#define TIMER_POLL_INPUT 0
-#define TIMER_POLL_SESSIONS 1
-#define TIMER_UPDATE_PACKETS 4
-#define TIMER_UPDATE_TERMINAL 5
-#define TIMER_UPDATE_MEMORY 7
-#define TIMER_STALL_PROGRAM 8
-#define TIMER_CPU 9
 
 #define PULSE_PER_SECOND 100
 
@@ -142,14 +130,7 @@ enum operators {
 #define SES_FLAG_READMUD (1 << 8)
 #define SES_FLAG_CONNECTED (1 << 11)
 #define SES_FLAG_CONVERTMETA (1 << 24)
-#define SES_FLAG_RUN (1 << 25)
 #define SES_FLAG_UTF8 (1 << 26)
-
-#define LIST_FLAG_READ (1 << 5)
-#define LIST_FLAG_WRITE (1 << 6)
-#define LIST_FLAG_SHOW (1 << 7)
-#define LIST_FLAG_INHERIT (1 << 8)
-#define LIST_FLAG_NEST (1 << 9)
 
 #define NODE_FLAG_META (1 << 0)
 
@@ -262,12 +243,10 @@ struct global_data {
   struct session *dispose_next;
   struct session *dispose_prev;
   struct termios old_terminal;
-  struct termios new_terminal;
   char *mud_output_buf;
   int mud_output_max;
   int mud_output_len;
   char input_buf[BUFFER_SIZE];
-  char input_tmp[BUFFER_SIZE];
   char macro_buf[BUFFER_SIZE];
   char paste_buf[BUFFER_SIZE];
   int input_off;
@@ -277,9 +256,6 @@ struct global_data {
   int input_hid;
   char *term;
   long long time;
-  long long timer[TIMER_CPU][5];
-  long long total_io_exec;
-  long long total_io_delay;
   int command_ref[26];
   int flags;
   int quiet;
@@ -317,8 +293,7 @@ struct command_type {
 
 struct config_type {
   char *name;
-  char *msg_on;
-  char *msg_off;
+  char *description;
   CONFIG *config;
 };
 
@@ -327,7 +302,6 @@ struct list_type {
   char *name_multi;
   int mode;
   int args;
-  int flags;
 };
 
 struct cursor_type {

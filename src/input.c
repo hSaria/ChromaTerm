@@ -18,6 +18,8 @@ void process_input(void) {
   gtd->input_buf[0] = 0;
 }
 
+// The current output of the screen cannot be determined which means we can only
+// listen for commands after a new line.
 void read_key(void) {
   char buffer[BUFFER_SIZE];
   int len, cnt;
@@ -26,7 +28,6 @@ void read_key(void) {
     read_line();
     return;
   }
-
   len = read(0, buffer, 1);
 
   buffer[len] = 0;
@@ -38,22 +39,19 @@ void read_key(void) {
     strcat(gtd->macro_buf, buffer);
   }
 
+  // Handles normal input and transfering to CT
   for (cnt = 0; gtd->macro_buf[cnt]; cnt++) {
     switch (gtd->macro_buf[cnt]) {
-    case '\n':
-      gtd->input_buf[0] = 0;
+    case '\n': // Reset: \n is needed before a command
       gtd->macro_buf[0] = 0;
+      gtd->input_buf[0] = 0;
       gtd->input_len = 0;
 
-      if (HAS_BIT(gtd->ses->flags, SES_FLAG_RUN)) {
-        socket_printf(gtd->ses, 1, "%c", '\r');
-      } else {
-        socket_printf(gtd->ses, 2, "%c%c", '\r', '\n');
-      }
+      socket_printf(gtd->ses, 1, "%c", '\r');
       break;
-
-    default:
-      if (gtd->macro_buf[cnt] == gtd->command_char && gtd->input_buf[0] == 0) {
+    default: // Normal input
+      if (gtd->macro_buf[cnt] == gtd->command_char &&
+          gtd->input_buf[0] == 0) { // Transfer to CT on next call of read_key
         if (gtd->input_len != gtd->input_cur) {
           printf("\033[1@%c", gtd->macro_buf[cnt]);
         } else {
@@ -65,9 +63,9 @@ void read_key(void) {
         gtd->input_len = 1;
         gtd->input_cur = 1;
         gtd->input_pos = 1;
-      } else {
+      } else { // If not destined to CT, send to socket
         socket_printf(gtd->ses, 1, "%c", gtd->macro_buf[cnt]);
-        gtd->input_buf[0] = 127;
+        gtd->input_buf[0] = 127; // != 0 means a reset (\n) is required
         gtd->macro_buf[0] = 0;
         gtd->input_len = 0;
       }
@@ -156,7 +154,6 @@ void read_line() {
       }
 
       gtd->macro_buf[0] = 0;
-      gtd->input_tmp[0] = 0;
       gtd->input_buf[gtd->input_len] = 0;
 
       cursor_check_line_modified("");

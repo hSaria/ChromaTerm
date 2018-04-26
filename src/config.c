@@ -17,10 +17,8 @@ DO_COMMAND(do_configure) {
       node = search_node_list(ses->list[LIST_CONFIG], config_table[index].name);
 
       if (node) {
-        display_printf2(ses, "[%-13s] [%8s] %s", node->left, node->right,
-                        strcmp(node->right, "ON") == 0
-                            ? config_table[index].msg_on
-                            : config_table[index].msg_off);
+        display_printf2(ses, "[%-13s] [%8s]", node->left, node->right,
+                        config_table[index].description);
       }
     }
 

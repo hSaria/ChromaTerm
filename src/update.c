@@ -63,9 +63,6 @@ void mainloop(void) {
 
     wait_time.tv_usec = usec_wait;
 
-    gtd->total_io_exec += usec_loop;
-    gtd->total_io_delay += usec_wait;
-
     if (usec_wait > 0) {
       select(0, NULL, NULL, NULL, &wait_time);
     }
