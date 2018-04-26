@@ -5,28 +5,13 @@
 #include <errno.h>
 #include <signal.h>
 
-struct session *new_session(struct session *ses, char *name, char *command,
-                            int pid, int socket) {
+struct session *new_session(struct session *ses, char *command, int pid,
+                            int socket) {
   int cnt = 0;
   struct session *newsession;
 
-  for (newsession = gts; newsession; newsession = newsession->next) {
-    if (!strcmp(newsession->name, name)) {
-      display_puts(ses, "THERE'S A SESSION WITH THAT NAME ALREADY.");
-
-      if (close(socket) == -1) {
-        syserr("close in new_session");
-      }
-
-      kill(pid, SIGKILL);
-
-      return ses;
-    }
-  }
-
   newsession = (struct session *)calloc(1, sizeof(struct session));
 
-  newsession->name = strdup(name);
   newsession->command = strdup(command);
   newsession->pid = pid;
 
@@ -82,7 +67,7 @@ void cleanup_session(struct session *ses) {
     }
   }
 
-  display_printf(ses, "\n#EXIT to terminate.", ses->name);
+  display_printf(ses, "\n#EXIT to terminate");
 
   LINK(ses, gtd->dispose_next, gtd->dispose_prev);
 

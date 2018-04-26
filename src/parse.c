@@ -92,7 +92,7 @@ char *get_arg_in_braces(struct session *ses, char *string, char *result,
   }
 
   if (*pti == 0) {
-    display_printf2(NULL, "#Unmatched braces error!");
+    display_printf2(NULL, "#UNMATCHED BRACKETS ERROR.");
   } else {
     pti++;
   }
@@ -209,7 +209,7 @@ char *get_arg_at_brackets(struct session *ses, char *string, char *result) {
   }
 
   if (nest) {
-    display_printf2(NULL, "#UNMATCHED AT BRACKETS ERROR.");
+    display_printf2(NULL, "#UNMATCHED BRACKETS ERROR.");
   }
   *pto = 0;
 

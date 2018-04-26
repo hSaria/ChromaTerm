@@ -7,10 +7,8 @@ void write_line_socket(struct session *ses, char *line, int size) {
 
   if (!HAS_BIT(ses->flags, SES_FLAG_CONNECTED)) {
     display_printf2(ses,
-                    "#THIS SESSION IS NOT CONNECTED. USE: %cRUN {name} "
-                    "{command} TO CONNECT.",
+                    "#SESSION NOT CONNECTED. USE: %cRUN {command} TO CONNECT",
                     gtd->command_char);
-
     return;
   }
 

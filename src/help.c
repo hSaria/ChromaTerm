@@ -203,7 +203,6 @@ struct help_type help_table[] = {
      "         Besides color names also <<888>abc> color codes can be used.\n"
      "\n"
      "         You may specify a priority to give a highlight precedence.\n"
-     "         Once a match is found, no other highlights are applied.\n"
      "         Default priority is 5. Lower is better.\n"
      "\n"
      "<178>Example<078>: #high {Valgar} {reverse}\n"
@@ -271,30 +270,17 @@ struct help_type help_table[] = {
      "\n"
      "<178>Example<078>: #regexp {bli bla blo} {bli {.*} blo} {#showme "
      "&1}\n\n\n"},
-    {"RUN",
-     "<178>Command<078>: #run <178>{<078>session name<178>}<078> "
-     "<178>{<078>shell command<178>}<078>\n"
-     "\n"
-     "         The run command creates a session which runs the given "
-     "command.\n"
-     "\n"
-     "         Sessions can be manipulated with the #all, #config, #end, "
-     "#session\n"
-     "         and #zap commands.\n"
-     "\n"
-     "<178>Example<078>: #run {somewhere} {ssh someone@somewhere.com}\n\n\n"},
+    {"RUN", "<178>Command<078>: #run <178>{<078>shell command<178>}<078>\n"
+            "\n"
+            "         The run command creates a session which runs the given "
+            "command.\n"
+            "\n"
+            "<178>Example<078>: #run {ssh someone@somewhere.com}\n\n\n"},
     {"WRITE", "<178>Command<078>: #write <178>{<078>filename<178>}<078>\n"
               "\n"
               "         Writes all current actions, aliases, subs, highlights, "
               "and variables\n"
               "         to a command file, specified by filename.\n\n\n"},
-    {"ZAP", "<178>Command<078>: #zap {[session]}\n"
-            "\n"
-            "         Kill your current session.  If there is no current "
-            "session, it will\n"
-            "         cause the program to terminate. If you provide an "
-            "argument it'll zap\n"
-            "         the given session instead.\n\n\n"},
     {"", ""}};
 
 DO_COMMAND(do_help) {

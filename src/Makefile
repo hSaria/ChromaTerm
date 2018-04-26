@@ -38,9 +38,9 @@ DEFAULT_FILE_DIR = $(HOME)
 FFLAGS= $(F1) $(F6)
 
 
-OFILES = config.o cursor.o data.o files.o forkpty.o \
-         help.o highlight.o input.o main.o math.o memory.o misc.o \
-				 nest.o net.o parse.o regexp.o session.o system.o tables.o \
+OFILES = config.o cursor.o data.o files.o forkpty.o help.o \
+         highlight.o input.o main.o math.o memory.o misc.o \
+				 net.o parse.o regexp.o session.o system.o tables.o \
 				 terminal.o text.o tokenize.o update.o utils.o vt102.o
 
 

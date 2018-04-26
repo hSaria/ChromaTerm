@@ -10,45 +10,48 @@
 #endif
 #endif
 
+int process_already_running = FALSE;
+
 DO_COMMAND(do_run) {
-  char left[BUFFER_SIZE], right[BUFFER_SIZE], temp[BUFFER_SIZE];
+  char command[BUFFER_SIZE], temp[BUFFER_SIZE];
   int desc, pid;
   struct winsize size;
 
   char *argv[4] = {"sh", "-c", "", NULL};
 
-  arg = sub_arg_in_braces(ses, arg, left, GET_ONE, SUB_VAR | SUB_FUN);
-  arg = sub_arg_in_braces(ses, arg, right, GET_ALL, SUB_VAR | SUB_FUN);
+  arg = sub_arg_in_braces(ses, arg, command, GET_ALL, SUB_VAR | SUB_FUN);
 
-  if (*left == 0) {
-    display_printf2(ses, "#RUN: PROVIDE A SESSION NAME.");
-
+  // Limit to single process
+  if (process_already_running) {
+    display_printf2(ses, "#RUN: A PROCESS IS ALREADY RUNNING");
     return ses;
+  } else {
+    process_already_running = TRUE;
   }
 
-  if (*right == 0) {
-    strcpy(right, getenv("SHELL") ? getenv("SHELL") : "");
+  // If no process is provided, use the SHELL environment variable
+  if (*command == 0) {
+    strcpy(command, getenv("SHELL") ? getenv("SHELL") : "");
   }
 
   size.ws_row = get_scroll_size(ses);
   size.ws_col = ses->cols;
 
-  pid = forkpty(&desc, NULL, &gtd->old_terminal, &size);
+  pid = forkpty(&desc, NULL, &gtd->active_terminal, &size);
 
   switch (pid) {
   case -1:
     perror("forkpty");
     break;
-
   case 0:
-    sprintf(temp, "exec %s", right);
+    sprintf(temp, "exec %s", command);
     argv[2] = temp;
     execv("/bin/sh", argv);
     break;
-
   default:
-    ses = new_session(ses, left, right, pid, desc);
+    ses = new_session(ses, command, pid, desc);
     break;
   }
+
   return gtd->ses;
 }

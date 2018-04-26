@@ -398,8 +398,6 @@ DO_CURSOR(cursor_insert) {
     SET_BIT(gtd->flags, GLOBAL_FLAG_INSERTINPUT);
   } else if (!strcasecmp(arg, "OFF")) {
     DEL_BIT(gtd->flags, GLOBAL_FLAG_INSERTINPUT);
-  } else {
-    display_printf(NULL, "#SYNTAX: #CURSOR {INSERT} {ON|OFF}.");
   }
 }
 

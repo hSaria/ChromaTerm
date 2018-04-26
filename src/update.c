@@ -42,7 +42,7 @@ void mainloop(void) {
     if (--pulse_update_terminal == 0) {
       pulse_update_terminal = PULSE_UPDATE_TERMINAL;
 
-      terminal_update();
+      fflush(stdout);
     }
 
     if (--pulse_update_memory == 0) {
@@ -164,8 +164,6 @@ void packet_update(void) {
   }
 }
 
-void terminal_update(void) { fflush(stdout); }
-
 void memory_update(void) {
   while (gtd->dispose_next) {
     int index;
@@ -176,7 +174,6 @@ void memory_update(void) {
       free_list(gtd->dispose_next->list[index]);
     }
 
-    free(gtd->dispose_next->name);
     free(gtd->dispose_next->command);
     free(gtd->dispose_next->group);
 
