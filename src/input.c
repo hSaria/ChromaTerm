@@ -18,6 +18,8 @@ void process_input(void) {
   gtd->input_buf[0] = 0;
 }
 
+// The current output of the screen cannot be determined which means we can only
+// listen for commands after a new line.
 void read_key(void) {
   char buffer[BUFFER_SIZE];
   int len, cnt;
