@@ -14,7 +14,6 @@ struct command_type command_table[] = {
     {"showme", do_showme, TOKEN_TYPE_COMMAND},
     {"unhighlight", do_unhighlight, TOKEN_TYPE_COMMAND},
     {"write", do_write, TOKEN_TYPE_COMMAND},
-    {"zap", do_zap, TOKEN_TYPE_COMMAND},
     {"", NULL, TOKEN_TYPE_COMMAND}};
 
 struct list_type list_table[LIST_MAX] = {

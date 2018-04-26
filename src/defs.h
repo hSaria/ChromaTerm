@@ -513,7 +513,6 @@ extern char *refstring(char *point, char *fmt, ...);
 extern DO_COMMAND(do_commands);
 extern DO_COMMAND(do_exit);
 extern DO_COMMAND(do_showme);
-extern DO_COMMAND(do_zap);
 
 #endif
 

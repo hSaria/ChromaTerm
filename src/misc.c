@@ -66,33 +66,3 @@ DO_COMMAND(do_showme) {
 
   return ses;
 }
-
-DO_COMMAND(do_zap) {
-  struct session *sesptr = ses;
-  char left[BUFFER_SIZE];
-
-  sub_arg_in_braces(ses, arg, left, GET_ALL, SUB_VAR | SUB_FUN);
-
-  sesptr = ses;
-
-  if (*left) {
-    for (sesptr = gts->next; sesptr; sesptr = sesptr->next) {
-      if (!strcmp(sesptr->name, left)) {
-        break;
-      }
-    }
-
-    if (sesptr == NULL) {
-      display_puts2(ses, "#NO SESSION WITH THAT NAME!");
-
-      return ses;
-    }
-  }
-
-  if (sesptr == gts) {
-    return do_exit(NULL, "");
-  }
-  cleanup_session(sesptr);
-
-  return gtd->ses;
-}
