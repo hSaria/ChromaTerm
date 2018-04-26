@@ -344,6 +344,36 @@ void show_node(struct listroot *root, struct listnode *node, int level) {
   }
 }
 
+void show_nest_node(struct listnode *node, char *result, int initialize) {
+  if (initialize) {
+    *result = 0;
+  }
+
+  if (node->root == NULL) {
+    if (initialize) {
+      strcat(result, node->right);
+    } else {
+      cat_sprintf(result, "{%s}", node->right);
+    }
+  } else {
+    struct listroot *root = node->root;
+    int i;
+
+    if (!initialize) {
+      strcat(result, "{");
+    }
+
+    for (i = 0; i < root->used; i++) {
+      cat_sprintf(result, "{%s}", root->list[i]->left);
+
+      show_nest_node(root->list[i], result, FALSE);
+    }
+    if (!initialize) {
+      strcat(result, "}");
+    }
+  }
+}
+
 // list contens of a list on screen
 void show_list(struct listroot *root, int level) {
   int i;

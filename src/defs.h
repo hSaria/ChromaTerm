@@ -74,7 +74,7 @@
 
 #define ESCAPE 27
 
-#define PULSE_PER_SECOND 100
+#define PULSE_PER_SECOND 1000
 
 #define PULSE_POLL_INPUT 1
 #define PULSE_POLL_SESSIONS 1
@@ -431,6 +431,7 @@ extern struct listnode *insert_index_list(struct listroot *root,
 
 extern int show_node_with_wild(struct session *ses, char *cptr, int type);
 extern void show_node(struct listroot *root, struct listnode *node, int level);
+extern void show_nest_node(struct listnode *node, char *result, int initialize);
 extern void show_nest(struct listnode *node, char *result);
 extern void show_list(struct listroot *root, int level);
 
@@ -512,17 +513,6 @@ extern char *refstring(char *point, char *fmt, ...);
 extern DO_COMMAND(do_commands);
 extern DO_COMMAND(do_exit);
 extern DO_COMMAND(do_showme);
-
-#endif
-
-#ifndef __NEST_H__
-#define __NEST_H__
-
-extern struct listroot *update_nest_root(struct listroot *root, char *arg);
-extern void update_nest_node(struct listroot *root, char *arg);
-extern void show_nest_node(struct listnode *node, char *result, int initialize);
-extern void copy_nest_node(struct listroot *dst_root, struct listnode *dst,
-                           struct listnode *src);
 
 #endif
 
@@ -608,7 +598,6 @@ extern void mainloop(void);
 extern void poll_input(void);
 extern void poll_sessions(void);
 extern void packet_update(void);
-extern void terminal_update(void);
 extern void memory_update(void);
 
 #endif
