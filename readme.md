@@ -59,7 +59,7 @@ Below are quick summaries for some of the important commands.
 
 > Before writing a CT-- command, be sure to hit enter first. This is a limitation which I documenated in `read_key` function in input.c.
 
-### `#highlight {condition} {action}` and `#unhighlight {condition}`
+#### `#highlight {condition} {action}` and `#unhighlight {condition}`
 The output is scanned according to the condition. If a part of the text matches the condition, the action is takes on that text. 
 ```
 #highlight {%d.%d.%d.%d} {bold green}
@@ -74,13 +74,13 @@ You can remove a rule by using the `#unhighlight`.
 ```
 The first will remove a specific rule, while the second will remove all highlight rules.
 
-### `#read {file}` and `#write {file}`
+#### `#read {file}` and `#write {file}`
 You can read a configuration file while inside a session. Any rules will be **merged** with the existing ones. Furthermore, you can write the configuration of the current session to a file.
 
-### `#run {name} {process} ...`
+#### `#run {name} {process} ...`
 This command will create a session and run a process with any parameters.
 
-### `#exit`
+#### `#exit`
 Exits CT--. The child process is terminated, too. If the child process dies, CT-- will automatically exit.
 
 ## Configuration File
