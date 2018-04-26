@@ -37,17 +37,19 @@ void read_key(void) {
     strcat(gtd->macro_buf, buffer);
   }
 
+  // Handles normal input and transfering to CT
   for (cnt = 0; gtd->macro_buf[cnt]; cnt++) {
     switch (gtd->macro_buf[cnt]) {
-    case '\n':
-      gtd->input_buf[0] = 0;
+    case '\n': // Reset: \n is needed before a command
       gtd->macro_buf[0] = 0;
+      gtd->input_buf[0] = 0;
       gtd->input_len = 0;
 
       socket_printf(gtd->ses, 1, "%c", '\r');
       break;
-    default:
-      if (gtd->macro_buf[cnt] == gtd->command_char && gtd->input_buf[0] == 0) {
+    default: // Normal input
+      if (gtd->macro_buf[cnt] == gtd->command_char &&
+          gtd->input_buf[0] == 0) { // Transfer to CT on next call of read_key
         if (gtd->input_len != gtd->input_cur) {
           printf("\033[1@%c", gtd->macro_buf[cnt]);
         } else {
@@ -59,9 +61,9 @@ void read_key(void) {
         gtd->input_len = 1;
         gtd->input_cur = 1;
         gtd->input_pos = 1;
-      } else {
+      } else { // If not destined to CT, send to socket
         socket_printf(gtd->ses, 1, "%c", gtd->macro_buf[cnt]);
-        gtd->input_buf[0] = 127;
+        gtd->input_buf[0] = 127; // != 0 means a reset (\n) is required
         gtd->macro_buf[0] = 0;
         gtd->input_len = 0;
       }
