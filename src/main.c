@@ -155,7 +155,6 @@ void init_program() {
     gts->list[index] = init_list(gts, index, 32);
   }
 
-  gts->name = strdup("gts");
   gts->group = strdup("");
   gts->socket = 1;
 

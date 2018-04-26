@@ -176,7 +176,6 @@ void memory_update(void) {
       free_list(gtd->dispose_next->list[index]);
     }
 
-    free(gtd->dispose_next->name);
     free(gtd->dispose_next->command);
     free(gtd->dispose_next->group);
 

@@ -93,14 +93,7 @@ void deltoken(struct scriptroot *root, struct scriptnode *token) {
 }
 
 int find_command(char *command) {
-  struct session *ses;
   int cmd;
-
-  for (ses = gts; ses; ses = ses->next) {
-    if (!strcmp(ses->name, command)) {
-      return -1;
-    }
-  }
 
   if (isalpha((int)*command)) {
     for (cmd = gtd->command_ref[tolower((int)*command) - 'a'];

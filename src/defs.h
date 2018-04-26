@@ -215,7 +215,6 @@ struct listnode {
 struct session {
   struct session *next;
   struct session *prev;
-  char *name;
   char *group;
   char *command;
   struct listroot *list[LIST_MAX];
@@ -242,7 +241,7 @@ struct global_data {
   struct session *update;
   struct session *dispose_next;
   struct session *dispose_prev;
-  struct termios old_terminal;
+  struct termios active_terminal;
   char *mud_output_buf;
   int mud_output_max;
   int mud_output_len;
@@ -562,14 +561,16 @@ extern void do_one_line(char *line, struct session *ses);
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
-extern struct session *new_session(struct session *ses, char *name,
-                                   char *command, int pid, int socket);
+extern struct session *new_session(struct session *ses, char *command, int pid,
+                                   int socket);
 extern void cleanup_session(struct session *ses);
 
 #endif
 
 #ifndef __SYSTEM_H__
 #define __SYSTEM_H__
+
+extern int process_already_running;
 
 extern DO_COMMAND(do_run);
 

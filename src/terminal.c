@@ -11,13 +11,13 @@
 void init_terminal() {
   struct termios io;
 
-  if (tcgetattr(0, &gtd->old_terminal)) {
+  if (tcgetattr(0, &gtd->active_terminal)) {
     perror("tcgetattr");
 
     exit(errno);
   }
 
-  io = gtd->old_terminal;
+  io = gtd->active_terminal;
 
   //  Canonical mode off
   DEL_BIT(io.c_lflag, ICANON);
@@ -38,7 +38,7 @@ void init_terminal() {
   }
 }
 
-void restore_terminal(void) { tcsetattr(0, TCSANOW, &gtd->old_terminal); }
+void restore_terminal(void) { tcsetattr(0, TCSANOW, &gtd->active_terminal); }
 
 void init_screen_size(struct session *ses) {
   struct winsize screen;
