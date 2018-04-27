@@ -126,7 +126,6 @@ enum operators {
 #define GLOBAL_FLAG_PROCESSINPUT (1 << 4)
 #define GLOBAL_FLAG_INSERTINPUT (1 << 6)
 
-#define SES_FLAG_READMUD (1 << 8)
 #define SES_FLAG_CONNECTED (1 << 11)
 #define SES_FLAG_CONVERTMETA (1 << 24)
 #define SES_FLAG_UTF8 (1 << 26)

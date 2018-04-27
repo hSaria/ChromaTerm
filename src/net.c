@@ -52,8 +52,6 @@ void readmud(struct session *ses) {
   gtd->mud_output_len = 0;
 
   /* separate into lines and print away */
-  SET_BIT(gtd->ses->flags, SES_FLAG_READMUD);
-
   for (line = gtd->mud_output_buf; line && *line; line = next_line) {
     next_line = strchr(line, '\n');
 
@@ -86,7 +84,6 @@ void readmud(struct session *ses) {
 
     process_mud_output(ses, linebuf, next_line == NULL);
   }
-  DEL_BIT(gtd->ses->flags, SES_FLAG_READMUD);
 
   return;
 }

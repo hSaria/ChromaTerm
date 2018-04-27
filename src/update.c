@@ -144,15 +144,12 @@ void packet_update(void) {
     gtd->update = ses->next;
 
     if (ses->check_output && gtd->time > ses->check_output) {
-      SET_BIT(ses->flags, SES_FLAG_READMUD);
 
       strcpy(result, ses->more_output);
 
       ses->more_output[0] = 0;
 
       process_mud_output(ses, result, TRUE);
-
-      DEL_BIT(ses->flags, SES_FLAG_READMUD);
     }
   }
 }
