@@ -1,9 +1,9 @@
-## Installation is easy; cd to the src/ directory, then type this:
+cd src/
 ./configure
 make
 make install
 
-## If this went without errors type this to start ChromaTerm:
+## If this went without errors type this to start ChromaTerm--:
 ct
 
-## You may need to compile and install the pcre library from: http://pcre.org
+## If the pcre library is not installed, you will need to do so from: https://pcre.org
