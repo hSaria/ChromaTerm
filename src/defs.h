@@ -402,7 +402,6 @@ extern int regexp(struct session *ses, pcre *pcre, char *str, char *exp,
 #define __CONFIG_H__
 
 extern DO_COMMAND(do_configure);
-extern DO_CONFIG(config_packetpatch);
 extern DO_CONFIG(config_commandchar);
 extern DO_CONFIG(config_convertmeta);
 extern DO_CONFIG(config_charset);

@@ -185,8 +185,9 @@ void init_program() {
   gts->input_level++;
 
   do_configure(gts, "{CHARSET}         {UTF-8}");
-  do_configure(gts, "{PACKET PATCH}     {0.00}");
   do_configure(gts, "{COMMAND CHAR}        {#}");
+
+  gts->check_output = (long long)0;
 
   gts->input_level--;
 

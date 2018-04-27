@@ -44,28 +44,6 @@ DO_COMMAND(do_configure) {
   return ses;
 }
 
-DO_CONFIG(config_packetpatch) {
-  if (!is_number(arg)) {
-    display_printf(ses, "#SYNTAX: #CONFIG {PACKET PATCH} <NUMBER>");
-
-    return NULL;
-  }
-
-  if (atof(arg) < 0 || atof(arg) > 10) {
-    display_printf(ses, "#ERROR: #CONFIG PACKET PATCH: PROVIDE A NUMBER "
-                        "BETWEEN 0.00 and 10.00");
-
-    return NULL;
-  }
-
-  gts->check_output = (long long)(get_number(ses, arg) * 1000000LL);
-
-  update_node_list(ses->list[LIST_CONFIG], config_table[index].name,
-                   capitalize(arg), "");
-
-  return ses;
-}
-
 DO_CONFIG(config_commandchar) {
   gtd->command_char = arg[0];
 
