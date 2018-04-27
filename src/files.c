@@ -339,8 +339,8 @@ void write_node(struct session *ses, int list, struct listnode *node,
                 FILE *file) {
   char result[STRING_SIZE];
 
-  int llen = UMAX(20, strlen(node->left));
-  int rlen = UMAX(25, strlen(node->right));
+  int llen = UMAX(20, (int)strlen(node->left));
+  int rlen = UMAX(25, (int)strlen(node->right));
 
   switch (list) {
   default:

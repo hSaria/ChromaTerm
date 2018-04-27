@@ -70,7 +70,7 @@ int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {
     return FALSE;
   }
 
-  matches = pcre_exec(regex, NULL, str, strlen(str), 0, 0, match, 303);
+  matches = pcre_exec(regex, NULL, str, (int)strlen(str), 0, 0, match, 303);
 
   if (matches <= 0) {
     if (nodepcre == NULL) {

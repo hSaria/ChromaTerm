@@ -451,7 +451,7 @@ DO_CURSOR(cursor_paste_buffer) {
   gtd->input_cur += strlen(gtd->paste_buf);
 
   gtd->input_pos += inputline_raw_str_len(
-      gtd->input_cur - strlen(gtd->paste_buf), gtd->input_cur);
+      (int)(gtd->input_cur - strlen(gtd->paste_buf)), gtd->input_cur);
 
   cursor_redraw_line("");
 

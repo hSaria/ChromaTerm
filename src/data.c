@@ -225,7 +225,7 @@ int locate_index_list(struct listroot *root, char *text, char *priority) {
 
 // Yup, all this for a bloody binary search.
 int bsearch_alpha_list(struct listroot *root, char *text, int seek) {
-  long long bot, top, val;
+  int bot, top, val;
   double toi, toj, srt;
 
   bot = 0;

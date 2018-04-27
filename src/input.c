@@ -28,7 +28,7 @@ void read_key(void) {
     read_line();
     return;
   }
-  len = read(0, buffer, 1);
+  len = (int)read(0, buffer, 1);
 
   buffer[len] = 0;
 
@@ -80,7 +80,7 @@ void read_line() {
 
   gtd->input_buf[gtd->input_len] = 0;
 
-  len = read(0, buffer, 1);
+  len = (int)read(0, buffer, 1);
 
   buffer[len] = 0;
 
