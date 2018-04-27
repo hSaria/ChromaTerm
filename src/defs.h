@@ -80,7 +80,6 @@
 #define PULSE_POLL_SESSIONS 1
 #define PULSE_UPDATE_PACKETS 2
 #define PULSE_UPDATE_TERMINAL 1
-#define PULSE_UPDATE_MEMORY 2
 
 // Index for lists
 #define LIST_CONFIG 0
@@ -239,8 +238,6 @@ struct session {
 struct global_data {
   struct session *ses;
   struct session *update;
-  struct session *dispose_next;
-  struct session *dispose_prev;
   struct termios active_terminal;
   char *mud_output_buf;
   int mud_output_max;
@@ -487,8 +484,6 @@ extern int get_highlight_codes(struct session *ses, char *htype, char *result);
 extern struct session *gts;
 extern struct global_data *gtd;
 
-extern int exit_after_session;
-
 extern int main(int argc, char **argv);
 extern void help_menu(int error, char c, char *proc_name);
 extern void winch_handler(int signal);
@@ -560,8 +555,6 @@ extern void cleanup_session(struct session *ses);
 #ifndef __SYSTEM_H__
 #define __SYSTEM_H__
 
-extern int process_already_running;
-
 extern DO_COMMAND(do_run);
 
 #endif
@@ -598,7 +591,6 @@ extern void mainloop(void);
 extern void poll_input(void);
 extern void poll_sessions(void);
 extern void packet_update(void);
-extern void memory_update(void);
 
 #endif
 
