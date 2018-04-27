@@ -40,7 +40,7 @@ DO_COMMAND(do_showme) {
   char left[BUFFER_SIZE], right[BUFFER_SIZE], temp[STRING_SIZE];
   int lnf;
 
-  arg = get_arg_in_braces(ses, arg, left, TRUE);
+  get_arg_in_braces(ses, arg, left, TRUE);
 
   lnf = (strlen(left) >= strlen("\\") &&
          !strcasecmp(left + strlen(left) - strlen("\\"), "\\"))

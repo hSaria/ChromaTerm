@@ -12,7 +12,7 @@ DO_COMMAND(do_regexp) {
   arg = get_arg_in_braces(ses, arg, left, 0);
   arg = get_arg_in_braces(ses, arg, right, 0);
   arg = get_arg_in_braces(ses, arg, is_true, 1);
-  arg = get_arg_in_braces(ses, arg, is_false, 1);
+  get_arg_in_braces(ses, arg, is_false, 1);
 
   if (*is_true == 0) {
     display_printf2(ses,
