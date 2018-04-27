@@ -1,7 +1,6 @@
 // This program is protected under the GNU GPL (See COPYING)
 
 #include <ctype.h>
-#include <pcre.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -9,6 +8,7 @@
 #include <zlib.h>
 
 #include "config.h"
+#include "pcre.h"
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -68,7 +68,7 @@
 #define COMMAND_SEPARATOR ';'
 
 #define STRING_SIZE 45000
-#define BUFFER_SIZE 20000
+#define BUFFER_SIZE 50000
 #define NUMBER_SIZE 100
 #define LIST_SIZE 2
 
@@ -600,7 +600,7 @@ extern int is_abbrev(char *s1, char *s2);
 extern int is_number(char *str);
 extern int hex_number(char *str);
 extern int oct_number(char *str);
-extern long long utime(void);
+extern long long getCurrentTime(void);
 extern char *capitalize(char *str);
 extern int cat_sprintf(char *dest, char *fmt, ...);
 extern void ins_sprintf(char *dest, char *fmt, ...);

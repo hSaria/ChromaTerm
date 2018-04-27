@@ -65,7 +65,7 @@ void readmud(struct session *ses) {
     if (next_line == NULL && strlen(ses->more_output) < BUFFER_SIZE / 2) {
       if (gts->check_output) {
         strcat(ses->more_output, line);
-        ses->check_output = utime() + gts->check_output;
+        ses->check_output = getCurrentTime() + gts->check_output;
         break;
       }
     }

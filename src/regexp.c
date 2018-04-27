@@ -1,9 +1,9 @@
 // This program is protected under the GNU GPL (See COPYING)
 
-#include "defs.h"
-
-#include <pcre.h>
 #include <sys/types.h>
+
+#include "defs.h"
+#include "pcre.h"
 
 DO_COMMAND(do_regexp) {
   char left[BUFFER_SIZE], right[BUFFER_SIZE], is_true[BUFFER_SIZE],

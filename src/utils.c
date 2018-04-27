@@ -118,7 +118,7 @@ int oct_number(char *str) {
   return value;
 }
 
-long long utime() {
+long long getCurrentTime() {
   struct timeval now_time;
 
   gettimeofday(&now_time, NULL);
