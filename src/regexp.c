@@ -161,8 +161,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
     case '$':
       if (HAS_BIT(flags, SUB_VAR) &&
           (pti[1] == DEFAULT_OPEN || isalpha((int)pti[1]) || pti[1] == '$')) {
-        int def = FALSE;
-
         if (pti[1] == '$') {
           while (pti[1] == '$') {
             *pto++ = *pti++;
@@ -179,8 +177,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
         pti++;
 
         if (*pti == DEFAULT_OPEN) {
-          def = TRUE;
-
           pti = get_arg_in_braces(ses, pti, buf, TRUE);
 
           substitute(ses, buf, temp, flags_neol);
@@ -396,8 +392,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
       } else if (HAS_BIT(flags, SUB_VAR) &&
                  (pti[1] == DEFAULT_OPEN || isalpha((int)pti[1]) ||
                   pti[1] == '&')) {
-        int def = 0;
-
         if (pti[1] == '&') {
           while (pti[1] == '&') {
             *pto++ = *pti++;
@@ -414,8 +408,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
         pti++;
 
         if (*pti == DEFAULT_OPEN) {
-          def = TRUE;
-
           pti = get_arg_in_braces(ses, pti, buf, TRUE);
 
           substitute(ses, buf, temp, flags_neol);

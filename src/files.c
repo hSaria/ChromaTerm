@@ -233,7 +233,6 @@ DO_COMMAND(do_read) {
 
   do_configure(ses, temp);
 
-  lvl = 0;
   pti = bufo;
   pto = bufi;
 
