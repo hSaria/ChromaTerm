@@ -420,7 +420,7 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
 
           substitute(ses, buf, temp, flags_neol);
         } else {
-          for (ptt = temp; isalnum((int)*pti) || *pti == '_'; i++) {
+          for (ptt = temp; isalnum((int)*pti) || *pti == '_'; pti++) {
             *ptt++ = *pti++;
           }
           *ptt = 0;
