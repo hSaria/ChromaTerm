@@ -348,7 +348,7 @@ extern DO_CURSOR(cursor_test);
 
 extern void process_input(void);
 extern void read_key(void);
-extern void read_line();
+extern void read_line(void);
 extern void convert_meta(char *input, char *output);
 extern void echo_command(struct session *ses, char *line);
 extern void input_printf(char *format, ...);
@@ -489,7 +489,7 @@ extern void winch_handler(int signal);
 extern void abort_and_trap_handler(int signal);
 extern void pipe_handler(int signal);
 extern void suspend_handler(int signal);
-extern void init_program();
+extern void init_program(void);
 extern void quitmsg(char *message);
 
 #endif
