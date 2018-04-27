@@ -3,6 +3,7 @@
 #include "defs.h"
 
 #include <sys/stat.h>
+#include <wordexp.h>
 
 // read and execute a command file, supports multi lines - Igor
 DO_COMMAND(do_read) {
@@ -12,9 +13,13 @@ DO_COMMAND(do_read) {
       last = 0;
   int lvl, cnt, com, lnc, fix, ok;
   int counter[LIST_MAX];
+  wordexp_t p;
 
   get_arg_in_braces(ses, arg, filename, TRUE);
-  substitute(ses, filename, filename, SUB_VAR | SUB_FUN);
+
+  wordexp(filename, &p, 0);
+  strcpy(filename, *p.we_wordv);
+  wordfree(&p);
 
   if ((fp = fopen(filename, "r")) == NULL) {
     display_printf(ses, "#READ {%s} - FILE NOT FOUND.", filename);
@@ -228,7 +233,6 @@ DO_COMMAND(do_read) {
 
   do_configure(ses, temp);
 
-  lvl = 0;
   pti = bufo;
   pto = bufi;
 
@@ -297,8 +301,13 @@ DO_COMMAND(do_write) {
   char filename[BUFFER_SIZE];
   struct listroot *root;
   int i, j, cnt = 0;
+  wordexp_t p;
 
   get_arg_in_braces(ses, arg, filename, TRUE);
+
+  wordexp(filename, &p, 0);
+  strcpy(filename, *p.we_wordv);
+  wordfree(&p);
 
   if (*filename == 0 || (file = fopen(filename, "w")) == NULL) {
     display_printf(ses, "#ERROR: #WRITE: COULDN'T OPEN {%s} TO WRITE.",
@@ -329,8 +338,8 @@ void write_node(struct session *ses, int list, struct listnode *node,
                 FILE *file) {
   char result[STRING_SIZE];
 
-  int llen = UMAX(20, strlen(node->left));
-  int rlen = UMAX(25, strlen(node->right));
+  int llen = UMAX(20, (int)strlen(node->left));
+  int rlen = UMAX(25, (int)strlen(node->right));
 
   switch (list) {
   default:

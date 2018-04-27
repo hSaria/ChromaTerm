@@ -14,7 +14,6 @@ void mainloop(void) {
   short int pulse_poll_sessions = PULSE_POLL_SESSIONS;
   short int pulse_update_packets = PULSE_UPDATE_PACKETS;
   short int pulse_update_terminal = PULSE_UPDATE_TERMINAL;
-  short int pulse_update_memory = PULSE_UPDATE_MEMORY;
 
   wait_time.tv_sec = 0;
 
@@ -43,12 +42,6 @@ void mainloop(void) {
       pulse_update_terminal = PULSE_UPDATE_TERMINAL;
 
       fflush(stdout);
-    }
-
-    if (--pulse_update_memory == 0) {
-      pulse_update_memory = PULSE_UPDATE_MEMORY;
-
-      memory_update();
     }
 
     gettimeofday(&curr_time, NULL);
@@ -151,32 +144,12 @@ void packet_update(void) {
     gtd->update = ses->next;
 
     if (ses->check_output && gtd->time > ses->check_output) {
-      SET_BIT(ses->flags, SES_FLAG_READMUD);
 
       strcpy(result, ses->more_output);
 
       ses->more_output[0] = 0;
 
       process_mud_output(ses, result, TRUE);
-
-      DEL_BIT(ses->flags, SES_FLAG_READMUD);
     }
-  }
-}
-
-void memory_update(void) {
-  while (gtd->dispose_next) {
-    int index;
-
-    UNLINK(gtd->dispose_next, gtd->dispose_next, gtd->dispose_prev);
-
-    for (index = 0; index < LIST_MAX; index++) {
-      free_list(gtd->dispose_next->list[index]);
-    }
-
-    free(gtd->dispose_next->command);
-    free(gtd->dispose_next->group);
-
-    free(gtd->dispose_next);
   }
 }

@@ -55,21 +55,7 @@ void cleanup_session(struct session *ses) {
     DEL_BIT(ses->flags, SES_FLAG_CONNECTED);
   }
 
-  if (exit_after_session) {
-    quitmsg(NULL);
-  }
-
-  if (ses == gtd->ses) {
-    if (gts->next) {
-      gtd->ses = gts->next;
-    } else {
-      gtd->ses = gts;
-    }
-  }
-
-  display_printf(ses, "\n#EXIT to terminate");
-
-  LINK(ses, gtd->dispose_next, gtd->dispose_prev);
+  quitmsg(NULL);
 
   return;
 }

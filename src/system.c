@@ -19,7 +19,7 @@ DO_COMMAND(do_run) {
 
   char *argv[4] = {"sh", "-c", "", NULL};
 
-  arg = sub_arg_in_braces(ses, arg, command, GET_ALL, SUB_VAR | SUB_FUN);
+  sub_arg_in_braces(ses, arg, command, GET_ALL, SUB_VAR | SUB_FUN);
 
   // Limit to single process
   if (process_already_running) {
@@ -49,7 +49,7 @@ DO_COMMAND(do_run) {
     execv("/bin/sh", argv);
     break;
   default:
-    ses = new_session(ses, command, pid, desc);
+    new_session(ses, command, pid, desc);
     break;
   }
 

@@ -26,7 +26,7 @@ struct session *parse_input(struct session *ses, char *input) {
 struct session *parse_command(struct session *ses, char *input) {
   char line[BUFFER_SIZE];
 
-  input = get_arg_stop_spaces(ses, input, line, 0);
+  get_arg_stop_spaces(ses, input, line, 0);
 
   display_printf(ses, "#ERROR: #UNKNOWN COMMAND '%s'.", line);
 

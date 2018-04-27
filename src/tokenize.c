@@ -212,8 +212,6 @@ struct scriptnode *parse_script(struct scriptroot *root, int lvl,
         substitute(root->ses, token->regex->bod, token->regex->buf, SUB_CMD);
 
         root->ses = script_driver(root->ses, -1, token->regex->buf);
-      } else {
-        split = token;
       }
       break;
     case TOKEN_TYPE_SESSION:

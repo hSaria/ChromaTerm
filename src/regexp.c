@@ -1,9 +1,9 @@
 // This program is protected under the GNU GPL (See COPYING)
 
-#include "defs.h"
-
-#include <pcre.h>
 #include <sys/types.h>
+
+#include "defs.h"
+#include "pcre.h"
 
 DO_COMMAND(do_regexp) {
   char left[BUFFER_SIZE], right[BUFFER_SIZE], is_true[BUFFER_SIZE],
@@ -12,7 +12,7 @@ DO_COMMAND(do_regexp) {
   arg = get_arg_in_braces(ses, arg, left, 0);
   arg = get_arg_in_braces(ses, arg, right, 0);
   arg = get_arg_in_braces(ses, arg, is_true, 1);
-  arg = get_arg_in_braces(ses, arg, is_false, 1);
+  get_arg_in_braces(ses, arg, is_false, 1);
 
   if (*is_true == 0) {
     display_printf2(ses,
@@ -70,7 +70,7 @@ int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {
     return FALSE;
   }
 
-  matches = pcre_exec(regex, NULL, str, strlen(str), 0, 0, match, 303);
+  matches = pcre_exec(regex, NULL, str, (int)strlen(str), 0, 0, match, 303);
 
   if (matches <= 0) {
     if (nodepcre == NULL) {
@@ -161,8 +161,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
     case '$':
       if (HAS_BIT(flags, SUB_VAR) &&
           (pti[1] == DEFAULT_OPEN || isalpha((int)pti[1]) || pti[1] == '$')) {
-        int def = FALSE;
-
         if (pti[1] == '$') {
           while (pti[1] == '$') {
             *pto++ = *pti++;
@@ -179,8 +177,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
         pti++;
 
         if (*pti == DEFAULT_OPEN) {
-          def = TRUE;
-
           pti = get_arg_in_braces(ses, pti, buf, TRUE);
 
           substitute(ses, buf, temp, flags_neol);
@@ -396,8 +392,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
       } else if (HAS_BIT(flags, SUB_VAR) &&
                  (pti[1] == DEFAULT_OPEN || isalpha((int)pti[1]) ||
                   pti[1] == '&')) {
-        int def = 0;
-
         if (pti[1] == '&') {
           while (pti[1] == '&') {
             *pto++ = *pti++;
@@ -414,13 +408,11 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
         pti++;
 
         if (*pti == DEFAULT_OPEN) {
-          def = TRUE;
-
           pti = get_arg_in_braces(ses, pti, buf, TRUE);
 
           substitute(ses, buf, temp, flags_neol);
         } else {
-          for (ptt = temp; isalnum((int)*pti) || *pti == '_'; i++) {
+          for (ptt = temp; isalnum((int)*pti) || *pti == '_'; pti++) {
             *ptt++ = *pti++;
           }
           *ptt = 0;

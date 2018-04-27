@@ -118,7 +118,7 @@ int oct_number(char *str) {
   return value;
 }
 
-long long utime() {
+long long getCurrentTime() {
   struct timeval now_time;
 
   gettimeofday(&now_time, NULL);
@@ -173,7 +173,6 @@ void ins_sprintf(char *dest, char *fmt, ...) {
 }
 
 void show_message(struct session *ses, int index, char *format, ...) {
-  struct listroot *root;
   char buf[STRING_SIZE];
   va_list args;
 
@@ -190,8 +189,6 @@ void show_message(struct session *ses, int index, char *format, ...) {
 
     return;
   }
-
-  root = ses->list[index];
 
   if (ses->input_level == 0) {
     display_puts2(ses, buf);

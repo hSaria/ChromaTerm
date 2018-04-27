@@ -52,8 +52,6 @@ void readmud(struct session *ses) {
   gtd->mud_output_len = 0;
 
   /* separate into lines and print away */
-  SET_BIT(gtd->ses->flags, SES_FLAG_READMUD);
-
   for (line = gtd->mud_output_buf; line && *line; line = next_line) {
     next_line = strchr(line, '\n');
 
@@ -67,7 +65,7 @@ void readmud(struct session *ses) {
     if (next_line == NULL && strlen(ses->more_output) < BUFFER_SIZE / 2) {
       if (gts->check_output) {
         strcat(ses->more_output, line);
-        ses->check_output = utime() + gts->check_output;
+        ses->check_output = getCurrentTime() + gts->check_output;
         break;
       }
     }
@@ -86,7 +84,6 @@ void readmud(struct session *ses) {
 
     process_mud_output(ses, linebuf, next_line == NULL);
   }
-  DEL_BIT(gtd->ses->flags, SES_FLAG_READMUD);
 
   return;
 }

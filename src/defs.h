@@ -1,7 +1,6 @@
 // This program is protected under the GNU GPL (See COPYING)
 
 #include <ctype.h>
-#include <pcre.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -9,6 +8,7 @@
 #include <zlib.h>
 
 #include "config.h"
+#include "pcre.h"
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -68,19 +68,18 @@
 #define COMMAND_SEPARATOR ';'
 
 #define STRING_SIZE 45000
-#define BUFFER_SIZE 20000
+#define BUFFER_SIZE 50000
 #define NUMBER_SIZE 100
 #define LIST_SIZE 2
 
 #define ESCAPE 27
 
-#define PULSE_PER_SECOND 1000
+#define PULSE_PER_SECOND 500
 
 #define PULSE_POLL_INPUT 1
 #define PULSE_POLL_SESSIONS 1
 #define PULSE_UPDATE_PACKETS 2
 #define PULSE_UPDATE_TERMINAL 1
-#define PULSE_UPDATE_MEMORY 2
 
 // Index for lists
 #define LIST_CONFIG 0
@@ -127,7 +126,6 @@ enum operators {
 #define GLOBAL_FLAG_PROCESSINPUT (1 << 4)
 #define GLOBAL_FLAG_INSERTINPUT (1 << 6)
 
-#define SES_FLAG_READMUD (1 << 8)
 #define SES_FLAG_CONNECTED (1 << 11)
 #define SES_FLAG_CONVERTMETA (1 << 24)
 #define SES_FLAG_UTF8 (1 << 26)
@@ -239,8 +237,6 @@ struct session {
 struct global_data {
   struct session *ses;
   struct session *update;
-  struct session *dispose_next;
-  struct session *dispose_prev;
   struct termios active_terminal;
   char *mud_output_buf;
   int mud_output_max;
@@ -352,7 +348,7 @@ extern DO_CURSOR(cursor_test);
 
 extern void process_input(void);
 extern void read_key(void);
-extern void read_line();
+extern void read_line(void);
 extern void convert_meta(char *input, char *output);
 extern void echo_command(struct session *ses, char *line);
 extern void input_printf(char *format, ...);
@@ -406,7 +402,6 @@ extern int regexp(struct session *ses, pcre *pcre, char *str, char *exp,
 #define __CONFIG_H__
 
 extern DO_COMMAND(do_configure);
-extern DO_CONFIG(config_packetpatch);
 extern DO_CONFIG(config_commandchar);
 extern DO_CONFIG(config_convertmeta);
 extern DO_CONFIG(config_charset);
@@ -487,15 +482,13 @@ extern int get_highlight_codes(struct session *ses, char *htype, char *result);
 extern struct session *gts;
 extern struct global_data *gtd;
 
-extern int exit_after_session;
-
 extern int main(int argc, char **argv);
 extern void help_menu(int error, char c, char *proc_name);
 extern void winch_handler(int signal);
 extern void abort_and_trap_handler(int signal);
 extern void pipe_handler(int signal);
 extern void suspend_handler(int signal);
-extern void init_program();
+extern void init_program(void);
 extern void quitmsg(char *message);
 
 #endif
@@ -560,8 +553,6 @@ extern void cleanup_session(struct session *ses);
 #ifndef __SYSTEM_H__
 #define __SYSTEM_H__
 
-extern int process_already_running;
-
 extern DO_COMMAND(do_run);
 
 #endif
@@ -598,7 +589,6 @@ extern void mainloop(void);
 extern void poll_input(void);
 extern void poll_sessions(void);
 extern void packet_update(void);
-extern void memory_update(void);
 
 #endif
 
@@ -609,7 +599,7 @@ extern int is_abbrev(char *s1, char *s2);
 extern int is_number(char *str);
 extern int hex_number(char *str);
 extern int oct_number(char *str);
-extern long long utime(void);
+extern long long getCurrentTime(void);
 extern char *capitalize(char *str);
 extern int cat_sprintf(char *dest, char *fmt, ...);
 extern void ins_sprintf(char *dest, char *fmt, ...);

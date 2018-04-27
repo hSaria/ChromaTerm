@@ -8,8 +8,6 @@
 struct session *gts;
 struct global_data *gtd;
 
-int exit_after_session = 0;
-
 void pipe_handler(int signal) {
   restore_terminal();
 
@@ -106,7 +104,6 @@ int main(int argc, char **argv) {
         }
         break;
       case 'e':
-        exit_after_session = 1;
         gtd->ses = script_driver(gtd->ses, -1, optarg);
         break;
       case 'h':
@@ -188,8 +185,9 @@ void init_program() {
   gts->input_level++;
 
   do_configure(gts, "{CHARSET}         {UTF-8}");
-  do_configure(gts, "{PACKET PATCH}     {0.00}");
   do_configure(gts, "{COMMAND CHAR}        {#}");
+
+  gts->check_output = (long long)0;
 
   gts->input_level--;
 

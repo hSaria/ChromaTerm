@@ -663,58 +663,6 @@ double tintoi(char *str) {
   default:
     return (values[0] + values[1] + values[2] + values[3] + values[4]);
   }
-
-  switch (str[0]) {
-  case '!':
-    return !atof(&str[1]);
-
-  case '~':
-    return (double)~atoll(&str[1]);
-
-  case '+':
-    return +atof(&str[1]);
-
-  case '-':
-    return -atof(&str[1]);
-
-  default:
-    return atof(str);
-  }
-
-  while (*ptr) {
-    if (!isdigit((int)*ptr)) {
-      if (*ptr != '.') {
-        return 0;
-      }
-      ptr++;
-
-      while (*ptr) {
-        if (!isdigit((int)*ptr)) {
-          return 0;
-        }
-        ptr++;
-      }
-    } else {
-      ptr++;
-    }
-  }
-
-  switch (str[0]) {
-  case '!':
-    return !atof(&str[1]);
-
-  case '~':
-    return (double)~atoll(&str[1]);
-
-  case '+':
-    return +atof(&str[1]);
-
-  case '-':
-    return -atof(&str[1]);
-
-  default:
-    return atof(str);
-  }
 }
 
 double tincmp(char *left, char *right) {
