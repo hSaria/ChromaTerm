@@ -14,15 +14,7 @@ void pipe_handler(int signal) {
   display_printf(NULL, "broken_pipe");
 }
 
-void winch_handler(int signal) {
-  struct session *ses;
-
-  init_screen_size(gts);
-
-  for (ses = gts->next; ses; ses = ses->next) {
-    init_screen_size(ses);
-  }
-}
+void winch_handler(int signal) { init_screen_size(gts); }
 
 void abort_and_trap_handler(int signal) {
   restore_terminal();
@@ -142,52 +134,33 @@ int main(int argc, char **argv) {
 }
 
 void init_program() {
-  int ref, index;
+  int index;
 
   gts = (struct session *)calloc(1, sizeof(struct session));
+  gtd = (struct global_data *)calloc(1, sizeof(struct global_data));
 
   for (index = 0; index < LIST_MAX; index++) {
     gts->list[index] = init_list(gts, index, 32);
   }
 
-  gts->group = strdup("");
   gts->socket = 1;
 
-  gtd = (struct global_data *)calloc(1, sizeof(struct global_data));
-
   gtd->ses = gts;
-
   gtd->mud_output_max = 16384;
   gtd->mud_output_buf = (char *)calloc(1, gtd->mud_output_max);
-
   gtd->input_off = 1;
-
-  gtd->term = strdup(getenv("TERM") ? getenv("TERM") : "UNKNOWN");
 
   for (index = 0; index < 100; index++) {
     gtd->vars[index] = strdup("");
     gtd->cmds[index] = strdup("");
   }
 
-  for (ref = 0; ref < 26; ref++) {
-    for (index = 0; *command_table[index].name != 0; index++) {
-      if (*command_table[index].name == 'a' + ref) {
-        gtd->command_ref[ref] = index;
-        break;
-      }
-    }
-  }
-
   init_screen_size(gts);
 
   gts->input_level++;
-
   do_configure(gts, "{CHARSET}         {UTF-8}");
   do_configure(gts, "{COMMAND CHAR}        {#}");
   do_configure(gts, "{CONVERT META}      {OFF}");
-
-  gts->check_output = (long long)0;
-
   gts->input_level--;
 
   init_terminal();
@@ -213,12 +186,7 @@ void help_menu(int error, char c, char *proc_name) {
 }
 
 void quitmsg(char *message) {
-  struct session *ses;
-
-  while ((ses = gts->next) != NULL) {
-    cleanup_session(ses);
-  }
-
+  cleanup_session(gts);
   restore_terminal();
 
   if (message) {
@@ -226,6 +194,5 @@ void quitmsg(char *message) {
   }
 
   fflush(NULL);
-
   exit(0);
 }

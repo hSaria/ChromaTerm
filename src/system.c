@@ -49,7 +49,7 @@ DO_COMMAND(do_run) {
     execv("/bin/sh", argv);
     break;
   default:
-    new_session(ses, command, pid, desc);
+    new_session(ses, pid, desc);
     break;
   }
 

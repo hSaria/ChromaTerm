@@ -129,22 +129,16 @@ int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {
 int substitute(struct session *ses, char *string, char *result, int flags) {
   char buffer[BUFFER_SIZE], *pti, *pto, *ptt;
   char old[6] = {0};
-  int i, cnt, flags_neol = flags;
+  int i, cnt;
 
   pti = string;
   pto = (string == result) ? buffer : result;
-
-  DEL_BIT(flags_neol, SUB_EOL | SUB_LNF);
 
   while (TRUE) {
     switch (*pti) {
     case '\0':
       if (HAS_BIT(flags, SUB_EOL)) {
         *pto++ = '\r';
-      }
-
-      if (HAS_BIT(flags, SUB_LNF)) {
-        *pto++ = '\n';
       }
 
       *pto = 0;
@@ -159,10 +153,8 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
       break;
     case '<':
       if (HAS_BIT(flags, SUB_COL)) {
-        if (HAS_BIT(flags, SUB_CMP) && !strncmp(old, pti, 5)) {
-          pti += 5;
-        } else if (isdigit((int)pti[1]) && isdigit((int)pti[2]) &&
-                   isdigit((int)pti[3]) && pti[4] == '>') {
+        if (isdigit((int)pti[1]) && isdigit((int)pti[2]) &&
+            isdigit((int)pti[3]) && pti[4] == '>') {
           if (pti[1] != '8' || pti[2] != '8' || pti[3] != '8') {
             *pto++ = ESCAPE;
             *pto++ = '[';
@@ -284,40 +276,7 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
           ptt = gtd->vars[i];
 
           while (*ptt) {
-            if (HAS_BIT(flags, SUB_SEC)) {
-              switch (*ptt) {
-              case '\\':
-                *pto++ = '\\';
-                *pto++ = '\\';
-                break;
-
-              case '{':
-                *pto++ = '\\';
-                *pto++ = 'x';
-                *pto++ = '7';
-                *pto++ = 'B';
-                break;
-
-              case '}':
-                *pto++ = '\\';
-                *pto++ = 'x';
-                *pto++ = '7';
-                *pto++ = 'D';
-                break;
-
-              case COMMAND_SEPARATOR:
-                *pto++ = '\\';
-                *pto++ = COMMAND_SEPARATOR;
-                break;
-
-              default:
-                *pto++ = *ptt;
-                break;
-              }
-              ptt++;
-            } else {
-              *pto++ = *ptt++;
-            }
+            *pto++ = *ptt++;
           }
           pti += isdigit((int)pti[2]) ? 3 : 2;
         }
@@ -394,7 +353,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
           break;
         case '\0':
           DEL_BIT(flags, SUB_EOL);
-          DEL_BIT(flags, SUB_LNF);
           continue;
         default:
           *pto++ = *pti;
@@ -409,40 +367,7 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
       *pto++ = *pti++;
       break;
     default:
-      if (HAS_BIT(flags, SUB_SEC) && !HAS_BIT(flags, SUB_ARG)) {
-        switch (*pti) {
-        case '\\':
-          *pto++ = '\\';
-          *pto++ = '\\';
-          break;
-
-        case '{':
-          *pto++ = '\\';
-          *pto++ = 'x';
-          *pto++ = '7';
-          *pto++ = 'B';
-          break;
-
-        case '}':
-          *pto++ = '\\';
-          *pto++ = 'x';
-          *pto++ = '7';
-          *pto++ = 'D';
-          break;
-
-        case COMMAND_SEPARATOR:
-          *pto++ = '\\';
-          *pto++ = COMMAND_SEPARATOR;
-          break;
-
-        default:
-          *pto++ = *pti;
-          break;
-        }
-        pti++;
-      } else {
-        *pto++ = *pti++;
-      }
+      *pto++ = *pti++;
       break;
     }
   }

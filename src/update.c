@@ -1,18 +1,17 @@
 // This program is protected under the GNU GPL (See COPYING)
 
-#include "defs.h"
-
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <termios.h>
+
+#include "defs.h"
 
 void mainloop(void) {
   static struct timeval curr_time, wait_time, last_time;
   int usec_loop, usec_wait;
   short int pulse_poll_input = PULSE_POLL_INPUT;
   short int pulse_poll_sessions = PULSE_POLL_SESSIONS;
-  short int pulse_update_packets = PULSE_UPDATE_PACKETS;
   short int pulse_update_terminal = PULSE_UPDATE_TERMINAL;
 
   wait_time.tv_sec = 0;
@@ -30,12 +29,6 @@ void mainloop(void) {
       pulse_poll_sessions = PULSE_POLL_SESSIONS;
 
       poll_sessions();
-    }
-
-    if (--pulse_update_packets == 0) {
-      pulse_update_packets = PULSE_UPDATE_PACKETS;
-
-      packet_update();
     }
 
     if (--pulse_update_terminal == 0) {
@@ -83,73 +76,28 @@ void poll_input(void) {
 }
 
 void poll_sessions(void) {
-  fd_set readfds, excfds;
+  fd_set readfds;
   static struct timeval to;
-  struct session *ses;
-  int rv;
-  if (gts->next) {
+
+  if (gts) {
     FD_ZERO(&readfds);
-    FD_ZERO(&excfds);
 
-    for (ses = gts->next; ses; ses = gtd->update) {
-      gtd->update = ses->next;
+    if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
+      while (TRUE) {
+        FD_SET(gts->socket, &readfds);
 
-      if (HAS_BIT(ses->flags, SES_FLAG_CONNECTED)) {
-        while (TRUE) {
-          FD_SET(ses->socket, &readfds);
-          FD_SET(ses->socket, &excfds);
-
-          rv = select(FD_SETSIZE, &readfds, NULL, &excfds, &to);
-
-          if (rv <= 0) {
-            break;
-          }
-
-          if (FD_ISSET(ses->socket, &readfds)) {
-            if (read_buffer_mud(ses) == FALSE) {
-              readmud(ses);
-
-              cleanup_session(ses);
-
-              gtd->mud_output_len = 0;
-
-              break;
-            }
-          }
-
-          if (FD_ISSET(ses->socket, &excfds)) {
-            FD_CLR(ses->socket, &readfds);
-
-            cleanup_session(ses);
-
-            gtd->mud_output_len = 0;
-
-            break;
-          }
+        if (select(FD_SETSIZE, &readfds, NULL, NULL, &to) <= 0) {
+          break;
         }
 
-        if (gtd->mud_output_len) {
-          readmud(ses);
+        if (read_buffer_mud(gts) == FALSE) {
+          quitmsg(NULL);
         }
       }
-    }
-  }
-}
 
-void packet_update(void) {
-  char result[STRING_SIZE];
-  struct session *ses;
-
-  for (ses = gts->next; ses; ses = gtd->update) {
-    gtd->update = ses->next;
-
-    if (ses->check_output && gtd->time > ses->check_output) {
-
-      strcpy(result, ses->more_output);
-
-      ses->more_output[0] = 0;
-
-      process_mud_output(ses, result, TRUE);
+      if (gtd->mud_output_len) {
+        readmud(gts);
+      }
     }
   }
 }

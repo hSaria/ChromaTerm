@@ -32,32 +32,6 @@ void free_list(struct listroot *root) {
   free(root);
 }
 
-struct listroot *copy_list(struct session *ses, struct listroot *sourcelist,
-                           int type) {
-  int i;
-  struct listnode *node;
-
-  ses->list[type] = init_list(ses, type, sourcelist->size);
-
-  for (i = 0; i < sourcelist->used; i++) {
-    node = (struct listnode *)calloc(1, sizeof(struct listnode));
-
-    node->left = strdup(sourcelist->list[i]->left);
-    node->right = strdup(sourcelist->list[i]->right);
-    node->pr = strdup(sourcelist->list[i]->pr);
-    node->group = strdup(sourcelist->list[i]->group);
-
-    switch (type) {
-    case LIST_HIGHLIGHT:
-      break;
-    }
-    ses->list[type]->list[i] = node;
-  }
-  ses->list[type]->used = sourcelist->used;
-
-  return ses->list[type];
-}
-
 // create a node and stuff it into the list in the desired order
 struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
@@ -69,8 +43,6 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
   node->left = strdup(ltext);
   node->right = strdup(rtext);
   node->pr = strdup(prtext);
-
-  node->group = strdup("");
 
   switch (root->type) {
   case LIST_HIGHLIGHT:
@@ -96,8 +68,6 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
       free(node->right);
       node->right = strdup(rtext);
     }
-
-    node->data = 0;
 
     switch (list_table[root->type].mode) {
     case PRIORITY:
@@ -162,7 +132,6 @@ void delete_index_list(struct listroot *root, int index) {
   free(node->left);
   free(node->right);
   free(node->pr);
-  free(node->group);
 
   if (node->regex) {
     free(node->regex);

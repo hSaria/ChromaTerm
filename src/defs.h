@@ -68,9 +68,7 @@
 #define COMMAND_SEPARATOR ';'
 
 #define STRING_SIZE 45000
-#define BUFFER_SIZE 50000
-#define NUMBER_SIZE 100
-#define LIST_SIZE 2
+#define BUFFER_SIZE 20000
 
 #define ESCAPE 27
 
@@ -78,7 +76,6 @@
 
 #define PULSE_POLL_INPUT 1
 #define PULSE_POLL_SESSIONS 1
-#define PULSE_UPDATE_PACKETS 2
 #define PULSE_UPDATE_TERMINAL 1
 
 // Index for lists
@@ -100,32 +97,29 @@ enum operators {
 #define LIST_MESSAGE -1
 
 // Various flags
-#define COL_BLD (1 << 1)
-#define COL_UND (1 << 2)
-#define COL_BLK (1 << 3)
-#define COL_REV (1 << 4)
-#define COL_XTF (1 << 5)
-#define COL_XTB (1 << 6)
-#define COL_256 (1 << 7)
+#define COL_BLD (1 << 0)
+#define COL_UND (1 << 1)
+#define COL_BLK (1 << 2)
+#define COL_REV (1 << 3)
+#define COL_XTF (1 << 4)
+#define COL_XTB (1 << 5)
+#define COL_256 (1 << 6)
 
 #define SUB_NONE 0
 #define SUB_ARG (1 << 0)
-#define SUB_COL (1 << 3)
-#define SUB_ESC (1 << 4)
-#define SUB_CMD (1 << 5)
-#define SUB_SEC (1 << 6)
-#define SUB_EOL (1 << 7)
-#define SUB_LNF (1 << 8)
-#define SUB_FIX (1 << 9)
-#define SUB_CMP (1 << 10)
+#define SUB_COL (1 << 1)
+#define SUB_ESC (1 << 2)
+#define SUB_CMD (1 << 3)
+#define SUB_EOL (1 << 4)
+#define SUB_FIX (1 << 5)
 
-#define GLOBAL_FLAG_CONVERTMETACHAR (1 << 1)
-#define GLOBAL_FLAG_PROCESSINPUT (1 << 4)
-#define GLOBAL_FLAG_INSERTINPUT (1 << 6)
+#define GLOBAL_FLAG_CONVERTMETACHAR (1 << 0)
+#define GLOBAL_FLAG_PROCESSINPUT (1 << 1)
+#define GLOBAL_FLAG_INSERTINPUT (1 << 2)
 
-#define SES_FLAG_CONNECTED (1 << 11)
-#define SES_FLAG_CONVERTMETA (1 << 24)
-#define SES_FLAG_UTF8 (1 << 26)
+#define SES_FLAG_CONNECTED (1 << 0)
+#define SES_FLAG_CONVERTMETA (1 << 1)
+#define SES_FLAG_UTF8 (1 << 2)
 
 // Some macros to deal with double linked lists
 #define LINK(link, head, tail)                                                 \
@@ -170,7 +164,6 @@ enum operators {
 // Generic
 #define URANGE(a, b, c) ((b) < (a) ? (a) : (b) > (c) ? (c) : (b))
 #define UMAX(a, b) ((a) > (b) ? (a) : (b))
-#define UMIN(a, b) ((a) < (b) ? (a) : (b))
 
 #define up(u) (u < 99 ? u++ : u)
 
@@ -180,9 +173,6 @@ enum operators {
   struct session *config(struct session *ses, char *arg, int index)
 #define DO_CURSOR(cursor) void cursor(char *arg)
 
-// Compatibility
-#define atoll(str) (strtoll(str, NULL, 10))
-
 // Structures
 struct listroot {
   struct listnode **list;
@@ -191,7 +181,6 @@ struct listroot {
   int used;
   int type;
   int update;
-  int flags;
 };
 
 struct listnode {
@@ -199,24 +188,13 @@ struct listnode {
   char *left;
   char *right;
   char *pr;
-  char *group;
   pcre *regex;
-  long long data;
-  short flags;
 };
 
 struct session {
-  struct session *next;
-  struct session *prev;
-  char *group;
-  char *command;
   struct listroot *list[LIST_MAX];
   int rows;
   int cols;
-  int cur_row;
-  int sav_row;
-  int cur_col;
-  int sav_col;
   int fgc;
   int bgc;
   int vtc;
@@ -225,13 +203,10 @@ struct session {
   int flags;
   int input_level;
   char more_output[BUFFER_SIZE * 2];
-  char color[100];
-  long long check_output;
 };
 
 struct global_data {
   struct session *ses;
-  struct session *update;
   struct termios active_terminal;
   char *mud_output_buf;
   int mud_output_max;
@@ -244,23 +219,13 @@ struct global_data {
   int input_cur;
   int input_pos;
   int input_hid;
-  char *term;
   long long time;
-  int command_ref[26];
   int flags;
   int quiet;
   char command_char;
   char *vars[100];
   char *cmds[100];
   int args[100];
-};
-
-struct link_data {
-  struct link_data *next;
-  struct link_data *prev;
-  char *str1;
-  char *str2;
-  char *str3;
 };
 
 // Typedefs
@@ -345,7 +310,6 @@ extern void process_input(void);
 extern void read_key(void);
 extern void read_line(void);
 extern void convert_meta(char *input, char *output);
-extern void echo_command(struct session *ses, char *line);
 extern void input_printf(char *format, ...);
 
 #endif
@@ -394,31 +358,24 @@ extern DO_CONFIG(config_charset);
 extern struct listroot *init_list(struct session *ses, int type, int size);
 extern void kill_list(struct listroot *root);
 extern void free_list(struct listroot *root);
-extern struct listroot *copy_list(struct session *ses,
-                                  struct listroot *sourcelist, int type);
-
 extern struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                          char *rtext, char *prtext);
 extern struct listnode *update_node_list(struct listroot *root, char *ltext,
                                          char *rtext, char *prtext);
 extern struct listnode *insert_index_list(struct listroot *root,
                                           struct listnode *node, int index);
-
 extern int show_node_with_wild(struct session *ses, char *cptr, int type);
 extern void show_node(struct listroot *root, struct listnode *node, int level);
 extern void show_nest_node(struct listnode *node, char *result, int initialize);
 extern void show_nest(struct listnode *node, char *result);
 extern void show_list(struct listroot *root, int level);
-
 extern struct listnode *search_node_list(struct listroot *root, char *text);
-
 extern void delete_node_list(struct session *ses, int type,
                              struct listnode *node);
 extern void delete_node_with_wild(struct session *ses, int index, char *string);
 extern void delete_index_list(struct listroot *root, int index);
 extern int search_index_list(struct listroot *root, char *text, char *priority);
 extern int locate_index_list(struct listroot *root, char *text, char *priority);
-
 extern int bsearch_alpha_list(struct listroot *root, char *text, int seek);
 extern int bsearch_priority_list(struct listroot *root, char *text,
                                  char *priority, int seek);
@@ -514,8 +471,6 @@ extern char *get_arg_with_spaces(struct session *ses, char *string,
 extern char *get_arg_stop_spaces(struct session *ses, char *string,
                                  char *result, int flag);
 extern char *space_out(char *string);
-extern char *get_arg_at_brackets(struct session *ses, char *string,
-                                 char *result);
 extern void write_mud(struct session *ses, char *command, int flags);
 extern void do_one_line(char *line, struct session *ses);
 
@@ -524,8 +479,7 @@ extern void do_one_line(char *line, struct session *ses);
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
-extern struct session *new_session(struct session *ses, char *command, int pid,
-                                   int socket);
+extern struct session *new_session(struct session *ses, int pid, int socket);
 extern void cleanup_session(struct session *ses);
 
 #endif
@@ -568,7 +522,6 @@ extern struct session *script_driver(struct session *ses, char *str);
 extern void mainloop(void);
 extern void poll_input(void);
 extern void poll_sessions(void);
-extern void packet_update(void);
 
 #endif
 
