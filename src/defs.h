@@ -251,14 +251,6 @@ struct global_data {
   int args[100];
 };
 
-struct link_data {
-  struct link_data *next;
-  struct link_data *prev;
-  char *str1;
-  char *str2;
-  char *str3;
-};
-
 // Typedefs
 typedef struct session *CONFIG(struct session *ses, char *arg, int index);
 typedef struct session *COMMAND(struct session *ses, char *arg);
