@@ -12,13 +12,13 @@ docdir = /usr/local/doc
 
 #this is the standard CFLAGS options, this is what most people should use
 
-CFLAGS += $(DEFINES) 
+CFLAGS += $(DEFINES)
 
-LDFLAGS = 
+LDFLAGS =
 
-INCS = 
+INCS =
 
-LIBS = -lpcre -lutil -lpthread -lz 
+LIBS = -lpcre -lutil -lpthread -lz
 
 # If you prefer to be able to enter ISO latin-1 characters instead
 # of being able to use the meta key for special emacs-like commands
@@ -37,10 +37,9 @@ DEFAULT_FILE_DIR = $(HOME)
 
 FFLAGS= $(F1) $(F6)
 
-
 OFILES = config.o cursor.o data.o files.o forkpty.o help.o \
-         highlight.o input.o main.o math.o memory.o misc.o \
-				 net.o parse.o regexp.o session.o system.o tables.o \
+         highlight.o input.o main.o memory.o misc.o net.o \
+				 parse.o regexp.o session.o system.o tables.o \
 				 terminal.o text.o tokenize.o update.o utils.o vt102.o
 
 

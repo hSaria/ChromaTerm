@@ -365,21 +365,6 @@ extern int get_scroll_size(struct session *ses);
 
 #endif
 
-#ifndef __MATH_H__
-#define __MATH_H__
-
-extern double get_number(struct session *ses, char *str);
-extern void mathexp(struct session *ses, char *str, char *result);
-extern int mathexp_tokenize(struct session *ses, char *str);
-extern void mathexp_level(struct session *ses, struct link_data *node);
-extern void mathexp_compute(struct session *ses, struct link_data *node);
-extern double tintoi(char *str);
-extern double tincmp(char *left, char *right);
-extern double tineval(struct session *ses, char *left, char *right);
-extern double tindice(char *left, char *right);
-
-#endif
-
 #ifndef __TINEXP_H__
 #define __TINEXP_H__
 
@@ -596,7 +581,6 @@ extern void packet_update(void);
 #define __UTILS_H__
 
 extern int is_abbrev(char *s1, char *s2);
-extern int is_number(char *str);
 extern int hex_number(char *str);
 extern int oct_number(char *str);
 extern long long getCurrentTime(void);

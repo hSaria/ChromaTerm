@@ -13,67 +13,6 @@ int is_abbrev(char *s1, char *s2) {
   return !strncasecmp(s2, s1, strlen(s1));
 }
 
-// Keep synched with tintoi()
-int is_number(char *str) {
-  char *ptr = str;
-  int i = 1, d = 0;
-
-  if (*ptr == 0) {
-    return FALSE;
-  }
-
-  ptr = str + strlen(str);
-
-  while (TRUE) {
-    ptr--;
-
-    switch (*ptr) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-      break;
-
-    case '.':
-      if (d) {
-        return FALSE;
-      }
-      d = 1;
-      break;
-
-    case ':':
-      if (i == 4) {
-        return FALSE;
-      }
-      i++;
-      break;
-
-    case '!':
-    case '~':
-    case '+':
-    case '-':
-      if (ptr != str) {
-        return FALSE;
-      }
-      break;
-
-    default:
-      return FALSE;
-    }
-
-    if (ptr == str) {
-      break;
-    }
-  }
-  return TRUE;
-}
-
 int hex_number(char *str) {
   int value = 0;
 

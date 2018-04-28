@@ -226,26 +226,14 @@ int locate_index_list(struct listroot *root, char *text, char *priority) {
 // Yup, all this for a bloody binary search.
 int bsearch_alpha_list(struct listroot *root, char *text, int seek) {
   int bot, top, val;
-  double toi, toj, srt;
+  double srt;
 
   bot = 0;
   top = root->used - 1;
   val = top;
 
-  toi = is_number(text) ? get_number(root->ses, text) : 0;
-
   while (bot <= top) {
-    toj = is_number(root->list[val]->left)
-              ? get_number(root->ses, root->list[val]->left)
-              : 0;
-
-    if (toi) {
-      srt = toi - toj;
-    } else if (toj) {
-      srt = -1;
-    } else {
-      srt = strcmp(text, root->list[val]->left);
-    }
+    srt = strcmp(text, root->list[val]->left);
 
     if (srt == 0) {
       return val;
