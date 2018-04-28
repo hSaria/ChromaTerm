@@ -23,8 +23,8 @@ struct list_type list_table[LIST_MAX] = {
 struct config_type config_table[] = {
     {"CHARSET", "The character set encoding used", config_charset},
     {"COMMAND CHAR", "The character used for commands", config_commandchar},
-    {"CONVERT META", "Convert meta and control characters",
-     config_convertmeta}};
+    {"CONVERT META", "Convert meta and control characters", config_convertmeta},
+    {"", "", NULL}};
 
 struct color_type color_table[] = {{"azure", "<abd>"},
                                    {"ebony", "<g04>"},

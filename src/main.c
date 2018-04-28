@@ -84,8 +84,6 @@ int main(int argc, char **argv) {
     syserr("signal SIGWINCH");
   }
 
-  srand(time(NULL));
-
   init_program();
 
   if (argc > 1) {
@@ -186,6 +184,7 @@ void init_program() {
 
   do_configure(gts, "{CHARSET}         {UTF-8}");
   do_configure(gts, "{COMMAND CHAR}        {#}");
+  do_configure(gts, "{CONVERT META}      {OFF}");
 
   gts->check_output = (long long)0;
 

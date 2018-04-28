@@ -17,11 +17,10 @@ DO_COMMAND(do_configure) {
       node = search_node_list(ses->list[LIST_CONFIG], config_table[index].name);
 
       if (node) {
-        display_printf2(ses, "[%-13s] [%8s]", node->left, node->right,
+        display_printf2(ses, "[%-14s] [%9s] [%s]", node->left, node->right,
                         config_table[index].description);
       }
     }
-
     display_header(ses, "");
   } else {
     for (index = 0; *config_table[index].name != 0; index++) {
@@ -45,9 +44,16 @@ DO_COMMAND(do_configure) {
 }
 
 DO_CONFIG(config_commandchar) {
-  gtd->command_char = arg[0];
+  if (arg[0]) {
+    gtd->command_char = arg[0];
+  } else {
+    display_printf(ses, "#SYNTAX: #CONFIG {%s} CHAR", config_table[index].name);
+    return NULL;
+  }
 
-  update_node_list(ses->list[LIST_CONFIG], config_table[index].name, arg, "");
+  char single_char[] = {arg[0], 0};
+  update_node_list(ses->list[LIST_CONFIG], config_table[index].name,
+                   single_char, "");
 
   return ses;
 }
@@ -60,9 +66,9 @@ DO_CONFIG(config_convertmeta) {
   } else {
     display_printf(ses, "#SYNTAX: #CONFIG {%s} <ON|OFF>",
                    config_table[index].name);
-
     return NULL;
   }
+
   update_node_list(ses->list[LIST_CONFIG], config_table[index].name,
                    capitalize(arg), "");
 
@@ -77,9 +83,9 @@ DO_CONFIG(config_charset) {
   } else {
     display_printf(ses, "#SYNTAX: #CONFIG {%s} <ASCII|UTF-8>",
                    config_table[index].name);
-
     return NULL;
   }
+
   update_node_list(ses->list[LIST_CONFIG], config_table[index].name,
                    capitalize(arg), "");
 
