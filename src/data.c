@@ -226,26 +226,14 @@ int locate_index_list(struct listroot *root, char *text, char *priority) {
 // Yup, all this for a bloody binary search.
 int bsearch_alpha_list(struct listroot *root, char *text, int seek) {
   int bot, top, val;
-  double toi, toj, srt;
+  double srt;
 
   bot = 0;
   top = root->used - 1;
   val = top;
 
-  toi = is_number(text) ? get_number(root->ses, text) : 0;
-
   while (bot <= top) {
-    toj = is_number(root->list[val]->left)
-              ? get_number(root->ses, root->list[val]->left)
-              : 0;
-
-    if (toi) {
-      srt = toi - toj;
-    } else if (toj) {
-      srt = -1;
-    } else {
-      srt = strcmp(text, root->list[val]->left);
-    }
+    srt = strcmp(text, root->list[val]->left);
 
     if (srt == 0) {
       return val;
@@ -401,7 +389,7 @@ int show_node_with_wild(struct session *ses, char *text, int type) {
   }
 
   for (i = 0; i < root->used; i++) {
-    if (match(ses, root->list[i]->left, text, SUB_VAR | SUB_FUN)) {
+    if (match(ses, root->list[i]->left, text, SUB_NONE)) {
       show_node(root, root->list[i], 0);
 
       flag = TRUE;
@@ -416,13 +404,13 @@ void delete_node_with_wild(struct session *ses, int type, char *text) {
   char arg1[BUFFER_SIZE];
   int i, found = FALSE;
 
-  sub_arg_in_braces(ses, text, arg1, 1, SUB_VAR | SUB_FUN);
+  sub_arg_in_braces(ses, text, arg1, 1, SUB_NONE);
 
   node = search_node_list(root, arg1);
 
   if (node) {
     show_message(
-        ses, type, "#OK. {%s} IS NO LONGER %s %s.", node->left,
+        ses, type, "#OK. {%s} IS NO LONGER %s %s", node->left,
         (*list_table[type].name == 'A' || *list_table[type].name == 'E') ? "AN"
                                                                          : "A",
         list_table[type].name);
@@ -433,9 +421,9 @@ void delete_node_with_wild(struct session *ses, int type, char *text) {
   }
 
   for (i = root->used - 1; i >= 0; i--) {
-    if (match(ses, root->list[i]->left, arg1, SUB_VAR | SUB_FUN)) {
+    if (match(ses, root->list[i]->left, arg1, SUB_NONE)) {
       show_message(
-          ses, type, "#OK. {%s} IS NO LONGER %s %s.", root->list[i]->left,
+          ses, type, "#OK. {%s} IS NO LONGER %s %s", root->list[i]->left,
           (*list_table[type].name == 'A' || *list_table[type].name == 'E')
               ? "AN"
               : "A",
@@ -448,7 +436,7 @@ void delete_node_with_wild(struct session *ses, int type, char *text) {
   }
 
   if (found == 0) {
-    show_message(ses, type, "#KILL: NO MATCHES FOUND FOR %s {%s}.",
+    show_message(ses, type, "#ERROR: NO MATCHES FOUND FOR %s {%s}",
                  list_table[type].name, arg1);
   }
 }

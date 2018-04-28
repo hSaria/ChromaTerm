@@ -16,17 +16,17 @@ DO_COMMAND(do_regexp) {
 
   if (*is_true == 0) {
     display_printf2(ses,
-                    "SYNTAX: #REGEXP {string} {expression} {true} {false}.");
+                    "SYNTAX: #REGEXP {string} {expression} {true} {false}");
   } else {
-    substitute(ses, left, left, SUB_VAR | SUB_FUN);
-    substitute(ses, right, right, SUB_VAR | SUB_FUN);
+    substitute(ses, left, left, SUB_NONE);
+    substitute(ses, right, right, SUB_NONE);
 
     if (regexp(ses, NULL, left, right, 0, SUB_CMD)) {
       substitute(ses, is_true, is_true, SUB_CMD);
 
-      ses = script_driver(ses, -1, is_true);
+      ses = script_driver(ses, is_true);
     } else if (*is_false) {
-      ses = script_driver(ses, -1, is_false);
+      ses = script_driver(ses, is_false);
     }
   }
   return ses;
@@ -46,8 +46,8 @@ int find(struct session *ses, char *str, char *exp, int sub) {
   char expbuf[BUFFER_SIZE], strbuf[BUFFER_SIZE];
 
   if (ses) {
-    substitute(ses, str, strbuf, SUB_VAR | SUB_FUN);
-    substitute(ses, exp, expbuf, SUB_VAR | SUB_FUN);
+    substitute(ses, str, strbuf, SUB_NONE);
+    substitute(ses, exp, expbuf, SUB_NONE);
 
     return regexp(ses, NULL, strbuf, expbuf, 0, sub);
   } else {
@@ -127,8 +127,7 @@ int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {
 // copy *string into *result, but substitute the various expressions with the
 // values they stand for.
 int substitute(struct session *ses, char *string, char *result, int flags) {
-  char temp[BUFFER_SIZE], buf[BUFFER_SIZE], buffer[BUFFER_SIZE], *pti, *pto,
-      *ptt;
+  char buffer[BUFFER_SIZE], *pti, *pto, *ptt;
   char old[6] = {0};
   int i, cnt, flags_neol = flags;
 
@@ -156,48 +155,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
         return pto - buffer;
       } else {
         return pto - result;
-      }
-      break;
-    case '$':
-      if (HAS_BIT(flags, SUB_VAR) &&
-          (pti[1] == DEFAULT_OPEN || isalpha((int)pti[1]) || pti[1] == '$')) {
-        if (pti[1] == '$') {
-          while (pti[1] == '$') {
-            *pto++ = *pti++;
-          }
-
-          if (pti[1] == DEFAULT_OPEN || isalnum((int)pti[1])) {
-            pti++;
-          } else {
-            *pto++ = *pti++;
-          }
-          continue;
-        }
-
-        pti++;
-
-        if (*pti == DEFAULT_OPEN) {
-          pti = get_arg_in_braces(ses, pti, buf, TRUE);
-
-          substitute(ses, buf, temp, flags_neol);
-        } else {
-          ptt = temp;
-
-          while (isalnum((int)*pti) || *pti == '_') {
-            *ptt++ = *pti++;
-          }
-          *ptt = 0;
-        }
-
-        pti = get_arg_at_brackets(ses, pti, temp + strlen(temp));
-
-        substitute(ses, temp, buf, flags_neol);
-
-        substitute(ses, temp, pto, flags_neol - SUB_VAR);
-
-        pto += strlen(pto);
-      } else {
-        *pto++ = *pti++;
       }
       break;
     case '<':
@@ -368,7 +325,6 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
         *pto++ = *pti++;
       }
       break;
-
     case '&':
       if (HAS_BIT(flags, SUB_CMD) && (isdigit((int)pti[1]) || pti[1] == '&')) {
         if (pti[1] == '&') {
@@ -389,47 +345,10 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
           }
           pti += isdigit((int)pti[2]) ? 3 : 2;
         }
-      } else if (HAS_BIT(flags, SUB_VAR) &&
-                 (pti[1] == DEFAULT_OPEN || isalpha((int)pti[1]) ||
-                  pti[1] == '&')) {
-        if (pti[1] == '&') {
-          while (pti[1] == '&') {
-            *pto++ = *pti++;
-          }
-
-          if (pti[1] == DEFAULT_OPEN || isalnum((int)pti[1])) {
-            pti++;
-          } else {
-            *pto++ = *pti++;
-          }
-          continue;
-        }
-
-        pti++;
-
-        if (*pti == DEFAULT_OPEN) {
-          pti = get_arg_in_braces(ses, pti, buf, TRUE);
-
-          substitute(ses, buf, temp, flags_neol);
-        } else {
-          for (ptt = temp; isalnum((int)*pti) || *pti == '_'; pti++) {
-            *ptt++ = *pti++;
-          }
-          *ptt = 0;
-        }
-
-        pti = get_arg_at_brackets(ses, pti, temp + strlen(temp));
-
-        substitute(ses, temp, buf, flags_neol);
-
-        substitute(ses, temp, pto, flags_neol - SUB_VAR);
-
-        pto += strlen(pto);
       } else {
         *pto++ = *pti++;
       }
       break;
-
     case '\\':
       if (HAS_BIT(flags, SUB_ESC)) {
         pti++;
@@ -486,11 +405,9 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
         *pto++ = *pti++;
       }
       break;
-
     case ESCAPE:
       *pto++ = *pti++;
       break;
-
     default:
       if (HAS_BIT(flags, SUB_SEC) && !HAS_BIT(flags, SUB_ARG)) {
         switch (*pti) {
@@ -540,19 +457,14 @@ int check_one_regexp(struct session *ses, struct listnode *node, char *line,
   if (node->regex == NULL) {
     char result[BUFFER_SIZE];
 
-    substitute(ses, node->left, result, SUB_VAR | SUB_FUN);
+    substitute(ses, node->left, result, SUB_NONE);
 
     exp = result;
   } else {
     exp = node->left;
   }
 
-  if (HAS_BIT(node->flags, NODE_FLAG_META)) {
-    exp++;
-    str = original;
-  } else {
-    str = line;
-  }
+  str = line;
 
   return regexp(ses, node->regex, str, exp, option, SUB_ARG);
 }

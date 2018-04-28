@@ -43,7 +43,7 @@ void suspend_handler(int signal) {
 
   init_terminal();
 
-  display_puts(NULL, "#WELCOME BACK.");
+  display_puts(NULL, "#WELCOME BACK");
 }
 
 // main() - setup signals - init lists - readcoms - mainloop()
@@ -84,8 +84,6 @@ int main(int argc, char **argv) {
     syserr("signal SIGWINCH");
   }
 
-  srand(time(NULL));
-
   init_program();
 
   if (argc > 1) {
@@ -104,7 +102,7 @@ int main(int argc, char **argv) {
         }
         break;
       case 'e':
-        gtd->ses = script_driver(gtd->ses, -1, optarg);
+        gtd->ses = script_driver(gtd->ses, optarg);
         break;
       case 'h':
         help_menu(FALSE, c, argv[0]);
@@ -186,6 +184,7 @@ void init_program() {
 
   do_configure(gts, "{CHARSET}         {UTF-8}");
   do_configure(gts, "{COMMAND CHAR}        {#}");
+  do_configure(gts, "{CONVERT META}      {OFF}");
 
   gts->check_output = (long long)0;
 
@@ -196,7 +195,7 @@ void init_program() {
 
 void help_menu(int error, char c, char *proc_name) {
   if (error) {
-    display_printf(NULL, "Unknown option '%c'.", c);
+    display_printf(NULL, "Unknown option '%c'", c);
   }
 
   display_printf(NULL, "Usage: %s [OPTION]... [FILE]...", proc_name);

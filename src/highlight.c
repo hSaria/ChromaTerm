@@ -6,8 +6,8 @@ DO_COMMAND(do_highlight) {
   char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE],
       temp[BUFFER_SIZE];
 
-  arg = sub_arg_in_braces(ses, arg, arg1, 0, SUB_VAR | SUB_FUN);
-  arg = sub_arg_in_braces(ses, arg, arg2, 1, SUB_VAR | SUB_FUN);
+  arg = sub_arg_in_braces(ses, arg, arg1, 0, SUB_NONE);
+  arg = sub_arg_in_braces(ses, arg, arg2, 1, SUB_NONE);
   get_arg_in_braces(ses, arg, arg3, 1);
 
   if (*arg3 == 0) {
@@ -19,7 +19,7 @@ DO_COMMAND(do_highlight) {
   } else if (*arg1 && *arg2 == 0) {
     if (show_node_with_wild(ses, arg1, LIST_HIGHLIGHT) == FALSE) {
       show_message(ses, LIST_HIGHLIGHT,
-                   "#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}.", arg1);
+                   "#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}", arg1);
     }
   } else {
     if (get_highlight_codes(ses, arg2, temp) == FALSE) {
@@ -29,11 +29,11 @@ DO_COMMAND(do_highlight) {
           "reset, bold, light, faint, dim, dark, underscore, blink, reverse, "
           "black, red, green, yellow, blue, magenta, cyan, white, b black, b "
           "red, b green, b yellow, b blue, b magenta, b cyan, b white, azure, "
-          "ebony, jade, lime, orange, pink, silver, tan, violet.");
+          "ebony, jade, lime, orange, pink, silver, tan, violet");
     } else {
       update_node_list(ses->list[LIST_HIGHLIGHT], arg1, arg2, arg3);
 
-      show_message(ses, LIST_HIGHLIGHT, "#OK. {%s} NOW HIGHLIGHTS {%s} @ {%s}.",
+      show_message(ses, LIST_HIGHLIGHT, "#OK. {%s} NOW HIGHLIGHTS {%s} {%s}",
                    arg1, arg2, arg3);
     }
   }
@@ -74,14 +74,12 @@ void check_all_highlights(struct session *ses, char *original, char *line) {
 
         ptm = strstr(pto, match);
 
-        if (!HAS_BIT(node->flags, NODE_FLAG_META)) {
-          if (ptm == NULL) {
-            break;
-          }
-
-          ptl = strstr(ptl, match);
-          ptl = ptl + strlen(match);
+        if (ptm == NULL) {
+          break;
         }
+
+        ptl = strstr(ptl, match);
+        ptl = ptl + strlen(match);
 
         *ptm = 0;
 

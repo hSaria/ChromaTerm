@@ -135,14 +135,6 @@ void tokenize_script(struct scriptroot *root, int lvl, char *str) {
         addtoken(root, lvl, TOKEN_TYPE_SESSION, -1, line + 1);
       } else {
         switch (command_table[cmd].type) {
-        case TOKEN_TYPE_DEFAULT:
-          addtoken(root, lvl++, TOKEN_TYPE_DEFAULT, cmd, "");
-
-          str = get_arg_in_braces(root->ses, arg, line, TRUE);
-          tokenize_script(root, lvl--, line);
-
-          addtoken(root, lvl, TOKEN_TYPE_END, -1, "enddefault");
-          break;
         case TOKEN_TYPE_ELSE:
           addtoken(root, lvl++, TOKEN_TYPE_ELSE, cmd, "else");
 
@@ -191,15 +183,6 @@ struct scriptnode *parse_script(struct scriptroot *root, int lvl,
     case TOKEN_TYPE_COMMAND:
       root->ses = (*command_table[token->cmd].command)(root->ses, token->str);
       break;
-    case TOKEN_TYPE_DEFAULT:
-      token = token->next;
-
-      token = parse_script(root, lvl + 1, token, shift);
-
-      while (token && token->lvl >= lvl) {
-        token = token->next;
-      }
-      continue;
     case TOKEN_TYPE_END:
       break;
     case TOKEN_TYPE_REGEX:
@@ -211,7 +194,7 @@ struct scriptnode *parse_script(struct scriptroot *root, int lvl,
       if (token->regex->val) {
         substitute(root->ses, token->regex->bod, token->regex->buf, SUB_CMD);
 
-        root->ses = script_driver(root->ses, -1, token->regex->buf);
+        root->ses = script_driver(root->ses, token->regex->buf);
       }
       break;
     case TOKEN_TYPE_SESSION:
@@ -233,24 +216,16 @@ struct scriptnode *parse_script(struct scriptroot *root, int lvl,
   }
 }
 
-struct session *script_driver(struct session *ses, int list, char *str) {
+struct session *script_driver(struct session *ses, char *str) {
   struct scriptroot *root;
-  struct session *cur_ses;
-  int ilevel;
 
   root = (struct scriptroot *)calloc(1, sizeof(struct scriptroot));
 
-  root->ses = cur_ses = ses;
-
-  ilevel = (list >= 0) ? 1 : 0;
-
-  cur_ses->input_level += ilevel;
+  root->ses = ses;
 
   tokenize_script(root, 0, str);
 
   ses = (struct session *)parse_script(root, 0, root->next, root->prev);
-
-  cur_ses->input_level -= ilevel;
 
   while (root->prev) {
     deltoken(root, root->prev);

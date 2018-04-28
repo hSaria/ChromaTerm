@@ -22,15 +22,14 @@ DO_COMMAND(do_read) {
   wordfree(&p);
 
   if ((fp = fopen(filename, "r")) == NULL) {
-    display_printf(ses, "#READ {%s} - FILE NOT FOUND.", filename);
+    display_printf(ses, "#READ {%s} - FILE NOT FOUND", filename);
     return ses;
   }
 
   temp[0] = getc(fp);
 
   if (!isgraph((int)temp[0]) || isalpha((int)temp[0])) {
-    display_printf(ses, "#ERROR: #READ {%s} - INVALID START OF FILE.",
-                   filename);
+    display_printf(ses, "#ERROR: #READ {%s} - INVALID START OF FILE", filename);
 
     fclose(fp);
 
@@ -47,7 +46,7 @@ DO_COMMAND(do_read) {
 
   if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL ||
       (bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf(ses, "#ERROR: #READ {%s} - FAILED TO ALLOCATE MEMORY.",
+    display_printf(ses, "#ERROR: #READ {%s} - FAILED TO ALLOCATE MEMORY",
                    filename);
 
     fclose(fp);
@@ -203,7 +202,7 @@ DO_COMMAND(do_read) {
 
   if (lvl) {
     display_printf(
-        ses, "#ERROR: #READ {%s} - MISSING %d '%c' BETWEEN LINE %d AND %d.",
+        ses, "#ERROR: #READ {%s} - MISSING %d '%c' BETWEEN LINE %d AND %d",
         filename, abs(lvl), lvl < 0 ? DEFAULT_OPEN : DEFAULT_CLOSE,
         fix == 0 ? 1 : ok, fix == 0 ? lnc + 1 : fix);
 
@@ -248,8 +247,7 @@ DO_COMMAND(do_read) {
 
       bufi[20] = 0;
 
-      display_printf(ses,
-                     "#ERROR: #READ {%s} - BUFFER OVERFLOW AT COMMAND: %s.",
+      display_printf(ses, "#ERROR: #READ {%s} - BUFFER OVERFLOW AT COMMAND: %s",
                      filename, bufi);
 
       fclose(fp);
@@ -261,7 +259,7 @@ DO_COMMAND(do_read) {
     }
 
     if (bufi[0]) {
-      ses = script_driver(ses, -1, bufi);
+      ses = script_driver(ses, bufi);
     }
 
     pto = bufi;
@@ -276,12 +274,12 @@ DO_COMMAND(do_read) {
       break;
 
     case 1:
-      show_message(ses, LIST_MESSAGE, "#OK: %3d %s LOADED.",
+      show_message(ses, LIST_MESSAGE, "#OK: %3d %s LOADED",
                    ses->list[cnt]->used - counter[cnt], list_table[cnt].name);
       break;
 
     default:
-      show_message(ses, LIST_MESSAGE, "#OK: %3d %s LOADED.",
+      show_message(ses, LIST_MESSAGE, "#OK: %3d %s LOADED",
                    ses->list[cnt]->used - counter[cnt],
                    list_table[cnt].name_multi);
       break;
@@ -310,7 +308,7 @@ DO_COMMAND(do_write) {
   wordfree(&p);
 
   if (*filename == 0 || (file = fopen(filename, "w")) == NULL) {
-    display_printf(ses, "#ERROR: #WRITE: COULDN'T OPEN {%s} TO WRITE.",
+    display_printf(ses, "#ERROR: #WRITE: COULDN'T OPEN {%s} TO WRITE",
                    filename);
     return ses;
   }
@@ -328,7 +326,7 @@ DO_COMMAND(do_write) {
 
   fclose(file);
 
-  show_message(ses, LIST_MESSAGE, "#WRITE: %d COMMANDS WRITTEN TO {%s}.", cnt,
+  show_message(ses, LIST_MESSAGE, "#WRITE: %d COMMANDS WRITTEN TO {%s}", cnt,
                filename);
 
   return ses;

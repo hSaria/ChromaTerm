@@ -47,7 +47,7 @@ DO_COMMAND(do_showme) {
             ? FALSE
             : TRUE;
 
-  substitute(ses, left, temp, SUB_VAR | SUB_FUN);
+  substitute(ses, left, temp, SUB_NONE);
   substitute(ses, temp, left, SUB_COL | SUB_ESC);
 
   do_one_line(left, ses);

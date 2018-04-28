@@ -89,7 +89,6 @@
 // Command type
 enum operators {
   TOKEN_TYPE_COMMAND,
-  TOKEN_TYPE_DEFAULT,
   TOKEN_TYPE_END,
   TOKEN_TYPE_ELSE,
   TOKEN_TYPE_REGEX,
@@ -111,8 +110,6 @@ enum operators {
 
 #define SUB_NONE 0
 #define SUB_ARG (1 << 0)
-#define SUB_VAR (1 << 1)
-#define SUB_FUN (1 << 2)
 #define SUB_COL (1 << 3)
 #define SUB_ESC (1 << 4)
 #define SUB_CMD (1 << 5)
@@ -129,8 +126,6 @@ enum operators {
 #define SES_FLAG_CONNECTED (1 << 11)
 #define SES_FLAG_CONVERTMETA (1 << 24)
 #define SES_FLAG_UTF8 (1 << 26)
-
-#define NODE_FLAG_META (1 << 0)
 
 // Some macros to deal with double linked lists
 #define LINK(link, head, tail)                                                 \
@@ -365,21 +360,6 @@ extern int get_scroll_size(struct session *ses);
 
 #endif
 
-#ifndef __MATH_H__
-#define __MATH_H__
-
-extern double get_number(struct session *ses, char *str);
-extern void mathexp(struct session *ses, char *str, char *result);
-extern int mathexp_tokenize(struct session *ses, char *str);
-extern void mathexp_level(struct session *ses, struct link_data *node);
-extern void mathexp_compute(struct session *ses, struct link_data *node);
-extern double tintoi(char *str);
-extern double tincmp(char *left, char *right);
-extern double tineval(struct session *ses, char *left, char *right);
-extern double tindice(char *left, char *right);
-
-#endif
-
 #ifndef __TINEXP_H__
 #define __TINEXP_H__
 
@@ -578,7 +558,7 @@ extern void printline(struct session *ses, char *str, int isaprompt);
 #ifndef __TOKENIZE_H__
 #define __TOKENIZE_H__
 
-extern struct session *script_driver(struct session *ses, int list, char *str);
+extern struct session *script_driver(struct session *ses, char *str);
 
 #endif
 
@@ -596,7 +576,6 @@ extern void packet_update(void);
 #define __UTILS_H__
 
 extern int is_abbrev(char *s1, char *s2);
-extern int is_number(char *str);
 extern int hex_number(char *str);
 extern int oct_number(char *str);
 extern long long getCurrentTime(void);
