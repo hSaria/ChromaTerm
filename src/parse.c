@@ -179,43 +179,6 @@ char *space_out(char *string) {
   return string;
 }
 
-// For list handling
-char *get_arg_at_brackets(struct session *ses, char *string, char *result) {
-  char *pti, *pto;
-  int nest = 0;
-
-  pti = string;
-  pto = result;
-
-  if (*pti != '[') {
-    *pto = 0;
-
-    return pti;
-  }
-
-  while (*pti) {
-    if (*pti == '[') {
-      nest++;
-    } else if (*pti == ']') {
-      if (nest) {
-        nest--;
-      } else {
-        break;
-      }
-    } else if (nest == 0) {
-      break;
-    }
-    *pto++ = *pti++;
-  }
-
-  if (nest) {
-    display_printf2(NULL, "#ERROR: UNMATCHED BRACKETS");
-  }
-  *pto = 0;
-
-  return pti;
-}
-
 // send command to the socket
 void write_mud(struct session *ses, char *command, int flags) {
   char output[BUFFER_SIZE];
