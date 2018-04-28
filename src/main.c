@@ -149,7 +149,6 @@ void init_program() {
   gtd->mud_output_max = 16384;
   gtd->mud_output_buf = (char *)calloc(1, gtd->mud_output_max);
   gtd->input_off = 1;
-  gtd->term = strdup(getenv("TERM") ? getenv("TERM") : "UNKNOWN");
 
   for (index = 0; index < 100; index++) {
     gtd->vars[index] = strdup("");

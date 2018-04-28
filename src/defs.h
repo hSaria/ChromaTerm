@@ -217,7 +217,6 @@ struct session {
 
 struct global_data {
   struct session *ses;
-  struct session *update;
   struct termios active_terminal;
   char *mud_output_buf;
   int mud_output_max;
@@ -230,7 +229,6 @@ struct global_data {
   int input_cur;
   int input_pos;
   int input_hid;
-  char *term;
   long long time;
   int flags;
   int quiet;
