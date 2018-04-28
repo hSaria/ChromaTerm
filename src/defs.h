@@ -563,7 +563,7 @@ extern void printline(struct session *ses, char *str, int isaprompt);
 #ifndef __TOKENIZE_H__
 #define __TOKENIZE_H__
 
-extern struct session *script_driver(struct session *ses, int list, char *str);
+extern struct session *script_driver(struct session *ses, char *str);
 
 #endif
 

@@ -24,9 +24,9 @@ DO_COMMAND(do_regexp) {
     if (regexp(ses, NULL, left, right, 0, SUB_CMD)) {
       substitute(ses, is_true, is_true, SUB_CMD);
 
-      ses = script_driver(ses, -1, is_true);
+      ses = script_driver(ses, is_true);
     } else if (*is_false) {
-      ses = script_driver(ses, -1, is_false);
+      ses = script_driver(ses, is_false);
     }
   }
   return ses;

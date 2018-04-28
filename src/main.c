@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
         }
         break;
       case 'e':
-        gtd->ses = script_driver(gtd->ses, -1, optarg);
+        gtd->ses = script_driver(gtd->ses, optarg);
         break;
       case 'h':
         help_menu(FALSE, c, argv[0]);

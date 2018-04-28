@@ -211,7 +211,7 @@ struct scriptnode *parse_script(struct scriptroot *root, int lvl,
       if (token->regex->val) {
         substitute(root->ses, token->regex->bod, token->regex->buf, SUB_CMD);
 
-        root->ses = script_driver(root->ses, -1, token->regex->buf);
+        root->ses = script_driver(root->ses, token->regex->buf);
       }
       break;
     case TOKEN_TYPE_SESSION:
@@ -233,24 +233,16 @@ struct scriptnode *parse_script(struct scriptroot *root, int lvl,
   }
 }
 
-struct session *script_driver(struct session *ses, int list, char *str) {
+struct session *script_driver(struct session *ses, char *str) {
   struct scriptroot *root;
-  struct session *cur_ses;
-  int ilevel;
 
   root = (struct scriptroot *)calloc(1, sizeof(struct scriptroot));
 
-  root->ses = cur_ses = ses;
-
-  ilevel = (list >= 0) ? 1 : 0;
-
-  cur_ses->input_level += ilevel;
+  root->ses = ses;
 
   tokenize_script(root, 0, str);
 
   ses = (struct session *)parse_script(root, 0, root->next, root->prev);
-
-  cur_ses->input_level -= ilevel;
 
   while (root->prev) {
     deltoken(root, root->prev);

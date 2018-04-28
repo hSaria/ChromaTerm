@@ -13,7 +13,7 @@ void process_input(void) {
 
   echo_command(gtd->ses, gtd->input_buf);
 
-  gtd->ses = script_driver(gtd->ses, -1, gtd->input_buf);
+  gtd->ses = script_driver(gtd->ses, gtd->input_buf);
 
   gtd->input_buf[0] = 0;
 }
