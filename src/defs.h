@@ -136,11 +136,6 @@ enum operators {
 
 #define UNLINK(link, head, tail)                                               \
   {                                                                            \
-    if (((link)->prev == NULL && (link) != head) ||                            \
-        ((link)->next == NULL && (link) != tail)) {                            \
-      display_printf2(NULL, "#UNLINK ERROR in file %s on line %d", __FILE__,   \
-                      __LINE__);                                               \
-    }                                                                          \
     if ((link)->prev == NULL) {                                                \
       (head) = (link)->next;                                                   \
     } else {                                                                   \
