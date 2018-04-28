@@ -36,7 +36,6 @@ int read_buffer_mud(struct session *ses) {
            gtd->mud_output_max - gtd->mud_output_len - 1);
 
   if (gtd->mud_output_len <= 0) {
-
     return FALSE;
   }
 
