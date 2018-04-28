@@ -59,7 +59,7 @@ Below are quick summaries for some of the important commands.
 > - autocompleted to the closest match
 > - case-insensitive
 
-> Before writing a CT-- command, be sure to hit enter first. This is a limitation which I documenated in `read_key` function in input.c.
+> Before writing a CT-- command, be sure to hit enter first. This is a limitation which I documented in `read_key` function in input.c.
 
 #### `#highlight {condition} {action}` and `#unhighlight {condition}`
 The output is scanned according to the condition. If a part of the text matches the condition, the action is takes on that text. 
@@ -67,7 +67,7 @@ The output is scanned according to the condition. If a part of the text matches 
 #highlight {%d.%d.%d.%d} {bold green}
 #highlight {{(E|e)rr..}} {bold red}
 ```
-The first will find four digits separated by dots then highlight them bold yellow. The second has a regular expression (enclosed by two sets of curly backets).
+The first will find four digits separated by dots then highlight them bold yellow. The second has a regular expression (enclosed by two sets of curly brackets).
 
 You can remove a rule by using the `#unhighlight`.
 ```
