@@ -68,9 +68,7 @@
 #define COMMAND_SEPARATOR ';'
 
 #define STRING_SIZE 45000
-#define BUFFER_SIZE 50000
-#define NUMBER_SIZE 100
-#define LIST_SIZE 2
+#define BUFFER_SIZE 20000
 
 #define ESCAPE 27
 
@@ -191,7 +189,6 @@ struct listroot {
   int used;
   int type;
   int update;
-  int flags;
 };
 
 struct listnode {
@@ -201,18 +198,12 @@ struct listnode {
   char *pr;
   char *group;
   pcre *regex;
-  long long data;
-  short flags;
 };
 
 struct session {
   struct listroot *list[LIST_MAX];
   int rows;
   int cols;
-  int cur_row;
-  int sav_row;
-  int cur_col;
-  int sav_col;
   int fgc;
   int bgc;
   int vtc;
@@ -221,7 +212,6 @@ struct session {
   int flags;
   int input_level;
   char more_output[BUFFER_SIZE * 2];
-  char color[100];
   long long check_output;
 };
 
@@ -242,7 +232,6 @@ struct global_data {
   int input_hid;
   char *term;
   long long time;
-  int command_ref[26];
   int flags;
   int quiet;
   char command_char;

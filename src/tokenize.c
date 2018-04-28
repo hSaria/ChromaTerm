@@ -96,8 +96,7 @@ int find_command(char *command) {
   int cmd;
 
   if (isalpha((int)*command)) {
-    for (cmd = gtd->command_ref[tolower((int)*command) - 'a'];
-         *command_table[cmd].name; cmd++) {
+    for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
       if (is_abbrev(command, command_table[cmd].name)) {
         return cmd;
       }

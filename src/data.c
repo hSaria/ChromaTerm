@@ -71,8 +71,6 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
       node->right = strdup(rtext);
     }
 
-    node->data = 0;
-
     switch (list_table[root->type].mode) {
     case PRIORITY:
       if (atof(node->pr) != atof(prtext)) {
