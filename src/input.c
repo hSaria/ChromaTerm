@@ -11,8 +11,6 @@ void process_input(void) {
 
   DEL_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
 
-  echo_command(gtd->ses, gtd->input_buf);
-
   gtd->ses = script_driver(gtd->ses, gtd->input_buf);
 
   gtd->input_buf[0] = 0;
@@ -231,23 +229,6 @@ void convert_meta(char *input, char *output) {
     }
   }
   *pto = 0;
-}
-
-// Currenly only used in split mode.
-void echo_command(struct session *ses, char *line) {
-  char buffer[STRING_SIZE], result[STRING_SIZE];
-
-  sprintf(buffer, "%s", line);
-
-  // Deal with pending output
-  if (ses->more_output[0]) {
-    if (ses->check_output) {
-      strcpy(result, ses->more_output);
-      ses->more_output[0] = 0;
-
-      process_mud_output(ses, result, FALSE);
-    }
-  }
 }
 
 void input_printf(char *format, ...) {

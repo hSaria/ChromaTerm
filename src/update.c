@@ -12,7 +12,6 @@ void mainloop(void) {
   int usec_loop, usec_wait;
   short int pulse_poll_input = PULSE_POLL_INPUT;
   short int pulse_poll_sessions = PULSE_POLL_SESSIONS;
-  short int pulse_update_packets = PULSE_UPDATE_PACKETS;
   short int pulse_update_terminal = PULSE_UPDATE_TERMINAL;
 
   wait_time.tv_sec = 0;
@@ -30,12 +29,6 @@ void mainloop(void) {
       pulse_poll_sessions = PULSE_POLL_SESSIONS;
 
       poll_sessions();
-    }
-
-    if (--pulse_update_packets == 0) {
-      pulse_update_packets = PULSE_UPDATE_PACKETS;
-
-      packet_update();
     }
 
     if (--pulse_update_terminal == 0) {
@@ -83,45 +76,22 @@ void poll_input(void) {
 }
 
 void poll_sessions(void) {
-  fd_set readfds, excfds;
+  fd_set readfds;
   static struct timeval to;
-  int rv;
 
   if (gts) {
     FD_ZERO(&readfds);
-    FD_ZERO(&excfds);
 
     if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
       while (TRUE) {
         FD_SET(gts->socket, &readfds);
-        FD_SET(gts->socket, &excfds);
 
-        rv = select(FD_SETSIZE, &readfds, NULL, &excfds, &to);
-
-        if (rv <= 0) {
+        if (select(FD_SETSIZE, &readfds, NULL, NULL, &to) <= 0) {
           break;
         }
 
-        if (FD_ISSET(gts->socket, &readfds)) {
-          if (read_buffer_mud(gts) == FALSE) {
-            readmud(gts);
-
-            cleanup_session(gts);
-
-            gtd->mud_output_len = 0;
-
-            break;
-          }
-        }
-
-        if (FD_ISSET(gts->socket, &excfds)) {
-          FD_CLR(gts->socket, &readfds);
-
-          cleanup_session(gts);
-
-          gtd->mud_output_len = 0;
-
-          break;
+        if (read_buffer_mud(gts) == FALSE) {
+          quitmsg(NULL);
         }
       }
 
@@ -129,20 +99,5 @@ void poll_sessions(void) {
         readmud(gts);
       }
     }
-  }
-}
-
-void packet_update(void) {
-  char result[STRING_SIZE];
-
-  if (gts->check_output && gtd->time > gts->check_output) {
-    strcpy(result, gts->more_output);
-
-    printf("\npacket_update->result: %s\n",
-           result); ///////////////////////////////// DEBUG
-
-    gts->more_output[0] = 0;
-
-    process_mud_output(gts, result, TRUE);
   }
 }

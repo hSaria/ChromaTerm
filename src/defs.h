@@ -76,7 +76,6 @@
 
 #define PULSE_POLL_INPUT 1
 #define PULSE_POLL_SESSIONS 1
-#define PULSE_UPDATE_PACKETS 2
 #define PULSE_UPDATE_TERMINAL 1
 
 // Index for lists
@@ -98,32 +97,32 @@ enum operators {
 #define LIST_MESSAGE -1
 
 // Various flags
-#define COL_BLD (1 << 1)
-#define COL_UND (1 << 2)
-#define COL_BLK (1 << 3)
-#define COL_REV (1 << 4)
-#define COL_XTF (1 << 5)
-#define COL_XTB (1 << 6)
-#define COL_256 (1 << 7)
+#define COL_BLD (1 << 0)
+#define COL_UND (1 << 1)
+#define COL_BLK (1 << 2)
+#define COL_REV (1 << 3)
+#define COL_XTF (1 << 4)
+#define COL_XTB (1 << 5)
+#define COL_256 (1 << 6)
 
 #define SUB_NONE 0
 #define SUB_ARG (1 << 0)
-#define SUB_COL (1 << 3)
-#define SUB_ESC (1 << 4)
-#define SUB_CMD (1 << 5)
-#define SUB_SEC (1 << 6)
-#define SUB_EOL (1 << 7)
-#define SUB_LNF (1 << 8)
-#define SUB_FIX (1 << 9)
-#define SUB_CMP (1 << 10)
+#define SUB_COL (1 << 1)
+#define SUB_ESC (1 << 2)
+#define SUB_CMD (1 << 3)
+#define SUB_SEC (1 << 4)
+#define SUB_EOL (1 << 5)
+#define SUB_LNF (1 << 6)
+#define SUB_FIX (1 << 7)
+#define SUB_CMP (1 << 8)
 
-#define GLOBAL_FLAG_CONVERTMETACHAR (1 << 1)
-#define GLOBAL_FLAG_PROCESSINPUT (1 << 4)
-#define GLOBAL_FLAG_INSERTINPUT (1 << 6)
+#define GLOBAL_FLAG_CONVERTMETACHAR (1 << 0)
+#define GLOBAL_FLAG_PROCESSINPUT (1 << 1)
+#define GLOBAL_FLAG_INSERTINPUT (1 << 2)
 
-#define SES_FLAG_CONNECTED (1 << 11)
-#define SES_FLAG_CONVERTMETA (1 << 24)
-#define SES_FLAG_UTF8 (1 << 26)
+#define SES_FLAG_CONNECTED (1 << 0)
+#define SES_FLAG_CONVERTMETA (1 << 1)
+#define SES_FLAG_UTF8 (1 << 2)
 
 // Some macros to deal with double linked lists
 #define LINK(link, head, tail)                                                 \
@@ -168,7 +167,6 @@ enum operators {
 // Generic
 #define URANGE(a, b, c) ((b) < (a) ? (a) : (b) > (c) ? (c) : (b))
 #define UMAX(a, b) ((a) > (b) ? (a) : (b))
-#define UMIN(a, b) ((a) < (b) ? (a) : (b))
 
 #define up(u) (u < 99 ? u++ : u)
 
@@ -177,9 +175,6 @@ enum operators {
 #define DO_CONFIG(config)                                                      \
   struct session *config(struct session *ses, char *arg, int index)
 #define DO_CURSOR(cursor) void cursor(char *arg)
-
-// Compatibility
-#define atoll(str) (strtoll(str, NULL, 10))
 
 // Structures
 struct listroot {
@@ -212,7 +207,6 @@ struct session {
   int flags;
   int input_level;
   char more_output[BUFFER_SIZE * 2];
-  long long check_output;
 };
 
 struct global_data {
@@ -320,7 +314,6 @@ extern void process_input(void);
 extern void read_key(void);
 extern void read_line(void);
 extern void convert_meta(char *input, char *output);
-extern void echo_command(struct session *ses, char *line);
 extern void input_printf(char *format, ...);
 
 #endif
@@ -533,7 +526,6 @@ extern struct session *script_driver(struct session *ses, char *str);
 extern void mainloop(void);
 extern void poll_input(void);
 extern void poll_sessions(void);
-extern void packet_update(void);
 
 #endif
 

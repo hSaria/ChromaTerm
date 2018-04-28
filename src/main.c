@@ -163,8 +163,6 @@ void init_program() {
   do_configure(gts, "{CONVERT META}      {OFF}");
   gts->input_level--;
 
-  gts->check_output = (long long)0;
-
   init_terminal();
 }
 

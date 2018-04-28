@@ -46,7 +46,6 @@ int read_buffer_mud(struct session *ses) {
 
 void readmud(struct session *ses) {
   char *line, *next_line;
-  char linebuf[STRING_SIZE];
 
   gtd->mud_output_len = 0;
 
@@ -61,27 +60,7 @@ void readmud(struct session *ses) {
       break;
     }
 
-    if (next_line == NULL && strlen(ses->more_output) < BUFFER_SIZE / 2) {
-      if (gts->check_output) {
-        strcat(ses->more_output, line);
-        ses->check_output = getCurrentTime() + gts->check_output;
-        break;
-      }
-    }
-
-    if (ses->more_output[0]) {
-      if (ses->check_output) {
-        sprintf(linebuf, "%s%s", ses->more_output, line);
-
-        ses->more_output[0] = 0;
-      } else {
-        strcpy(linebuf, line);
-      }
-    } else {
-      strcpy(linebuf, line);
-    }
-
-    process_mud_output(ses, linebuf, next_line == NULL);
+    process_mud_output(ses, line, next_line == NULL);
   }
 
   return;
@@ -89,8 +68,6 @@ void readmud(struct session *ses) {
 
 void process_mud_output(struct session *ses, char *linebuf, int prompt) {
   char line[STRING_SIZE];
-
-  ses->check_output = 0;
 
   strip_vt102_codes(linebuf, line);
 
