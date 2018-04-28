@@ -44,8 +44,6 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
   node->right = strdup(rtext);
   node->pr = strdup(prtext);
 
-  node->group = strdup("");
-
   switch (root->type) {
   case LIST_HIGHLIGHT:
     break;
@@ -134,7 +132,6 @@ void delete_index_list(struct listroot *root, int index) {
   free(node->left);
   free(node->right);
   free(node->pr);
-  free(node->group);
 
   if (node->regex) {
     free(node->regex);

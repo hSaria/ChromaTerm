@@ -188,7 +188,6 @@ struct listnode {
   char *left;
   char *right;
   char *pr;
-  char *group;
   pcre *regex;
 };
 

@@ -316,11 +316,9 @@ DO_COMMAND(do_write) {
   for (i = 0; i < LIST_MAX; i++) {
     root = ses->list[i];
     for (j = 0; j < root->used; j++) {
-      if (*root->list[j]->group == 0) {
-        write_node(ses, i, root->list[j], file);
+      write_node(ses, i, root->list[j], file);
 
-        cnt++;
-      }
+      cnt++;
     }
   }
 
