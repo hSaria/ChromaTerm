@@ -303,7 +303,7 @@ DO_COMMAND(do_help) {
 
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
       if (is_abbrev(left, help_table[cnt].name) || atoi(left) == cnt + 1 ||
-          match(ses, help_table[cnt].name, left, SUB_VAR | SUB_FUN)) {
+          match(ses, help_table[cnt].name, left, SUB_NONE)) {
         substitute(ses, help_table[cnt].text, buf, SUB_COL);
 
         pto = buf;

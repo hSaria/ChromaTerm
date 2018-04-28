@@ -19,7 +19,7 @@ DO_COMMAND(do_run) {
 
   char *argv[4] = {"sh", "-c", "", NULL};
 
-  sub_arg_in_braces(ses, arg, command, GET_ALL, SUB_VAR | SUB_FUN);
+  sub_arg_in_braces(ses, arg, command, GET_ALL, SUB_NONE);
 
   // Limit to single process
   if (process_already_running) {

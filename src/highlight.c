@@ -6,8 +6,8 @@ DO_COMMAND(do_highlight) {
   char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE],
       temp[BUFFER_SIZE];
 
-  arg = sub_arg_in_braces(ses, arg, arg1, 0, SUB_VAR | SUB_FUN);
-  arg = sub_arg_in_braces(ses, arg, arg2, 1, SUB_VAR | SUB_FUN);
+  arg = sub_arg_in_braces(ses, arg, arg1, 0, SUB_NONE);
+  arg = sub_arg_in_braces(ses, arg, arg2, 1, SUB_NONE);
   get_arg_in_braces(ses, arg, arg3, 1);
 
   if (*arg3 == 0) {
@@ -74,14 +74,12 @@ void check_all_highlights(struct session *ses, char *original, char *line) {
 
         ptm = strstr(pto, match);
 
-        if (!HAS_BIT(node->flags, NODE_FLAG_META)) {
-          if (ptm == NULL) {
-            break;
-          }
-
-          ptl = strstr(ptl, match);
-          ptl = ptl + strlen(match);
+        if (ptm == NULL) {
+          break;
         }
+
+        ptl = strstr(ptl, match);
+        ptl = ptl + strlen(match);
 
         *ptm = 0;
 

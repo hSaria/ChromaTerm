@@ -110,8 +110,6 @@ enum operators {
 
 #define SUB_NONE 0
 #define SUB_ARG (1 << 0)
-#define SUB_VAR (1 << 1)
-#define SUB_FUN (1 << 2)
 #define SUB_COL (1 << 3)
 #define SUB_ESC (1 << 4)
 #define SUB_CMD (1 << 5)
@@ -128,8 +126,6 @@ enum operators {
 #define SES_FLAG_CONNECTED (1 << 11)
 #define SES_FLAG_CONVERTMETA (1 << 24)
 #define SES_FLAG_UTF8 (1 << 26)
-
-#define NODE_FLAG_META (1 << 0)
 
 // Some macros to deal with double linked lists
 #define LINK(link, head, tail)                                                 \
