@@ -89,7 +89,6 @@
 // Command type
 enum operators {
   TOKEN_TYPE_COMMAND,
-  TOKEN_TYPE_DEFAULT,
   TOKEN_TYPE_END,
   TOKEN_TYPE_ELSE,
   TOKEN_TYPE_REGEX,

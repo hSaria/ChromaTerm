@@ -135,14 +135,6 @@ void tokenize_script(struct scriptroot *root, int lvl, char *str) {
         addtoken(root, lvl, TOKEN_TYPE_SESSION, -1, line + 1);
       } else {
         switch (command_table[cmd].type) {
-        case TOKEN_TYPE_DEFAULT:
-          addtoken(root, lvl++, TOKEN_TYPE_DEFAULT, cmd, "");
-
-          str = get_arg_in_braces(root->ses, arg, line, TRUE);
-          tokenize_script(root, lvl--, line);
-
-          addtoken(root, lvl, TOKEN_TYPE_END, -1, "enddefault");
-          break;
         case TOKEN_TYPE_ELSE:
           addtoken(root, lvl++, TOKEN_TYPE_ELSE, cmd, "else");
 
@@ -191,15 +183,6 @@ struct scriptnode *parse_script(struct scriptroot *root, int lvl,
     case TOKEN_TYPE_COMMAND:
       root->ses = (*command_table[token->cmd].command)(root->ses, token->str);
       break;
-    case TOKEN_TYPE_DEFAULT:
-      token = token->next;
-
-      token = parse_script(root, lvl + 1, token, shift);
-
-      while (token && token->lvl >= lvl) {
-        token = token->next;
-      }
-      continue;
     case TOKEN_TYPE_END:
       break;
     case TOKEN_TYPE_REGEX:
