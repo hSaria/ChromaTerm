@@ -206,10 +206,6 @@ struct listnode {
 };
 
 struct session {
-  struct session *next;
-  struct session *prev;
-  char *group;
-  char *command;
   struct listroot *list[LIST_MAX];
   int rows;
   int cols;
@@ -524,8 +520,7 @@ extern void do_one_line(char *line, struct session *ses);
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
-extern struct session *new_session(struct session *ses, char *command, int pid,
-                                   int socket);
+extern struct session *new_session(struct session *ses, int pid, int socket);
 extern void cleanup_session(struct session *ses);
 
 #endif
