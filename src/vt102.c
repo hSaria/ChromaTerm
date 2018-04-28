@@ -6,44 +6,36 @@ int skip_vt102_codes(char *str) {
   int skip;
 
   switch (str[0]) {
-  case 5:            /* ENQ */
-  case 7:            /* BEL */
-  case 8:            /* BS  */
-    /*	case   9: */ /* HT  */
-    /*	case  10: */ /* LF  */
-  case 11:           /* VT  */
-  case 12:           /* FF  */
-  case 13:           /* CR  */
-  case 14:           /* SO  */
-  case 15:           /* SI  */
-  case 17:           /* DC1 */
-  case 19:           /* DC3 */
-  case 24:           /* CAN */
-  case 26:           /* SUB */
-  case 127:          /* DEL */
-
+  case 5: /* ENQ */
+  case 7: /* BEL */
+  case 8: /* BS  */
+  // case 9:   /* HT  */
+  // case 10:  /* LF  */
+  case 11:  /* VT  */
+  case 12:  /* FF  */
+  case 13:  /* CR  */
+  case 14:  /* SO  */
+  case 15:  /* SI  */
+  case 17:  /* DC1 */
+  case 19:  /* DC3 */
+  case 24:  /* CAN */
+  case 26:  /* SUB */
+  case 127: /* DEL */
     return 1;
-
   case 27: /* ESC */
     break;
-
   default:
-
     return 0;
   }
 
   switch (str[1]) {
   case '\0':
-
     return 1;
-
   case '%':
   case '#':
   case '(':
   case ')':
-
     return str[2] ? 3 : 2;
-
   case ']':
     switch (str[2]) {
     case 'P':
@@ -52,27 +44,19 @@ int skip_vt102_codes(char *str) {
           break;
         }
       }
-
       return skip;
-
     case 'R':
-
       return 3;
     }
-
     return 2;
-
   case '[':
     break;
-
   default:
-
     return 2;
   }
 
   for (skip = 2; str[skip] != 0; skip++) {
     if (isalpha((int)str[skip])) {
-
       return skip + 1;
     }
 
@@ -80,11 +64,9 @@ int skip_vt102_codes(char *str) {
     case '@':
     case '`':
     case ']':
-
       return skip + 1;
     }
   }
-
   return skip;
 }
 
