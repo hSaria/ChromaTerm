@@ -110,11 +110,8 @@ enum operators {
 #define SUB_COL (1 << 1)
 #define SUB_ESC (1 << 2)
 #define SUB_CMD (1 << 3)
-#define SUB_SEC (1 << 4)
-#define SUB_EOL (1 << 5)
-#define SUB_LNF (1 << 6)
-#define SUB_FIX (1 << 7)
-#define SUB_CMP (1 << 8)
+#define SUB_EOL (1 << 4)
+#define SUB_FIX (1 << 5)
 
 #define GLOBAL_FLAG_CONVERTMETACHAR (1 << 0)
 #define GLOBAL_FLAG_PROCESSINPUT (1 << 1)
