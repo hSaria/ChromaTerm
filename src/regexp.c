@@ -16,7 +16,7 @@ DO_COMMAND(do_regexp) {
 
   if (*is_true == 0) {
     display_printf2(ses,
-                    "SYNTAX: #REGEXP {string} {expression} {true} {false}.");
+                    "SYNTAX: #REGEXP {string} {expression} {true} {false}");
   } else {
     substitute(ses, left, left, SUB_NONE);
     substitute(ses, right, right, SUB_NONE);

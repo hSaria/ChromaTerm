@@ -30,14 +30,14 @@ DO_COMMAND(do_configure) {
                                   config_table[index].name);
 
           if (node) {
-            show_message(ses, LIST_CONFIG, "#CONFIG {%s} HAS BEEN SET TO {%s}.",
+            show_message(ses, LIST_CONFIG, "#CONFIG {%s} HAS BEEN SET TO {%s}",
                          config_table[index].name, node->right);
           }
         }
         return ses;
       }
     }
-    display_printf(ses, "#ERROR: #CONFIG {%s} IS NOT A VALID OPTION.",
+    display_printf(ses, "#ERROR: #CONFIG {%s} IS NOT A VALID OPTION",
                    capitalize(left));
   }
   return ses;

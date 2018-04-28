@@ -410,7 +410,7 @@ void delete_node_with_wild(struct session *ses, int type, char *text) {
 
   if (node) {
     show_message(
-        ses, type, "#OK. {%s} IS NO LONGER %s %s.", node->left,
+        ses, type, "#OK. {%s} IS NO LONGER %s %s", node->left,
         (*list_table[type].name == 'A' || *list_table[type].name == 'E') ? "AN"
                                                                          : "A",
         list_table[type].name);
@@ -423,7 +423,7 @@ void delete_node_with_wild(struct session *ses, int type, char *text) {
   for (i = root->used - 1; i >= 0; i--) {
     if (match(ses, root->list[i]->left, arg1, SUB_NONE)) {
       show_message(
-          ses, type, "#OK. {%s} IS NO LONGER %s %s.", root->list[i]->left,
+          ses, type, "#OK. {%s} IS NO LONGER %s %s", root->list[i]->left,
           (*list_table[type].name == 'A' || *list_table[type].name == 'E')
               ? "AN"
               : "A",
@@ -436,7 +436,7 @@ void delete_node_with_wild(struct session *ses, int type, char *text) {
   }
 
   if (found == 0) {
-    show_message(ses, type, "#KILL: NO MATCHES FOUND FOR %s {%s}.",
+    show_message(ses, type, "#ERROR: NO MATCHES FOUND FOR %s {%s}",
                  list_table[type].name, arg1);
   }
 }

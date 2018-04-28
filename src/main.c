@@ -43,7 +43,7 @@ void suspend_handler(int signal) {
 
   init_terminal();
 
-  display_puts(NULL, "#WELCOME BACK.");
+  display_puts(NULL, "#WELCOME BACK");
 }
 
 // main() - setup signals - init lists - readcoms - mainloop()
@@ -195,7 +195,7 @@ void init_program() {
 
 void help_menu(int error, char c, char *proc_name) {
   if (error) {
-    display_printf(NULL, "Unknown option '%c'.", c);
+    display_printf(NULL, "Unknown option '%c'", c);
   }
 
   display_printf(NULL, "Usage: %s [OPTION]... [FILE]...", proc_name);

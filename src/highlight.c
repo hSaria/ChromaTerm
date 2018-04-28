@@ -19,7 +19,7 @@ DO_COMMAND(do_highlight) {
   } else if (*arg1 && *arg2 == 0) {
     if (show_node_with_wild(ses, arg1, LIST_HIGHLIGHT) == FALSE) {
       show_message(ses, LIST_HIGHLIGHT,
-                   "#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}.", arg1);
+                   "#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}", arg1);
     }
   } else {
     if (get_highlight_codes(ses, arg2, temp) == FALSE) {
@@ -29,11 +29,11 @@ DO_COMMAND(do_highlight) {
           "reset, bold, light, faint, dim, dark, underscore, blink, reverse, "
           "black, red, green, yellow, blue, magenta, cyan, white, b black, b "
           "red, b green, b yellow, b blue, b magenta, b cyan, b white, azure, "
-          "ebony, jade, lime, orange, pink, silver, tan, violet.");
+          "ebony, jade, lime, orange, pink, silver, tan, violet");
     } else {
       update_node_list(ses->list[LIST_HIGHLIGHT], arg1, arg2, arg3);
 
-      show_message(ses, LIST_HIGHLIGHT, "#OK. {%s} NOW HIGHLIGHTS {%s} @ {%s}.",
+      show_message(ses, LIST_HIGHLIGHT, "#OK. {%s} NOW HIGHLIGHTS {%s} {%s}",
                    arg1, arg2, arg3);
     }
   }
