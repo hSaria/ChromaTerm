@@ -74,24 +74,6 @@ char *addregextoken(struct scriptroot *root, int lvl, int type, int cmd,
   return str;
 }
 
-void deltoken(struct scriptroot *root, struct scriptnode *token) {
-  UNLINK(token, root->next, root->prev);
-
-  free(token->str);
-
-  switch (token->type) {
-  case TOKEN_TYPE_REGEX:
-    free(token->regex->str);
-    free(token->regex->bod);
-    free(token->regex->buf);
-    free(token->regex);
-    break;
-  }
-
-  free(token);
-  return;
-}
-
 int find_command(char *command) {
   int cmd;
 
@@ -227,7 +209,18 @@ struct session *script_driver(struct session *ses, char *str) {
   ses = (struct session *)parse_script(root, 0, root->next, root->prev);
 
   while (root->prev) {
-    deltoken(root, root->prev);
+    UNLINK(root->prev, root->next, root->prev);
+
+    free(root->prev->str);
+
+    if (root->prev->type == TOKEN_TYPE_REGEX) {
+      free(root->prev->regex->str);
+      free(root->prev->regex->bod);
+      free(root->prev->regex->buf);
+      free(root->prev->regex);
+    }
+
+    free(root->prev);
   }
 
   free(root);
