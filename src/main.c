@@ -8,36 +8,6 @@
 struct session *gts;
 struct global_data *gtd;
 
-void pipe_handler(int signal) {
-  restore_terminal();
-
-  display_printf(NULL, "broken_pipe");
-}
-
-void winch_handler(int signal) { init_screen_size(gts); }
-
-void abort_and_trap_handler(int signal) {
-  restore_terminal();
-
-  fflush(NULL);
-
-  exit(-1);
-}
-
-void suspend_handler(int signal) {
-  printf("\033[r\033[%d;%dH", gtd->ses->rows, 1);
-
-  fflush(stdout);
-
-  restore_terminal();
-
-  kill(0, SIGSTOP);
-
-  init_terminal();
-
-  display_puts(NULL, "#WELCOME BACK");
-}
-
 // main() - setup signals - init lists - readcoms - mainloop()
 int main(int argc, char **argv) {
 #ifdef SOCKS
@@ -110,7 +80,7 @@ int main(int argc, char **argv) {
       gtd->ses = do_read(gtd->ses, argv[optind]);
     }
   } else {
-    display_printf(NULL, "#HELP for more info");
+    display_printf(NULL, TRUE, "#HELP for more info");
   }
 
   if (getenv("HOME") != NULL) {
@@ -168,14 +138,14 @@ void init_program() {
 
 void help_menu(int error, char c, char *proc_name) {
   if (error) {
-    display_printf(NULL, "Unknown option '%c'", c);
+    display_printf(NULL, TRUE, "Unknown option '%c'", c);
   }
 
-  display_printf(NULL, "Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf(NULL, "  -e  Execute function");
-  display_printf(NULL, "  -h  This help section");
-  display_printf(NULL, "  -c  Specify configuration file");
-  display_printf(NULL, "  -t  Set title");
+  display_printf(NULL, TRUE, "Usage: %s [OPTION]... [FILE]...", proc_name);
+  display_printf(NULL, TRUE, "  -e  Execute function");
+  display_printf(NULL, TRUE, "  -h  This help section");
+  display_printf(NULL, TRUE, "  -c  Specify configuration file");
+  display_printf(NULL, TRUE, "  -t  Set title");
 
   restore_terminal();
   if (error) {
@@ -196,3 +166,31 @@ void quitmsg(char *message) {
   fflush(NULL);
   exit(0);
 }
+
+void abort_and_trap_handler(int signal) {
+  restore_terminal();
+
+  fflush(NULL);
+
+  exit(-1);
+}
+
+void pipe_handler(int signal) {
+  restore_terminal();
+
+  display_printf(NULL, TRUE, "broken_pipe");
+}
+
+void suspend_handler(int signal) {
+  printf("\033[r\033[%d;%dH", gtd->ses->rows, 1);
+
+  fflush(stdout);
+
+  restore_terminal();
+
+  kill(0, SIGSTOP);
+
+  init_terminal();
+}
+
+void winch_handler(int signal) { init_screen_size(gts); }

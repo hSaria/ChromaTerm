@@ -13,14 +13,14 @@ DO_COMMAND(do_commands) {
       continue;
     }
     if ((int)strlen(buf) + 20 > ses->cols) {
-      display_puts2(ses, buf);
+      display_puts(ses, FALSE, TRUE, buf);
       buf[0] = 0;
     }
     sprintf(add, "%20s", command_table[cmd].name);
     strcat(buf, add);
   }
   if (buf[0]) {
-    display_puts2(ses, buf);
+    display_puts(ses, FALSE, TRUE, buf);
   }
   display_header(ses, "");
 

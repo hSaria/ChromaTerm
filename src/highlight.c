@@ -23,9 +23,9 @@ DO_COMMAND(do_highlight) {
     }
   } else {
     if (get_highlight_codes(ses, arg2, temp) == FALSE) {
-      display_printf2(ses, "#HIGHLIGHT: VALID COLORS ARE:\n");
-      display_printf2(
-          ses,
+      display_printf(ses, FALSE, "#HIGHLIGHT: VALID COLORS ARE:\n");
+      display_printf(
+          ses, FALSE,
           "reset, bold, light, faint, dim, dark, underscore, blink, reverse, "
           "black, red, green, yellow, blue, magenta, cyan, white, b black, b "
           "red, b green, b yellow, b blue, b magenta, b cyan, b white, azure, "

@@ -22,14 +22,15 @@ DO_COMMAND(do_read) {
   wordfree(&p);
 
   if ((fp = fopen(filename, "r")) == NULL) {
-    display_printf(ses, "#READ {%s} - FILE NOT FOUND", filename);
+    display_printf(ses, TRUE, "#READ {%s} - FILE NOT FOUND", filename);
     return ses;
   }
 
   temp[0] = getc(fp);
 
   if (!isgraph((int)temp[0]) || isalpha((int)temp[0])) {
-    display_printf(ses, "#ERROR: #READ {%s} - INVALID START OF FILE", filename);
+    display_printf(ses, TRUE, "#ERROR: #READ {%s} - INVALID START OF FILE",
+                   filename);
 
     fclose(fp);
 
@@ -46,7 +47,7 @@ DO_COMMAND(do_read) {
 
   if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL ||
       (bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf(ses, "#ERROR: #READ {%s} - FAILED TO ALLOCATE MEMORY",
+    display_printf(ses, TRUE, "#ERROR: #READ {%s} - FAILED TO ALLOCATE MEMORY",
                    filename);
 
     fclose(fp);
@@ -202,9 +203,10 @@ DO_COMMAND(do_read) {
 
   if (lvl) {
     display_printf(
-        ses, "#ERROR: #READ {%s} - MISSING %d '%c' BETWEEN LINE %d AND %d",
-        filename, abs(lvl), lvl < 0 ? DEFAULT_OPEN : DEFAULT_CLOSE,
-        fix == 0 ? 1 : ok, fix == 0 ? lnc + 1 : fix);
+        ses, TRUE,
+        "#ERROR: #READ {%s} - MISSING %d '%c' BETWEEN LINE %d AND %d", filename,
+        abs(lvl), lvl < 0 ? DEFAULT_OPEN : DEFAULT_CLOSE, fix == 0 ? 1 : ok,
+        fix == 0 ? lnc + 1 : fix);
 
     fclose(fp);
 
@@ -215,7 +217,7 @@ DO_COMMAND(do_read) {
   }
 
   if (com) {
-    display_printf(ses, "#ERROR: #READ {%s} - MISSING %d '%s'", filename,
+    display_printf(ses, TRUE, "#ERROR: #READ {%s} - MISSING %d '%s'", filename,
                    abs(com), com < 0 ? "/*" : "*/");
 
     fclose(fp);
@@ -247,7 +249,8 @@ DO_COMMAND(do_read) {
 
       bufi[20] = 0;
 
-      display_printf(ses, "#ERROR: #READ {%s} - BUFFER OVERFLOW AT COMMAND: %s",
+      display_printf(ses, TRUE,
+                     "#ERROR: #READ {%s} - BUFFER OVERFLOW AT COMMAND: %s",
                      filename, bufi);
 
       fclose(fp);
@@ -308,7 +311,7 @@ DO_COMMAND(do_write) {
   wordfree(&p);
 
   if (*filename == 0 || (file = fopen(filename, "w")) == NULL) {
-    display_printf(ses, "#ERROR: #WRITE: COULDN'T OPEN {%s} TO WRITE",
+    display_printf(ses, TRUE, "#ERROR: #WRITE: COULDN'T OPEN {%s} TO WRITE",
                    filename);
     return ses;
   }

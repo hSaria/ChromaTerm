@@ -81,7 +81,7 @@ struct help_type help_table[] = {
      "<FFA>FFA <FEA>FEA <FDA>FDA <FCA>FCA <FBA>FBA<088> \n"
      "\n"
      "<178>Comment<078>: See '#help colors', for more information about using "
-     "these color codes.\n\n\n"},
+     "these color codes.<099>\n\n\n"},
     {"COLORS", "<178>Syntax<078>:  <<888>xyz>  with x, y, z being parameters\n"
                "\n"
                "         Parameter 'x': VT100 code\n"
@@ -120,7 +120,7 @@ struct help_type help_table[] = {
                "<178>Example<078>: #showme <<888>acf>Azure    <<888>afc>Jade   "
                "  <<888>caf>Violet\n"
                "<178>Example<078>: #showme <<888>cfa>Lime     <<888>fac>Pink   "
-               "  <<888>fca>Orange\n\n\n"},
+               "  <<888>fca>Orange<099>\n\n\n"},
     {"CONFIG",
      "<178>Command<078>: #config <178>{<078>option<178>}<078> "
      "<178>{<078>argument<178>}<078>\n"
@@ -140,12 +140,12 @@ struct help_type help_table[] = {
      "         Config options which aren't listed by default:\n"
      "\n"
      "         #CONFIG {CONVERT META} {ON|OFF} Shows color codes and key "
-     "bindings.\n\n\n"},
+     "bindings.<099>\n\n\n"},
     {"EXIT", "<178>Command<078>: #exit\n"
              "\n"
              "         Terminates the program and return to unix.  On most "
              "systems, ctrl-c\n"
-             "         has the same result.\n\n\n"},
+             "         has the same result.<099>\n\n\n"},
     {"ESCAPE CODES",
      "         You may use the escape character \\ for various special "
      "characters.\n"
@@ -162,13 +162,15 @@ struct help_type help_table[] = {
      "\n"
      "         Ending a line with \\ will stop a line feed from being "
      "appended.\n"
-     "         To escape arguments in an alias use %%0 %%1 %%2 etc.\n\n\n"},
-    {"HELP", "<178>Command<078>: #help <178>{<078>subject<178>}<078>\n"
-             "\n"
-             "         Without an argument #help will list all available help "
-             "subjects.\n"
-             "\n"
-             "         Using #help %* will display all help entries.\n\n\n"},
+     "         To escape arguments in an alias use %%0 %%1 %%2 "
+     "etc.<099>\n\n\n"},
+    {"HELP",
+     "<178>Command<078>: #help <178>{<078>subject<178>}<078>\n"
+     "\n"
+     "         Without an argument #help will list all available help "
+     "subjects.\n"
+     "\n"
+     "         Using #help %* will display all help entries.<099>\n\n\n"},
     {"HIGHLIGHT",
      "<178>Command<078>: #highlight <178>{<078>string<178>}<078> "
      "<178>{<078>color names<178>}<078> <178>{<078>priority<178>}<078>\n"
@@ -214,21 +216,22 @@ struct help_type help_table[] = {
      "<178>Comment<078>: This command only works with ANSI/VT100 terminals or "
      "emulators.\n"
      "<178>Comment<078>: You can remove a highlight with the #unhighlight "
-     "command.\n\n\n"},
-    {"READ", "<178>Command<078>: #read <178>{<078>filename<178>}<078>\n"
-             "\n"
-             "         Reads a commands file into memory.  The coms file is "
-             "merged in with\n"
-             "         the currently loaded commands.  Duplicate commands are "
-             "overwritten.\n"
-             "\n"
-             "         If you uses braces, { and } you can use several lines "
-             "for 1 commands.\n"
-             "         This however means you must always match every { with a "
-             "} for the read\n"
-             "         command to work.\n"
-             "\n"
-             "         You can comment out triggers using /* text */\n\n\n"},
+     "command.<099>\n\n\n"},
+    {"READ",
+     "<178>Command<078>: #read <178>{<078>filename<178>}<078>\n"
+     "\n"
+     "         Reads a commands file into memory.  The coms file is "
+     "merged in with\n"
+     "         the currently loaded commands.  Duplicate commands are "
+     "overwritten.\n"
+     "\n"
+     "         If you uses braces, { and } you can use several lines "
+     "for 1 commands.\n"
+     "         This however means you must always match every { with a "
+     "} for the read\n"
+     "         command to work.\n"
+     "\n"
+     "         You can comment out triggers using /* text */<099>\n\n\n"},
     {"REGEXP",
      "<178>Command<078>: #regexp <178>{<078>string<178>}<078> "
      "<178>{<078>expression<178>}<078> <178>{<078>true<178>}<078> "
@@ -269,38 +272,36 @@ struct help_type help_table[] = {
      "      %I matching becomes case sensitive (default).\n"
      "\n"
      "<178>Example<078>: #regexp {bli bla blo} {bli {.*} blo} {#showme "
-     "&1}\n\n\n"},
+     "&1}<099>\n\n\n"},
     {"RUN", "<178>Command<078>: #run <178>{<078>shell command<178>}<078>\n"
             "\n"
             "         The run command creates a session which runs the given "
             "command.\n"
             "\n"
-            "<178>Example<078>: #run {ssh someone@somewhere.com}\n\n\n"},
+            "<178>Example<078>: #run {ssh someone@somewhere.com}<099>\n\n\n"},
     {"WRITE", "<178>Command<078>: #write <178>{<078>filename<178>}<078>\n"
               "\n"
               "         Writes all current actions, aliases, subs, highlights, "
               "and variables\n"
-              "         to a command file, specified by filename.\n\n\n"},
+              "         to a command file, specified by filename.<099>\n\n\n"},
     {"", ""}};
 
 DO_COMMAND(do_help) {
   char left[BUFFER_SIZE], add[BUFFER_SIZE], buf[BUFFER_SIZE], *ptf, *pto;
-  int cnt, found;
+  int cnt;
 
   get_arg_in_braces(ses, arg, left, TRUE);
 
   if (*left == 0) {
     for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
       if ((int)strlen(add) + 19 > ses->cols) {
-        display_puts2(ses, add);
+        display_puts(ses, FALSE, TRUE, add);
         add[0] = 0;
       }
       cat_sprintf(add, "%19s", help_table[cnt].name);
     }
-    display_puts(ses, add);
+    display_puts(ses, TRUE, TRUE, add);
   } else {
-    found = FALSE;
-
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
       if (is_abbrev(left, help_table[cnt].name) || atoi(left) == cnt + 1 ||
           match(ses, help_table[cnt].name, left, SUB_NONE)) {
@@ -316,21 +317,15 @@ DO_COMMAND(do_help) {
           }
           *ptf++ = 0;
 
-          display_puts3(ses, pto);
+          display_puts(ses, FALSE, FALSE, pto);
 
           pto = ptf;
         }
 
-        found = TRUE;
-
-        if (is_abbrev(left, help_table[cnt].name)) {
-          break;
-        }
+        return;
       }
     }
-    if (found == FALSE) {
-      display_printf2(ses, "No help found for '%s'", left);
-    }
+    display_printf(ses, FALSE, "#HELP: No help found for topic '%s'", left);
   }
   return ses;
 }

@@ -411,13 +411,13 @@ extern struct session *gts;
 extern struct global_data *gtd;
 
 extern int main(int argc, char **argv);
+extern void init_program(void);
 extern void help_menu(int error, char c, char *proc_name);
-extern void winch_handler(int signal);
+extern void quitmsg(char *message);
 extern void abort_and_trap_handler(int signal);
 extern void pipe_handler(int signal);
 extern void suspend_handler(int signal);
-extern void init_program(void);
-extern void quitmsg(char *message);
+extern void winch_handler(int signal);
 
 #endif
 
@@ -515,7 +515,6 @@ extern void poll_sessions(void);
 extern int is_abbrev(char *s1, char *s2);
 extern int hex_number(char *str);
 extern int oct_number(char *str);
-extern long long getCurrentTime(void);
 extern char *capitalize(char *str);
 extern int cat_sprintf(char *dest, char *fmt, ...);
 extern void ins_sprintf(char *dest, char *fmt, ...);
@@ -524,11 +523,10 @@ extern void show_message(struct session *ses, int index, char *format, ...);
 extern void display_header(struct session *ses, char *format, ...);
 extern void socket_printf(struct session *ses, size_t length, char *format,
                           ...);
-extern void display_printf2(struct session *ses, char *format, ...);
-extern void display_printf(struct session *ses, char *format, ...);
-extern void display_puts3(struct session *ses, char *string);
-extern void display_puts2(struct session *ses, char *string);
-extern void display_puts(struct session *ses, char *string);
+extern void display_printf(struct session *ses, int came_from_command,
+                           char *format, ...);
+extern void display_puts(struct session *ses, int came_from_mud, int with_color,
+                         char *string);
 extern void printline(struct session *ses, char *str, int isaprompt);
 
 #endif
