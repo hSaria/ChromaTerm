@@ -6,7 +6,7 @@ void write_line_socket(struct session *ses, char *line, int size) {
   static int retry;
 
   if (!HAS_BIT(ses->flags, SES_FLAG_CONNECTED)) {
-    display_printf2(ses,
+    display_printf(ses, FALSE,
                     "#SESSION NOT CONNECTED. USE: %cRUN {command} TO CONNECT",
                     gtd->command_char);
     return;

@@ -28,7 +28,7 @@ struct session *parse_command(struct session *ses, char *input) {
 
   get_arg_stop_spaces(ses, input, line, 0);
 
-  display_printf(ses, "#ERROR: #UNKNOWN COMMAND '%s'", line);
+  display_printf(ses, TRUE, "#ERROR: #UNKNOWN COMMAND '%s'", line);
 
   return ses;
 }
@@ -92,7 +92,7 @@ char *get_arg_in_braces(struct session *ses, char *string, char *result,
   }
 
   if (*pti == 0) {
-    display_printf2(NULL, "#ERROR: UNMATCHED BRACKETS");
+    display_printf(NULL, FALSE, "#ERROR: UNMATCHED BRACKETS");
   } else {
     pti++;
   }

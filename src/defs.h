@@ -493,13 +493,6 @@ extern struct list_type list_table[LIST_MAX];
 
 #endif
 
-#ifndef __TEXT_H__
-#define __TEXT_H__
-
-extern void printline(struct session *ses, char *str, int isaprompt);
-
-#endif
-
 #ifndef __TOKENIZE_H__
 #define __TOKENIZE_H__
 
@@ -536,6 +529,7 @@ extern void display_printf(struct session *ses, char *format, ...);
 extern void display_puts3(struct session *ses, char *string);
 extern void display_puts2(struct session *ses, char *string);
 extern void display_puts(struct session *ses, char *string);
+extern void printline(struct session *ses, char *str, int isaprompt);
 
 #endif
 

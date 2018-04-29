@@ -57,19 +57,6 @@ int oct_number(char *str) {
   return value;
 }
 
-long long getCurrentTime() {
-  struct timeval now_time;
-
-  gettimeofday(&now_time, NULL);
-
-  if (gtd->time >= now_time.tv_sec * 1000000LL + now_time.tv_usec) {
-    gtd->time++;
-  } else {
-    gtd->time = now_time.tv_sec * 1000000LL + now_time.tv_usec;
-  }
-  return gtd->time;
-}
-
 char *capitalize(char *str) {
   static char outbuf[BUFFER_SIZE];
   int cnt;
@@ -116,23 +103,11 @@ void show_message(struct session *ses, int index, char *format, ...) {
   va_list args;
 
   va_start(args, format);
-
   vsprintf(buf, format, args);
-
   va_end(args);
 
-  if (index == -1) {
-    if (ses->input_level == 0) {
-      display_puts2(ses, buf);
-    }
-
-    return;
-  }
-
   if (ses->input_level == 0) {
-    display_puts2(ses, buf);
-
-    return;
+    display_puts(ses, FALSE, TRUE, buf);
   }
 }
 
@@ -154,7 +129,7 @@ void display_header(struct session *ses, char *format, ...) {
 
   buf[gtd->ses->cols] = 0;
 
-  display_puts2(ses, buf);
+  display_puts(ses, FALSE, FALSE, buf);
 }
 
 void socket_printf(struct session *ses, size_t length, char *format, ...) {
@@ -169,7 +144,9 @@ void socket_printf(struct session *ses, size_t length, char *format, ...) {
     write(ses->socket, buf, length);
   }
 }
-void display_printf2(struct session *ses, char *format, ...) {
+
+void display_printf(struct session *ses, int came_from_commend, char *format,
+                    ...) {
   char buf[STRING_SIZE];
   va_list args;
 
@@ -177,84 +154,62 @@ void display_printf2(struct session *ses, char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  display_puts2(ses, buf);
+  if (came_from_commend) {
+    display_puts(ses, TRUE, TRUE, buf);
+  } else {
+    display_puts(ses, FALSE, TRUE, buf);
+  }
 }
 
-void display_printf(struct session *ses, char *format, ...) {
-  char buf[STRING_SIZE];
-  va_list args;
-
-  va_start(args, format);
-  vsprintf(buf, format, args);
-  va_end(args);
-
-  display_puts(ses, buf);
-}
-
-// Like display_puts2, but no color codes added
-void display_puts3(struct session *ses, char *string) {
+void display_puts(struct session *ses, int came_from_mud, int with_color,
+                  char *string) {
   char output[STRING_SIZE];
 
   if (ses == NULL) {
     ses = gtd->ses;
   }
 
+  if (came_from_mud) {
+    do_one_line(string, ses);
+  }
+
   if (gtd->quiet) {
     return;
   }
 
-  if (strip_vt102_strlen(ses, ses->more_output) != 0) {
-    sprintf(output, "\n%s", string);
+  if (with_color) {
+    if (strip_vt102_strlen(ses, ses->more_output) != 0) {
+      sprintf(output, "\n\033[0m%s\033[0m", string);
+    } else {
+      sprintf(output, "\033[0m%s\033[0m", string);
+    }
   } else {
-    sprintf(output, "%s", string);
-  }
-
-  if (ses != gtd->ses) {
-    return;
+    if (strip_vt102_strlen(ses, ses->more_output) != 0) {
+      sprintf(output, "\n%s", string);
+    } else {
+      sprintf(output, "%s", string);
+    }
   }
 
   printline(ses, output, FALSE);
 }
 
-// output to screen should go through this function
-// the output is NOT checked for actions or anything
-void display_puts2(struct session *ses, char *string) {
-  char output[STRING_SIZE];
+void printline(struct session *ses, char *str, int prompt) {
+  char wrapped_str[STRING_SIZE];
 
-  if (ses == NULL) {
-    ses = gtd->ses;
-  }
-
-  if (gtd->quiet) {
-    return;
-  }
-
-  if (strip_vt102_strlen(ses, ses->more_output) != 0) {
-    sprintf(output, "\n\033[0m%s\033[0m", string);
+  if (HAS_BIT(ses->flags, SES_FLAG_CONVERTMETA)) {
+    convert_meta(str, wrapped_str);
   } else {
-    sprintf(output, "\033[0m%s\033[0m", string);
+    strcpy(wrapped_str, str);
   }
 
-  if (ses != gtd->ses) {
-
-    return;
+  if (prompt) {
+    printf("%s", wrapped_str);
+  } else {
+    printf("%s\n", wrapped_str);
   }
-
-  printline(ses, output, FALSE);
 
   return;
-}
-
-//  output to screen should go through this function
-//  the output IS treated as though it came from the mud
-void display_puts(struct session *ses, char *string) {
-  if (ses == NULL) {
-    ses = gtd->ses;
-  }
-
-  do_one_line(string, ses);
-
-  display_puts2(ses, string);
 }
 
 // print system call error message and terminate

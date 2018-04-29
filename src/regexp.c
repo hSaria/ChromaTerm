@@ -15,7 +15,7 @@ DO_COMMAND(do_regexp) {
   get_arg_in_braces(ses, arg, is_false, 1);
 
   if (*is_true == 0) {
-    display_printf2(ses,
+    display_printf(ses, FALSE,
                     "SYNTAX: #REGEXP {string} {expression} {true} {false}");
   } else {
     substitute(ses, left, left, SUB_NONE);

@@ -23,7 +23,7 @@ DO_COMMAND(do_run) {
 
   // Limit to single process
   if (process_already_running) {
-    display_printf2(ses, "#RUN: A PROCESS IS ALREADY RUNNING");
+    display_printf(ses, FALSE, "#RUN: A PROCESS IS ALREADY RUNNING");
     return ses;
   } else {
     process_already_running = TRUE;
