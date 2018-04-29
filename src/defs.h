@@ -433,6 +433,7 @@ extern char *refstring(char *point, char *fmt, ...);
 
 extern DO_COMMAND(do_commands);
 extern DO_COMMAND(do_exit);
+extern DO_COMMAND(do_run);
 extern DO_COMMAND(do_showme);
 
 #endif
@@ -472,13 +473,6 @@ extern void do_one_line(char *line, struct session *ses);
 
 extern struct session *new_session(struct session *ses, int pid, int socket);
 extern void cleanup_session(struct session *ses);
-
-#endif
-
-#ifndef __SYSTEM_H__
-#define __SYSTEM_H__
-
-extern DO_COMMAND(do_run);
 
 #endif
 
