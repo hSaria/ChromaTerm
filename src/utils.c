@@ -216,29 +216,3 @@ void syserr(char *msg) {
   }
   quitmsg(s, 1);
 }
-
-// Whoops, strcasecmp wasn't found.
-#if !defined(HAVE_STRCASECMP)
-#define UPPER(c) (islower(c) ? toupper(c) : c)
-
-int strcasecmp(char *string1, char *string2) {
-  for (; UPPER(*string1) == UPPER(*string2); string1++, string2++)
-    if (!*string1)
-      return (0);
-  return (UPPER(*string1) - UPPER(*string2));
-}
-
-int strncasecmp(char *string1, char *string2, size_t count) {
-  if (count)
-    do {
-      if (UPPER(*string1) != UPPER(*string2))
-        return (UPPER(*string1) - UPPER(*string2));
-      if (!*string1++)
-        break;
-      string2++;
-    } while (--count);
-
-  return (0);
-}
-
-#endif
