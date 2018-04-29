@@ -14,7 +14,6 @@
 #include <util.h>
 #include <wordexp.h>
 
-#include "config.h"
 #include "pcre.h"
 
 #ifndef __DEFS_H__
