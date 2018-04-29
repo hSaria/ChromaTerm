@@ -2,40 +2,16 @@
 
 DEFINES = -D_GNU_SOURCE @DEFS@
 
-CC = @CC@ -Wall -Wextra -pedantic-errors
+CC = @CC@
 MAKE = @MAKE@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = ${DESTDIR}@bindir@
-docdir = @prefix@/doc
-
-#this is the standard CFLAGS options, this is what most people should use
-
-CFLAGS += $(DEFINES) @BIG5@
-
-LDFLAGS = @LDFLAGS@
-
+CFLAGS += $(DEFINES) -Wall -Wextra -pedantic-errors
 INCS = @MYINCLUDE@
-
 LIBS = @LIBS@
-
-# If you prefer to be able to enter ISO latin-1 characters instead
-# of being able to use the meta key for special emacs-like commands
-# uncomment the following line.
-#F1 = -DUSE_ISO_LATIN_ONE
-
-# If you need to make connections through a SOCKS server, uncomment
-# these 2 lines.  You also need to modify LIBSOCKS to point to the location
-# of your SOCKS library.
-#F6 = -DSOCKS
-#LIBSOCKS = -lsocks5
-
-
-# DEFAULT_FILE_DIR = @HOME@
 DEFAULT_FILE_DIR = $(HOME)
-
-FFLAGS= $(F1) $(F6)
 
 OFILES = config.o cursor.o data.o files.o help.o highlight.o input.o main.o \
          memory.o misc.o net.o parse.o regexp.o session.o tables.o terminal.o \
@@ -46,32 +22,24 @@ default: all
 
 all:	ct
 
-
 ct: Makefile $(OFILES) defs.h
 	@echo "---- Linking..."
-	$(CC) $(INCS) $(CFLAGS) $(FFLAGS) $(LDFLAGS) -o $@ $(OFILES) $(LIBS) ${LIBSOCKS}
-
+	$(CC) $(CFLAGS) -o $@ $(OFILES) $(LIBS)
 
 Makefile: Makefile.in
 	@echo "You need to run ./configure first; then try make."
 	@exit 1
 
-
 install: ct
 	-mkdir -p $(bindir)
 	cp ct $(bindir)
-#	-mkdir -p $(docdir)
-#	cp ../docs/* ../[A-Z][A-Z]* $(docdir)
-
 
 # Autocompile all .c files into .o files using this rule:
 .c.o:
-	$(CC) $(PIPE) $(CFLAGS) $(FFLAGS) $(INCS) -c $<
-
+	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f *.o *~ ../*~ ../mods/*~ ct*
-
+	rm -f *.o config.status config.log
 
 distclean:
-	rm -f *.o *~ ../*~ ../mods/*~ ct* Makefile config.h config.status config.log
+	rm -f *.o config.status config.log ct Makefile config.h 
