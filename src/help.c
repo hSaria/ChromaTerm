@@ -322,7 +322,7 @@ DO_COMMAND(do_help) {
           pto = ptf;
         }
 
-        return;
+        return ses;
       }
     }
     display_printf(ses, FALSE, "#HELP: No help found for topic '%s'", left);
