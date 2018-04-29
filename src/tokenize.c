@@ -2,23 +2,10 @@
 
 #include "defs.h"
 
-struct scriptdata {
-  long long min;
-  long long max;
-  long long cnt;
-  int inc;
-  char *cpy;
-  char *str;
-  char *arg;
-};
-
 struct scriptnode {
   struct scriptnode *next;
   struct scriptnode *prev;
-  union {
-    struct scriptdata *data;
-    struct script_regex *regex;
-  };
+  struct script_regex *regex;
   char *str;
   short lvl;
   short type;
