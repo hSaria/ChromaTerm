@@ -2,7 +2,7 @@
 
 DEFINES = -D_GNU_SOURCE @DEFS@
 
-CC = @CC@ -Wall
+CC = @CC@ -Wall -Wextra -pedantic-errors
 MAKE = @MAKE@
 
 prefix = @prefix@
