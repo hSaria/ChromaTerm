@@ -73,7 +73,7 @@ void poll_sessions(void) {
           break;
         }
 
-        if (read_buffer_mud(gts) == FALSE) {
+        if (read_buffer_mud() == FALSE) {
           quitmsg(NULL);
         }
 

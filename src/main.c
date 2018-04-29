@@ -60,11 +60,11 @@ int main(int argc, char **argv) {
         break;
       case 'c':
         if (access(optarg, R_OK) != -1) {
-          gtd->ses = do_read(gtd->ses, optarg);
+          do_read(optarg);
         }
         break;
       case 'e':
-        gtd->ses = script_driver(gtd->ses, optarg);
+        gts = script_driver(optarg);
         break;
       case 'h':
         help_menu(FALSE, c, argv[0]);
@@ -77,10 +77,10 @@ int main(int argc, char **argv) {
     }
 
     if (argv[optind] != NULL) {
-      gtd->ses = do_read(gtd->ses, argv[optind]);
+      do_read(argv[optind]);
     }
   } else {
-    display_printf(NULL, TRUE, "#HELP for more info");
+    display_printf(TRUE, "#HELP for more info");
   }
 
   if (getenv("HOME") != NULL) {
@@ -88,12 +88,12 @@ int main(int argc, char **argv) {
     sprintf(filename, "%s", ".chromatermrc");
 
     if (access(filename, R_OK) != -1) {
-      gtd->ses = do_read(gtd->ses, filename);
+      do_read(filename);
     } else {
       sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
 
       if (access(filename, R_OK) != -1) {
-        gtd->ses = do_read(gtd->ses, filename);
+        do_read(filename);
       }
     }
   }
@@ -125,12 +125,12 @@ void init_program() {
     gtd->cmds[index] = strdup("");
   }
 
-  init_screen_size(gts);
+  init_screen_size();
 
   gts->input_level++;
-  do_configure(gts, "{CHARSET}         {UTF-8}");
-  do_configure(gts, "{COMMAND CHAR}        {#}");
-  do_configure(gts, "{CONVERT META}      {OFF}");
+  do_configure("{CHARSET}         {UTF-8}");
+  do_configure("{COMMAND CHAR}        {#}");
+  do_configure("{CONVERT META}      {OFF}");
   gts->input_level--;
 
   init_terminal();
@@ -138,14 +138,14 @@ void init_program() {
 
 void help_menu(int error, char c, char *proc_name) {
   if (error) {
-    display_printf(NULL, TRUE, "Unknown option '%c'", c);
+    display_printf(TRUE, "Unknown option '%c'", c);
   }
 
-  display_printf(NULL, TRUE, "Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf(NULL, TRUE, "  -e  Execute function");
-  display_printf(NULL, TRUE, "  -h  This help section");
-  display_printf(NULL, TRUE, "  -c  Specify configuration file");
-  display_printf(NULL, TRUE, "  -t  Set title");
+  display_printf(TRUE, "Usage: %s [OPTION]... [FILE]...", proc_name);
+  display_printf(TRUE, "  -e  Execute function");
+  display_printf(TRUE, "  -h  This help section");
+  display_printf(TRUE, "  -c  Specify configuration file");
+  display_printf(TRUE, "  -t  Set title");
 
   restore_terminal();
   if (error) {
@@ -156,7 +156,7 @@ void help_menu(int error, char c, char *proc_name) {
 }
 
 void quitmsg(char *message) {
-  cleanup_session(gts);
+  cleanup_session();
   restore_terminal();
 
   if (message) {
@@ -167,7 +167,7 @@ void quitmsg(char *message) {
   exit(0);
 }
 
-void abort_and_trap_handler(int signal) {
+void abort_and_trap_handler() {
   restore_terminal();
 
   fflush(NULL);
@@ -175,13 +175,13 @@ void abort_and_trap_handler(int signal) {
   exit(-1);
 }
 
-void pipe_handler(int signal) {
+void pipe_handler() {
   restore_terminal();
 
-  display_printf(NULL, TRUE, "broken_pipe");
+  display_printf(TRUE, "broken_pipe");
 }
 
-void suspend_handler(int signal) {
+void suspend_handler() {
   printf("\033[r\033[%d;%dH", gtd->ses->rows, 1);
 
   fflush(stdout);
@@ -193,4 +193,4 @@ void suspend_handler(int signal) {
   init_terminal();
 }
 
-void winch_handler(int signal) { init_screen_size(gts); }
+void winch_handler() { init_screen_size(); }

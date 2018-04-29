@@ -40,21 +40,16 @@ void init_terminal() {
 
 void restore_terminal(void) { tcsetattr(0, TCSANOW, &gtd->active_terminal); }
 
-void init_screen_size(struct session *ses) {
+void init_screen_size() {
   struct winsize screen;
 
-  if (ses == gts) {
-    if (ioctl(0, TIOCGWINSZ, &screen) == -1) {
-      ses->rows = SCREEN_HEIGHT;
-      ses->cols = SCREEN_WIDTH;
-    } else {
-      ses->rows = screen.ws_row;
-      ses->cols = screen.ws_col;
-    }
+  if (ioctl(0, TIOCGWINSZ, &screen) == -1) {
+    gts->rows = SCREEN_HEIGHT;
+    gts->cols = SCREEN_WIDTH;
   } else {
-    ses->rows = gts->rows;
-    ses->cols = gts->cols;
+    gts->rows = screen.ws_row;
+    gts->cols = screen.ws_col;
   }
 }
 
-int get_scroll_size(struct session *ses) { return ses->rows; }
+int get_scroll_size() { return gts->rows; }

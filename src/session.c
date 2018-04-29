@@ -5,7 +5,7 @@
 
 #include "defs.h"
 
-struct session *new_session(struct session *ses, int pid, int socket) {
+struct session *new_session(int pid, int socket) {
   gts->pid = pid;
   gts->socket = socket;
 
@@ -14,15 +14,15 @@ struct session *new_session(struct session *ses, int pid, int socket) {
   return gtd->ses;
 }
 
-void cleanup_session(struct session *ses) {
-  if (kill(ses->pid, 0) && ses->socket) {
-    if (close(ses->socket) == -1) {
+void cleanup_session() {
+  if (kill(gts->pid, 0) && gts->socket) {
+    if (close(gts->socket) == -1) {
       syserr("close in cleanup");
     }
-    if (ses->pid) {
-      kill(ses->pid, SIGKILL);
+    if (gts->pid) {
+      kill(gts->pid, SIGKILL);
     }
 
-    DEL_BIT(ses->flags, SES_FLAG_CONNECTED);
+    DEL_BIT(gts->flags, SES_FLAG_CONNECTED);
   }
 }

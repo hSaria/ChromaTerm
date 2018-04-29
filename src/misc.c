@@ -15,25 +15,23 @@ DO_COMMAND(do_commands) {
   char buf[BUFFER_SIZE] = {0}, add[BUFFER_SIZE];
   int cmd;
 
-  display_header(ses, " %s ", "COMMANDS");
+  display_header(" COMMANDS ");
 
   for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
     if (*arg && !is_abbrev(arg, command_table[cmd].name)) {
       continue;
     }
-    if ((int)strlen(buf) + 20 > ses->cols) {
-      display_puts(ses, FALSE, TRUE, buf);
+    if ((int)strlen(buf) + 20 > gts->cols) {
+      display_puts(FALSE, TRUE, buf);
       buf[0] = 0;
     }
     sprintf(add, "%20s", command_table[cmd].name);
     strcat(buf, add);
   }
   if (buf[0]) {
-    display_puts(ses, FALSE, TRUE, buf);
+    display_puts(FALSE, TRUE, buf);
   }
-  display_header(ses, "");
-
-  return ses;
+  display_header("");
 }
 
 DO_COMMAND(do_exit) {
@@ -42,7 +40,6 @@ DO_COMMAND(do_exit) {
   } else {
     quitmsg(NULL);
   }
-  return NULL;
 }
 
 DO_COMMAND(do_run) {
@@ -52,12 +49,12 @@ DO_COMMAND(do_run) {
 
   char *argv[4] = {"sh", "-c", "", NULL};
 
-  sub_arg_in_braces(ses, arg, command, GET_ALL, SUB_NONE);
+  sub_arg_in_braces(arg, command, GET_ALL, SUB_NONE);
 
   // Limit to single process
   if (process_already_running) {
-    display_printf(ses, FALSE, "#RUN: A PROCESS IS ALREADY RUNNING");
-    return ses;
+    display_printf(FALSE, "#RUN: A PROCESS IS ALREADY RUNNING");
+    return;
   } else {
     process_already_running = TRUE;
   }
@@ -67,8 +64,8 @@ DO_COMMAND(do_run) {
     strcpy(command, getenv("SHELL") ? getenv("SHELL") : "");
   }
 
-  size.ws_row = get_scroll_size(ses);
-  size.ws_col = ses->cols;
+  size.ws_row = get_scroll_size();
+  size.ws_col = gts->cols;
 
   pid = forkpty(&desc, NULL, &gtd->active_terminal, &size);
 
@@ -82,40 +79,32 @@ DO_COMMAND(do_run) {
     execv("/bin/sh", argv);
     break;
   default:
-    new_session(ses, pid, desc);
+    new_session(pid, desc);
     break;
   }
-
-  return gtd->ses;
 }
 
 DO_COMMAND(do_showme) {
   char left[BUFFER_SIZE], right[BUFFER_SIZE], temp[STRING_SIZE];
   int lnf;
 
-  get_arg_in_braces(ses, arg, left, TRUE);
+  get_arg_in_braces(arg, left, TRUE);
 
   lnf = (strlen(left) >= strlen("\\") &&
          !strcasecmp(left + strlen(left) - strlen("\\"), "\\"))
             ? FALSE
             : TRUE;
 
-  substitute(ses, left, temp, SUB_NONE);
-  substitute(ses, temp, left, SUB_COL | SUB_ESC);
+  substitute(left, temp, SUB_NONE);
+  substitute(temp, left, SUB_COL | SUB_ESC);
 
-  do_one_line(left, ses);
+  do_one_line(left);
 
-  if (strip_vt102_strlen(ses, ses->more_output) != 0) {
+  if (strip_vt102_strlen(gts->more_output) != 0) {
     sprintf(right, "\n\033[0m%s\033[0m", left);
   } else {
     sprintf(right, "\033[0m%s\033[0m", left);
   }
 
-  if (ses != gtd->ses) {
-    return ses;
-  }
-
-  printline(ses, right, lnf);
-
-  return ses;
+  printline(right, lnf);
 }

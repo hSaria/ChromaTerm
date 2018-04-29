@@ -2,39 +2,39 @@
 
 #include "defs.h"
 
-struct session *parse_input(struct session *ses, char *input) {
+struct session *parse_input(char *input) {
   char *line;
 
   if (*input == 0) {
-    write_mud(ses, input, SUB_EOL);
+    write_mud(input, SUB_EOL);
 
-    return ses;
+    return gts;
   }
 
   line = (char *)malloc(BUFFER_SIZE);
 
   strcpy(line, input);
 
-  write_mud(ses, line, SUB_EOL);
+  write_mud(line, SUB_EOL);
 
   free(line);
 
-  return ses;
+  return gts;
 }
 
 // Deals with # stuff
-struct session *parse_command(struct session *ses, char *input) {
+struct session *parse_command(char *input) {
   char line[BUFFER_SIZE];
 
-  get_arg_stop_spaces(ses, input, line, 0);
+  get_arg_stop_spaces(input, line, 0);
 
-  display_printf(ses, TRUE, "#ERROR: #UNKNOWN COMMAND '%s'", line);
+  display_printf(TRUE, "#ERROR: #UNKNOWN COMMAND '%s'", line);
 
-  return ses;
+  return gts;
 }
 
 // get all arguments - only check for unescaped command separators
-char *get_arg_all(struct session *ses, char *string, char *result) {
+char *get_arg_all(char *string, char *result) {
   char *pto, *pti;
   int nest = 0;
 
@@ -59,8 +59,7 @@ char *get_arg_all(struct session *ses, char *string, char *result) {
 }
 
 // Braces are stripped in braced arguments leaving all else as is.
-char *get_arg_in_braces(struct session *ses, char *string, char *result,
-                        int flag) {
+char *get_arg_in_braces(char *string, char *result, int flag) {
   char *pti, *pto;
   int nest = 1;
 
@@ -69,9 +68,9 @@ char *get_arg_in_braces(struct session *ses, char *string, char *result,
 
   if (*pti != DEFAULT_OPEN) {
     if (!HAS_BIT(flag, GET_ALL)) {
-      pti = get_arg_stop_spaces(ses, pti, result, flag);
+      pti = get_arg_stop_spaces(pti, result, flag);
     } else {
-      pti = get_arg_with_spaces(ses, pti, result, flag);
+      pti = get_arg_with_spaces(pti, result);
     }
     return pti;
   }
@@ -92,7 +91,7 @@ char *get_arg_in_braces(struct session *ses, char *string, char *result,
   }
 
   if (*pti == 0) {
-    display_printf(NULL, FALSE, "#ERROR: UNMATCHED BRACKETS");
+    display_printf(FALSE, "#ERROR: UNMATCHED BRACKETS");
   } else {
     pti++;
   }
@@ -101,20 +100,18 @@ char *get_arg_in_braces(struct session *ses, char *string, char *result,
   return pti;
 }
 
-char *sub_arg_in_braces(struct session *ses, char *string, char *result,
-                        int flag, int sub) {
+char *sub_arg_in_braces(char *string, char *result, int flag, int sub) {
   char buffer[BUFFER_SIZE];
 
-  string = get_arg_in_braces(ses, string, buffer, flag);
+  string = get_arg_in_braces(string, buffer, flag);
 
-  substitute(ses, buffer, result, sub);
+  substitute(buffer, result, sub);
 
   return string;
 }
 
 // get all arguments
-char *get_arg_with_spaces(struct session *ses, char *string, char *result,
-                          int flag) {
+char *get_arg_with_spaces(char *string, char *result) {
   char *pto, *pti;
   int nest = 0;
 
@@ -139,8 +136,7 @@ char *get_arg_with_spaces(struct session *ses, char *string, char *result,
 }
 
 // get one arg, stop at spaces
-char *get_arg_stop_spaces(struct session *ses, char *string, char *result,
-                          int flag) {
+char *get_arg_stop_spaces(char *string, char *result, int flag) {
   char *pto, *pti;
   int nest = 0;
 
@@ -180,23 +176,20 @@ char *space_out(char *string) {
 }
 
 // send command to the socket
-void write_mud(struct session *ses, char *command, int flags) {
+void write_mud(char *command, int flags) {
   char output[BUFFER_SIZE];
   int size;
 
-  size = substitute(ses, command, output, flags);
+  size = substitute(command, output, flags);
 
-  write_line_socket(ses, output, size);
+  write_line_socket(output, size);
 }
 
 // do all of the functions to one line of buffer, VT102 codes and variables
 // substituted beforehand.
-void do_one_line(char *line, struct session *ses) {
+void do_one_line(char *line) {
   char strip[BUFFER_SIZE];
 
   strip_vt102_codes(line, strip);
-
-  check_all_highlights(ses, line, strip);
-
-  return;
+  check_all_highlights(line, strip);
 }

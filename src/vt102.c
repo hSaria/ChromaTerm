@@ -328,7 +328,7 @@ int find_non_color_codes(char *str) {
   return 0;
 }
 
-int strip_vt102_strlen(struct session *ses, char *str) {
+int strip_vt102_strlen(char *str) {
   char *pti;
   int i = 0;
 
@@ -341,7 +341,7 @@ int strip_vt102_strlen(struct session *ses, char *str) {
       continue;
     }
 
-    if (HAS_BIT(ses->flags, SES_FLAG_UTF8) && (*pti & 192) == 192) {
+    if (HAS_BIT(gts->flags, SES_FLAG_UTF8) && (*pti & 192) == 192) {
       pti++;
 
       while ((*pti & 192) == 128) {

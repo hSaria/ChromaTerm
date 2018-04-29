@@ -22,7 +22,7 @@ struct script_regex {
 struct scriptroot {
   struct scriptnode *next;
   struct scriptnode *prev;
-  struct session *ses;
+  struct session *ses; ///////////////// DEBUG CHECK HERE
 };
 
 void addtoken(struct scriptroot *root, int lvl, int opr, int cmd, char *str) {
@@ -44,9 +44,9 @@ char *addregextoken(struct scriptroot *root, int lvl, int type, int cmd,
 
   char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE];
 
-  str = get_arg_in_braces(root->ses, str, arg1, FALSE);
-  str = get_arg_in_braces(root->ses, str, arg2, FALSE);
-  str = get_arg_in_braces(root->ses, str, arg3, TRUE);
+  str = get_arg_in_braces(str, arg1, FALSE);
+  str = get_arg_in_braces(str, arg2, FALSE);
+  str = get_arg_in_braces(str, arg3, TRUE);
 
   addtoken(root, lvl, type, cmd, arg1);
 
@@ -106,23 +106,23 @@ void tokenize_script(struct scriptroot *root, int lvl, char *str) {
     str = space_out(str);
 
     if (*str != gtd->command_char) {
-      str = get_arg_all(root->ses, str, line);
+      str = get_arg_all(str, line);
 
       addtoken(root, lvl, TOKEN_TYPE_STRING, -1, line);
     } else {
-      arg = get_arg_stop_spaces(root->ses, str, line, 0);
+      arg = get_arg_stop_spaces(str, line, 0);
 
       cmd = find_command(line + 1);
 
       if (cmd == -1) {
-        str = get_arg_all(root->ses, str, line);
+        str = get_arg_all(str, line);
         addtoken(root, lvl, TOKEN_TYPE_SESSION, -1, line + 1);
       } else {
         switch (command_table[cmd].type) {
         case TOKEN_TYPE_ELSE:
           addtoken(root, lvl++, TOKEN_TYPE_ELSE, cmd, "else");
 
-          str = get_arg_in_braces(root->ses, arg, line, TRUE);
+          str = get_arg_in_braces(arg, line, TRUE);
           tokenize_script(root, lvl--, line);
 
           addtoken(root, lvl, TOKEN_TYPE_END, -1, "endelse");
@@ -132,14 +132,14 @@ void tokenize_script(struct scriptroot *root, int lvl, char *str) {
           if (*str && *str != COMMAND_SEPARATOR) {
             addtoken(root, lvl++, TOKEN_TYPE_ELSE, -1, "else");
 
-            str = get_arg_in_braces(root->ses, str, line, TRUE);
+            str = get_arg_in_braces(str, line, TRUE);
             tokenize_script(root, lvl--, line);
 
             addtoken(root, lvl, TOKEN_TYPE_END, -1, "endregex");
           }
           break;
         default:
-          str = get_arg_with_spaces(root->ses, arg, line, 1);
+          str = get_arg_with_spaces(arg, line);
           addtoken(root, lvl, TOKEN_TYPE_COMMAND, cmd, line);
           break;
         }
@@ -153,9 +153,7 @@ void tokenize_script(struct scriptroot *root, int lvl, char *str) {
   free(line);
 }
 
-struct scriptnode *parse_script(struct scriptroot *root, int lvl,
-                                struct scriptnode *token,
-                                struct scriptnode *shift) {
+struct scriptnode *parse_script(int lvl, struct scriptnode *token) {
   struct scriptnode *split = NULL;
 
   while (token) {
@@ -165,27 +163,26 @@ struct scriptnode *parse_script(struct scriptroot *root, int lvl,
 
     switch (token->type) {
     case TOKEN_TYPE_COMMAND:
-      root->ses = (*command_table[token->cmd].command)(root->ses, token->str);
+      (*command_table[token->cmd].command)(token->str);
       break;
     case TOKEN_TYPE_END:
       break;
     case TOKEN_TYPE_REGEX:
       split = NULL;
 
-      token->regex->val =
-          find(root->ses, token->str, token->regex->str, SUB_CMD);
+      token->regex->val = find(token->str, token->regex->str, SUB_CMD);
 
       if (token->regex->val) {
-        substitute(root->ses, token->regex->bod, token->regex->buf, SUB_CMD);
+        substitute(token->regex->bod, token->regex->buf, SUB_CMD);
 
-        root->ses = script_driver(root->ses, token->regex->buf);
+        gts = script_driver(token->regex->buf);
       }
       break;
     case TOKEN_TYPE_SESSION:
-      root->ses = parse_command(root->ses, token->str);
+      gts = parse_command(token->str);
       break;
     case TOKEN_TYPE_STRING:
-      root->ses = parse_input(root->ses, token->str);
+      gts = parse_input(token->str);
       break;
     }
 
@@ -196,20 +193,18 @@ struct scriptnode *parse_script(struct scriptroot *root, int lvl,
   if (lvl) {
     return NULL;
   } else {
-    return (struct scriptnode *)root->ses;
+    return (struct scriptnode *)gts;
   }
 }
 
-struct session *script_driver(struct session *ses, char *str) {
+struct session *script_driver(char *str) {
   struct scriptroot *root;
 
   root = (struct scriptroot *)calloc(1, sizeof(struct scriptroot));
 
-  root->ses = ses;
-
   tokenize_script(root, 0, str);
 
-  ses = (struct session *)parse_script(root, 0, root->next, root->prev);
+  gts = (struct session *)parse_script(0, root->next);
 
   while (root->prev) {
     deltoken(root, root->prev);
@@ -217,5 +212,5 @@ struct session *script_driver(struct session *ses, char *str) {
 
   free(root);
 
-  return ses;
+  return gts;
 }

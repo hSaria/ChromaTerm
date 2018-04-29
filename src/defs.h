@@ -158,11 +158,9 @@ enum operators {
 
 #define up(u) (u < 99 ? u++ : u)
 
-#define DO_COMMAND(command)                                                    \
-  struct session *command(struct session *ses, char *arg)
-#define DO_CONFIG(config)                                                      \
-  struct session *config(struct session *ses, char *arg, int index)
-#define DO_CURSOR(cursor) void cursor(char *arg)
+#define DO_COMMAND(command) void command(char *arg)
+#define DO_CONFIG(config) int config(char *arg, int index)
+#define DO_CURSOR(cursor) void cursor()
 
 // Structures
 struct listroot {
@@ -220,10 +218,9 @@ struct global_data {
 };
 
 // Typedefs
-typedef struct session *CONFIG(struct session *ses, char *arg, int index);
-typedef struct session *COMMAND(struct session *ses, char *arg);
+typedef void COMMAND(char *arg);
+typedef int CONFIG(char *arg, int index);
 typedef void CURSOR(char *arg);
-typedef struct session *LINE(struct session *ses, char *arg);
 
 // Structures for tables.c
 struct color_type {
@@ -310,8 +307,8 @@ extern void input_printf(char *format, ...);
 
 extern void init_terminal(void);
 extern void restore_terminal(void);
-extern void init_screen_size(struct session *ses);
-extern int get_scroll_size(struct session *ses);
+extern void init_screen_size(void);
+extern int get_scroll_size(void);
 
 #endif
 
@@ -320,16 +317,13 @@ extern int get_scroll_size(struct session *ses);
 
 DO_COMMAND(do_regexp);
 
-extern int substitute(struct session *ses, char *string, char *result,
-                      int flags);
-extern int match(struct session *ses, char *str, char *exp, int flags);
-extern int find(struct session *ses, char *str, char *exp, int sub);
+extern int substitute(char *string, char *result, int flags);
+extern int match(char *str, char *exp, int flags);
+extern int find(char *str, char *exp, int sub);
 extern int regexp_compare(pcre *regex, char *str, char *exp, int option,
                           int flag);
-extern int check_one_regexp(struct session *ses, struct listnode *node,
-                            char *line, char *original, int option);
-extern int regexp(struct session *ses, pcre *pcre, char *str, char *exp,
-                  int option, int flag);
+extern int check_one_regexp(struct listnode *node, char *line, int option);
+extern int regexp(pcre *pcre, char *str, char *exp, int option, int flag);
 
 #endif
 
@@ -380,8 +374,7 @@ extern int nsearch_list(struct listroot *root, char *text);
 extern DO_COMMAND(do_read);
 extern DO_COMMAND(do_write);
 
-extern void write_node(struct session *ses, int mode, struct listnode *node,
-                       FILE *file);
+extern void write_node(int mode, struct listnode *node, FILE *file);
 
 #endif
 
@@ -398,9 +391,8 @@ extern DO_COMMAND(do_help);
 extern DO_COMMAND(do_highlight);
 extern DO_COMMAND(do_unhighlight);
 
-extern void check_all_highlights(struct session *ses, char *original,
-                                 char *line);
-extern int get_highlight_codes(struct session *ses, char *htype, char *result);
+extern void check_all_highlights(char *original, char *line);
+extern int get_highlight_codes(char *htype, char *result);
 
 #endif
 
@@ -414,10 +406,10 @@ extern int main(int argc, char **argv);
 extern void init_program(void);
 extern void help_menu(int error, char c, char *proc_name);
 extern void quitmsg(char *message);
-extern void abort_and_trap_handler(int signal);
-extern void pipe_handler(int signal);
-extern void suspend_handler(int signal);
-extern void winch_handler(int signal);
+extern void abort_and_trap_handler();
+extern void pipe_handler();
+extern void suspend_handler();
+extern void winch_handler();
 
 #endif
 
@@ -441,38 +433,34 @@ extern DO_COMMAND(do_showme);
 #ifndef __NET_H__
 #define __NET_H__
 
-extern void write_line_socket(struct session *ses, char *line, int size);
-extern int read_buffer_mud(struct session *ses);
+extern void write_line_socket(char *line, int size);
+extern int read_buffer_mud(void);
 extern void readmud(struct session *ses);
-extern void process_mud_output(struct session *ses, char *linebuf, int prompt);
+extern void process_mud_output(char *linebuf, int prompt);
 
 #endif
 
 #ifndef __PARSE_H__
 #define __PARSE_H__
 
-extern struct session *parse_input(struct session *ses, char *input);
-extern struct session *parse_command(struct session *ses, char *input);
-extern char *get_arg_all(struct session *ses, char *string, char *result);
-extern char *get_arg_in_braces(struct session *ses, char *string, char *result,
-                               int flag);
-extern char *sub_arg_in_braces(struct session *ses, char *string, char *result,
-                               int flag, int sub);
-extern char *get_arg_with_spaces(struct session *ses, char *string,
-                                 char *result, int flag);
-extern char *get_arg_stop_spaces(struct session *ses, char *string,
-                                 char *result, int flag);
+extern struct session *parse_input(char *input);
+extern struct session *parse_command(char *input);
+extern char *get_arg_all(char *string, char *result);
+extern char *get_arg_in_braces(char *string, char *result, int flag);
+extern char *sub_arg_in_braces(char *string, char *result, int flag, int sub);
+extern char *get_arg_with_spaces(char *string, char *result);
+extern char *get_arg_stop_spaces(char *string, char *result, int flag);
 extern char *space_out(char *string);
-extern void write_mud(struct session *ses, char *command, int flags);
-extern void do_one_line(char *line, struct session *ses);
+extern void write_mud(char *command, int flags);
+extern void do_one_line(char *line);
 
 #endif
 
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
-extern struct session *new_session(struct session *ses, int pid, int socket);
-extern void cleanup_session(struct session *ses);
+extern struct session *new_session(int pid, int socket);
+extern void cleanup_session(void);
 
 #endif
 
@@ -490,7 +478,7 @@ extern struct list_type list_table[LIST_MAX];
 #ifndef __TOKENIZE_H__
 #define __TOKENIZE_H__
 
-extern struct session *script_driver(struct session *ses, char *str);
+extern struct session *script_driver(char *str);
 
 #endif
 
@@ -513,15 +501,12 @@ extern char *capitalize(char *str);
 extern int cat_sprintf(char *dest, char *fmt, ...);
 extern void ins_sprintf(char *dest, char *fmt, ...);
 extern void syserr(char *msg);
-extern void show_message(struct session *ses, int index, char *format, ...);
-extern void display_header(struct session *ses, char *format, ...);
-extern void socket_printf(struct session *ses, size_t length, char *format,
-                          ...);
-extern void display_printf(struct session *ses, int came_from_command,
-                           char *format, ...);
-extern void display_puts(struct session *ses, int came_from_mud, int with_color,
-                         char *string);
-extern void printline(struct session *ses, char *str, int isaprompt);
+extern void show_message(char *format, ...);
+extern void display_header(char *format, ...);
+extern void socket_printf(size_t length, char *format, ...);
+extern void display_printf(int came_from_command, char *format, ...);
+extern void display_puts(int came_from_mud, int with_color, char *string);
+extern void printline(char *str, int isaprompt);
 
 #endif
 
@@ -532,6 +517,6 @@ extern int skip_vt102_codes(char *str);
 extern void strip_vt102_codes(char *str, char *buf);
 extern void get_color_codes(char *old, char *str, char *buf);
 extern int find_non_color_codes(char *str);
-extern int strip_vt102_strlen(struct session *ses, char *str);
+extern int strip_vt102_strlen(char *str);
 
 #endif

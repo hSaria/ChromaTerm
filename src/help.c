@@ -284,22 +284,22 @@ DO_COMMAND(do_help) {
   char left[BUFFER_SIZE], add[BUFFER_SIZE], buf[BUFFER_SIZE], *ptf, *pto;
   int cnt;
 
-  get_arg_in_braces(ses, arg, left, TRUE);
+  get_arg_in_braces(arg, left, TRUE);
 
   if (*left == 0) {
     for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
-      if ((int)strlen(add) + 19 > ses->cols) {
-        display_puts(ses, FALSE, TRUE, add);
+      if ((int)strlen(add) + 19 > gts->cols) {
+        display_puts(FALSE, TRUE, add);
         add[0] = 0;
       }
       cat_sprintf(add, "%19s", help_table[cnt].name);
     }
-    display_puts(ses, TRUE, TRUE, add);
+    display_puts(TRUE, TRUE, add);
   } else {
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
       if (is_abbrev(left, help_table[cnt].name) || atoi(left) == cnt + 1 ||
-          match(ses, help_table[cnt].name, left, SUB_NONE)) {
-        substitute(ses, help_table[cnt].text, buf, SUB_COL);
+          match(help_table[cnt].name, left, SUB_NONE)) {
+        substitute(help_table[cnt].text, buf, SUB_COL);
 
         pto = buf;
 
@@ -311,15 +311,14 @@ DO_COMMAND(do_help) {
           }
           *ptf++ = 0;
 
-          display_puts(ses, FALSE, FALSE, pto);
+          display_puts(FALSE, FALSE, pto);
 
           pto = ptf;
         }
 
-        return ses;
+        return;
       }
     }
-    display_printf(ses, FALSE, "#HELP: No help found for topic '%s'", left);
+    display_printf(FALSE, "#HELP: No help found for topic '%s'", left);
   }
-  return ses;
 }

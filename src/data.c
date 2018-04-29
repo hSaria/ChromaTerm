@@ -83,8 +83,7 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
       }
       break;
     default:
-      display_printf(root->ses, FALSE,
-                     "#BUG: update_node_list: unknown mode: %d",
+      display_printf(FALSE, "#BUG: update_node_list: unknown mode: %d",
                      list_table[root->type].mode);
       break;
     }
@@ -280,22 +279,22 @@ void show_node(struct listroot *root, struct listnode *node, int level) {
   switch (list_table[root->type].args) {
   case 3:
     display_printf(
-        root->ses, FALSE,
+        FALSE,
         "%*s#%s "
         "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m \033[1;31m{\033[0m%s\033[1;"
         "31m} \033[1;36m\033[1;31m{\033[0m%s\033[1;31m}",
         level * 2, "", list_table[root->type].name, node->left, arg, node->pr);
     break;
   case 2:
-    display_printf(root->ses, FALSE,
+    display_printf(FALSE,
                    "%*s#%s "
                    "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m=\033[1;31m{\033["
                    "0m%s\033[1;31m}",
                    level * 2, "", list_table[root->type].name, node->left, arg);
     break;
   case 1:
-    display_printf(root->ses, FALSE, "%*s#%s \033[1;31m{\033[0m%s\033[1;31m}",
-                   level * 2, "", list_table[root->type].name, node->left);
+    display_printf(FALSE, "%*s#%s \033[1;31m{\033[0m%s\033[1;31m}", level * 2,
+                   "", list_table[root->type].name, node->left);
     break;
   }
 }
@@ -334,8 +333,8 @@ void show_nest_node(struct listnode *node, char *result, int initialize) {
 void show_list(struct listroot *root, int level) {
   int i;
 
-  if (root == root->ses->list[root->type]) {
-    display_header(root->ses, " %s ", list_table[root->type].name_multi);
+  if (root == gts->list[root->type]) {
+    display_header(" %s ", list_table[root->type].name_multi);
   }
 
   for (i = 0; i < root->used; i++) {
@@ -357,7 +356,7 @@ int show_node_with_wild(struct session *ses, char *text, int type) {
   }
 
   for (i = 0; i < root->used; i++) {
-    if (match(ses, root->list[i]->left, text, SUB_NONE)) {
+    if (match(root->list[i]->left, text, SUB_NONE)) {
       show_node(root, root->list[i], 0);
 
       flag = TRUE;
@@ -372,13 +371,13 @@ void delete_node_with_wild(struct session *ses, int type, char *text) {
   char arg1[BUFFER_SIZE];
   int i, found = FALSE;
 
-  sub_arg_in_braces(ses, text, arg1, 1, SUB_NONE);
+  sub_arg_in_braces(text, arg1, GET_ALL, SUB_NONE);
 
   node = search_node_list(root, arg1);
 
   if (node) {
     show_message(
-        ses, type, "#OK. {%s} IS NO LONGER %s %s", node->left,
+        "#OK. {%s} IS NO LONGER %s %s", node->left,
         (*list_table[type].name == 'A' || *list_table[type].name == 'E') ? "AN"
                                                                          : "A",
         list_table[type].name);
@@ -389,9 +388,9 @@ void delete_node_with_wild(struct session *ses, int type, char *text) {
   }
 
   for (i = root->used - 1; i >= 0; i--) {
-    if (match(ses, root->list[i]->left, arg1, SUB_NONE)) {
+    if (match(root->list[i]->left, arg1, SUB_NONE)) {
       show_message(
-          ses, type, "#OK. {%s} IS NO LONGER %s %s", root->list[i]->left,
+          "#OK. {%s} IS NO LONGER %s %s", root->list[i]->left,
           (*list_table[type].name == 'A' || *list_table[type].name == 'E')
               ? "AN"
               : "A",
@@ -404,7 +403,7 @@ void delete_node_with_wild(struct session *ses, int type, char *text) {
   }
 
   if (found == 0) {
-    show_message(ses, type, "#ERROR: NO MATCHES FOUND FOR %s {%s}",
-                 list_table[type].name, arg1);
+    show_message("#ERROR: NO MATCHES FOUND FOR %s {%s}", list_table[type].name,
+                 arg1);
   }
 }

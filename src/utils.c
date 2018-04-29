@@ -98,7 +98,7 @@ void ins_sprintf(char *dest, char *fmt, ...) {
   strcat(dest, tmp);
 }
 
-void show_message(struct session *ses, int index, char *format, ...) {
+void show_message(char *format, ...) {
   char buf[STRING_SIZE];
   va_list args;
 
@@ -106,12 +106,12 @@ void show_message(struct session *ses, int index, char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  if (ses->input_level == 0) {
-    display_puts(ses, FALSE, TRUE, buf);
+  if (gts->input_level == 0) {
+    display_puts(FALSE, TRUE, buf);
   }
 }
 
-void display_header(struct session *ses, char *format, ...) {
+void display_header(char *format, ...) {
   char arg[BUFFER_SIZE], buf[BUFFER_SIZE];
   va_list args;
 
@@ -119,20 +119,20 @@ void display_header(struct session *ses, char *format, ...) {
   vsprintf(arg, format, args);
   va_end(args);
 
-  if ((int)strlen(arg) > gtd->ses->cols - 2) {
-    arg[gtd->ses->cols - 2] = 0;
+  if ((int)strlen(arg) > gts->cols - 2) {
+    arg[gts->cols - 2] = 0;
   }
 
-  memset(buf, '#', gtd->ses->cols);
+  memset(buf, '#', gts->cols);
 
-  memcpy(&buf[(gtd->ses->cols - strlen(arg)) / 2], arg, strlen(arg));
+  memcpy(&buf[(gts->cols - strlen(arg)) / 2], arg, strlen(arg));
 
-  buf[gtd->ses->cols] = 0;
+  buf[gts->cols] = 0;
 
-  display_puts(ses, FALSE, FALSE, buf);
+  display_puts(FALSE, FALSE, buf);
 }
 
-void socket_printf(struct session *ses, size_t length, char *format, ...) {
+void socket_printf(size_t length, char *format, ...) {
   char buf[STRING_SIZE];
   va_list args;
 
@@ -140,13 +140,12 @@ void socket_printf(struct session *ses, size_t length, char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  if (HAS_BIT(ses->flags, SES_FLAG_CONNECTED)) {
-    write(ses->socket, buf, length);
+  if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
+    write(gts->socket, buf, length);
   }
 }
 
-void display_printf(struct session *ses, int came_from_commend, char *format,
-                    ...) {
+void display_printf(int came_from_commend, char *format, ...) {
   char buf[STRING_SIZE];
   va_list args;
 
@@ -155,22 +154,17 @@ void display_printf(struct session *ses, int came_from_commend, char *format,
   va_end(args);
 
   if (came_from_commend) {
-    display_puts(ses, TRUE, TRUE, buf);
+    display_puts(TRUE, TRUE, buf);
   } else {
-    display_puts(ses, FALSE, TRUE, buf);
+    display_puts(FALSE, TRUE, buf);
   }
 }
 
-void display_puts(struct session *ses, int came_from_mud, int with_color,
-                  char *string) {
+void display_puts(int came_from_mud, int with_color, char *string) {
   char output[STRING_SIZE];
 
-  if (ses == NULL) {
-    ses = gtd->ses;
-  }
-
   if (came_from_mud) {
-    do_one_line(string, ses);
+    do_one_line(string);
   }
 
   if (gtd->quiet) {
@@ -178,26 +172,26 @@ void display_puts(struct session *ses, int came_from_mud, int with_color,
   }
 
   if (with_color) {
-    if (strip_vt102_strlen(ses, ses->more_output) != 0) {
+    if (strip_vt102_strlen(gts->more_output) != 0) {
       sprintf(output, "\n\033[0m%s\033[0m", string);
     } else {
       sprintf(output, "\033[0m%s\033[0m", string);
     }
   } else {
-    if (strip_vt102_strlen(ses, ses->more_output) != 0) {
+    if (strip_vt102_strlen(gts->more_output) != 0) {
       sprintf(output, "\n%s", string);
     } else {
       sprintf(output, "%s", string);
     }
   }
 
-  printline(ses, output, FALSE);
+  printline(output, FALSE);
 }
 
-void printline(struct session *ses, char *str, int prompt) {
+void printline(char *str, int prompt) {
   char wrapped_str[STRING_SIZE];
 
-  if (HAS_BIT(ses->flags, SES_FLAG_CONVERTMETA)) {
+  if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA)) {
     convert_meta(str, wrapped_str);
   } else {
     strcpy(wrapped_str, str);

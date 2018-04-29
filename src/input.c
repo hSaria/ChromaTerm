@@ -11,7 +11,7 @@ void process_input(void) {
 
   DEL_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
 
-  gtd->ses = script_driver(gtd->ses, gtd->input_buf);
+  gts = script_driver(gtd->input_buf);
 
   gtd->input_buf[0] = 0;
 }
@@ -45,7 +45,7 @@ void read_key(void) {
       gtd->input_buf[0] = 0;
       gtd->input_len = 0;
 
-      socket_printf(gtd->ses, 1, "%c", '\r');
+      socket_printf(1, "%c", '\r');
       break;
     default: // Normal input
       if (gtd->macro_buf[cnt] == gtd->command_char &&
@@ -62,7 +62,7 @@ void read_key(void) {
         gtd->input_cur = 1;
         gtd->input_pos = 1;
       } else { // If not destined to CT, send to socket
-        socket_printf(gtd->ses, 1, "%c", gtd->macro_buf[cnt]);
+        socket_printf(1, "%c", gtd->macro_buf[cnt]);
         gtd->input_buf[0] = 127; // != 0 means a reset (\n) is required
         gtd->macro_buf[0] = 0;
         gtd->input_len = 0;
@@ -154,7 +154,7 @@ void read_line() {
       gtd->macro_buf[0] = 0;
       gtd->input_buf[gtd->input_len] = 0;
 
-      cursor_check_line_modified("");
+      cursor_check_line_modified();
 
       break;
     }

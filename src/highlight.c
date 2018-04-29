@@ -6,57 +6,51 @@ DO_COMMAND(do_highlight) {
   char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE],
       temp[BUFFER_SIZE];
 
-  arg = sub_arg_in_braces(ses, arg, arg1, 0, SUB_NONE);
-  arg = sub_arg_in_braces(ses, arg, arg2, 1, SUB_NONE);
-  get_arg_in_braces(ses, arg, arg3, 1);
+  arg = sub_arg_in_braces(arg, arg1, GET_ONE, SUB_NONE);
+  arg = sub_arg_in_braces(arg, arg2, GET_ALL, SUB_NONE);
+  get_arg_in_braces(arg, arg3, TRUE);
 
   if (*arg3 == 0) {
     strcpy(arg3, "5");
   }
 
   if (*arg1 == 0) {
-    show_list(ses->list[LIST_HIGHLIGHT], 0);
+    show_list(gts->list[LIST_HIGHLIGHT], 0);
   } else if (*arg1 && *arg2 == 0) {
-    if (show_node_with_wild(ses, arg1, LIST_HIGHLIGHT) == FALSE) {
-      show_message(ses, LIST_HIGHLIGHT,
-                   "#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}", arg1);
+    if (show_node_with_wild(gts, arg1, LIST_HIGHLIGHT) == FALSE) {
+      show_message("#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}", arg1);
     }
   } else {
-    if (get_highlight_codes(ses, arg2, temp) == FALSE) {
-      display_printf(ses, FALSE, "#HIGHLIGHT: VALID COLORS ARE:\n");
+    if (get_highlight_codes(arg2, temp) == FALSE) {
+      display_printf(FALSE, "#HIGHLIGHT: VALID COLORS ARE:\n");
       display_printf(
-          ses, FALSE,
+          FALSE,
           "reset, bold, light, faint, dim, dark, underscore, blink, reverse, "
           "black, red, green, yellow, blue, magenta, cyan, white, b black, b "
           "red, b green, b yellow, b blue, b magenta, b cyan, b white, azure, "
           "ebony, jade, lime, orange, pink, silver, tan, violet");
     } else {
-      update_node_list(ses->list[LIST_HIGHLIGHT], arg1, arg2, arg3);
+      update_node_list(gts->list[LIST_HIGHLIGHT], arg1, arg2, arg3);
 
-      show_message(ses, LIST_HIGHLIGHT, "#OK. {%s} NOW HIGHLIGHTS {%s} {%s}",
-                   arg1, arg2, arg3);
+      show_message("#OK. {%s} NOW HIGHLIGHTS {%s} {%s}", arg1, arg2, arg3);
     }
   }
-  return ses;
 }
 
-DO_COMMAND(do_unhighlight) {
-  delete_node_with_wild(ses, LIST_HIGHLIGHT, arg);
-  return ses;
-}
+DO_COMMAND(do_unhighlight) { delete_node_with_wild(gts, LIST_HIGHLIGHT, arg); }
 
-void check_all_highlights(struct session *ses, char *original, char *line) {
-  struct listroot *root = ses->list[LIST_HIGHLIGHT];
+void check_all_highlights(char *original, char *line) {
+  struct listroot *root = gts->list[LIST_HIGHLIGHT];
   struct listnode *node;
   char *pto, *ptl, *ptm;
   char match[BUFFER_SIZE], color[BUFFER_SIZE], reset[BUFFER_SIZE],
       output[BUFFER_SIZE], plain[BUFFER_SIZE];
 
   for (root->update = 0; root->update < root->used; root->update++) {
-    if (check_one_regexp(ses, root->list[root->update], line, original, 0)) {
+    if (check_one_regexp(root->list[root->update], line, 0)) {
       node = root->list[root->update];
 
-      get_highlight_codes(ses, node->right, color);
+      get_highlight_codes(node->right, color);
 
       *output = *reset = 0;
 
@@ -88,7 +82,7 @@ void check_all_highlights(struct session *ses, char *original, char *line) {
         cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
 
         pto = ptm + strlen(match);
-      } while (check_one_regexp(ses, node, ptl, pto, 0));
+      } while (check_one_regexp(node, ptl, 0));
 
       strcat(output, pto);
 
@@ -97,13 +91,13 @@ void check_all_highlights(struct session *ses, char *original, char *line) {
   }
 }
 
-int get_highlight_codes(struct session *ses, char *string, char *result) {
+int get_highlight_codes(char *string, char *result) {
   int cnt;
 
   *result = 0;
 
   if (*string == '<') {
-    substitute(ses, string, result, SUB_COL);
+    substitute(string, result, SUB_COL);
 
     return TRUE;
   }
@@ -112,7 +106,7 @@ int get_highlight_codes(struct session *ses, char *string, char *result) {
     if (isalpha((int)*string)) {
       for (cnt = 0; *color_table[cnt].name; cnt++) {
         if (is_abbrev(color_table[cnt].name, string)) {
-          substitute(ses, color_table[cnt].code, result, SUB_COL);
+          substitute(color_table[cnt].code, result, SUB_COL);
 
           result += strlen(result);
 
