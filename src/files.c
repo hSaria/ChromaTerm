@@ -332,27 +332,17 @@ void write_node(int list, struct listnode *node, FILE *file) {
   int llen = UMAX(20, (int)strlen(node->left));
   int rlen = UMAX(25, (int)strlen(node->right));
 
-  switch (list) {
-  default:
-    switch (list_table[list].args) {
-    case 0:
-      result[0] = 0;
-      break;
-    case 1:
-      sprintf(result, "%c%-16s {%s}\n", gtd->command_char,
-              list_table[list].name, node->left);
-      break;
-    case 2:
-      sprintf(result, "%c%-16s {%s} %*s {%s}\n", gtd->command_char,
-              list_table[list].name, node->left, 20 - llen, "", node->right);
-      break;
-    case 3:
-      sprintf(result, "%c%-16s {%s} %*s {%s} %*s {%s}\n", gtd->command_char,
-              list_table[list].name, node->left, 20 - llen, "", node->right,
-              25 - rlen, "", node->pr);
-      break;
-    }
+  switch (list_table[list].args) {
+  case 2:
+    sprintf(result, "%c%-16s {%s} %*s {%s}\n", gtd->command_char,
+            list_table[list].name, node->left, 20 - llen, "", node->right);
+    break;
+  case 3:
+    sprintf(result, "%c%-16s {%s} %*s {%s} %*s {%s}\n", gtd->command_char,
+            list_table[list].name, node->left, 20 - llen, "", node->right,
+            25 - rlen, "", node->pr);
     break;
   }
+
   fputs(result, file);
 }
