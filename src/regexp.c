@@ -5,32 +5,6 @@
 #include "defs.h"
 #include "pcre.h"
 
-DO_COMMAND(do_regexp) {
-  char left[BUFFER_SIZE], right[BUFFER_SIZE], is_true[BUFFER_SIZE],
-      is_false[BUFFER_SIZE];
-
-  arg = get_arg_in_braces(arg, left, FALSE);
-  arg = get_arg_in_braces(arg, right, FALSE);
-  arg = get_arg_in_braces(arg, is_true, TRUE);
-  get_arg_in_braces(arg, is_false, TRUE);
-
-  if (*is_true == 0) {
-    display_printf(FALSE,
-                   "SYNTAX: #REGEXP {string} {expression} {true} {false}");
-  } else {
-    substitute(left, left, SUB_NONE);
-    substitute(right, right, SUB_NONE);
-
-    if (regexp(NULL, left, right, 0, SUB_CMD)) {
-      substitute(is_true, is_true, SUB_CMD);
-
-      gts = script_driver(is_true);
-    } else if (*is_false) {
-      gts = script_driver(is_false);
-    }
-  }
-}
-
 int match(char *str, char *exp, int flags) {
   char expbuf[BUFFER_SIZE];
 
@@ -39,19 +13,6 @@ int match(char *str, char *exp, int flags) {
   substitute(expbuf, expbuf, flags);
 
   return regexp(NULL, str, expbuf, 0, 0);
-}
-
-int find(char *str, char *exp, int sub) {
-  char expbuf[BUFFER_SIZE], strbuf[BUFFER_SIZE];
-
-  if (gts) {
-    substitute(str, strbuf, SUB_NONE);
-    substitute(exp, expbuf, SUB_NONE);
-
-    return regexp(NULL, strbuf, expbuf, 0, sub);
-  } else {
-    return regexp(NULL, str, exp, 0, sub);
-  }
 }
 
 int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {

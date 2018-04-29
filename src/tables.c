@@ -9,7 +9,6 @@ struct command_type command_table[] = {
     {"help", do_help, TOKEN_TYPE_COMMAND},
     {"highlight", do_highlight, TOKEN_TYPE_COMMAND},
     {"read", do_read, TOKEN_TYPE_COMMAND},
-    {"regexp", do_regexp, TOKEN_TYPE_REGEX},
     {"run", do_run, TOKEN_TYPE_COMMAND},
     {"showme", do_showme, TOKEN_TYPE_COMMAND},
     {"unhighlight", do_unhighlight, TOKEN_TYPE_COMMAND},

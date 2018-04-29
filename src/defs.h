@@ -80,14 +80,7 @@
 #define LIST_MAX 2
 
 // Command type
-enum operators {
-  TOKEN_TYPE_COMMAND,
-  TOKEN_TYPE_END,
-  TOKEN_TYPE_ELSE,
-  TOKEN_TYPE_REGEX,
-  TOKEN_TYPE_SESSION,
-  TOKEN_TYPE_STRING
-};
+enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
 
 // generic define for show_message
 #define LIST_MESSAGE -1
@@ -184,9 +177,6 @@ struct session {
   struct listroot *list[LIST_MAX];
   int rows;
   int cols;
-  int fgc;
-  int bgc;
-  int vtc;
   int pid;
   int socket;
   int flags;
@@ -195,7 +185,6 @@ struct session {
 };
 
 struct global_data {
-  struct session *ses;
   struct termios active_terminal;
   char *mud_output_buf;
   int mud_output_max;
@@ -208,7 +197,6 @@ struct global_data {
   int input_cur;
   int input_pos;
   int input_hid;
-  long long time;
   int flags;
   int quiet;
   char command_char;
@@ -258,6 +246,16 @@ struct cursor_type {
 
 // Function declarations
 
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+
+extern DO_COMMAND(do_configure);
+extern DO_CONFIG(config_commandchar);
+extern DO_CONFIG(config_convertmeta);
+extern DO_CONFIG(config_charset);
+
+#endif
+
 #ifndef __CURSOR_H__
 #define __CURSOR_H__
 
@@ -288,52 +286,6 @@ extern DO_CURSOR(cursor_right);
 extern DO_CURSOR(cursor_right_word);
 extern DO_CURSOR(cursor_suspend);
 extern DO_CURSOR(cursor_test);
-
-#endif
-
-#ifndef __INPUT_H__
-#define __INPUT_H__
-
-extern void process_input(void);
-extern void read_key(void);
-extern void read_line(void);
-extern void convert_meta(char *input, char *output);
-extern void input_printf(char *format, ...);
-
-#endif
-
-#ifndef __TERMINAL_H__
-#define __TERMINAL_H__
-
-extern void init_terminal(void);
-extern void restore_terminal(void);
-extern void init_screen_size(void);
-extern int get_scroll_size(void);
-
-#endif
-
-#ifndef __TINEXP_H__
-#define __TINEXP_H__
-
-DO_COMMAND(do_regexp);
-
-extern int substitute(char *string, char *result, int flags);
-extern int match(char *str, char *exp, int flags);
-extern int find(char *str, char *exp, int sub);
-extern int regexp_compare(pcre *regex, char *str, char *exp, int option,
-                          int flag);
-extern int check_one_regexp(struct listnode *node, char *line, int option);
-extern int regexp(pcre *pcre, char *str, char *exp, int option, int flag);
-
-#endif
-
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
-
-extern DO_COMMAND(do_configure);
-extern DO_CONFIG(config_commandchar);
-extern DO_CONFIG(config_convertmeta);
-extern DO_CONFIG(config_charset);
 
 #endif
 
@@ -392,6 +344,17 @@ extern DO_COMMAND(do_unhighlight);
 
 extern void check_all_highlights(char *original, char *line);
 extern int get_highlight_codes(char *htype, char *result);
+
+#endif
+
+#ifndef __INPUT_H__
+#define __INPUT_H__
+
+extern void process_input(void);
+extern void read_key(void);
+extern void read_line(void);
+extern void convert_meta(char *input, char *output);
+extern void input_printf(char *format, ...);
 
 #endif
 
@@ -455,6 +418,18 @@ extern void do_one_line(char *line);
 
 #endif
 
+#ifndef __REGEXP_H__
+#define __REGEXP_H__
+
+extern int substitute(char *string, char *result, int flags);
+extern int match(char *str, char *exp, int flags);
+extern int regexp_compare(pcre *regex, char *str, char *exp, int option,
+                          int flag);
+extern int check_one_regexp(struct listnode *node, char *line, int option);
+extern int regexp(pcre *pcre, char *str, char *exp, int option, int flag);
+
+#endif
+
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
@@ -471,6 +446,16 @@ extern struct command_type command_table[];
 extern struct config_type config_table[];
 extern struct cursor_type cursor_table[];
 extern struct list_type list_table[LIST_MAX];
+
+#endif
+
+#ifndef __TERMINAL_H__
+#define __TERMINAL_H__
+
+extern void init_terminal(void);
+extern void restore_terminal(void);
+extern void init_screen_size(void);
+extern int get_scroll_size(void);
 
 #endif
 

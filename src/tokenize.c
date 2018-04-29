@@ -5,18 +5,10 @@
 struct scriptnode {
   struct scriptnode *next;
   struct scriptnode *prev;
-  struct script_regex *regex;
   char *str;
   short lvl;
   short type;
   short cmd;
-};
-
-struct script_regex {
-  char *str;
-  char *bod;
-  char *buf;
-  int val;
 };
 
 struct scriptroot {
@@ -37,41 +29,10 @@ void addtoken(struct scriptroot *root, int lvl, int opr, int cmd, char *str) {
   LINK(token, root->next, root->prev);
 }
 
-char *addregextoken(struct scriptroot *root, int lvl, int type, int cmd,
-                    char *str) {
-  struct script_regex *regex;
-
-  char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE];
-
-  str = get_arg_in_braces(str, arg1, FALSE);
-  str = get_arg_in_braces(str, arg2, FALSE);
-  str = get_arg_in_braces(str, arg3, TRUE);
-
-  addtoken(root, lvl, type, cmd, arg1);
-
-  regex = (struct script_regex *)calloc(1, sizeof(struct script_regex));
-
-  regex->str = strdup(arg2);
-  regex->bod = strdup(arg3);
-  regex->buf = calloc(1, BUFFER_SIZE);
-
-  root->prev->regex = regex;
-
-  return str;
-}
-
 void deltoken(struct scriptroot *root, struct scriptnode *token) {
   UNLINK(token, root->next, root->prev);
 
   free(token->str);
-
-  if (token->type == TOKEN_TYPE_REGEX) {
-    free(token->regex->str);
-    free(token->regex->bod);
-    free(token->regex->buf);
-    free(token->regex);
-  }
-
   free(token);
   return;
 }
@@ -117,31 +78,8 @@ void tokenize_script(struct scriptroot *root, int lvl, char *str) {
         str = get_arg_all(str, line);
         addtoken(root, lvl, TOKEN_TYPE_SESSION, -1, line + 1);
       } else {
-        switch (command_table[cmd].type) {
-        case TOKEN_TYPE_ELSE:
-          addtoken(root, lvl++, TOKEN_TYPE_ELSE, cmd, "else");
-
-          str = get_arg_in_braces(arg, line, TRUE);
-          tokenize_script(root, lvl--, line);
-
-          addtoken(root, lvl, TOKEN_TYPE_END, -1, "endelse");
-          break;
-        case TOKEN_TYPE_REGEX:
-          str = addregextoken(root, lvl, TOKEN_TYPE_REGEX, cmd, arg);
-          if (*str && *str != COMMAND_SEPARATOR) {
-            addtoken(root, lvl++, TOKEN_TYPE_ELSE, -1, "else");
-
-            str = get_arg_in_braces(str, line, TRUE);
-            tokenize_script(root, lvl--, line);
-
-            addtoken(root, lvl, TOKEN_TYPE_END, -1, "endregex");
-          }
-          break;
-        default:
-          str = get_arg_with_spaces(arg, line);
-          addtoken(root, lvl, TOKEN_TYPE_COMMAND, cmd, line);
-          break;
-        }
+        str = get_arg_with_spaces(arg, line);
+        addtoken(root, lvl, TOKEN_TYPE_COMMAND, cmd, line);
       }
     }
     if (*str == COMMAND_SEPARATOR) {
@@ -153,8 +91,6 @@ void tokenize_script(struct scriptroot *root, int lvl, char *str) {
 }
 
 struct scriptnode *parse_script(int lvl, struct scriptnode *token) {
-  struct scriptnode *split = NULL;
-
   while (token) {
     if (token->lvl < lvl) {
       return token;
@@ -163,19 +99,6 @@ struct scriptnode *parse_script(int lvl, struct scriptnode *token) {
     switch (token->type) {
     case TOKEN_TYPE_COMMAND:
       (*command_table[token->cmd].command)(token->str);
-      break;
-    case TOKEN_TYPE_END:
-      break;
-    case TOKEN_TYPE_REGEX:
-      split = NULL;
-
-      token->regex->val = find(token->str, token->regex->str, SUB_CMD);
-
-      if (token->regex->val) {
-        substitute(token->regex->bod, token->regex->buf, SUB_CMD);
-
-        gts = script_driver(token->regex->buf);
-      }
       break;
     case TOKEN_TYPE_SESSION:
       gts = parse_command(token->str);
