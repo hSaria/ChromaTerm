@@ -83,28 +83,3 @@ DO_COMMAND(do_run) {
     break;
   }
 }
-
-DO_COMMAND(do_showme) {
-  char left[BUFFER_SIZE], right[BUFFER_SIZE], temp[STRING_SIZE];
-  int lnf;
-
-  get_arg_in_braces(arg, left, TRUE);
-
-  lnf = (strlen(left) >= strlen("\\") &&
-         !strcasecmp(left + strlen(left) - strlen("\\"), "\\"))
-            ? FALSE
-            : TRUE;
-
-  substitute(left, temp, SUB_NONE);
-  substitute(temp, left, SUB_COL | SUB_ESC);
-
-  do_one_line(left);
-
-  if (strip_vt102_strlen(gts->more_output) != 0) {
-    sprintf(right, "\n\033[0m%s\033[0m", left);
-  } else {
-    sprintf(right, "\033[0m%s\033[0m", left);
-  }
-
-  printline(right, lnf);
-}
