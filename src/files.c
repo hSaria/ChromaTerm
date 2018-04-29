@@ -2,9 +2,6 @@
 
 #include "defs.h"
 
-#include <sys/stat.h>
-#include <wordexp.h>
-
 // read and execute a command file, supports multi lines - Igor
 DO_COMMAND(do_read) {
   FILE *fp;

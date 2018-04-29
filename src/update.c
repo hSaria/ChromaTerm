@@ -1,10 +1,5 @@
 // This program is protected under the GNU GPL (See COPYING)
 
-#include <errno.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <termios.h>
-
 #include "defs.h"
 
 void mainloop(void) {

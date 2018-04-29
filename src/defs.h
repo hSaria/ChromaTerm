@@ -1,60 +1,35 @@
 // This program is protected under the GNU GPL (See COPYING)
 
 #include <ctype.h>
+#include <errno.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/time.h>
 #include <termios.h>
-#include <zlib.h>
+#include <unistd.h>
+#include <util.h>
+#include <wordexp.h>
 
 #include "config.h"
 #include "pcre.h"
-
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#elif defined(HAVE_STRINGS_H)
-#include <strings.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
-
-#ifdef TIME_WITH_SYS_TIME
-#include <sys/time.h>
-#endif
-
-#ifdef SOCKS
-#include <socks.h>
-#endif
 
 #ifndef BADSIG
 #define BADSIG (RETSIGTYPE(*)(int)) - 1
 #endif
 
-#ifdef HAVE_NET_ERRNO_H
-#include <net/errno.h>
-#endif
-
 #ifndef __DEFS_H__
 #define __DEFS_H__
-
-// A bunch of constants
 
 #define FALSE 0
 #define TRUE 1
 
-#define GET_ONE 0 /* stop at spaces */
-#define GET_ALL 1 /* stop at semicolon */
-#define GET_NST 2 /* nest square brackets */
+#define GET_ONE 0 // stop at spaces
+#define GET_ALL 1 // stop at semicolon
+#define GET_NST 2 // nest square brackets
 
 #define SCREEN_WIDTH 80
 #define SCREEN_HEIGHT 24

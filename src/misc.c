@@ -1,13 +1,6 @@
 // This program is protected under the GNU GPL (See COPYING)
 
 #include "defs.h"
-#ifdef HAVE_PTY_H
-#include <pty.h>
-#else
-#ifdef HAVE_UTIL_H
-#include <util.h>
-#endif
-#endif
 
 int process_already_running = FALSE;
 

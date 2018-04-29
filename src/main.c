@@ -2,18 +2,11 @@
 
 #include "defs.h"
 
-#include <signal.h>
-#include <sys/socket.h>
-
 struct session *gts;
 struct global_data *gtd;
 
 // main() - setup signals - init lists - readcoms - mainloop()
 int main(int argc, char **argv) {
-#ifdef SOCKS
-  SOCKSinit(argv[0]);
-#endif
-
   if (signal(SIGTERM, abort_and_trap_handler) == BADSIG) {
     syserr("signal SIGTERM");
   }

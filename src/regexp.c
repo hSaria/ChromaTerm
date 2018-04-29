@@ -1,9 +1,6 @@
 // This program is protected under the GNU GPL (See COPYING)
 
-#include <sys/types.h>
-
 #include "defs.h"
-#include "pcre.h"
 
 int match(char *str, char *exp, int flags) {
   char expbuf[BUFFER_SIZE];

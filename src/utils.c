@@ -2,9 +2,6 @@
 
 #include "defs.h"
 
-#include <errno.h>
-#include <sys/param.h>
-
 // return: TRUE if s1 is an abbrevation of s2
 int is_abbrev(char *s1, char *s2) {
   if (*s1 == 0) {

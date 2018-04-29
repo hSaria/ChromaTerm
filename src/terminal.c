@@ -2,12 +2,6 @@
 
 #include "defs.h"
 
-#ifdef HAVE_SYS_IOCTL_H
-#include <sys/ioctl.h>
-#endif
-#include <errno.h>
-#include <termios.h>
-
 void init_terminal() {
   struct termios io;
 

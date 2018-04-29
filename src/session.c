@@ -1,8 +1,5 @@
 // This program is protected under the GNU GPL (See COPYING)
 
-#include <errno.h>
-#include <signal.h>
-
 #include "defs.h"
 
 struct session *new_session(int pid, int socket) {
