@@ -17,10 +17,6 @@
 #include "config.h"
 #include "pcre.h"
 
-#ifndef BADSIG
-#define BADSIG (RETSIGTYPE(*)(int)) - 1
-#endif
-
 #ifndef __DEFS_H__
 #define __DEFS_H__
 

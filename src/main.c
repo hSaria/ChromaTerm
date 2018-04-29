@@ -7,37 +7,14 @@ struct global_data *gtd;
 
 // main() - setup signals - init lists - readcoms - mainloop()
 int main(int argc, char **argv) {
-  if (signal(SIGTERM, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGTERM");
-  }
-
-  if (signal(SIGSEGV, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGSEGV");
-  }
-
-  if (signal(SIGHUP, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGHUP");
-  }
-
-  if (signal(SIGABRT, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGTERM");
-  }
-
-  if (signal(SIGINT, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGINT");
-  }
-
-  if (signal(SIGTSTP, suspend_handler) == BADSIG) {
-    syserr("signal SIGSTOP");
-  }
-
-  if (signal(SIGPIPE, pipe_handler) == BADSIG) {
-    syserr("signal SIGPIPE");
-  }
-
-  if (signal(SIGWINCH, winch_handler) == BADSIG) {
-    syserr("signal SIGWINCH");
-  }
+  signal(SIGTERM, abort_and_trap_handler);
+  signal(SIGSEGV, abort_and_trap_handler);
+  signal(SIGHUP, abort_and_trap_handler);
+  signal(SIGABRT, abort_and_trap_handler);
+  signal(SIGINT, abort_and_trap_handler);
+  signal(SIGTSTP, suspend_handler);
+  signal(SIGPIPE, pipe_handler);
+  signal(SIGWINCH, winch_handler);
 
   init_program();
 
@@ -159,21 +136,13 @@ void quitmsg(char *message, int exit_signal) {
   exit(exit_signal);
 }
 
-void abort_and_trap_handler(int sig) {
-  char temp[BUFFER_SIZE];
-  sprintf(temp, "abort_and_trap_handler: %i", sig);
-  quitmsg(temp, 1);
-}
+void abort_and_trap_handler() { quitmsg("abort_and_trap_handler", 1); }
 
-void pipe_handler(int sig) {
+void pipe_handler() {
   restore_terminal();
-  display_printf(TRUE, "broken_pipe: %i", sig);
+  display_printf(TRUE, "broken_pipe");
 }
 
-void suspend_handler(int sig) {
-  char temp[BUFFER_SIZE];
-  sprintf(temp, "suspend_handler: %i", sig);
-  quitmsg(temp, 1);
-}
+void suspend_handler() { quitmsg("suspend_handler", 1); }
 
-void winch_handler(int sig) { init_screen_size(); }
+void winch_handler() { init_screen_size(); }
