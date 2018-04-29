@@ -160,7 +160,7 @@ enum operators {
 
 #define DO_COMMAND(command) void command(char *arg)
 #define DO_CONFIG(config) int config(char *arg, int index)
-#define DO_CURSOR(cursor) void cursor()
+#define DO_CURSOR(cursor) void cursor(void)
 
 // Structures
 struct listroot {
@@ -220,7 +220,7 @@ struct global_data {
 // Typedefs
 typedef void COMMAND(char *arg);
 typedef int CONFIG(char *arg, int index);
-typedef void CURSOR(char *arg);
+typedef void CURSOR(void);
 
 // Structures for tables.c
 struct color_type {
@@ -405,11 +405,11 @@ extern struct global_data *gtd;
 extern int main(int argc, char **argv);
 extern void init_program(void);
 extern void help_menu(int error, char c, char *proc_name);
-extern void quitmsg(char *message);
-extern void abort_and_trap_handler();
-extern void pipe_handler();
-extern void suspend_handler();
-extern void winch_handler();
+extern void quitmsg(char *message, int exit_signal);
+extern void abort_and_trap_handler(int sig);
+extern void pipe_handler(int sig);
+extern void suspend_handler(int sig);
+extern void winch_handler(int sig);
 
 #endif
 
@@ -435,7 +435,7 @@ extern DO_COMMAND(do_showme);
 
 extern void write_line_socket(char *line, int size);
 extern int read_buffer_mud(void);
-extern void readmud(struct session *ses);
+extern void readmud(void);
 extern void process_mud_output(char *linebuf, int prompt);
 
 #endif

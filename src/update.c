@@ -74,11 +74,11 @@ void poll_sessions(void) {
         }
 
         if (read_buffer_mud() == FALSE) {
-          quitmsg(NULL);
+          quitmsg(NULL, 0);
         }
 
         if (gtd->mud_output_len) {
-          readmud(gts);
+          readmud();
         }
       }
     }

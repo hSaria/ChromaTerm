@@ -94,7 +94,7 @@ void read_line() {
 
     for (cnt = 0; *cursor_table[cnt].fun != NULL; cnt++) {
       if (!strcmp(gtd->macro_buf, cursor_table[cnt].code)) {
-        cursor_table[cnt].fun("");
+        cursor_table[cnt].fun();
         gtd->macro_buf[0] = 0;
 
         return;
@@ -118,7 +118,7 @@ void read_line() {
   for (cnt = 0; gtd->macro_buf[cnt]; cnt++) {
     switch (gtd->macro_buf[cnt]) {
     case 10:
-      cursor_enter("");
+      cursor_enter();
       break;
 
     default:
@@ -126,7 +126,7 @@ void read_line() {
           gtd->input_len != gtd->input_cur) {
         if (!HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) ||
             (gtd->macro_buf[cnt] & 192) != 128) {
-          cursor_delete("");
+          cursor_delete();
         }
       }
 

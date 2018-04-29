@@ -21,7 +21,7 @@ void write_line_socket(char *line, int size) {
       return;
     }
     perror("write in write_line_socket");
-    quitmsg(NULL);
+    quitmsg(NULL, 74);
 
     return;
   }

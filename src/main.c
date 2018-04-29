@@ -149,13 +149,13 @@ void help_menu(int error, char c, char *proc_name) {
 
   restore_terminal();
   if (error) {
-    exit(1);
+    exit(64);
   } else {
-    quitmsg(NULL);
+    quitmsg(NULL, 0);
   }
 }
 
-void quitmsg(char *message) {
+void quitmsg(char *message, int exit_signal) {
   cleanup_session();
   restore_terminal();
 
@@ -163,34 +163,25 @@ void quitmsg(char *message) {
     printf("\n%s\n", message);
   }
 
-  fflush(NULL);
-  exit(0);
-}
-
-void abort_and_trap_handler() {
-  restore_terminal();
-
-  fflush(NULL);
-
-  exit(-1);
-}
-
-void pipe_handler() {
-  restore_terminal();
-
-  display_printf(TRUE, "broken_pipe");
-}
-
-void suspend_handler() {
-  printf("\033[r\033[%d;%dH", gtd->ses->rows, 1);
-
   fflush(stdout);
-
-  restore_terminal();
-
-  kill(0, SIGSTOP);
-
-  init_terminal();
+  exit(exit_signal);
 }
 
-void winch_handler() { init_screen_size(); }
+void abort_and_trap_handler(int sig) {
+  char temp[BUFFER_SIZE];
+  sprintf(temp, "abort_and_trap_handler: %i", sig);
+  quitmsg(temp, 1);
+}
+
+void pipe_handler(int sig) {
+  restore_terminal();
+  display_printf(TRUE, "broken_pipe: %i", sig);
+}
+
+void suspend_handler(int sig) {
+  char temp[BUFFER_SIZE];
+  sprintf(temp, "suspend_handler: %i", sig);
+  quitmsg(temp, 1);
+}
+
+void winch_handler(int sig) { init_screen_size(); }

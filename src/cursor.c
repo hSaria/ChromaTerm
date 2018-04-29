@@ -140,8 +140,8 @@ DO_CURSOR(cursor_backspace) {
     return;
   }
 
-  cursor_left("");
-  cursor_delete("");
+  cursor_left();
+  cursor_delete();
 }
 
 DO_CURSOR(cursor_check_line) {
@@ -225,9 +225,9 @@ DO_CURSOR(cursor_convert_meta) {
 
 DO_CURSOR(cursor_delete_or_exit) {
   if (gtd->input_len == 0) {
-    cursor_exit("");
+    cursor_exit();
   } else {
-    cursor_delete("");
+    cursor_delete();
   }
 }
 
@@ -542,7 +542,7 @@ DO_CURSOR(cursor_right_word) {
   cursor_redraw_line();
 }
 
-DO_CURSOR(cursor_suspend) { suspend_handler(); }
+DO_CURSOR(cursor_suspend) { suspend_handler(1); }
 
 DO_CURSOR(cursor_test) {
   display_printf(FALSE,

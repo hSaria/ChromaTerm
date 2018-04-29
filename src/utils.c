@@ -217,7 +217,7 @@ void syserr(char *msg) {
   } else {
     sprintf(s, "ERROR: %s (%d)", msg, errno);
   }
-  quitmsg(s);
+  quitmsg(s, 1);
 }
 
 // Whoops, strcasecmp wasn't found.

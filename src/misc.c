@@ -36,9 +36,9 @@ DO_COMMAND(do_commands) {
 
 DO_COMMAND(do_exit) {
   if (*arg) {
-    quitmsg(arg);
+    quitmsg(arg, 0);
   } else {
-    quitmsg(NULL);
+    quitmsg(NULL, 0);
   }
 }
 
