@@ -340,7 +340,7 @@ extern DO_CONFIG(config_charset);
 #ifndef __DATA_H__
 #define __DATA_H__
 
-extern struct listroot *init_list(struct session *ses, int type, int size);
+extern struct listroot *init_list(int type, int size);
 extern void kill_list(struct listroot *root);
 extern void free_list(struct listroot *root);
 extern struct listnode *insert_node_list(struct listroot *root, char *ltext,
@@ -349,15 +349,14 @@ extern struct listnode *update_node_list(struct listroot *root, char *ltext,
                                          char *rtext, char *prtext);
 extern struct listnode *insert_index_list(struct listroot *root,
                                           struct listnode *node, int index);
-extern int show_node_with_wild(struct session *ses, char *cptr, int type);
+extern int show_node_with_wild(char *cptr, int type);
 extern void show_node(struct listroot *root, struct listnode *node, int level);
 extern void show_nest_node(struct listnode *node, char *result, int initialize);
 extern void show_nest(struct listnode *node, char *result);
 extern void show_list(struct listroot *root, int level);
 extern struct listnode *search_node_list(struct listroot *root, char *text);
-extern void delete_node_list(struct session *ses, int type,
-                             struct listnode *node);
-extern void delete_node_with_wild(struct session *ses, int index, char *string);
+extern void delete_node_list(int type, struct listnode *node);
+extern void delete_node_with_wild(int index, char *string);
 extern void delete_index_list(struct listroot *root, int index);
 extern int search_index_list(struct listroot *root, char *text, char *priority);
 extern int locate_index_list(struct listroot *root, char *text, char *priority);

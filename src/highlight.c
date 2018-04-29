@@ -17,7 +17,7 @@ DO_COMMAND(do_highlight) {
   if (*arg1 == 0) {
     show_list(gts->list[LIST_HIGHLIGHT], 0);
   } else if (*arg1 && *arg2 == 0) {
-    if (show_node_with_wild(gts, arg1, LIST_HIGHLIGHT) == FALSE) {
+    if (show_node_with_wild(arg1, LIST_HIGHLIGHT) == FALSE) {
       show_message("#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}", arg1);
     }
   } else {
@@ -37,7 +37,7 @@ DO_COMMAND(do_highlight) {
   }
 }
 
-DO_COMMAND(do_unhighlight) { delete_node_with_wild(gts, LIST_HIGHLIGHT, arg); }
+DO_COMMAND(do_unhighlight) { delete_node_with_wild(LIST_HIGHLIGHT, arg); }
 
 void check_all_highlights(char *original, char *line) {
   struct listroot *root = gts->list[LIST_HIGHLIGHT];

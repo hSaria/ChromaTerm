@@ -12,7 +12,7 @@ int inputline_str_str_len(int start, int end) {
       break;
     }
 
-    if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) &&
+    if (HAS_BIT(gts->flags, SES_FLAG_UTF8) &&
         (gtd->input_buf[raw_cnt] & 192) == 192) {
       raw_cnt++;
 
@@ -43,7 +43,7 @@ int inputline_raw_str_len(int start, int end) {
       break;
     }
 
-    if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) &&
+    if (HAS_BIT(gts->flags, SES_FLAG_UTF8) &&
         (gtd->input_buf[raw_cnt] & 192) == 192) {
       raw_cnt++;
 
@@ -69,7 +69,7 @@ int inputline_str_raw_len(int start, int end) {
       break;
     }
 
-    if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) &&
+    if (HAS_BIT(gts->flags, SES_FLAG_UTF8) &&
         (gtd->input_buf[raw_cnt] & 192) == 192) {
       ret_cnt += (str_cnt >= start) ? 1 : 0;
       raw_cnt++;
@@ -89,7 +89,7 @@ int inputline_str_raw_len(int start, int end) {
 }
 
 // Get string length of the input area
-int inputline_max_str_len(void) { return gtd->ses->cols + 1 - gtd->input_off; }
+int inputline_max_str_len(void) { return gts->cols + 1 - gtd->input_off; }
 
 int inputline_cur_str_len(void) {
   return inputline_str_str_len(gtd->input_hid,
@@ -99,7 +99,7 @@ int inputline_cur_str_len(void) {
 // Check for invalid characters.
 int inputline_str_chk(int offset, int totlen) {
   while (offset < totlen) {
-    if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8)) {
+    if (HAS_BIT(gts->flags, SES_FLAG_UTF8)) {
       switch (gtd->input_buf[offset] & (128 + 64 + 32 + 16)) {
       case 128 + 64:
       case 128 + 64 + 16:
@@ -240,7 +240,7 @@ DO_CURSOR(cursor_delete) {
     return;
   }
 
-  if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) &&
+  if (HAS_BIT(gts->flags, SES_FLAG_UTF8) &&
       (gtd->input_buf[gtd->input_cur] & 192) == 192) {
     while (gtd->input_cur + 1 < gtd->input_len &&
            (gtd->input_buf[gtd->input_cur + 1] & 192) == 128) {
@@ -280,7 +280,7 @@ DO_CURSOR(cursor_delete_word_left) {
   }
 
   while (gtd->input_cur > 0 && gtd->input_buf[gtd->input_cur - 1] != ' ') {
-    if (!HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) ||
+    if (!HAS_BIT(gts->flags, SES_FLAG_UTF8) ||
         (gtd->input_buf[gtd->input_cur] & 192) != 128) {
       gtd->input_pos--;
     }
@@ -379,7 +379,7 @@ DO_CURSOR(cursor_left) {
     gtd->input_cur--;
     gtd->input_pos--;
 
-    if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8)) {
+    if (HAS_BIT(gts->flags, SES_FLAG_UTF8)) {
       while (gtd->input_cur > 0 &&
              (gtd->input_buf[gtd->input_cur] & 192) == 128) {
         gtd->input_cur--;
@@ -403,7 +403,7 @@ DO_CURSOR(cursor_left_word) {
   }
 
   while (gtd->input_cur > 0 && gtd->input_buf[gtd->input_cur - 1] != ' ') {
-    if (!HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) ||
+    if (!HAS_BIT(gts->flags, SES_FLAG_UTF8) ||
         (gtd->input_buf[gtd->input_cur] & 192) != 128) {
       gtd->input_pos--;
     }
@@ -430,16 +430,16 @@ DO_CURSOR(cursor_paste_buffer) {
 }
 
 DO_CURSOR(cursor_redraw_input) {
-  input_printf("\033[1G\033[0K%s%s\033[0K", gtd->ses->more_output,
+  input_printf("\033[1G\033[0K%s%s\033[0K", gts->more_output,
                gtd->input_buf);
 
   gtd->input_cur = gtd->input_len;
 
-  gtd->input_pos = gtd->input_len % gtd->ses->cols;
+  gtd->input_pos = gtd->input_len % gts->cols;
 }
 
 DO_CURSOR(cursor_redraw_line) {
-  if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8)) {
+  if (HAS_BIT(gts->flags, SES_FLAG_UTF8)) {
     if (inputline_str_chk(0, gtd->input_len) == FALSE) {
       return;
     }
@@ -506,7 +506,7 @@ DO_CURSOR(cursor_right) {
     gtd->input_cur++;
     gtd->input_pos++;
 
-    if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8)) {
+    if (HAS_BIT(gts->flags, SES_FLAG_UTF8)) {
       while (gtd->input_cur < gtd->input_len &&
              (gtd->input_buf[gtd->input_cur] & 192) == 128) {
         gtd->input_cur++;
@@ -532,7 +532,7 @@ DO_CURSOR(cursor_right_word) {
 
   while (gtd->input_cur < gtd->input_len &&
          gtd->input_buf[gtd->input_cur] != ' ') {
-    if (!HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) ||
+    if (!HAS_BIT(gts->flags, SES_FLAG_UTF8) ||
         (gtd->input_buf[gtd->input_cur] & 192) != 128) {
       gtd->input_pos++;
     }

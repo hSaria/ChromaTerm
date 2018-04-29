@@ -11,7 +11,7 @@ struct session *new_session(int pid, int socket) {
 
   SET_BIT(gts->flags, SES_FLAG_CONNECTED);
 
-  return gtd->ses;
+  return gts;
 }
 
 void cleanup_session() {

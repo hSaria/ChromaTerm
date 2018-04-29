@@ -110,12 +110,11 @@ void init_program() {
   gtd = (struct global_data *)calloc(1, sizeof(struct global_data));
 
   for (index = 0; index < LIST_MAX; index++) {
-    gts->list[index] = init_list(gts, index, 32);
+    gts->list[index] = init_list(index, 32);
   }
 
   gts->socket = 1;
 
-  gtd->ses = gts;
   gtd->mud_output_max = 16384;
   gtd->mud_output_buf = (char *)calloc(1, gtd->mud_output_max);
   gtd->input_off = 1;

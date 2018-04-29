@@ -22,7 +22,6 @@ struct script_regex {
 struct scriptroot {
   struct scriptnode *next;
   struct scriptnode *prev;
-  struct session *ses; ///////////////// DEBUG CHECK HERE
 };
 
 void addtoken(struct scriptroot *root, int lvl, int opr, int cmd, char *str) {

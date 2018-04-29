@@ -30,7 +30,7 @@ void read_key(void) {
 
   buffer[len] = 0;
 
-  if (HAS_BIT(gtd->ses->flags, SES_FLAG_CONVERTMETA) ||
+  if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA) ||
       HAS_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR)) {
     convert_meta(buffer, &gtd->macro_buf[strlen(gtd->macro_buf)]);
   } else {
@@ -82,14 +82,14 @@ void read_line() {
 
   buffer[len] = 0;
 
-  if (HAS_BIT(gtd->ses->flags, SES_FLAG_CONVERTMETA) ||
+  if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA) ||
       HAS_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR)) {
     convert_meta(buffer, &gtd->macro_buf[strlen(gtd->macro_buf)]);
   } else {
     strcat(gtd->macro_buf, buffer);
   }
 
-  if (!HAS_BIT(gtd->ses->flags, SES_FLAG_CONVERTMETA)) {
+  if (!HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA)) {
     match = 0;
 
     for (cnt = 0; *cursor_table[cnt].fun != NULL; cnt++) {
@@ -124,7 +124,7 @@ void read_line() {
     default:
       if (HAS_BIT(gtd->flags, GLOBAL_FLAG_INSERTINPUT) &&
           gtd->input_len != gtd->input_cur) {
-        if (!HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) ||
+        if (!HAS_BIT(gts->flags, SES_FLAG_UTF8) ||
             (gtd->macro_buf[cnt] & 192) != 128) {
           cursor_delete();
         }
@@ -135,13 +135,13 @@ void read_line() {
       gtd->input_len++;
       gtd->input_cur++;
 
-      if (!HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) ||
+      if (!HAS_BIT(gts->flags, SES_FLAG_UTF8) ||
           (gtd->macro_buf[cnt] & 192) != 128) {
         gtd->input_pos++;
       }
 
       if (gtd->input_len != gtd->input_cur) {
-        if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) &&
+        if (HAS_BIT(gts->flags, SES_FLAG_UTF8) &&
             (gtd->macro_buf[cnt] & 192) == 128) {
           input_printf("%c", gtd->macro_buf[cnt]);
         } else {
