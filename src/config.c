@@ -17,8 +17,8 @@ DO_COMMAND(do_configure) {
       node = search_node_list(ses->list[LIST_CONFIG], config_table[index].name);
 
       if (node) {
-        display_printf2(ses, "[%-14s] [%9s] [%s]", node->left, node->right,
-                        config_table[index].description);
+        display_printf(ses, FALSE, "[%-14s] [%9s] [%s]", node->left,
+                       node->right, config_table[index].description);
       }
     }
     display_header(ses, "");
@@ -37,7 +37,7 @@ DO_COMMAND(do_configure) {
         return ses;
       }
     }
-    display_printf(ses, "#ERROR: #CONFIG {%s} IS NOT A VALID OPTION",
+    display_printf(ses, TRUE, "#ERROR: #CONFIG {%s} IS NOT A VALID OPTION",
                    capitalize(left));
   }
   return ses;
@@ -47,7 +47,8 @@ DO_CONFIG(config_commandchar) {
   if (arg[0]) {
     gtd->command_char = arg[0];
   } else {
-    display_printf(ses, "#SYNTAX: #CONFIG {%s} CHAR", config_table[index].name);
+    display_printf(ses, TRUE, "#SYNTAX: #CONFIG {%s} CHAR",
+                   config_table[index].name);
     return NULL;
   }
 
@@ -64,7 +65,7 @@ DO_CONFIG(config_convertmeta) {
   } else if (!strcasecmp(arg, "OFF")) {
     DEL_BIT(ses->flags, SES_FLAG_CONVERTMETA);
   } else {
-    display_printf(ses, "#SYNTAX: #CONFIG {%s} <ON|OFF>",
+    display_printf(ses, TRUE, "#SYNTAX: #CONFIG {%s} <ON|OFF>",
                    config_table[index].name);
     return NULL;
   }
@@ -81,7 +82,7 @@ DO_CONFIG(config_charset) {
   } else if (!strcasecmp(arg, "ASCII")) {
     DEL_BIT(ses->flags, SES_FLAG_UTF8);
   } else {
-    display_printf(ses, "#SYNTAX: #CONFIG {%s} <ASCII|UTF-8>",
+    display_printf(ses, TRUE, "#SYNTAX: #CONFIG {%s} <ASCII|UTF-8>",
                    config_table[index].name);
     return NULL;
   }

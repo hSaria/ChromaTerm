@@ -83,8 +83,9 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
       }
       break;
     default:
-      display_printf2(root->ses, "#BUG: update_node_list: unknown mode: %d",
-                      list_table[root->type].mode);
+      display_printf(root->ses, FALSE,
+                     "#BUG: update_node_list: unknown mode: %d",
+                     list_table[root->type].mode);
       break;
     }
     return node;
@@ -192,7 +193,6 @@ int locate_index_list(struct listroot *root, char *text, char *priority) {
   }
 }
 
-// Yup, all this for a bloody binary search.
 int bsearch_alpha_list(struct listroot *root, char *text, int seek) {
   int bot, top, val;
   double srt;
@@ -279,24 +279,23 @@ void show_node(struct listroot *root, struct listnode *node, int level) {
 
   switch (list_table[root->type].args) {
   case 3:
-    display_printf2(
-        root->ses,
+    display_printf(
+        root->ses, FALSE,
         "%*s#%s "
         "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m \033[1;31m{\033[0m%s\033[1;"
         "31m} \033[1;36m\033[1;31m{\033[0m%s\033[1;31m}",
         level * 2, "", list_table[root->type].name, node->left, arg, node->pr);
     break;
   case 2:
-    display_printf2(root->ses,
-                    "%*s#%s "
-                    "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m=\033[1;31m{\033["
-                    "0m%s\033[1;31m}",
-                    level * 2, "", list_table[root->type].name, node->left,
-                    arg);
+    display_printf(root->ses, FALSE,
+                   "%*s#%s "
+                   "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m=\033[1;31m{\033["
+                   "0m%s\033[1;31m}",
+                   level * 2, "", list_table[root->type].name, node->left, arg);
     break;
   case 1:
-    display_printf2(root->ses, "%*s#%s \033[1;31m{\033[0m%s\033[1;31m}",
-                    level * 2, "", list_table[root->type].name, node->left);
+    display_printf(root->ses, FALSE, "%*s#%s \033[1;31m{\033[0m%s\033[1;31m}",
+                   level * 2, "", list_table[root->type].name, node->left);
     break;
   }
 }
