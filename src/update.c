@@ -93,10 +93,10 @@ void poll_sessions(void) {
         if (read_buffer_mud(gts) == FALSE) {
           quitmsg(NULL);
         }
-      }
 
-      if (gtd->mud_output_len) {
-        readmud(gts);
+        if (gtd->mud_output_len) {
+          readmud(gts);
+        }
       }
     }
   }
