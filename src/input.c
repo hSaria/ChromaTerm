@@ -11,7 +11,7 @@ void process_input(void) {
 
   DEL_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
 
-  gtd->ses = script_driver(gtd->ses, gtd->input_buf);
+  gts = script_driver(gtd->input_buf);
 
   gtd->input_buf[0] = 0;
 }
@@ -30,7 +30,7 @@ void read_key(void) {
 
   buffer[len] = 0;
 
-  if (HAS_BIT(gtd->ses->flags, SES_FLAG_CONVERTMETA) ||
+  if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA) ||
       HAS_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR)) {
     convert_meta(buffer, &gtd->macro_buf[strlen(gtd->macro_buf)]);
   } else {
@@ -45,7 +45,7 @@ void read_key(void) {
       gtd->input_buf[0] = 0;
       gtd->input_len = 0;
 
-      socket_printf(gtd->ses, 1, "%c", '\r');
+      socket_printf(1, "%c", '\r');
       break;
     default: // Normal input
       if (gtd->macro_buf[cnt] == gtd->command_char &&
@@ -62,7 +62,7 @@ void read_key(void) {
         gtd->input_cur = 1;
         gtd->input_pos = 1;
       } else { // If not destined to CT, send to socket
-        socket_printf(gtd->ses, 1, "%c", gtd->macro_buf[cnt]);
+        socket_printf(1, "%c", gtd->macro_buf[cnt]);
         gtd->input_buf[0] = 127; // != 0 means a reset (\n) is required
         gtd->macro_buf[0] = 0;
         gtd->input_len = 0;
@@ -82,19 +82,19 @@ void read_line() {
 
   buffer[len] = 0;
 
-  if (HAS_BIT(gtd->ses->flags, SES_FLAG_CONVERTMETA) ||
+  if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA) ||
       HAS_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR)) {
     convert_meta(buffer, &gtd->macro_buf[strlen(gtd->macro_buf)]);
   } else {
     strcat(gtd->macro_buf, buffer);
   }
 
-  if (!HAS_BIT(gtd->ses->flags, SES_FLAG_CONVERTMETA)) {
+  if (!HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA)) {
     match = 0;
 
     for (cnt = 0; *cursor_table[cnt].fun != NULL; cnt++) {
       if (!strcmp(gtd->macro_buf, cursor_table[cnt].code)) {
-        cursor_table[cnt].fun("");
+        cursor_table[cnt].fun();
         gtd->macro_buf[0] = 0;
 
         return;
@@ -118,15 +118,15 @@ void read_line() {
   for (cnt = 0; gtd->macro_buf[cnt]; cnt++) {
     switch (gtd->macro_buf[cnt]) {
     case 10:
-      cursor_enter("");
+      cursor_enter();
       break;
 
     default:
       if (HAS_BIT(gtd->flags, GLOBAL_FLAG_INSERTINPUT) &&
           gtd->input_len != gtd->input_cur) {
-        if (!HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) ||
+        if (!HAS_BIT(gts->flags, SES_FLAG_UTF8) ||
             (gtd->macro_buf[cnt] & 192) != 128) {
-          cursor_delete("");
+          cursor_delete();
         }
       }
 
@@ -135,13 +135,13 @@ void read_line() {
       gtd->input_len++;
       gtd->input_cur++;
 
-      if (!HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) ||
+      if (!HAS_BIT(gts->flags, SES_FLAG_UTF8) ||
           (gtd->macro_buf[cnt] & 192) != 128) {
         gtd->input_pos++;
       }
 
       if (gtd->input_len != gtd->input_cur) {
-        if (HAS_BIT(gtd->ses->flags, SES_FLAG_UTF8) &&
+        if (HAS_BIT(gts->flags, SES_FLAG_UTF8) &&
             (gtd->macro_buf[cnt] & 192) == 128) {
           input_printf("%c", gtd->macro_buf[cnt]);
         } else {
@@ -154,7 +154,7 @@ void read_line() {
       gtd->macro_buf[0] = 0;
       gtd->input_buf[gtd->input_len] = 0;
 
-      cursor_check_line_modified("");
+      cursor_check_line_modified();
 
       break;
     }

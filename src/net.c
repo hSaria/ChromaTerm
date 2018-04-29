@@ -2,37 +2,36 @@
 
 #include "defs.h"
 
-void write_line_socket(struct session *ses, char *line, int size) {
+void write_line_socket(char *line, int size) {
   static int retry;
 
-  if (!HAS_BIT(ses->flags, SES_FLAG_CONNECTED)) {
-    display_printf2(ses,
-                    "#SESSION NOT CONNECTED. USE: %cRUN {command} TO CONNECT",
-                    gtd->command_char);
+  if (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
+    display_printf(FALSE,
+                   "#SESSION NOT CONNECTED. USE: %cRUN {command} TO CONNECT",
+                   gtd->command_char);
     return;
   }
 
-  if (write(ses->socket, line, size) == -1) {
+  if (write(gts->socket, line, size) == -1) {
     if (retry++ < 10) {
       usleep(100000);
 
-      write_line_socket(ses, line, size);
+      write_line_socket(line, size);
 
       return;
     }
     perror("write in write_line_socket");
-    cleanup_session(ses);
+    quitmsg(NULL, 74);
 
     return;
   }
 
   retry = 0;
-  return;
 }
 
-int read_buffer_mud(struct session *ses) {
+int read_buffer_mud() {
   gtd->mud_output_len +=
-      read(ses->socket, &gtd->mud_output_buf[gtd->mud_output_len],
+      read(gts->socket, &gtd->mud_output_buf[gtd->mud_output_len],
            gtd->mud_output_max - gtd->mud_output_len - 1);
 
   if (gtd->mud_output_len <= 0) {
@@ -44,7 +43,7 @@ int read_buffer_mud(struct session *ses) {
   return TRUE;
 }
 
-void readmud(struct session *ses) {
+void readmud() {
   char *line, *next_line;
 
   gtd->mud_output_len = 0;
@@ -60,20 +59,16 @@ void readmud(struct session *ses) {
       break;
     }
 
-    process_mud_output(ses, line, next_line == NULL);
+    process_mud_output(line, next_line == NULL);
   }
-
-  return;
 }
 
-void process_mud_output(struct session *ses, char *linebuf, int prompt) {
+void process_mud_output(char *linebuf, int prompt) {
   char line[STRING_SIZE];
 
   strip_vt102_codes(linebuf, line);
 
-  do_one_line(linebuf, ses); /* changes linebuf */
+  do_one_line(linebuf); /* changes linebuf */
 
-  if (ses == gtd->ses) {
-    printline(ses, linebuf, prompt);
-  }
+  printline(linebuf, prompt);
 }

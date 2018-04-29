@@ -1,9 +1,0 @@
-cd src/
-./configure
-make
-make install
-
-## If this went without errors type this to start ChromaTerm--:
-ct
-
-## If the pcre library is not installed, you will need to do so from: https://pcre.org

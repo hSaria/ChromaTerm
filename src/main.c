@@ -2,79 +2,19 @@
 
 #include "defs.h"
 
-#include <signal.h>
-#include <sys/socket.h>
-
 struct session *gts;
 struct global_data *gtd;
 
-void pipe_handler(int signal) {
-  restore_terminal();
-
-  display_printf(NULL, "broken_pipe");
-}
-
-void winch_handler(int signal) { init_screen_size(gts); }
-
-void abort_and_trap_handler(int signal) {
-  restore_terminal();
-
-  fflush(NULL);
-
-  exit(-1);
-}
-
-void suspend_handler(int signal) {
-  printf("\033[r\033[%d;%dH", gtd->ses->rows, 1);
-
-  fflush(stdout);
-
-  restore_terminal();
-
-  kill(0, SIGSTOP);
-
-  init_terminal();
-
-  display_puts(NULL, "#WELCOME BACK");
-}
-
 // main() - setup signals - init lists - readcoms - mainloop()
 int main(int argc, char **argv) {
-#ifdef SOCKS
-  SOCKSinit(argv[0]);
-#endif
-
-  if (signal(SIGTERM, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGTERM");
-  }
-
-  if (signal(SIGSEGV, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGSEGV");
-  }
-
-  if (signal(SIGHUP, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGHUP");
-  }
-
-  if (signal(SIGABRT, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGTERM");
-  }
-
-  if (signal(SIGINT, abort_and_trap_handler) == BADSIG) {
-    syserr("signal SIGINT");
-  }
-
-  if (signal(SIGTSTP, suspend_handler) == BADSIG) {
-    syserr("signal SIGSTOP");
-  }
-
-  if (signal(SIGPIPE, pipe_handler) == BADSIG) {
-    syserr("signal SIGPIPE");
-  }
-
-  if (signal(SIGWINCH, winch_handler) == BADSIG) {
-    syserr("signal SIGWINCH");
-  }
+  signal(SIGTERM, abort_and_trap_handler);
+  signal(SIGSEGV, abort_and_trap_handler);
+  signal(SIGHUP, abort_and_trap_handler);
+  signal(SIGABRT, abort_and_trap_handler);
+  signal(SIGINT, abort_and_trap_handler);
+  signal(SIGTSTP, suspend_handler);
+  signal(SIGPIPE, pipe_handler);
+  signal(SIGWINCH, winch_handler);
 
   init_program();
 
@@ -90,11 +30,11 @@ int main(int argc, char **argv) {
         break;
       case 'c':
         if (access(optarg, R_OK) != -1) {
-          gtd->ses = do_read(gtd->ses, optarg);
+          do_read(optarg);
         }
         break;
       case 'e':
-        gtd->ses = script_driver(gtd->ses, optarg);
+        gts = script_driver(optarg);
         break;
       case 'h':
         help_menu(FALSE, c, argv[0]);
@@ -107,10 +47,10 @@ int main(int argc, char **argv) {
     }
 
     if (argv[optind] != NULL) {
-      gtd->ses = do_read(gtd->ses, argv[optind]);
+      do_read(argv[optind]);
     }
   } else {
-    display_printf(NULL, "#HELP for more info");
+    display_printf(TRUE, "#HELP for more info");
   }
 
   if (getenv("HOME") != NULL) {
@@ -118,12 +58,12 @@ int main(int argc, char **argv) {
     sprintf(filename, "%s", ".chromatermrc");
 
     if (access(filename, R_OK) != -1) {
-      gtd->ses = do_read(gtd->ses, filename);
+      do_read(filename);
     } else {
       sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
 
       if (access(filename, R_OK) != -1) {
-        gtd->ses = do_read(gtd->ses, filename);
+        do_read(filename);
       }
     }
   }
@@ -140,12 +80,11 @@ void init_program() {
   gtd = (struct global_data *)calloc(1, sizeof(struct global_data));
 
   for (index = 0; index < LIST_MAX; index++) {
-    gts->list[index] = init_list(gts, index, 32);
+    gts->list[index] = init_list(index, 32);
   }
 
   gts->socket = 1;
 
-  gtd->ses = gts;
   gtd->mud_output_max = 16384;
   gtd->mud_output_buf = (char *)calloc(1, gtd->mud_output_max);
   gtd->input_off = 1;
@@ -155,12 +94,12 @@ void init_program() {
     gtd->cmds[index] = strdup("");
   }
 
-  init_screen_size(gts);
+  init_screen_size();
 
   gts->input_level++;
-  do_configure(gts, "{CHARSET}         {UTF-8}");
-  do_configure(gts, "{COMMAND CHAR}        {#}");
-  do_configure(gts, "{CONVERT META}      {OFF}");
+  do_configure("{CHARSET}         {UTF-8}");
+  do_configure("{COMMAND CHAR}        {#}");
+  do_configure("{CONVERT META}      {OFF}");
   gts->input_level--;
 
   init_terminal();
@@ -168,31 +107,42 @@ void init_program() {
 
 void help_menu(int error, char c, char *proc_name) {
   if (error) {
-    display_printf(NULL, "Unknown option '%c'", c);
+    display_printf(TRUE, "Unknown option '%c'", c);
   }
 
-  display_printf(NULL, "Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf(NULL, "  -e  Execute function");
-  display_printf(NULL, "  -h  This help section");
-  display_printf(NULL, "  -c  Specify configuration file");
-  display_printf(NULL, "  -t  Set title");
+  display_printf(TRUE, "Usage: %s [OPTION]... [FILE]...", proc_name);
+  display_printf(TRUE, "  -e  Execute function");
+  display_printf(TRUE, "  -h  This help section");
+  display_printf(TRUE, "  -c  Specify configuration file");
+  display_printf(TRUE, "  -t  Set title");
 
   restore_terminal();
   if (error) {
-    exit(1);
+    exit(64);
   } else {
-    quitmsg(NULL);
+    quitmsg(NULL, 0);
   }
 }
 
-void quitmsg(char *message) {
-  cleanup_session(gts);
+void quitmsg(char *message, int exit_signal) {
+  cleanup_session();
   restore_terminal();
 
   if (message) {
     printf("\n%s\n", message);
   }
 
-  fflush(NULL);
-  exit(0);
+  fflush(stdout);
+  exit(exit_signal);
 }
+
+void abort_and_trap_handler() { quitmsg("abort_and_trap_handler", 1); }
+
+void pipe_handler() {
+  restore_terminal();
+  display_printf(TRUE, "broken_pipe");
+}
+
+void suspend_handler() { quitmsg("suspend_handler", 1); }
+
+void winch_handler() { init_screen_size(); }

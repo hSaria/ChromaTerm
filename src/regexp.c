@@ -1,58 +1,15 @@
 // This program is protected under the GNU GPL (See COPYING)
 
-#include <sys/types.h>
-
 #include "defs.h"
-#include "pcre.h"
 
-DO_COMMAND(do_regexp) {
-  char left[BUFFER_SIZE], right[BUFFER_SIZE], is_true[BUFFER_SIZE],
-      is_false[BUFFER_SIZE];
-
-  arg = get_arg_in_braces(ses, arg, left, 0);
-  arg = get_arg_in_braces(ses, arg, right, 0);
-  arg = get_arg_in_braces(ses, arg, is_true, 1);
-  get_arg_in_braces(ses, arg, is_false, 1);
-
-  if (*is_true == 0) {
-    display_printf2(ses,
-                    "SYNTAX: #REGEXP {string} {expression} {true} {false}");
-  } else {
-    substitute(ses, left, left, SUB_NONE);
-    substitute(ses, right, right, SUB_NONE);
-
-    if (regexp(ses, NULL, left, right, 0, SUB_CMD)) {
-      substitute(ses, is_true, is_true, SUB_CMD);
-
-      ses = script_driver(ses, is_true);
-    } else if (*is_false) {
-      ses = script_driver(ses, is_false);
-    }
-  }
-  return ses;
-}
-
-int match(struct session *ses, char *str, char *exp, int flags) {
+int match(char *str, char *exp, int flags) {
   char expbuf[BUFFER_SIZE];
 
   sprintf(expbuf, "^%s$", exp);
 
-  substitute(ses, expbuf, expbuf, flags);
+  substitute(expbuf, expbuf, flags);
 
-  return regexp(ses, NULL, str, expbuf, 0, 0);
-}
-
-int find(struct session *ses, char *str, char *exp, int sub) {
-  char expbuf[BUFFER_SIZE], strbuf[BUFFER_SIZE];
-
-  if (ses) {
-    substitute(ses, str, strbuf, SUB_NONE);
-    substitute(ses, exp, expbuf, SUB_NONE);
-
-    return regexp(ses, NULL, strbuf, expbuf, 0, sub);
-  } else {
-    return regexp(ses, NULL, str, exp, 0, sub);
-  }
+  return regexp(NULL, str, expbuf, 0, 0);
 }
 
 int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {
@@ -126,7 +83,7 @@ int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {
 
 // copy *string into *result, but substitute the various expressions with the
 // values they stand for.
-int substitute(struct session *ses, char *string, char *result, int flags) {
+int substitute(char *string, char *result, int flags) {
   char buffer[BUFFER_SIZE], *pti, *pto, *ptt;
   char old[6] = {0};
   int i, cnt;
@@ -375,14 +332,13 @@ int substitute(struct session *ses, char *string, char *result, int flags) {
 
 // Calls regexp checking if the string matches, and automatically fills
 // in the text represented by the wildcards on success.
-int check_one_regexp(struct session *ses, struct listnode *node, char *line,
-                     char *original, int option) {
+int check_one_regexp(struct listnode *node, char *line, int option) {
   char *exp, *str;
 
   if (node->regex == NULL) {
     char result[BUFFER_SIZE];
 
-    substitute(ses, node->left, result, SUB_NONE);
+    substitute(node->left, result, SUB_NONE);
 
     exp = result;
   } else {
@@ -391,11 +347,10 @@ int check_one_regexp(struct session *ses, struct listnode *node, char *line,
 
   str = line;
 
-  return regexp(ses, node->regex, str, exp, option, SUB_ARG);
+  return regexp(node->regex, str, exp, option, SUB_ARG);
 }
 
-int regexp(struct session *ses, pcre *nodepcre, char *str, char *exp,
-           int option, int flag) {
+int regexp(pcre *nodepcre, char *str, char *exp, int option, int flag) {
   char out[BUFFER_SIZE], *pti, *pto;
   int arg = 1, var = 1, fix = 0;
 
@@ -416,7 +371,7 @@ int regexp(struct session *ses, pcre *nodepcre, char *str, char *exp,
     case '{':
       gtd->args[up(var)] = up(arg);
       *pto++ = '(';
-      pti = get_arg_in_braces(ses, pti, pto, TRUE);
+      pti = get_arg_in_braces(pti, pto, TRUE);
       pto += strlen(pto);
       *pto++ = ')';
       break;

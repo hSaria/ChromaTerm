@@ -2,9 +2,6 @@
 
 #include "defs.h"
 
-#include <errno.h>
-#include <sys/param.h>
-
 // return: TRUE if s1 is an abbrevation of s2
 int is_abbrev(char *s1, char *s2) {
   if (*s1 == 0) {
@@ -57,19 +54,6 @@ int oct_number(char *str) {
   return value;
 }
 
-long long getCurrentTime() {
-  struct timeval now_time;
-
-  gettimeofday(&now_time, NULL);
-
-  if (gtd->time >= now_time.tv_sec * 1000000LL + now_time.tv_usec) {
-    gtd->time++;
-  } else {
-    gtd->time = now_time.tv_sec * 1000000LL + now_time.tv_usec;
-  }
-  return gtd->time;
-}
-
 char *capitalize(char *str) {
   static char outbuf[BUFFER_SIZE];
   int cnt;
@@ -111,32 +95,20 @@ void ins_sprintf(char *dest, char *fmt, ...) {
   strcat(dest, tmp);
 }
 
-void show_message(struct session *ses, int index, char *format, ...) {
+void show_message(char *format, ...) {
   char buf[STRING_SIZE];
   va_list args;
 
   va_start(args, format);
-
   vsprintf(buf, format, args);
-
   va_end(args);
 
-  if (index == -1) {
-    if (ses->input_level == 0) {
-      display_puts2(ses, buf);
-    }
-
-    return;
-  }
-
-  if (ses->input_level == 0) {
-    display_puts2(ses, buf);
-
-    return;
+  if (gts->input_level == 0) {
+    display_puts(FALSE, TRUE, buf);
   }
 }
 
-void display_header(struct session *ses, char *format, ...) {
+void display_header(char *format, ...) {
   char arg[BUFFER_SIZE], buf[BUFFER_SIZE];
   va_list args;
 
@@ -144,20 +116,20 @@ void display_header(struct session *ses, char *format, ...) {
   vsprintf(arg, format, args);
   va_end(args);
 
-  if ((int)strlen(arg) > gtd->ses->cols - 2) {
-    arg[gtd->ses->cols - 2] = 0;
+  if ((int)strlen(arg) > gts->cols - 2) {
+    arg[gts->cols - 2] = 0;
   }
 
-  memset(buf, '#', gtd->ses->cols);
+  memset(buf, '#', gts->cols);
 
-  memcpy(&buf[(gtd->ses->cols - strlen(arg)) / 2], arg, strlen(arg));
+  memcpy(&buf[(gts->cols - strlen(arg)) / 2], arg, strlen(arg));
 
-  buf[gtd->ses->cols] = 0;
+  buf[gts->cols] = 0;
 
-  display_puts2(ses, buf);
+  display_puts(FALSE, FALSE, buf);
 }
 
-void socket_printf(struct session *ses, size_t length, char *format, ...) {
+void socket_printf(size_t length, char *format, ...) {
   char buf[STRING_SIZE];
   va_list args;
 
@@ -165,11 +137,12 @@ void socket_printf(struct session *ses, size_t length, char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  if (HAS_BIT(ses->flags, SES_FLAG_CONNECTED)) {
-    write(ses->socket, buf, length);
+  if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
+    write(gts->socket, buf, length);
   }
 }
-void display_printf2(struct session *ses, char *format, ...) {
+
+void display_printf(int came_from_commend, char *format, ...) {
   char buf[STRING_SIZE];
   va_list args;
 
@@ -177,84 +150,57 @@ void display_printf2(struct session *ses, char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  display_puts2(ses, buf);
+  if (came_from_commend) {
+    display_puts(TRUE, TRUE, buf);
+  } else {
+    display_puts(FALSE, TRUE, buf);
+  }
 }
 
-void display_printf(struct session *ses, char *format, ...) {
-  char buf[STRING_SIZE];
-  va_list args;
-
-  va_start(args, format);
-  vsprintf(buf, format, args);
-  va_end(args);
-
-  display_puts(ses, buf);
-}
-
-// Like display_puts2, but no color codes added
-void display_puts3(struct session *ses, char *string) {
+void display_puts(int came_from_mud, int with_color, char *string) {
   char output[STRING_SIZE];
 
-  if (ses == NULL) {
-    ses = gtd->ses;
+  if (came_from_mud) {
+    do_one_line(string);
   }
 
   if (gtd->quiet) {
     return;
   }
 
-  if (strip_vt102_strlen(ses, ses->more_output) != 0) {
-    sprintf(output, "\n%s", string);
+  if (with_color) {
+    if (strip_vt102_strlen(gts->more_output) != 0) {
+      sprintf(output, "\n\033[0m%s\033[0m", string);
+    } else {
+      sprintf(output, "\033[0m%s\033[0m", string);
+    }
   } else {
-    sprintf(output, "%s", string);
+    if (strip_vt102_strlen(gts->more_output) != 0) {
+      sprintf(output, "\n%s", string);
+    } else {
+      sprintf(output, "%s", string);
+    }
   }
 
-  if (ses != gtd->ses) {
-    return;
-  }
-
-  printline(ses, output, FALSE);
+  printline(output, FALSE);
 }
 
-// output to screen should go through this function
-// the output is NOT checked for actions or anything
-void display_puts2(struct session *ses, char *string) {
-  char output[STRING_SIZE];
+void printline(char *str, int prompt) {
+  char wrapped_str[STRING_SIZE];
 
-  if (ses == NULL) {
-    ses = gtd->ses;
-  }
-
-  if (gtd->quiet) {
-    return;
-  }
-
-  if (strip_vt102_strlen(ses, ses->more_output) != 0) {
-    sprintf(output, "\n\033[0m%s\033[0m", string);
+  if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA)) {
+    convert_meta(str, wrapped_str);
   } else {
-    sprintf(output, "\033[0m%s\033[0m", string);
+    strcpy(wrapped_str, str);
   }
 
-  if (ses != gtd->ses) {
-
-    return;
+  if (prompt) {
+    printf("%s", wrapped_str);
+  } else {
+    printf("%s\n", wrapped_str);
   }
-
-  printline(ses, output, FALSE);
 
   return;
-}
-
-//  output to screen should go through this function
-//  the output IS treated as though it came from the mud
-void display_puts(struct session *ses, char *string) {
-  if (ses == NULL) {
-    ses = gtd->ses;
-  }
-
-  do_one_line(string, ses);
-
-  display_puts2(ses, string);
 }
 
 // print system call error message and terminate
@@ -268,31 +214,5 @@ void syserr(char *msg) {
   } else {
     sprintf(s, "ERROR: %s (%d)", msg, errno);
   }
-  quitmsg(s);
+  quitmsg(s, 1);
 }
-
-// Whoops, strcasecmp wasn't found.
-#if !defined(HAVE_STRCASECMP)
-#define UPPER(c) (islower(c) ? toupper(c) : c)
-
-int strcasecmp(char *string1, char *string2) {
-  for (; UPPER(*string1) == UPPER(*string2); string1++, string2++)
-    if (!*string1)
-      return (0);
-  return (UPPER(*string1) - UPPER(*string2));
-}
-
-int strncasecmp(char *string1, char *string2, size_t count) {
-  if (count)
-    do {
-      if (UPPER(*string1) != UPPER(*string2))
-        return (UPPER(*string1) - UPPER(*string2));
-      if (!*string1++)
-        break;
-      string2++;
-    } while (--count);
-
-  return (0);
-}
-
-#endif
