@@ -10,32 +10,15 @@
 void mainloop(void) {
   static struct timeval curr_time, wait_time, last_time;
   int usec_loop, usec_wait;
-  short int pulse_poll_input = PULSE_POLL_INPUT;
-  short int pulse_poll_sessions = PULSE_POLL_SESSIONS;
-  short int pulse_update_terminal = PULSE_UPDATE_TERMINAL;
 
   wait_time.tv_sec = 0;
 
   while (TRUE) {
     gettimeofday(&last_time, NULL);
 
-    if (--pulse_poll_input == 0) {
-      pulse_poll_input = PULSE_POLL_INPUT;
-
-      poll_input();
-    }
-
-    if (--pulse_poll_sessions == 0) {
-      pulse_poll_sessions = PULSE_POLL_SESSIONS;
-
-      poll_sessions();
-    }
-
-    if (--pulse_update_terminal == 0) {
-      pulse_update_terminal = PULSE_UPDATE_TERMINAL;
-
-      fflush(stdout);
-    }
+    poll_input();
+    poll_sessions();
+    fflush(stdout);
 
     gettimeofday(&curr_time, NULL);
 

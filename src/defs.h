@@ -74,10 +74,6 @@
 
 #define PULSE_PER_SECOND 500
 
-#define PULSE_POLL_INPUT 1
-#define PULSE_POLL_SESSIONS 1
-#define PULSE_UPDATE_TERMINAL 1
-
 // Index for lists
 #define LIST_CONFIG 0
 #define LIST_HIGHLIGHT 1
