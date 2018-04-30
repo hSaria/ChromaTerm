@@ -50,7 +50,7 @@ void script_driver(char *str) {
         token.cmd = cmd;
         token.str = strdup(args);
       }
+      parse_script(&token);
     }
-    parse_script(&token);
   }
 }
