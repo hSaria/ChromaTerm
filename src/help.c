@@ -8,6 +8,7 @@ struct help_type {
 };
 
 struct help_type help_table[] = {
+    {"ALL", ""},
     {"COLORDEMO",
      "<g00>g00<g01>g01<g02>g02<g03>g03<g04>g04<g05>g05<g06>g06<g07>g07"
      "<g08>g08<g09>g09<g10>g10<g11>g11<g12>g12<g13>g13<g14>g14<g15>g15"
@@ -77,10 +78,9 @@ struct help_type help_table[] = {
      "<FED>FED<FEE>FEE<FEF>FEF<FFF>FFF<FFE>FFE<FFD>FFD<FFC>FFC<FFB>FFB"
      "<FFA>FFA<FEA>FEA<FDA>FDA<FCA>FCA<FBA>FBA<099>\n\n\n"},
     {"COLORS",
-     "<178>Syntax<078>:  <<888>xyz>  with x, y, z being parameters\n"
+     "<078>Syntax<078>:  <<888>xyz>  with x, y, z being parameters\n"
      "\n"
      "         Parameter 'x': VT100 code\n"
-     "\n"
      "         0 - Reset all colors and codes to default\n"
      "         1 - Bold\n"
      "         2 - Dim\n"
@@ -91,7 +91,6 @@ struct help_type help_table[] = {
      "\n"
      "         Parameter 'y':  Foreground color\n"
      "         Parameter 'z':  Background color\n"
-     "\n"
      "         0 - Black                5 - Magenta\n"
      "         1 - Red                  6 - Cyan\n"
      "         2 - Green                7 - White\n"
@@ -106,120 +105,101 @@ struct help_type help_table[] = {
      "grayscale background colors\n"
      "         use <<888>G00> to <<888>G23>.\n"
      "\n"
-     "         The tertiary colors are as follows:\n"
-     "\n"
-     "         <<888>acf> - Azure            <<888>afc> - Jade\n"
-     "         <<888>caf> - Violet           <<888>cfa> - Lime\n"
-     "         <<888>fac> - Pink             <<888>fca> - Orange\n\n\n"},
+     "         Use <178>#help colordemo<078> to get a long (not complete) list "
+     "of colors\n\n\n"},
     {"CONFIG",
-     "<178>Command<078>: #config <178>{<078>option<178>}<078> "
+     "<028>Command<078>: #config <178>{<078>option<178>}<078> "
      "<178>{<078>argument<178>}<078>\n"
      "\n"
      "         This allows you to configure various settings, the settings can "
      "be\n"
-     "         written to file with the #write or #writesession command.\n"
-     "\n"
-     "         If you configure the global session (the one you see as you "
-     "start up)\n"
-     "         all sessions started will inherite these settings.\n"
+     "         written to file with the <178>#write<078> command.\n"
      "\n"
      "         It's advised to make a configuration file to read on startup if "
      "you\n"
      "         do not like the default settings.\n"
      "\n"
-     "         Config options which aren't listed by default:\n"
-     "\n"
-     "         #CONFIG {CONVERT META} {ON|OFF} Shows color codes and key "
-     "bindings.<099>\n\n\n"},
-    {"EXIT", "<178>Command<078>: #exit\n"
+     "         For debugging purposes, this hidden command can show color and "
+     "codes:\n"
+     "         <178>#CONFIG {CONVERT META} {ON|OFF}<099>\n\n\n"},
+    {"EXIT", "<028>Command<078>: #exit\n"
              "\n"
-             "         Terminates the program and return to unix.  On most "
-             "systems, ctrl-c\n"
-             "         has the same result.<099>\n\n\n"},
-    {"HELP",
-     "<178>Command<078>: #help <178>{<078>subject<178>}<078>\n"
-     "\n"
-     "         Without an argument #help will list all available help "
-     "subjects.\n"
-     "\n"
-     "         Using #help all will display all help entries.<099>\n\n\n"},
+             "         Terminates the program and any child process.\n"
+             "         You can also use <178>#quit<078>\n\n\n"},
+    {"HELP", "<028>Command<078>: #help <178>{<078>subject<178>}<078>\n"
+             "\n"
+             "         Without an argument #help will list all available help "
+             "subjects.\n"
+             "\n"
+             "         Using <178>#help all<078> will display all help "
+             "entries.<099>\n\n\n"},
     {"HIGHLIGHT",
-     "<178>Command<078>: #highlight <178>{<078>string<178>}<078> "
+     "<028>Command<078>: #highlight <178>{<078>regular expression<178>}<078> "
      "<178>{<078>color names<178>}<078> <178>{<078>priority<178>}<078>\n"
      "\n"
      "         The highlight command is used to allow you to highlight strings "
      "of text\n"
      "         from the program.  Available ANSI color names are:\n"
-     "\n"
      "         reset, light, faint, underscore, blink, reverse, dim,\n"
-     "\n"
      "         black, red, green, yellow, blue, magenta, cyan, white,\n"
      "         b black, b red, b green, b yellow, b blue, b magenta, b cyan, b "
      "white\n"
      "\n"
      "         Available XTERM 256 color names are:\n"
-     "\n"
      "         azure, ebony, jade, lime, orange, pink, silver, tan, violet,\n"
      "         light azure, light ebony, light jade, light lime, light "
      "orange,\n"
      "         light pink, light silver, light tan, light violet.\n"
      "\n"
-     "         The %1-99 variables can be used as 'wildcards' that will match "
-     "with any\n"
-     "         text. They are useful for highlighting a complete line. The %0 "
-     "variable\n"
-     "         should never be used in highlights.\n"
+     "         Besides color names also <<888>abc> color codes can be used. \n"
+     "         Use the <178>#help color<078> for more info on that.\n"
      "\n"
      "         You may start the string to highlight with a ^ to only "
      "highlight text\n"
      "         if it begins the line.\n"
      "\n"
-     "         Besides color names also <<888>abc> color codes can be used.\n"
-     "\n"
      "         You may specify a priority to give a highlight precedence.\n"
      "         Default priority is 5. Lower is better.\n"
      "\n"
-     "<178>Example<078>: #high {Valgar} {reverse}\n"
+     "<078>Example<078>: #high {Valgar} {reverse}\n"
      "         Prints every occurrence of 'Valgar' in reverse video.\n"
-     "<178>Example<078>: #high {^You %1} {bold cyan}\n"
-     "         Boldfaces any line that starts with 'You' in cyan.\n"
-     "<178>Example<078>: #high {Bubba} {red underscore blink}\n"
+     "<078>Example<078>: #high {^(P|p)assword} {bold yellow}\n"
+     "         Boldfaces any line that starts with 'Password' or 'password' in "
+     "yellow.\n"
+     "<078>Example<078>: #high {Bubba} {red underscore blink}\n"
      "         Highlights the name Bubba as blinking, red, underscored text\n"
-     "<178>Comment<078>: This command only works with ANSI/VT100 terminals or "
+     "<078>Comment<078>: This command only works with ANSI/VT100 terminals or "
      "emulators.\n"
-     "<178>Comment<078>: You can remove a highlight with the #unhighlight "
+     "<078>Comment<078>: You can remove a highlight with the "
+     "<178>#unhighlight<078> "
      "command.<099>\n\n\n"},
     {"READ",
-     "<178>Command<078>: #read <178>{<078>filename<178>}<078>\n"
+     "<028>Command<078>: #read <178>{<078>filename<178>}<078>\n"
      "\n"
-     "         Reads a commands file into memory.  The coms file is "
+     "         Reads commands from a file.  The commands file is "
      "merged in with\n"
-     "         the currently loaded commands.  Duplicate commands are "
-     "overwritten.\n"
-     "\n"
-     "         If you uses braces, { and } you can use several lines "
-     "for 1 commands.\n"
-     "         This however means you must always match every { with a "
-     "} for the read\n"
-     "         command to work.\n"
+     "         the currently loaded commands (duplicate commands are "
+     "overwritten).\n"
      "\n"
      "         You can comment out triggers using /* text */<099>\n\n\n"},
-    {"RUN", "<178>Command<078>: #run <178>{<078>shell command<178>}<078>\n"
+    {"RUN", "<028>Command<078>: #run <178>{<078>shell command<178>}<078>\n"
             "\n"
-            "         The run command creates a session which runs the given "
-            "command.\n"
+            "         The run command calls the shell command which it wraps "
+            "around."
             "\n"
-            "<178>Example<078>: #run {ssh someone@somewhere.com}<099>\n\n\n"},
-    {"WRITE", "<178>Command<078>: #write <178>{<078>filename<178>}<078>\n"
+            "         You can only run one process per CT instance."
+            "\n"
+            "<078>Example<078>: #run {ssh someone@somewhere.com}<099>\n\n\n"},
+    {"WRITE", "<028>Command<078>: #write <178>{<078>filename<178>}<078>\n"
               "\n"
-              "         Writes all current actions, aliases, subs, highlights, "
-              "and variables\n"
-              "         to a command file, specified by filename.<099>\n\n\n"},
+              "         Writes all current configuration and highlight rules "
+              "to the specified \n"
+              "         filename.<099>\n\n\n"},
     {"", ""}};
 
 DO_COMMAND(do_help) {
   char left[BUFFER_SIZE], add[BUFFER_SIZE], buf[BUFFER_SIZE], *ptf, *pto;
-  int cnt;
+  int cnt, found;
 
   get_arg_in_braces(arg, left, GET_ALL);
 
@@ -235,8 +215,9 @@ DO_COMMAND(do_help) {
   } else {
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
       if (is_abbrev(left, help_table[cnt].name) || is_abbrev(left, "all")) {
-        substitute(help_table[cnt].text, buf, SUB_COL);
+        found = TRUE;
 
+        substitute(help_table[cnt].text, buf, SUB_COL);
         pto = buf;
 
         while (*pto) {
@@ -251,10 +232,11 @@ DO_COMMAND(do_help) {
 
           pto = ptf;
         }
-
-        return;
       }
     }
-    display_printf(FALSE, "#HELP: No help found for topic '%s'", left);
+
+    if (!found) {
+      display_printf(FALSE, "#HELP: No help found for topic '%s'", left);
+    }
   }
 }
