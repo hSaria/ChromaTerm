@@ -67,7 +67,6 @@ void tokenize_script(struct scriptroot *root, int lvl, char *str) {
 
     if (*str != gtd->command_char) {
       str = get_arg_all(str, line);
-
       addtoken(root, lvl, TOKEN_TYPE_STRING, -1, line);
     } else {
       arg = get_arg_stop_spaces(str, line, 0);

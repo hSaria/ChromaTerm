@@ -267,23 +267,6 @@ DO_COMMAND(do_read) {
 
   gtd->quiet--;
 
-  for (cnt = 0; cnt < LIST_MAX; cnt++) {
-    switch (gts->list[cnt]->used - counter[cnt]) {
-    case 0:
-      break;
-
-    case 1:
-      show_message("#OK: %3d %s LOADED", gts->list[cnt]->used - counter[cnt],
-                   list_table[cnt].name);
-      break;
-
-    default:
-      show_message("#OK: %3d %s LOADED", gts->list[cnt]->used - counter[cnt],
-                   list_table[cnt].name_multi);
-      break;
-    }
-  }
-
   fclose(fp);
 
   free(bufi);

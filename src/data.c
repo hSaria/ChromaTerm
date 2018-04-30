@@ -119,10 +119,6 @@ void delete_node_list(int type, struct listnode *node) {
 void delete_index_list(struct listroot *root, int index) {
   struct listnode *node = root->list[index];
 
-  if (node->root) {
-    free_list(node->root);
-  }
-
   if (index <= root->update) {
     root->update--;
   }

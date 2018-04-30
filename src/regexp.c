@@ -160,37 +160,6 @@ int substitute(char *string, char *result, int flags) {
         *pto++ = *pti++;
       }
       break;
-    case '%':
-      if (HAS_BIT(flags, SUB_ARG) && (isdigit((int)pti[1]) || pti[1] == '%')) {
-        if (pti[1] == '%') {
-          while (pti[1] == '%') {
-            *pto++ = *pti++;
-          }
-          pti++;
-        } else {
-          i = isdigit((int)pti[2]) ? (pti[1] - '0') * 10 + pti[2] - '0'
-                                   : pti[1] - '0';
-
-          ptt = gtd->vars[i];
-
-          while (*ptt) {
-            *pto++ = *ptt++;
-          }
-          pti += isdigit((int)pti[2]) ? 3 : 2;
-        }
-      } else {
-        *pto++ = *pti++;
-      }
-      break;
-    case '&':
-      *pto++ = *pti++;
-      break;
-    case '\\':
-      *pto++ = *pti++;
-      break;
-    case ESCAPE:
-      *pto++ = *pti++;
-      break;
     default:
       *pto++ = *pti++;
       break;

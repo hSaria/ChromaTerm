@@ -96,7 +96,6 @@ void read_line() {
       if (!strcmp(gtd->macro_buf, cursor_table[cnt].code)) {
         cursor_table[cnt].fun();
         gtd->macro_buf[0] = 0;
-
         return;
       } else if (!strncmp(gtd->macro_buf, cursor_table[cnt].code,
                           strlen(gtd->macro_buf))) {
@@ -111,7 +110,6 @@ void read_line() {
 
   if (gtd->macro_buf[0] == ESCAPE) {
     strcpy(buffer, gtd->macro_buf);
-
     convert_meta(buffer, gtd->macro_buf);
   }
 
@@ -120,7 +118,6 @@ void read_line() {
     case 10:
       cursor_enter();
       break;
-
     default:
       if (HAS_BIT(gtd->flags, GLOBAL_FLAG_INSERTINPUT) &&
           gtd->input_len != gtd->input_cur) {

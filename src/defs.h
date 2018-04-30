@@ -51,9 +51,6 @@
 // Command type
 enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
 
-// generic define for show_message
-#define LIST_MESSAGE -1
-
 // Various flags
 #define COL_BLD (1 << 0)
 #define COL_UND (1 << 1)
@@ -64,10 +61,8 @@ enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
 #define COL_256 (1 << 6)
 
 #define SUB_NONE 0
-#define SUB_ARG (1 << 0)
-#define SUB_COL (1 << 1)
-#define SUB_EOL (1 << 2)
-#define SUB_FIX (1 << 3)
+#define SUB_COL (1 << 0)
+#define SUB_EOL (1 << 1)
 
 #define GLOBAL_FLAG_CONVERTMETACHAR (1 << 0)
 #define GLOBAL_FLAG_PROCESSINPUT (1 << 1)
@@ -116,8 +111,6 @@ enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
 #define URANGE(a, b, c) ((b) < (a) ? (a) : (b) > (c) ? (c) : (b))
 #define UMAX(a, b) ((a) > (b) ? (a) : (b))
 
-#define up(u) (u < 99 ? u++ : u)
-
 #define DO_COMMAND(command) void command(char *arg)
 #define DO_CONFIG(config) int config(char *arg, int index)
 #define DO_CURSOR(cursor) void cursor(void)
@@ -125,7 +118,6 @@ enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
 // Structures
 struct listroot {
   struct listnode **list;
-  struct session *ses;
   int size;
   int used;
   int type;
@@ -133,7 +125,6 @@ struct listroot {
 };
 
 struct listnode {
-  struct listroot *root;
   char *left;
   char *right;
   char *pr;
@@ -166,9 +157,6 @@ struct global_data {
   int flags;
   int quiet;
   char command_char;
-  char *vars[100];
-  char *cmds[100];
-  int args[100];
 };
 
 // Typedefs
@@ -185,7 +173,6 @@ struct color_type {
 struct command_type {
   char *name;
   COMMAND *command;
-  int type;
 };
 
 struct config_type {

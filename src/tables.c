@@ -2,17 +2,16 @@
 
 #include "defs.h"
 
-struct command_type command_table[] = {
-    {"commands", do_commands, TOKEN_TYPE_COMMAND},
-    {"config", do_configure, TOKEN_TYPE_COMMAND},
-    {"exit", do_exit, TOKEN_TYPE_COMMAND},
-    {"help", do_help, TOKEN_TYPE_COMMAND},
-    {"highlight", do_highlight, TOKEN_TYPE_COMMAND},
-    {"read", do_read, TOKEN_TYPE_COMMAND},
-    {"run", do_run, TOKEN_TYPE_COMMAND},
-    {"unhighlight", do_unhighlight, TOKEN_TYPE_COMMAND},
-    {"write", do_write, TOKEN_TYPE_COMMAND},
-    {"", NULL, TOKEN_TYPE_COMMAND}};
+struct command_type command_table[] = {{"commands", do_commands},
+                                       {"config", do_configure},
+                                       {"exit", do_exit},
+                                       {"help", do_help},
+                                       {"highlight", do_highlight},
+                                       {"read", do_read},
+                                       {"run", do_run},
+                                       {"unhighlight", do_unhighlight},
+                                       {"write", do_write},
+                                       {"", NULL}};
 
 struct list_type list_table[LIST_MAX] = {
     {"CONFIG", "CONFIGURATIONS", ALPHA, 2},

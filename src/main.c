@@ -89,11 +89,6 @@ void init_program() {
   gtd->mud_output_buf = (char *)calloc(1, gtd->mud_output_max);
   gtd->input_off = 1;
 
-  for (index = 0; index < 100; index++) {
-    gtd->vars[index] = strdup("");
-    gtd->cmds[index] = strdup("");
-  }
-
   init_screen_size();
 
   gts->input_level++;
