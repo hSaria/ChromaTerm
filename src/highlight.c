@@ -47,7 +47,7 @@ void check_all_highlights(char *original, char *line) {
       output[BUFFER_SIZE], plain[BUFFER_SIZE];
 
   for (root->update = 0; root->update < root->used; root->update++) {
-    if (check_one_regexp(root->list[root->update], line, 0)) {
+    if (check_one_regexp(root->list[root->update], line)) {
       node = root->list[root->update];
 
       get_highlight_codes(node->right, color);
@@ -82,7 +82,7 @@ void check_all_highlights(char *original, char *line) {
         cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
 
         pto = ptm + strlen(match);
-      } while (check_one_regexp(node, ptl, 0));
+      } while (check_one_regexp(node, ptl));
 
       strcat(output, pto);
 

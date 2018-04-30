@@ -67,10 +67,8 @@ enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
 #define SUB_NONE 0
 #define SUB_ARG (1 << 0)
 #define SUB_COL (1 << 1)
-#define SUB_ESC (1 << 2)
-#define SUB_CMD (1 << 3)
-#define SUB_EOL (1 << 4)
-#define SUB_FIX (1 << 5)
+#define SUB_EOL (1 << 2)
+#define SUB_FIX (1 << 3)
 
 #define GLOBAL_FLAG_CONVERTMETACHAR (1 << 0)
 #define GLOBAL_FLAG_PROCESSINPUT (1 << 1)
@@ -391,11 +389,10 @@ extern void do_one_line(char *line);
 #define __REGEXP_H__
 
 extern int substitute(char *string, char *result, int flags);
-extern int match(char *str, char *exp, int flags);
-extern int regexp_compare(pcre *regex, char *str, char *exp, int option,
-                          int flag);
-extern int check_one_regexp(struct listnode *node, char *line, int option);
-extern int regexp(pcre *pcre, char *str, char *exp, int option, int flag);
+extern int match(char *str, char *exp);
+extern int regexp_compare(pcre *regex, char *str, char *exp, int flag);
+extern int check_one_regexp(struct listnode *node, char *line);
+extern int regexp(pcre *pcre, char *str, char *exp, int flag);
 
 #endif
 

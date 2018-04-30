@@ -136,24 +136,6 @@ struct help_type help_table[] = {
              "         Terminates the program and return to unix.  On most "
              "systems, ctrl-c\n"
              "         has the same result.<099>\n\n\n"},
-    {"ESCAPE CODES",
-     "         You may use the escape character \\ for various special "
-     "characters.\n"
-     "\n"
-     "         \\a   will beep the terminal.\n"
-     "         \\c   will send a control character, \\ca for ctrl-a.\n"
-     "         \\e   will start an escape sequence.\n"
-     "         \\n   will send a line feed.\n"
-     "         \\r   will send a carriage return.\n"
-     "         \\t   will send a tab.\n"
-     "         \\x   will print a hexadecimal value, \\xFF for example.\n"
-     "         \\x7B will send the '{' character.\n"
-     "         \\x7D will send the '}' character.\n"
-     "\n"
-     "         Ending a line with \\ will stop a line feed from being "
-     "appended.\n"
-     "         To escape arguments in an alias use %%0 %%1 %%2 "
-     "etc.<099>\n\n\n"},
     {"HELP",
      "<178>Command<078>: #help <178>{<078>subject<178>}<078>\n"
      "\n"
@@ -253,7 +235,7 @@ DO_COMMAND(do_help) {
   } else {
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
       if (is_abbrev(left, help_table[cnt].name) || atoi(left) == cnt + 1 ||
-          match(help_table[cnt].name, left, SUB_NONE)) {
+          match(help_table[cnt].name, left)) {
         substitute(help_table[cnt].text, buf, SUB_COL);
 
         pto = buf;

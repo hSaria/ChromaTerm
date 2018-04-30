@@ -354,7 +354,7 @@ int show_node_with_wild(char *text, int type) {
   }
 
   for (i = 0; i < root->used; i++) {
-    if (match(root->list[i]->left, text, SUB_NONE)) {
+    if (match(root->list[i]->left, text)) {
       show_node(root, root->list[i], 0);
 
       flag = TRUE;
@@ -386,7 +386,7 @@ void delete_node_with_wild(int type, char *text) {
   }
 
   for (i = root->used - 1; i >= 0; i--) {
-    if (match(root->list[i]->left, arg1, SUB_NONE)) {
+    if (match(root->list[i]->left, arg1)) {
       show_message(
           "#OK. {%s} IS NO LONGER %s %s", root->list[i]->left,
           (*list_table[type].name == 'A' || *list_table[type].name == 'E')

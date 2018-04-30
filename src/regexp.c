@@ -2,23 +2,23 @@
 
 #include "defs.h"
 
-int match(char *str, char *exp, int flags) {
+int match(char *str, char *exp) {
   char expbuf[BUFFER_SIZE];
 
   sprintf(expbuf, "^%s$", exp);
 
-  substitute(expbuf, expbuf, flags);
+  substitute(expbuf, expbuf, SUB_NONE);
 
-  return regexp(NULL, str, expbuf, 0, 0);
+  return regexp(NULL, str, expbuf, 0);
 }
 
-int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {
+int regexp_compare(pcre *nodepcre, char *str, char *exp, int flag) {
   pcre *regex;
   const char *error;
   int i, j, matches, match[303];
 
   if (nodepcre == NULL) {
-    regex = pcre_compile(exp, option, &error, &i, NULL);
+    regex = pcre_compile(exp, 0, &error, &i, NULL);
   } else {
     regex = nodepcre;
   }
@@ -37,24 +37,6 @@ int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {
   }
 
   switch (flag) {
-  case SUB_CMD:
-    for (i = 0; i < matches; i++) {
-      gtd->cmds[i] =
-          refstring(gtd->cmds[i], "%.*s", match[i * 2 + 1] - match[i * 2],
-                    &str[match[i * 2]]);
-    }
-    break;
-
-  case SUB_CMD + SUB_FIX:
-    for (i = 0; i < matches; i++) {
-      j = gtd->args[i];
-
-      gtd->cmds[j] =
-          refstring(gtd->cmds[j], "%.*s", match[i * 2 + 1] - match[i * 2],
-                    &str[match[i * 2]]);
-    }
-    break;
-
   case SUB_ARG:
     for (i = 0; i < matches; i++) {
       gtd->vars[i] =
@@ -62,7 +44,6 @@ int regexp_compare(pcre *nodepcre, char *str, char *exp, int option, int flag) {
                     &str[match[i * 2]]);
     }
     break;
-
   case SUB_ARG + SUB_FIX:
     for (i = 0; i < matches; i++) {
       j = gtd->args[i];
@@ -242,83 +223,10 @@ int substitute(char *string, char *result, int flags) {
       }
       break;
     case '&':
-      if (HAS_BIT(flags, SUB_CMD) && (isdigit((int)pti[1]) || pti[1] == '&')) {
-        if (pti[1] == '&') {
-          while (pti[1] == '&') {
-            *pto++ = *pti++;
-          }
-          if (isdigit((int)pti[1])) {
-            pti++;
-          } else {
-            *pto++ = *pti++;
-          }
-        } else {
-          i = isdigit((int)pti[2]) ? (pti[1] - '0') * 10 + pti[2] - '0'
-                                   : pti[1] - '0';
-
-          for (cnt = 0; gtd->cmds[i][cnt]; cnt++) {
-            *pto++ = gtd->cmds[i][cnt];
-          }
-          pti += isdigit((int)pti[2]) ? 3 : 2;
-        }
-      } else {
-        *pto++ = *pti++;
-      }
+      *pto++ = *pti++;
       break;
     case '\\':
-      if (HAS_BIT(flags, SUB_ESC)) {
-        pti++;
-
-        switch (*pti) {
-        case 'a':
-          *pto++ = '\a';
-          break;
-        case 'b':
-          *pto++ = '\b';
-          break;
-        case 'c':
-          if (pti[1]) {
-            pti++;
-            *pto++ = *pti % 32;
-          }
-          break;
-        case 'e':
-          *pto++ = '\033';
-          break;
-        case 'n':
-          *pto++ = '\n';
-          break;
-        case 'r':
-          *pto++ = '\r';
-          break;
-        case 't':
-          *pto++ = '\t';
-          break;
-        case 'x':
-          if (pti[1] && pti[2]) {
-            pti++;
-            *pto++ = hex_number(pti);
-            pti++;
-          }
-          break;
-        case '0':
-          if (pti[1] && pti[2]) {
-            pti++;
-            *pto++ = oct_number(pti);
-            pti++;
-          }
-          break;
-        case '\0':
-          DEL_BIT(flags, SUB_EOL);
-          continue;
-        default:
-          *pto++ = *pti;
-          break;
-        }
-        pti++;
-      } else {
-        *pto++ = *pti++;
-      }
+      *pto++ = *pti++;
       break;
     case ESCAPE:
       *pto++ = *pti++;
@@ -332,7 +240,7 @@ int substitute(char *string, char *result, int flags) {
 
 // Calls regexp checking if the string matches, and automatically fills
 // in the text represented by the wildcards on success.
-int check_one_regexp(struct listnode *node, char *line, int option) {
+int check_one_regexp(struct listnode *node, char *line) {
   char *exp, *str;
 
   if (node->regex == NULL) {
@@ -347,10 +255,10 @@ int check_one_regexp(struct listnode *node, char *line, int option) {
 
   str = line;
 
-  return regexp(node->regex, str, exp, option, SUB_ARG);
+  return regexp(node->regex, str, exp, SUB_ARG);
 }
 
-int regexp(pcre *nodepcre, char *str, char *exp, int option, int flag) {
+int regexp(pcre *nodepcre, char *str, char *exp, int flag) {
   char out[BUFFER_SIZE], *pti, *pto;
   int arg = 1, var = 1, fix = 0;
 
@@ -389,7 +297,6 @@ int regexp(pcre *nodepcre, char *str, char *exp, int option, int flag) {
       *pto++ = '\\';
       *pto++ = *pti++;
       break;
-
     case '$':
       if (pti[1] != DEFAULT_OPEN && !isalnum((int)pti[1])) {
         int i = 0;
@@ -404,7 +311,6 @@ int regexp(pcre *nodepcre, char *str, char *exp, int option, int flag) {
       }
       *pto++ = *pti++;
       break;
-
     case '%':
       switch (pti[1]) {
       case '0':
@@ -425,61 +331,52 @@ int regexp(pcre *nodepcre, char *str, char *exp, int option, int flag) {
         strcpy(pto, *pti == 0 ? "(.*)" : "(.*?)");
         pto += strlen(pto);
         break;
-
       case 'd':
         gtd->args[up(var)] = up(arg);
         pti += 2;
         strcpy(pto, *pti == 0 ? "([0-9]*)" : "([0-9]*?)");
         pto += strlen(pto);
         break;
-
       case 'D':
         gtd->args[up(var)] = up(arg);
         pti += 2;
         strcpy(pto, *pti == 0 ? "([^0-9]*)" : "([^0-9]*?)");
         pto += strlen(pto);
         break;
-
       case 'i':
         pti += 2;
         strcpy(pto, "(?i)");
         pto += strlen(pto);
         break;
-
       case 'I':
         pti += 2;
         strcpy(pto, "(?-i)");
         pto += strlen(pto);
         break;
-
       case 's':
         gtd->args[up(var)] = up(arg);
         pti += 2;
         strcpy(pto, *pti == 0 ? "(\\s*)" : "(\\s*?)");
         pto += strlen(pto);
         break;
-
       case 'S':
         gtd->args[up(var)] = up(arg);
         pti += 2;
         strcpy(pto, *pti == 0 ? "(\\S*)" : "(\\S*?)");
         pto += strlen(pto);
         break;
-
       case 'w':
         gtd->args[up(var)] = up(arg);
         pti += 2;
         strcpy(pto, *pti == 0 ? "([a-zA-Z]*)" : "([a-zA-Z]*?)");
         pto += strlen(pto);
         break;
-
       case 'W':
         gtd->args[up(var)] = up(arg);
         pti += 2;
         strcpy(pto, *pti == 0 ? "([^a-zA-Z]*)" : "([^a-zA-Z]*?)");
         pto += strlen(pto);
         break;
-
       case '?':
         gtd->args[up(var)] = up(arg);
         pti += 2;
@@ -488,39 +385,33 @@ int regexp(pcre *nodepcre, char *str, char *exp, int option, int flag) {
                                 "?)");
         pto += strlen(pto);
         break;
-
       case '*':
         gtd->args[up(var)] = up(arg);
         pti += 2;
         strcpy(pto, *pti == 0 ? "(.*)" : "(.*?)");
         pto += strlen(pto);
         break;
-
       case '+':
         gtd->args[up(var)] = up(arg);
         pti += 2;
         strcpy(pto, *pti == 0 ? "(.+)" : "(.+?)");
         pto += strlen(pto);
         break;
-
       case '.':
         gtd->args[up(var)] = up(arg);
         pti += 2;
         strcpy(pto, "(.)");
         pto += strlen(pto);
         break;
-
       case '%':
         *pto++ = *pti++;
         pti++;
         break;
-
       default:
         *pto++ = *pti++;
         break;
       }
       break;
-
     default:
       *pto++ = *pti++;
       break;
@@ -528,5 +419,5 @@ int regexp(pcre *nodepcre, char *str, char *exp, int option, int flag) {
   }
   *pto = 0;
 
-  return regexp_compare(nodepcre, str, out, option, flag + fix);
+  return regexp_compare(nodepcre, str, out, flag + fix);
 }
