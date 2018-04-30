@@ -4,7 +4,6 @@
 
 struct scriptnode {
   char *str;
-  short type;
   short cmd;
 };
 
@@ -22,36 +21,20 @@ int find_command(char *command) {
 }
 
 void parse_script(struct scriptnode *token) {
-  switch (token->type) {
-  case TOKEN_TYPE_STRING:
-    parse_input(token->str);
-    break;
-  case TOKEN_TYPE_SESSION:
+  if (token->cmd == -1) {
     display_printf(TRUE, "#ERROR: #UNKNOWN COMMAND '%s'", token->str);
-    break;
-  case TOKEN_TYPE_COMMAND:
+  } else {
     (*command_table[token->cmd].command)(token->str);
-    break;
   }
-}
-
-void add_token(struct scriptnode *token, int type, int cmd, char *str) {
-  token->type = type;
-  token->cmd = cmd;
-  token->str = strdup(str);
 }
 
 void script_driver(char *str) {
   struct scriptnode token;
 
-  if (*str == 0) {
-    add_token(&token, TOKEN_TYPE_STRING, -1, "");
-  } else {
+  if (*str != 0) {
     str = space_out(str);
 
-    if (*str != gtd->command_char) {
-      add_token(&token, TOKEN_TYPE_STRING, -1, str);
-    } else {
+    if (*str == gtd->command_char) {
       char *args, line[BUFFER_SIZE];
       int cmd;
 
@@ -60,13 +43,14 @@ void script_driver(char *str) {
       cmd = find_command(line + 1);
 
       if (cmd == -1) {
-        add_token(&token, TOKEN_TYPE_SESSION, -1, line + 1);
+        token.cmd = -1;
+        token.str = strdup(line + 1);
       } else {
         get_arg_all(args, line, TRUE);
-        add_token(&token, TOKEN_TYPE_COMMAND, cmd, args);
+        token.cmd = cmd;
+        token.str = strdup(args);
       }
     }
+    parse_script(&token);
   }
-
-  parse_script(&token);
 }

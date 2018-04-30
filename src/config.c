@@ -8,7 +8,7 @@ DO_COMMAND(do_configure) {
   int index;
 
   arg = get_arg_in_braces(arg, left, GET_ONE);
-  sub_arg_in_braces(arg, right, GET_ONE, SUB_NONE);
+  get_arg_in_braces(arg, right, GET_ONE);
 
   if (*left == 0) {
     display_header(" CONFIGURATIONS ");

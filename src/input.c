@@ -39,15 +39,13 @@ void read_key(void) {
 
   // Handles normal input and transfering to CT
   for (cnt = 0; gtd->macro_buf[cnt]; cnt++) {
-    switch (gtd->macro_buf[cnt]) {
-    case '\n': // Reset: \n is needed before a command
+    if (gtd->macro_buf[cnt] == '\n') { // Reset: \n is needed before a command
       gtd->macro_buf[0] = 0;
       gtd->input_buf[0] = 0;
       gtd->input_len = 0;
 
       socket_printf(1, "%c", '\r');
-      break;
-    default: // Normal input
+    } else { // Normal input
       if (gtd->macro_buf[cnt] == gtd->command_char &&
           gtd->input_buf[0] == 0) { // Transfer to CT on next call of read_key
         if (gtd->input_len != gtd->input_cur) {
@@ -67,7 +65,6 @@ void read_key(void) {
         gtd->macro_buf[0] = 0;
         gtd->input_len = 0;
       }
-      break;
     }
   }
 }

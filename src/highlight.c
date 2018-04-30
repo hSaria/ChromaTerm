@@ -6,8 +6,8 @@ DO_COMMAND(do_highlight) {
   char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE],
       temp[BUFFER_SIZE];
 
-  arg = sub_arg_in_braces(arg, arg1, GET_ONE, SUB_NONE);
-  arg = sub_arg_in_braces(arg, arg2, GET_ALL, SUB_NONE);
+  arg = get_arg_in_braces(arg, arg1, GET_ONE);
+  arg = get_arg_in_braces(arg, arg2, GET_ALL);
   get_arg_in_braces(arg, arg3, GET_ALL);
 
   if (*arg3 == 0) {
@@ -105,7 +105,7 @@ int get_highlight_codes(char *string, char *result) {
   *result = 0;
 
   if (*string == '<') {
-    substitute(string, result, SUB_COL);
+    substitute(string, result);
 
     return TRUE;
   }
@@ -114,7 +114,7 @@ int get_highlight_codes(char *string, char *result) {
     if (isalpha((int)*string)) {
       for (cnt = 0; *color_table[cnt].name; cnt++) {
         if (is_abbrev(color_table[cnt].name, string)) {
-          substitute(color_table[cnt].code, result, SUB_COL);
+          substitute(color_table[cnt].code, result);
 
           result += strlen(result);
 

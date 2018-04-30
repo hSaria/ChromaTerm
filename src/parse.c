@@ -2,18 +2,6 @@
 
 #include "defs.h"
 
-void parse_input(char *input) {
-  char line[BUFFER_SIZE];
-
-  if (*input == 0) {
-    write_mud(input, SUB_EOL);
-    return;
-  }
-
-  strcpy(line, input);
-  write_mud(line, SUB_EOL);
-}
-
 // get all arguments
 char *get_arg_all(char *string, char *result, int with_spaces) {
   char *pto, *pti;
@@ -76,16 +64,6 @@ char *get_arg_in_braces(char *string, char *result, int flag) {
   return pti;
 }
 
-char *sub_arg_in_braces(char *string, char *result, int flag, int sub) {
-  char buffer[BUFFER_SIZE];
-
-  string = get_arg_in_braces(string, buffer, flag);
-
-  substitute(buffer, result, sub);
-
-  return string;
-}
-
 // get one arg, stop at a space
 char *get_arg_stop_spaces(char *string, char *result) {
   char *pto, *pti;
@@ -113,18 +91,7 @@ char *space_out(char *string) {
   return string;
 }
 
-// send command to the socket
-void write_mud(char *command, int flags) {
-  char output[BUFFER_SIZE];
-  int size;
-
-  size = substitute(command, output, flags);
-
-  write_line_socket(output, size);
-}
-
-// do all of the functions to one line of buffer, VT102 codes and variables
-// substituted beforehand.
+// do all of the VT102 code substitution beforehand.
 void do_one_line(char *line) {
   char strip[BUFFER_SIZE];
 

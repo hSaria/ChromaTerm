@@ -18,19 +18,6 @@ struct listroot *init_list(int type, int size) {
   return listhead;
 }
 
-void kill_list(struct listroot *root) {
-  while (root->used) {
-    delete_index_list(root, root->used - 1);
-  }
-}
-
-void free_list(struct listroot *root) {
-  kill_list(root);
-
-  free(root->list);
-  free(root);
-}
-
 // create a node and stuff it into the list in the desired order
 struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
@@ -266,7 +253,7 @@ void delete_node_with_wild(int type, char *text) {
   char arg1[BUFFER_SIZE];
   int i, found = FALSE;
 
-  sub_arg_in_braces(text, arg1, GET_ALL, SUB_NONE);
+  get_arg_in_braces(text, arg1, GET_ALL);
 
   node = search_node_list(root, arg1);
 

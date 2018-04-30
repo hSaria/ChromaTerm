@@ -217,7 +217,7 @@ DO_COMMAND(do_help) {
       if (is_abbrev(left, help_table[cnt].name) || is_abbrev(left, "all")) {
         found = TRUE;
 
-        substitute(help_table[cnt].text, buf, SUB_COL);
+        substitute(help_table[cnt].text, buf);
         pto = buf;
 
         while (*pto) {
