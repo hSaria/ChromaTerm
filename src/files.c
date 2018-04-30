@@ -12,7 +12,7 @@ DO_COMMAND(do_read) {
   int counter[LIST_MAX];
   wordexp_t p;
 
-  get_arg_in_braces(arg, filename, TRUE);
+  get_arg_in_braces(arg, filename, GET_ALL);
 
   wordexp(filename, &p, 0);
   strcpy(filename, *p.we_wordv);
@@ -280,7 +280,7 @@ DO_COMMAND(do_write) {
   int i, j, cnt = 0;
   wordexp_t p;
 
-  get_arg_in_braces(arg, filename, TRUE);
+  get_arg_in_braces(arg, filename, GET_ALL);
 
   wordexp(filename, &p, 0);
   strcpy(filename, *p.we_wordv);

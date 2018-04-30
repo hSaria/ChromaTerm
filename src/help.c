@@ -221,7 +221,7 @@ DO_COMMAND(do_help) {
   char left[BUFFER_SIZE], add[BUFFER_SIZE], buf[BUFFER_SIZE], *ptf, *pto;
   int cnt;
 
-  get_arg_in_braces(arg, left, TRUE);
+  get_arg_in_braces(arg, left, GET_ALL);
 
   if (*left == 0) {
     for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {

@@ -25,9 +25,9 @@ int regexp_compare(char *str, char *exp, char *result) {
 // copy *string into *result, but substitute the various expressions with the
 // values they stand for.
 int substitute(char *string, char *result, int flags) {
-  char buffer[BUFFER_SIZE], *pti, *pto, *ptt;
+  char buffer[BUFFER_SIZE], *pti, *pto;
   char old[6] = {0};
-  int i, cnt;
+  int cnt;
 
   pti = string;
   pto = (string == result) ? buffer : result;

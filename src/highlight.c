@@ -8,7 +8,7 @@ DO_COMMAND(do_highlight) {
 
   arg = sub_arg_in_braces(arg, arg1, GET_ONE, SUB_NONE);
   arg = sub_arg_in_braces(arg, arg2, GET_ALL, SUB_NONE);
-  get_arg_in_braces(arg, arg3, TRUE);
+  get_arg_in_braces(arg, arg3, GET_ALL);
 
   if (*arg3 == 0) {
     strcpy(arg3, "5");

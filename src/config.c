@@ -7,7 +7,7 @@ DO_COMMAND(do_configure) {
   struct listnode *node;
   int index;
 
-  arg = get_arg_in_braces(arg, left, FALSE);
+  arg = get_arg_in_braces(arg, left, GET_ONE);
   sub_arg_in_braces(arg, right, GET_ONE, SUB_NONE);
 
   if (*left == 0) {
