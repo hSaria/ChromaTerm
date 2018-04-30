@@ -35,20 +35,22 @@ void parse_script(struct scriptnode *token) {
   }
 }
 
+void add_token(struct scriptnode *token, int type, int cmd, char *str) {
+  token->type = type;
+  token->cmd = cmd;
+  token->str = strdup(str);
+}
+
 void script_driver(char *str) {
   struct scriptnode token;
 
   if (*str == 0) {
-    token.type = TOKEN_TYPE_STRING;
-    token.cmd = -1;
-    token.str = strdup("");
+    add_token(&token, TOKEN_TYPE_STRING, -1, "");
   } else {
     str = space_out(str);
 
     if (*str != gtd->command_char) {
-      token.type = TOKEN_TYPE_STRING;
-      token.cmd = -1;
-      token.str = strdup(str);
+      add_token(&token, TOKEN_TYPE_STRING, -1, str);
     } else {
       char *args, line[BUFFER_SIZE];
       int cmd;
@@ -58,14 +60,10 @@ void script_driver(char *str) {
       cmd = find_command(line + 1);
 
       if (cmd == -1) {
-        token.type = TOKEN_TYPE_SESSION;
-        token.cmd = -1;
-        token.str = strdup(line + 1);
+        add_token(&token, TOKEN_TYPE_SESSION, -1, line + 1);
       } else {
         get_arg_all(args, line, TRUE);
-        token.type = TOKEN_TYPE_COMMAND;
-        token.cmd = cmd;
-        token.str = strdup(args);
+        add_token(&token, TOKEN_TYPE_COMMAND, cmd, args);
       }
     }
   }
