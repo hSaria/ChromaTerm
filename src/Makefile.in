@@ -9,7 +9,6 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = ${DESTDIR}@bindir@
 CFLAGS += $(DEFINES) -Wall -Wextra -pedantic-errors
-INCS = @MYINCLUDE@
 LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
@@ -23,7 +22,10 @@ default: all
 all:	ct
 
 ct: Makefile $(OFILES) defs.h
-	@echo "---- Linking..."
+	$(CC) $(CFLAGS) -o $@ $(OFILES) $(LIBS)
+	rm -f *.o
+
+keepcompiled: Makefile $(OFILES) defs.h
 	$(CC) $(CFLAGS) -o $@ $(OFILES) $(LIBS)
 
 Makefile: Makefile.in

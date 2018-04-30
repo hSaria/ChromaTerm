@@ -31,12 +31,12 @@
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
-/* Define to 1 if you have the <pcre.h> header file. */
-#undef HAVE_PCRE_H
-
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
 #undef HAVE_REALLOC
+
+/* Define to 1 if you have the <regex.h> header file. */
+#undef HAVE_REGEX_H
 
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
@@ -91,9 +91,6 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
-
-/* Define to 1 if you have the <termios.h> header file. */
-#undef HAVE_TERMIOS_H
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H

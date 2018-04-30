@@ -5,7 +5,6 @@ AC_INIT
 AC_CONFIG_SRCDIR([defs.h])
 AC_CONFIG_HEADER(config.h)
 
-AC_SUBST(MYINCLUDE)
 AC_SUBST(MYLIB)
 AC_SUBST(mybindir)
 
@@ -23,23 +22,14 @@ else
 	MYLIB=""
 fi
 
-if [ test $includedir != "\${prefix}/include" ]
-then
-	MYINCLUDE="-I$includedir"
-else
-	MYINCLUDE=""
-fi
-
-
 AC_PROG_CC
 AC_PROG_MAKE_SET
-
 
 # Checks libraries
 AC_CHECK_LIB(util, forkpty)
 
 # Checks for header files.
-AC_CHECK_HEADERS([ ctype.h errno.h signal.h stdarg.h stdio.h string.h sys/ioctl.h sys/stat.h sys/time.h termios.h unistd.h util.h wordexp.h ])
+AC_CHECK_HEADERS([ctype.h errno.h regex.h signal.h stdarg.h stdio.h stdlib.h string.h sys/ioctl.h sys/stat.h sys/time.h unistd.h util.h wordexp.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
