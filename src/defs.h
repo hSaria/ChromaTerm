@@ -23,7 +23,6 @@
 
 #define GET_ONE 0 // stop at spaces
 #define GET_ALL 1 // stop at semicolon
-#define GET_NST 2 // nest square brackets
 
 #define SCREEN_WIDTH 80
 #define SCREEN_HEIGHT 24
@@ -33,8 +32,6 @@
 
 #define DEFAULT_OPEN '{'
 #define DEFAULT_CLOSE '}'
-
-#define COMMAND_SEPARATOR ';'
 
 #define STRING_SIZE 45000
 #define BUFFER_SIZE 20000

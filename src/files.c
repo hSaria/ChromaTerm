@@ -74,11 +74,6 @@ DO_COMMAND(do_read) {
         last = DEFAULT_CLOSE;
         break;
 
-      case COMMAND_SEPARATOR:
-        *pto++ = *pti++;
-        last = COMMAND_SEPARATOR;
-        break;
-
       case ' ':
         *pto++ = *pti++;
         break;

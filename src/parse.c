@@ -86,7 +86,7 @@ char *sub_arg_in_braces(char *string, char *result, int flag, int sub) {
   return string;
 }
 
-// get one arg, stop at spaces
+// get one arg, stop at a space
 char *get_arg_stop_spaces(char *string, char *result) {
   char *pto, *pti;
 
