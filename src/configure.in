@@ -34,8 +34,6 @@ AC_CHECK_HEADERS([ctype.h errno.h regex.h signal.h stdarg.h stdio.h stdlib.h str
 AC_TYPE_SIZE_T
 
 # Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
 AC_CHECK_FUNCS([gettimeofday memmove memset select strcasecmp strchr strdup strerror strncasecmp strstr forkpty])
 
 AC_CHECK_FILES([/dev/ptmx])

@@ -11,7 +11,7 @@ void process_input(void) {
 
   DEL_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
 
-  gts = script_driver(gtd->input_buf);
+  script_driver(gtd->input_buf);
 
   gtd->input_buf[0] = 0;
 }

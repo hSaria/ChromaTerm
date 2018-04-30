@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
         }
         break;
       case 'e':
-        gts = script_driver(optarg);
+        script_driver(optarg);
         break;
       case 'h':
         help_menu(FALSE, c, argv[0]);

@@ -72,35 +72,6 @@ enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
 #define SES_FLAG_CONVERTMETA (1 << 1)
 #define SES_FLAG_UTF8 (1 << 2)
 
-// Some macros to deal with double linked lists
-#define LINK(link, head, tail)                                                 \
-  {                                                                            \
-    if ((head) == NULL) {                                                      \
-      (head) = (link);                                                         \
-    } else {                                                                   \
-      (tail)->next = (link);                                                   \
-    }                                                                          \
-    (link)->next = NULL;                                                       \
-    (link)->prev = (tail);                                                     \
-    (tail) = (link);                                                           \
-  }
-
-#define UNLINK(link, head, tail)                                               \
-  {                                                                            \
-    if ((link)->prev == NULL) {                                                \
-      (head) = (link)->next;                                                   \
-    } else {                                                                   \
-      (link)->prev->next = (link)->next;                                       \
-    }                                                                          \
-    if ((link)->next == NULL) {                                                \
-      (tail) = (link)->prev;                                                   \
-    } else {                                                                   \
-      (link)->next->prev = (link)->prev;                                       \
-    }                                                                          \
-    (link)->next = NULL;                                                       \
-    (link)->prev = NULL;                                                       \
-  }
-
 // Bit operations
 #define HAS_BIT(bitvector, bit) ((bitvector) & (bit))
 #define SET_BIT(bitvector, bit) ((bitvector) |= (bit))
@@ -345,13 +316,11 @@ extern void process_mud_output(char *linebuf, int prompt);
 #ifndef __PARSE_H__
 #define __PARSE_H__
 
-extern struct session *parse_input(char *input);
-extern struct session *parse_command(char *input);
-extern char *get_arg_all(char *string, char *result);
+extern void parse_input(char *input);
+extern char *get_arg_all(char *string, char *result, int with_spaces);
 extern char *get_arg_in_braces(char *string, char *result, int flag);
 extern char *sub_arg_in_braces(char *string, char *result, int flag, int sub);
-extern char *get_arg_with_spaces(char *string, char *result);
-extern char *get_arg_stop_spaces(char *string, char *result, int flag);
+extern char *get_arg_stop_spaces(char *string, char *result);
 extern char *space_out(char *string);
 extern void write_mud(char *command, int flags);
 extern void do_one_line(char *line);
@@ -398,7 +367,7 @@ extern int get_scroll_size(void);
 #ifndef __TOKENIZE_H__
 #define __TOKENIZE_H__
 
-extern struct session *script_driver(char *str);
+extern void script_driver(char *str);
 
 #endif
 

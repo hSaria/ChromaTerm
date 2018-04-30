@@ -2,55 +2,31 @@
 
 #include "defs.h"
 
-struct session *parse_input(char *input) {
-  char *line;
+void parse_input(char *input) {
+  char line[BUFFER_SIZE];
 
   if (*input == 0) {
     write_mud(input, SUB_EOL);
-
-    return gts;
+    return;
   }
 
-  line = (char *)malloc(BUFFER_SIZE);
-
   strcpy(line, input);
-
   write_mud(line, SUB_EOL);
-
-  free(line);
-
-  return gts;
 }
 
-// Deals with # stuff
-struct session *parse_command(char *input) {
-  char line[BUFFER_SIZE];
-
-  get_arg_stop_spaces(input, line, 0);
-
-  display_printf(TRUE, "#ERROR: #UNKNOWN COMMAND '%s'", line);
-
-  return gts;
-}
-
-// get all arguments - only check for unescaped command separators
-char *get_arg_all(char *string, char *result) {
+// get all arguments
+char *get_arg_all(char *string, char *result, int with_spaces) {
   char *pto, *pti;
-  int nest = 0;
 
-  pti = string;
+  if (with_spaces) {
+    pti = space_out(string);
+  } else {
+    pti = string;
+  }
+
   pto = result;
 
   while (*pti) {
-    if (*pti == '\\' && pti[1] == COMMAND_SEPARATOR) {
-      *pto++ = *pti++;
-    } else if (*pti == COMMAND_SEPARATOR && nest == 0) {
-      break;
-    } else if (*pti == DEFAULT_OPEN) {
-      nest++;
-    } else if (*pti == DEFAULT_CLOSE) {
-      nest--;
-    }
     *pto++ = *pti++;
   }
   *pto = '\0';
@@ -68,9 +44,9 @@ char *get_arg_in_braces(char *string, char *result, int flag) {
 
   if (*pti != DEFAULT_OPEN) {
     if (!HAS_BIT(flag, GET_ALL)) {
-      pti = get_arg_stop_spaces(pti, result, flag);
+      pti = get_arg_stop_spaces(pti, result);
     } else {
-      pti = get_arg_with_spaces(pti, result);
+      pti = get_arg_all(pti, result, TRUE);
     }
     return pti;
   }
@@ -110,55 +86,17 @@ char *sub_arg_in_braces(char *string, char *result, int flag, int sub) {
   return string;
 }
 
-// get all arguments
-char *get_arg_with_spaces(char *string, char *result) {
-  char *pto, *pti;
-  int nest = 0;
-
-  pti = space_out(string);
-  pto = result;
-
-  while (*pti) {
-    if (*pti == '\\' && pti[1] == COMMAND_SEPARATOR) {
-      *pto++ = *pti++;
-    } else if (*pti == COMMAND_SEPARATOR && nest == 0) {
-      break;
-    } else if (*pti == DEFAULT_OPEN) {
-      nest++;
-    } else if (*pti == DEFAULT_CLOSE) {
-      nest--;
-    }
-    *pto++ = *pti++;
-  }
-  *pto = '\0';
-
-  return pti;
-}
-
 // get one arg, stop at spaces
-char *get_arg_stop_spaces(char *string, char *result, int flag) {
+char *get_arg_stop_spaces(char *string, char *result) {
   char *pto, *pti;
-  int nest = 0;
 
   pti = space_out(string);
   pto = result;
 
   while (*pti) {
-    if (*pti == '\\' && pti[1] == COMMAND_SEPARATOR) {
-      *pto++ = *pti++;
-    } else if (*pti == COMMAND_SEPARATOR && nest == 0) {
-      break;
-    } else if (isspace((int)*pti) && nest == 0) {
+    if (isspace((int)*pti)) {
       pti++;
       break;
-    } else if (*pti == DEFAULT_OPEN) {
-      nest++;
-    } else if (*pti == '[' && HAS_BIT(flag, GET_NST)) {
-      nest++;
-    } else if (*pti == DEFAULT_CLOSE) {
-      nest--;
-    } else if (*pti == ']' && HAS_BIT(flag, GET_NST)) {
-      nest--;
     }
     *pto++ = *pti++;
   }

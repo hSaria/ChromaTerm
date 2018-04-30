@@ -199,7 +199,7 @@ struct help_type help_table[] = {
 
 DO_COMMAND(do_help) {
   char left[BUFFER_SIZE], add[BUFFER_SIZE], buf[BUFFER_SIZE], *ptf, *pto;
-  int cnt, found;
+  int cnt, found = 0;
 
   get_arg_in_braces(arg, left, GET_ALL);
 

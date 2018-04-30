@@ -258,7 +258,7 @@ DO_COMMAND(do_read) {
     }
 
     if (bufi[0]) {
-      gts = script_driver(bufi);
+      script_driver(bufi);
     }
 
     pto = bufi;
