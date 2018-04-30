@@ -14,12 +14,23 @@ DO_COMMAND(do_highlight) {
     strcpy(arg3, "5");
   }
 
-  if (*arg1 == 0) {
-    show_list(gts->list[LIST_HIGHLIGHT], 0);
-  } else if (*arg1 && *arg2 == 0) {
-    if (show_node_with_wild(arg1, LIST_HIGHLIGHT) == FALSE) {
-      show_message("#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}", arg1);
+  if (*arg1 == 0 || *arg2 == 0) {
+    int i;
+
+    display_header(" %s ", list_table[LIST_HIGHLIGHT].name_multi);
+
+    for (i = 0; i < gts->list[LIST_HIGHLIGHT]->used; i++) {
+      struct listnode *node = gts->list[LIST_HIGHLIGHT]->list[i];
+      display_printf(FALSE,
+                     "%c%s "
+                     "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                     "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                     "\033[1;31m{\033[0m%s\033[1;31m}",
+                     gtd->command_char, list_table[LIST_HIGHLIGHT].name,
+                     node->left, node->right, node->pr);
     }
+
+    display_header("");
   } else {
     if (get_highlight_codes(arg2, temp) == FALSE) {
       display_printf(FALSE, "#HIGHLIGHT: VALID COLORS ARE:\n");
@@ -41,16 +52,13 @@ DO_COMMAND(do_unhighlight) { delete_node_with_wild(LIST_HIGHLIGHT, arg); }
 
 void check_all_highlights(char *original, char *line) {
   struct listroot *root = gts->list[LIST_HIGHLIGHT];
-  struct listnode *node;
   char *pto, *ptl, *ptm;
   char match[BUFFER_SIZE], color[BUFFER_SIZE], reset[BUFFER_SIZE],
-      output[BUFFER_SIZE], plain[BUFFER_SIZE];
+      output[BUFFER_SIZE], plain[BUFFER_SIZE], result[BUFFER_SIZE];
 
   for (root->update = 0; root->update < root->used; root->update++) {
-    if (check_one_regexp(root->list[root->update], line)) {
-      node = root->list[root->update];
-
-      get_highlight_codes(node->right, color);
+    if (regexp_compare(line, root->list[root->update]->left, result)) {
+      get_highlight_codes(root->list[root->update]->right, color);
 
       *output = *reset = 0;
 
@@ -58,11 +66,11 @@ void check_all_highlights(char *original, char *line) {
       ptl = line;
 
       do {
-        if (*gtd->vars[0] == 0) {
+        if (*result == 0) {
           break;
         }
 
-        strcpy(match, gtd->vars[0]);
+        strcpy(match, result);
 
         strip_vt102_codes(match, plain);
 
@@ -82,7 +90,7 @@ void check_all_highlights(char *original, char *line) {
         cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
 
         pto = ptm + strlen(match);
-      } while (check_one_regexp(node, ptl));
+      } while (regexp_compare(ptl, root->list[root->update]->left, result));
 
       strcat(output, pto);
 

@@ -10,50 +10,6 @@ int is_abbrev(char *s1, char *s2) {
   return !strncasecmp(s2, s1, strlen(s1));
 }
 
-int hex_number(char *str) {
-  int value = 0;
-
-  if (str) {
-    if (isdigit((int)*str)) {
-      value += 16 * (*str - '0');
-    } else {
-      value += 16 * (toupper((int)*str) - 'A' + 10);
-    }
-    str++;
-  }
-
-  if (str) {
-    if (isdigit((int)*str)) {
-      value += *str - '0';
-    } else {
-      value += toupper((int)*str) - 'A' + 10;
-    }
-    str++;
-  }
-
-  return value;
-}
-
-int oct_number(char *str) {
-  int value = 0;
-
-  if (str) {
-    if (isdigit((int)*str)) {
-      value += 8 * (*str - '0');
-    }
-    str++;
-  }
-
-  if (str) {
-    if (isdigit((int)*str)) {
-      value += *str - '0';
-    }
-    str++;
-  }
-
-  return value;
-}
-
 char *capitalize(char *str) {
   static char outbuf[BUFFER_SIZE];
   int cnt;

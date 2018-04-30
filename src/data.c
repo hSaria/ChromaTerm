@@ -130,10 +130,6 @@ void delete_index_list(struct listroot *root, int index) {
   free(node->left);
   free(node->right);
   free(node->pr);
-
-  if (node->regex) {
-    free(node->regex);
-  }
   free(node);
 
   memmove(&root->list[index], &root->list[index + 1],
@@ -268,101 +264,6 @@ int nsearch_list(struct listroot *root, char *text) {
   return -1;
 }
 
-// show contens of a node on screen
-void show_node(struct listroot *root, struct listnode *node, int level) {
-  char arg[STRING_SIZE];
-
-  show_nest_node(node, arg, TRUE);
-
-  switch (list_table[root->type].args) {
-  case 3:
-    display_printf(
-        FALSE,
-        "%*s#%s "
-        "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m \033[1;31m{\033[0m%s\033[1;"
-        "31m} \033[1;36m\033[1;31m{\033[0m%s\033[1;31m}",
-        level * 2, "", list_table[root->type].name, node->left, arg, node->pr);
-    break;
-  case 2:
-    display_printf(FALSE,
-                   "%*s#%s "
-                   "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m=\033[1;31m{\033["
-                   "0m%s\033[1;31m}",
-                   level * 2, "", list_table[root->type].name, node->left, arg);
-    break;
-  case 1:
-    display_printf(FALSE, "%*s#%s \033[1;31m{\033[0m%s\033[1;31m}", level * 2,
-                   "", list_table[root->type].name, node->left);
-    break;
-  }
-}
-
-void show_nest_node(struct listnode *node, char *result, int initialize) {
-  if (initialize) {
-    *result = 0;
-  }
-
-  if (node->root == NULL) {
-    if (initialize) {
-      strcat(result, node->right);
-    } else {
-      cat_sprintf(result, "{%s}", node->right);
-    }
-  } else {
-    struct listroot *root = node->root;
-    int i;
-
-    if (!initialize) {
-      strcat(result, "{");
-    }
-
-    for (i = 0; i < root->used; i++) {
-      cat_sprintf(result, "{%s}", root->list[i]->left);
-
-      show_nest_node(root->list[i], result, FALSE);
-    }
-    if (!initialize) {
-      strcat(result, "}");
-    }
-  }
-}
-
-// list contens of a list on screen
-void show_list(struct listroot *root, int level) {
-  int i;
-
-  if (root == gts->list[root->type]) {
-    display_header(" %s ", list_table[root->type].name_multi);
-  }
-
-  for (i = 0; i < root->used; i++) {
-    show_node(root, root->list[i], level);
-  }
-}
-
-int show_node_with_wild(char *text, int type) {
-  struct listroot *root = gts->list[type];
-  struct listnode *node;
-  int i, flag = FALSE;
-
-  node = search_node_list(root, text);
-
-  if (node) {
-    show_node(root, node, 0);
-
-    return TRUE;
-  }
-
-  for (i = 0; i < root->used; i++) {
-    if (match(root->list[i]->left, text)) {
-      show_node(root, root->list[i], 0);
-
-      flag = TRUE;
-    }
-  }
-  return flag;
-}
-
 void delete_node_with_wild(int type, char *text) {
   struct listroot *root = gts->list[type];
   struct listnode *node;
@@ -386,7 +287,7 @@ void delete_node_with_wild(int type, char *text) {
   }
 
   for (i = root->used - 1; i >= 0; i--) {
-    if (match(root->list[i]->left, arg1)) {
+    if (root->list[i]->left == arg1) {
       show_message(
           "#OK. {%s} IS NO LONGER %s %s", root->list[i]->left,
           (*list_table[type].name == 'A' || *list_table[type].name == 'E')

@@ -8,7 +8,7 @@ A tool for colorizing the output of a terminal.
 
 
 # About
-ChromaTerm-- (CT--) is a slimmed-down version of [ChromaTerm](https://github.com/tunnelsup/chromaterm). It essentially acts as a wrapper for a process (e.g. a shell). Any activity within the process is ran through CT--. 
+ChromaTerm-- (CT--) is a slimmed-down version of [ChromaTerm](https://github.com/tunnelsup/chromaterm). It essentially acts as a wrapper for a process (e.g. a shell). Any activity within the process is ran through CT--.
 While running,  CT-- listens for keywords and executes commands that allow you to configure CT--. Primarily, the `#highlight` command is the one you are after.
 
 The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has way more features if you are interested. This fork just removes a lot of those features (I am only interested in the #highlight and any supporting commands for it).
@@ -29,9 +29,8 @@ git clone https://github.com/hSaria/ChromaTerm--.git
 cd ChromaTerm--/src/
 ./configure
 make
-make install  # Optional: Move ct to the /usr/local/bin 
+make install  # Optional: Move ct to the /usr/local/bin
 ```
-> NOTE: the [pcre library](https://pcre.org) is required. (`homebrew install pcre` works.)
 
 
 # Usage
@@ -48,7 +47,7 @@ The only difference is that the **direct** mode runs with the `-e` flag. For exa
 ct -e "#highlight {%d.%d.%d.%d} {bold green}; #write {./chromatermrc_for_ipv4}; #run /bin/bash"
 ```
 
-This example will open up CT--, create a new highlight rule, write all rules and configuration to a file, run a process (bash, in this case). Once the process closes, CT-- will close, too. 
+This example will open up CT--, create a new highlight rule, write all rules and configuration to a file, run a process (bash, in this case). Once the process closes, CT-- will close, too.
 
 You can still run commands even while a process is running; type # on a new line that is empty then follow it with the require command. You can change the default command character (#); see `#help config`.
 
@@ -62,7 +61,7 @@ Below are quick summaries for some of the important commands.
 > Before writing a CT-- command, be sure to hit enter first. This is a limitation which I documented in `read_key` function in input.c.
 
 #### `#highlight {condition} {action}` and `#unhighlight {condition}`
-The output is scanned according to the condition. If a part of the text matches the condition, the action is takes on that text. 
+The output is scanned according to the condition. If a part of the text matches the condition, the action is takes on that text.
 ```
 #highlight {%d.%d.%d.%d} {bold green}
 #highlight {{(E|e)rr..}} {bold red}
@@ -90,7 +89,7 @@ CT-- will look for a configuration file called `.chromatermrc` in the current di
 
 You may also override which configuration file is loaded by using the `-c` parameter. For example:
 ```
-ct -c $HOME/.config/chromaterm--/.chromatermrc 
+ct -c $HOME/.config/chromaterm--/.chromatermrc
 ```
 
 There is a sample file in the project. Feel free to use it.

@@ -142,7 +142,7 @@ struct help_type help_table[] = {
      "         Without an argument #help will list all available help "
      "subjects.\n"
      "\n"
-     "         Using #help %* will display all help entries.<099>\n\n\n"},
+     "         Using #help all will display all help entries.<099>\n\n\n"},
     {"HIGHLIGHT",
      "<178>Command<078>: #highlight <178>{<078>string<178>}<078> "
      "<178>{<078>color names<178>}<078> <178>{<078>priority<178>}<078>\n"
@@ -234,8 +234,7 @@ DO_COMMAND(do_help) {
     display_puts(TRUE, TRUE, add);
   } else {
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
-      if (is_abbrev(left, help_table[cnt].name) || atoi(left) == cnt + 1 ||
-          match(help_table[cnt].name, left)) {
+      if (is_abbrev(left, help_table[cnt].name) || is_abbrev(left, "all")) {
         substitute(help_table[cnt].text, buf, SUB_COL);
 
         pto = buf;

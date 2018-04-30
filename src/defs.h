@@ -2,6 +2,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <regex.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -13,8 +14,6 @@
 #include <unistd.h>
 #include <util.h>
 #include <wordexp.h>
-
-#include "pcre.h"
 
 #ifndef __DEFS_H__
 #define __DEFS_H__
@@ -138,7 +137,6 @@ struct listnode {
   char *left;
   char *right;
   char *pr;
-  pcre *regex;
 };
 
 struct session {
@@ -269,11 +267,6 @@ extern struct listnode *update_node_list(struct listroot *root, char *ltext,
                                          char *rtext, char *prtext);
 extern struct listnode *insert_index_list(struct listroot *root,
                                           struct listnode *node, int index);
-extern int show_node_with_wild(char *cptr, int type);
-extern void show_node(struct listroot *root, struct listnode *node, int level);
-extern void show_nest_node(struct listnode *node, char *result, int initialize);
-extern void show_nest(struct listnode *node, char *result);
-extern void show_list(struct listroot *root, int level);
 extern struct listnode *search_node_list(struct listroot *root, char *text);
 extern void delete_node_list(int type, struct listnode *node);
 extern void delete_node_with_wild(int index, char *string);
@@ -343,13 +336,6 @@ extern void winch_handler(int sig);
 
 #endif
 
-#ifndef __MEMORY_H__
-#define __MEMORY_H__
-
-extern char *refstring(char *point, char *fmt, ...);
-
-#endif
-
 #ifndef __MISC_H__
 #define __MISC_H__
 
@@ -389,10 +375,7 @@ extern void do_one_line(char *line);
 #define __REGEXP_H__
 
 extern int substitute(char *string, char *result, int flags);
-extern int match(char *str, char *exp);
-extern int regexp_compare(pcre *regex, char *str, char *exp, int flag);
-extern int check_one_regexp(struct listnode *node, char *line);
-extern int regexp(pcre *pcre, char *str, char *exp, int flag);
+extern int regexp_compare(char *str, char *exp, char *result);
 
 #endif
 
@@ -445,8 +428,6 @@ extern void poll_sessions(void);
 #define __UTILS_H__
 
 extern int is_abbrev(char *s1, char *s2);
-extern int hex_number(char *str);
-extern int oct_number(char *str);
 extern char *capitalize(char *str);
 extern int cat_sprintf(char *dest, char *fmt, ...);
 extern void ins_sprintf(char *dest, char *fmt, ...);

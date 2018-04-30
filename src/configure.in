@@ -37,13 +37,9 @@ AC_PROG_MAKE_SET
 
 # Checks libraries
 AC_CHECK_LIB(util, forkpty)
-AC_CHECK_LIB(pcre, pcre_compile,,
-	[AC_MSG_ERROR([pcre runtime library not working, is it AND the corresponding development (header) file installed])])
 
 # Checks for header files.
 AC_CHECK_HEADERS([ ctype.h errno.h signal.h stdarg.h stdio.h string.h sys/ioctl.h sys/stat.h sys/time.h termios.h unistd.h util.h wordexp.h ])
-AC_CHECK_HEADERS([ pcre.h ],,
-	[AC_MSG_ERROR([pcre header file not found, is the development part present])])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
