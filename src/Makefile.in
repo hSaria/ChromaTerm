@@ -1,14 +1,12 @@
 ## This program is protected under the GNU GPL (See COPYING)
 
-DEFINES = -D_GNU_SOURCE @DEFS@
-
 CC = @CC@
 MAKE = @MAKE@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = ${DESTDIR}@bindir@
-CFLAGS += $(DEFINES) -Wall -Wextra -pedantic-errors
+CFLAGS += -Wall -Wextra -pedantic-errors
 LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
@@ -23,7 +21,7 @@ all:	ct
 
 ct: Makefile $(OFILES) defs.h
 	$(CC) $(CFLAGS) -o $@ $(OFILES) $(LIBS)
-	rm -f *.o
+	rm -f $(OFILES)
 
 keepcompiled: Makefile $(OFILES) defs.h
 	$(CC) $(CFLAGS) -o $@ $(OFILES) $(LIBS)
@@ -41,7 +39,7 @@ install: ct
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f *.o config.status config.log
+	rm -f $(OFILES) config.status config.log
 
 distclean:
 	rm -f *.o config.status config.log ct Makefile config.h
