@@ -1,11 +1,11 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
 struct session *gts;
 struct global_data *gtd;
 
-// main() - setup signals - init lists - readcoms - mainloop()
+/* main() - setup signals - init lists - readcoms - mainloop() */
 int main(int argc, char **argv) {
   signal(SIGTERM, abort_and_trap_handler);
   signal(SIGSEGV, abort_and_trap_handler);
@@ -29,17 +29,16 @@ int main(int argc, char **argv) {
         printf("\033]0;%s\007", optarg);
         break;
       case 'c':
-        if (access(optarg, R_OK) != -1) {
+        if (access(optarg, R_OK) == 0) {
           do_read(optarg);
         }
         break;
       case 'e':
-        gts = script_driver(optarg);
+        script_driver(optarg);
         break;
       case 'h':
         help_menu(FALSE, c, argv[0]);
         break;
-
       default:
         help_menu(TRUE, c, argv[0]);
         break;
@@ -50,19 +49,19 @@ int main(int argc, char **argv) {
       do_read(argv[optind]);
     }
   } else {
-    display_printf(TRUE, "#HELP for more info");
+    display_printf("%cHELP for more info", gtd->command_char);
   }
 
   if (getenv("HOME") != NULL) {
     char filename[256];
     sprintf(filename, "%s", ".chromatermrc");
 
-    if (access(filename, R_OK) != -1) {
+    if (access(filename, R_OK) == 0) {
       do_read(filename);
     } else {
       sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
 
-      if (access(filename, R_OK) != -1) {
+      if (access(filename, R_OK) == 0) {
         do_read(filename);
       }
     }
@@ -80,7 +79,8 @@ void init_program() {
   gtd = (struct global_data *)calloc(1, sizeof(struct global_data));
 
   for (index = 0; index < LIST_MAX; index++) {
-    gts->list[index] = init_list(index, 32);
+    /* initial size is 8, but is dynamically resized as required */
+    gts->list[index] = init_list(index, 8);
   }
 
   gts->socket = 1;
@@ -89,39 +89,30 @@ void init_program() {
   gtd->mud_output_buf = (char *)calloc(1, gtd->mud_output_max);
   gtd->input_off = 1;
 
-  for (index = 0; index < 100; index++) {
-    gtd->vars[index] = strdup("");
-    gtd->cmds[index] = strdup("");
-  }
-
   init_screen_size();
 
-  gts->input_level++;
+  gtd->quiet++;
   do_configure("{CHARSET}         {UTF-8}");
   do_configure("{COMMAND CHAR}        {#}");
   do_configure("{CONVERT META}      {OFF}");
-  gts->input_level--;
+  do_configure("{HIGHLIGHT}          {ON}");
+  gtd->quiet--;
 
   init_terminal();
 }
 
 void help_menu(int error, char c, char *proc_name) {
   if (error) {
-    display_printf(TRUE, "Unknown option '%c'", c);
+    display_printf("Unknown option '%c'", c);
   }
 
-  display_printf(TRUE, "Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf(TRUE, "  -e  Execute function");
-  display_printf(TRUE, "  -h  This help section");
-  display_printf(TRUE, "  -c  Specify configuration file");
-  display_printf(TRUE, "  -t  Set title");
+  display_printf("Usage: %s [OPTION]... [FILE]...", proc_name);
+  display_printf("    -e       Execute function");
+  display_printf("    -h       This help section");
+  display_printf("    -c       Specify configuration file");
+  display_printf("    -t       Set title");
 
-  restore_terminal();
-  if (error) {
-    exit(64);
-  } else {
-    quitmsg(NULL, 0);
-  }
+  quitmsg(NULL, error);
 }
 
 void quitmsg(char *message, int exit_signal) {
@@ -136,13 +127,18 @@ void quitmsg(char *message, int exit_signal) {
   exit(exit_signal);
 }
 
-void abort_and_trap_handler() { quitmsg("abort_and_trap_handler", 1); }
+void abort_and_trap_handler(int sig) { quitmsg("abort_and_trap_handler", sig); }
 
-void pipe_handler() {
+void pipe_handler(int sig) {
   restore_terminal();
-  display_printf(TRUE, "broken_pipe");
+  display_printf("broken_pipe: %i", sig);
 }
 
-void suspend_handler() { quitmsg("suspend_handler", 1); }
+void suspend_handler(int sig) { quitmsg("suspend_handler", sig); }
 
-void winch_handler() { init_screen_size(); }
+void winch_handler(int sig) {
+  if (sig) {
+    /* Just to make a compiler warning shut up */
+  }
+  init_screen_size();
+}

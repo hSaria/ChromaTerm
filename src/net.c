@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -6,9 +6,8 @@ void write_line_socket(char *line, int size) {
   static int retry;
 
   if (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
-    display_printf(FALSE,
-                   "#SESSION NOT CONNECTED. USE: %cRUN {command} TO CONNECT",
-                   gtd->command_char);
+    display_printf("%cERROR: No child process. Use %cRUN {PROCESS}",
+                   gtd->command_char, gtd->command_char);
     return;
   }
 
@@ -64,11 +63,13 @@ void readmud() {
 }
 
 void process_mud_output(char *linebuf, int prompt) {
-  char line[STRING_SIZE];
+  char line[BUFFER_SIZE * 2];
 
   strip_vt102_codes(linebuf, line);
 
-  do_one_line(linebuf); /* changes linebuf */
+  if (HAS_BIT(gts->flags, SES_FLAG_HIGHLIGHT)) {
+    do_one_line(linebuf); /* changes linebuf */
+  }
 
   printline(linebuf, prompt);
 }

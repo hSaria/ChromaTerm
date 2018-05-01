@@ -3,9 +3,8 @@
 AM_INIT_AUTOMAKE
 AC_INIT
 AC_CONFIG_SRCDIR([defs.h])
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
-AC_SUBST(MYINCLUDE)
 AC_SUBST(MYLIB)
 AC_SUBST(mybindir)
 
@@ -23,35 +22,17 @@ else
 	MYLIB=""
 fi
 
-if [ test $includedir != "\${prefix}/include" ]
-then
-	MYINCLUDE="-I$includedir"
-else
-	MYINCLUDE=""
-fi
-
-
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-
 # Checks libraries
 AC_CHECK_LIB(util, forkpty)
-AC_CHECK_LIB(pcre, pcre_compile,,
-	[AC_MSG_ERROR([pcre runtime library not working, is it AND the corresponding development (header) file installed])])
 
 # Checks for header files.
-AC_CHECK_HEADERS([ ctype.h errno.h signal.h stdarg.h stdio.h string.h sys/ioctl.h sys/stat.h sys/time.h termios.h unistd.h util.h wordexp.h ])
-AC_CHECK_HEADERS([ pcre.h ],,
-	[AC_MSG_ERROR([pcre header file not found, is the development part present])])
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_TYPE_SIZE_T
+AC_CHECK_HEADERS([ctype.h errno.h regex.h signal.h stdarg.h stdlib.h string.h sys/ioctl.h sys/stat.h sys/time.h unistd.h util.h wordexp.h])
 
 # Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-AC_CHECK_FUNCS([gettimeofday memmove memset select strcasecmp strchr strdup strerror strncasecmp strstr forkpty])
+AC_CHECK_FUNCS([gettimeofday memmove memset select strchr strdup strcasecmp strncasecmp strstr forkpty])
 
 AC_CHECK_FILES([/dev/ptmx])
 AC_CONFIG_FILES([Makefile])

@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -6,11 +6,9 @@ int skip_vt102_codes(char *str) {
   int skip;
 
   switch (str[0]) {
-  case 5: /* ENQ */
-  case 7: /* BEL */
-  case 8: /* BS  */
-  // case 9:   /* HT  */
-  // case 10:  /* LF  */
+  case 5:   /* ENQ */
+  case 7:   /* BEL */
+  case 8:   /* BS  */
   case 11:  /* VT  */
   case 12:  /* FF  */
   case 13:  /* CR  */
@@ -88,8 +86,8 @@ void strip_vt102_codes(char *str, char *buf) {
   *pto = 0;
 }
 
-// mix old and str, then copy compressed color string to buf which can point to
-// old.
+/* mix old and str, then copy compressed color string to buf which can point to
+old */
 void get_color_codes(char *old, char *str, char *buf) {
   char *pti, *pto, col[100], tmp[BUFFER_SIZE];
   int len, vtc, fgc, bgc, cnt;

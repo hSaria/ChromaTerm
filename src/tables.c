@@ -1,88 +1,54 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
-struct command_type command_table[] = {
-    {"commands", do_commands, TOKEN_TYPE_COMMAND},
-    {"config", do_configure, TOKEN_TYPE_COMMAND},
-    {"exit", do_exit, TOKEN_TYPE_COMMAND},
-    {"help", do_help, TOKEN_TYPE_COMMAND},
-    {"highlight", do_highlight, TOKEN_TYPE_COMMAND},
-    {"read", do_read, TOKEN_TYPE_COMMAND},
-    {"run", do_run, TOKEN_TYPE_COMMAND},
-    {"unhighlight", do_unhighlight, TOKEN_TYPE_COMMAND},
-    {"write", do_write, TOKEN_TYPE_COMMAND},
-    {"", NULL, TOKEN_TYPE_COMMAND}};
+struct command_type command_table[] = {{"commands", do_commands},
+                                       {"config", do_configure},
+                                       {"exit", do_exit},
+                                       {"help", do_help},
+                                       {"highlight", do_highlight},
+                                       {"quit", do_exit},
+                                       {"read", do_read},
+                                       {"run", do_run},
+                                       {"unhighlight", do_unhighlight},
+                                       {"write", do_write},
+                                       {"", NULL}};
 
-struct list_type list_table[LIST_MAX] = {
-    {"CONFIG", "CONFIGURATIONS", ALPHA, 2},
-    {"HIGHLIGHT", "HIGHLIGHTS", PRIORITY, 3}};
+struct list_type list_table[LIST_MAX] = {{"CONFIG", ALPHA, 2},
+                                         {"HIGHLIGHT", PRIORITY, 3}};
 
 struct config_type config_table[] = {
     {"CHARSET", "The character set encoding used", config_charset},
     {"COMMAND CHAR", "The character used for commands", config_commandchar},
     {"CONVERT META", "Convert meta and control characters", config_convertmeta},
+    {"HIGHLIGHT", "Highlight according to rules", config_highlight},
     {"", "", NULL}};
 
-struct color_type color_table[] = {{"azure", "<abd>"},
-                                   {"ebony", "<g04>"},
-                                   {"jade", "<adb>"},
-                                   {"lime", "<bda>"},
-                                   {"orange", "<dba>"},
-                                   {"pink", "<dab>"},
-                                   {"silver", "<ccc>"},
-                                   {"tan", "<cba>"},
-                                   {"violet", "<bad>"},
-
-                                   {"light azure", "<acf>"},
-                                   {"light ebony", "<bbb>"},
-                                   {"light jade", "<afc>"},
-                                   {"light lime", "<cfa>"},
-                                   {"light orange", "<fca>"},
-                                   {"light pink", "<fac>"},
-                                   {"light silver", "<eee>"},
-                                   {"light tan", "<eda>"},
-                                   {"light violet", "<caf>"},
-
-                                   {"reset", "<088>"},
-                                   {"light", "<188>"},
-                                   {"bold", "<188>"},
-                                   {"faint", "<288>"},
-                                   {"dim", "<288>"},
-                                   {"dark", "<288>"},
-                                   {"underscore", "<488>"},
-                                   {"blink", "<588>"},
-                                   {"reverse", "<788>"},
-
-                                   {"black", "<808>"},
-                                   {"red", "<818>"},
-                                   {"green", "<828>"},
-                                   {"yellow", "<838>"},
-                                   {"blue", "<848>"},
-                                   {"magenta", "<858>"},
-                                   {"cyan", "<868>"},
-                                   {"white", "<878>"},
-
-                                   {"b black", "<880>"},
-                                   {"b red", "<881>"},
-                                   {"b green", "<882>"},
-                                   {"b yellow", "<883>"},
-                                   {"b blue", "<884>"},
-                                   {"b magenta", "<885>"},
-                                   {"b cyan", "<886>"},
-                                   {"b white", "<887>"},
-
-                                   {"b azure", "<ABD>"},
-                                   {"b ebony", "<G04>"},
-                                   {"b jade", "<ADB>"},
-                                   {"b lime", "<BDA>"},
-                                   {"b orange", "<DBA>"},
-                                   {"b pink", "<DAB>"},
-                                   {"b silver", "<CCC>"},
-                                   {"b tan", "<CBA>"},
-                                   {"b violet", "<BAD>"},
-
-                                   {"", "<888>"}};
+struct color_type color_table[] = {
+    {"bold", "<188>"},         {"dim", "<288>"},
+    {"underscore", "<488>"},   {"blink", "<588>"},
+    {"azure", "<abd>"},        {"b azure", "<ABD>"},
+    {"b black", "<880>"},      {"b blue", "<884>"},
+    {"b cyan", "<886>"},       {"b ebony", "<G04>"},
+    {"b green", "<882>"},      {"b jade", "<ADB>"},
+    {"b lime", "<BDA>"},       {"b magenta", "<885>"},
+    {"b orange", "<DBA>"},     {"b pink", "<DAB>"},
+    {"b red", "<881>"},        {"b silver", "<CCC>"},
+    {"b tan", "<CBA>"},        {"b violet", "<BAD>"},
+    {"b white", "<887>"},      {"b yellow", "<883>"},
+    {"black", "<808>"},        {"blue", "<848>"},
+    {"cyan", "<868>"},         {"ebony", "<g04>"},
+    {"green", "<828>"},        {"jade", "<adb>"},
+    {"light azure", "<acf>"},  {"light ebony", "<bbb>"},
+    {"light jade", "<afc>"},   {"light lime", "<cfa>"},
+    {"light orange", "<fca>"}, {"light pink", "<fac>"},
+    {"light silver", "<eee>"}, {"light tan", "<eda>"},
+    {"light violet", "<caf>"}, {"lime", "<bda>"},
+    {"magenta", "<858>"},      {"orange", "<dba>"},
+    {"pink", "<dab>"},         {"red", "<818>"},
+    {"silver", "<ccc>"},       {"tan", "<cba>"},
+    {"violet", "<bad>"},       {"white", "<878>"},
+    {"yellow", "<838>"},       {"", "<099>"}};
 
 struct cursor_type cursor_table[] = {
     {"BACKSPACE", "Delete backward character", "", cursor_backspace},

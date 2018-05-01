@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -7,8 +7,8 @@ DO_COMMAND(do_configure) {
   struct listnode *node;
   int index;
 
-  arg = get_arg_in_braces(arg, left, FALSE);
-  sub_arg_in_braces(arg, right, GET_ONE, SUB_NONE);
+  arg = get_arg_in_braces(arg, left, GET_ONE);
+  get_arg_in_braces(arg, right, GET_ONE);
 
   if (*left == 0) {
     display_header(" CONFIGURATIONS ");
@@ -17,7 +17,7 @@ DO_COMMAND(do_configure) {
       node = search_node_list(gts->list[LIST_CONFIG], config_table[index].name);
 
       if (node) {
-        display_printf(FALSE, "[%-14s] [%9s] [%s]", node->left, node->right,
+        display_printf("[%-14s] [%9s] [%s]", node->left, node->right,
                        config_table[index].description);
       }
     }
@@ -29,28 +29,31 @@ DO_COMMAND(do_configure) {
           node = search_node_list(gts->list[LIST_CONFIG],
                                   config_table[index].name);
           if (node) {
-            show_message("#CONFIG {%s} HAS BEEN SET TO {%s}",
-                         config_table[index].name, node->right);
+            display_printf("%cCONFIG: {%s} has been set to {%s}",
+                           gtd->command_char, config_table[index].name,
+                           node->right);
           }
         }
         return;
       }
     }
-    display_printf(TRUE, "#ERROR: #CONFIG {%s} IS NOT A VALID OPTION",
+    display_printf("%cERROR: {%s} is not a valid option", gtd->command_char,
                    capitalize(left));
   }
 }
 
 DO_CONFIG(config_commandchar) {
+  char single_char[2];
+
   if (arg[0]) {
     gtd->command_char = arg[0];
   } else {
-    display_printf(TRUE, "#SYNTAX: #CONFIG {%s} CHAR",
-                   config_table[index].name);
+    display_printf("%cSYNTAX: %cCONFIG {%s} CHAR", gtd->command_char,
+                   gtd->command_char, config_table[index].name);
     return FALSE;
   }
 
-  char single_char[] = {arg[0], 0};
+  single_char[0] = arg[0];
   update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
                    single_char, "");
   return TRUE;
@@ -62,8 +65,8 @@ DO_CONFIG(config_convertmeta) {
   } else if (!strcasecmp(arg, "OFF")) {
     DEL_BIT(gts->flags, SES_FLAG_CONVERTMETA);
   } else {
-    display_printf(TRUE, "#SYNTAX: #CONFIG {%s} <ON|OFF>",
-                   config_table[index].name);
+    display_printf("%cSYNTAX: %cCONFIG {%s} {ON|OFF}", gtd->command_char,
+                   gtd->command_char, config_table[index].name);
     return FALSE;
   }
 
@@ -78,8 +81,24 @@ DO_CONFIG(config_charset) {
   } else if (!strcasecmp(arg, "ASCII")) {
     DEL_BIT(gts->flags, SES_FLAG_UTF8);
   } else {
-    display_printf(TRUE, "#SYNTAX: #CONFIG {%s} <ASCII|UTF-8>",
-                   config_table[index].name);
+    display_printf("%cSYNTAX: %cCONFIG {%s} <ASCII|UTF-8>", gtd->command_char,
+                   gtd->command_char, config_table[index].name);
+    return FALSE;
+  }
+
+  update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
+                   capitalize(arg), "");
+  return TRUE;
+}
+
+DO_CONFIG(config_highlight) {
+  if (!strcasecmp(arg, "ON")) {
+    SET_BIT(gts->flags, SES_FLAG_HIGHLIGHT);
+  } else if (!strcasecmp(arg, "OFF")) {
+    DEL_BIT(gts->flags, SES_FLAG_HIGHLIGHT);
+  } else {
+    display_printf("%cSYNTAX: %cCONFIG {%s} {ON|OFF}", gtd->command_char,
+                   gtd->command_char, config_table[index].name);
     return FALSE;
   }
 
