@@ -14,9 +14,20 @@ DO_COMMAND(do_read) {
 
   get_arg_in_braces(arg, filename, GET_ALL);
 
-  wordexp(filename, &p, 0);
-  strcpy(filename, *p.we_wordv);
-  wordfree(&p);
+  if (wordexp(filename, &p, 0) == 0) {
+    if (*p.we_wordv != NULL) {
+      strcpy(filename, *p.we_wordv);
+      wordfree(&p);
+    } else {
+      display_printf("%cSYNTAX: %cREAD {FILE LOCATION}", gtd->command_char,
+                     gtd->command_char);
+      return;
+    }
+  } else {
+    display_printf("%cREAD: {%s} - File not found", gtd->command_char,
+                   filename);
+    return;
+  }
 
   if ((fp = fopen(filename, "r")) == NULL) {
     display_printf("%cREAD: {%s} - File not found", gtd->command_char,
@@ -254,9 +265,16 @@ DO_COMMAND(do_write) {
 
   get_arg_in_braces(arg, filename, GET_ALL);
 
-  wordexp(filename, &p, 0);
-  strcpy(filename, *p.we_wordv);
-  wordfree(&p);
+  if (wordexp(filename, &p, 0) == 0) {
+    if (*p.we_wordv != NULL) {
+      strcpy(filename, *p.we_wordv);
+      wordfree(&p);
+    } else {
+      display_printf("%cSYNTAX: %cREAD {FILE LOCATION}", gtd->command_char,
+                     gtd->command_char);
+      return;
+    }
+  }
 
   if (*filename == 0 || (file = fopen(filename, "w")) == NULL) {
     display_printf("%cERROR: {%s} - Could not open to write", gtd->command_char,

@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
         printf("\033]0;%s\007", optarg);
         break;
       case 'c':
-        if (access(optarg, R_OK) != -1) {
+        if (access(optarg, R_OK) == 0) {
           do_read(optarg);
         }
         break;
@@ -56,12 +56,12 @@ int main(int argc, char **argv) {
     char filename[256];
     sprintf(filename, "%s", ".chromatermrc");
 
-    if (access(filename, R_OK) != -1) {
+    if (access(filename, R_OK) == 0) {
       do_read(filename);
     } else {
       sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
 
-      if (access(filename, R_OK) != -1) {
+      if (access(filename, R_OK) == 0) {
         do_read(filename);
       }
     }
