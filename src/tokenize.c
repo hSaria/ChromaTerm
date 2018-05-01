@@ -26,6 +26,7 @@ void parse_script(struct scriptnode *token) {
   } else {
     (*command_table[token->cmd].command)(token->str);
   }
+  free(token->str);
 }
 
 void script_driver(char *str) {
