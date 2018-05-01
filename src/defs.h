@@ -21,8 +21,8 @@
 #define FALSE 0
 #define TRUE 1
 
-#define GET_ONE 0 // stop at spaces
-#define GET_ALL 1 // stop at semicolon
+#define GET_ONE 0 // stop at a space
+#define GET_ALL 1 // don't stop (believing)
 
 #define SCREEN_WIDTH 80
 #define SCREEN_HEIGHT 24
@@ -277,10 +277,10 @@ extern int main(int argc, char **argv);
 extern void init_program(void);
 extern void help_menu(int error, char c, char *proc_name);
 extern void quitmsg(char *message, int exit_signal);
-extern void abort_and_trap_handler(int sig);
-extern void pipe_handler(int sig);
-extern void suspend_handler(int sig);
-extern void winch_handler(int sig);
+extern void abort_and_trap_handler(void);
+extern void pipe_handler(void);
+extern void suspend_handler(void);
+extern void winch_handler(void);
 
 #endif
 
