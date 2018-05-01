@@ -90,11 +90,3 @@ char *space_out(char *string) {
   }
   return string;
 }
-
-/* do all of the VT102 code substitution beforehand */
-void do_one_line(char *line) {
-  char strip[BUFFER_SIZE];
-
-  strip_vt102_codes(line, strip);
-  check_all_highlights(line, strip);
-}

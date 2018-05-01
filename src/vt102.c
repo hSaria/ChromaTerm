@@ -93,7 +93,6 @@ void get_color_codes(char *old, char *str, char *buf) {
   int len, vtc, fgc, bgc, cnt;
 
   pto = tmp;
-
   pti = old;
 
   while (*pti) {
@@ -219,13 +218,8 @@ void get_color_codes(char *old, char *str, char *buf) {
               SET_BIT(vtc, COL_XTB);
               bgc = -1;
               break;
-            default:
+            default: /* 256 color's 16 color notation */
               DEL_BIT(vtc, COL_256);
-
-              /*
-                      Use 256 color's 16 color notation
-              */
-
               if (atoi(col) / 10 == 4) {
                 bgc = atoi(col) % 10;
               }

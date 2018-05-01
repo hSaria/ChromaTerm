@@ -260,7 +260,7 @@ DO_COMMAND(do_help);
 DO_COMMAND(do_highlight);
 DO_COMMAND(do_unhighlight);
 
-void check_all_highlights(char *original, char *line);
+void check_all_highlights(char *original);
 int get_highlight_codes(char *htype, char *result);
 
 #endif
@@ -319,7 +319,6 @@ char *get_arg_all(char *string, char *result, int with_spaces);
 char *get_arg_in_braces(char *string, char *result, int flag);
 char *get_arg_stop_spaces(char *string, char *result);
 char *space_out(char *string);
-void do_one_line(char *line);
 
 #endif
 

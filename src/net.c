@@ -63,12 +63,8 @@ void readmud() {
 }
 
 void process_mud_output(char *linebuf, int prompt) {
-  char line[BUFFER_SIZE * 2];
-
-  strip_vt102_codes(linebuf, line);
-
   if (HAS_BIT(gts->flags, SES_FLAG_HIGHLIGHT)) {
-    do_one_line(linebuf); /* changes linebuf */
+    check_all_highlights(linebuf);
   }
 
   printline(linebuf, prompt);

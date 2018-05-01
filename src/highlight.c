@@ -63,11 +63,14 @@ DO_COMMAND(do_unhighlight) {
   delete_node_with_wild(LIST_HIGHLIGHT, arg);
 }
 
-void check_all_highlights(char *original, char *line) {
+void check_all_highlights(char *original) {
   struct listroot *root = gts->list[LIST_HIGHLIGHT];
   char *pto, *ptl, *ptm;
-  char match[BUFFER_SIZE], color[BUFFER_SIZE], reset[BUFFER_SIZE],
-      output[BUFFER_SIZE], plain[BUFFER_SIZE], result[BUFFER_SIZE];
+  char match[BUFFER_SIZE], color[BUFFER_SIZE], line[BUFFER_SIZE],
+      reset[BUFFER_SIZE], output[BUFFER_SIZE], plain[BUFFER_SIZE],
+      result[BUFFER_SIZE];
+
+  strip_vt102_codes(original, line);
 
   for (root->update = 0; root->update < root->used; root->update++) {
     if (regex_compare(&root->list[root->update]->compiled_regex, line,
