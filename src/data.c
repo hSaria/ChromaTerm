@@ -21,7 +21,6 @@ struct listroot *init_list(int type, int size) {
 // create a node and stuff it into the list in the desired order
 struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
-  int index;
   struct listnode *node;
   regex_t compiled_regex;
 
@@ -40,9 +39,7 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
     node->compiled_regex = compiled_regex;
   }
 
-  index = locate_index_list(root, ltext, prtext);
-
-  return insert_index_list(root, node, index);
+  return insert_index_list(root, node, locate_index_list(root, ltext, prtext));
 }
 
 struct listnode *update_node_list(struct listroot *root, char *ltext,
@@ -252,35 +249,29 @@ void delete_node_with_wild(int type, char *text) {
   struct listroot *root = gts->list[type];
   struct listnode *node;
   char arg1[BUFFER_SIZE];
-  int i, found = FALSE;
+  int i;
 
   get_arg_in_braces(text, arg1, GET_ALL);
 
   node = search_node_list(root, arg1);
 
   if (node) {
-    display_printf("%cDELETE: {%s} is no longer a %s", gtd->command_char,
-                   node->left, list_table[type].name);
-
     delete_index_list(gts->list[type],
                       search_index_list(gts->list[type], node->left, node->pr));
-
+    display_printf("%cDELETE: {%s} is no longer a %s", gtd->command_char,
+                   node->left, list_table[type].name);
     return;
   }
 
   for (i = root->used - 1; i >= 0; i--) {
     if (root->list[i]->left == arg1) {
+      delete_index_list(root, i);
       display_printf("%cDELETE: {%s} is no longer a %s", gtd->command_char,
                      root->list[i]->left, list_table[type].name);
-
-      delete_index_list(root, i);
-
-      found = TRUE;
+      return;
     }
   }
 
-  if (found == 0) {
-    display_printf("%cERROR: No matches for %s {%s}", gtd->command_char,
-                   list_table[type].name, arg1);
-  }
+  display_printf("%cERROR: No matches for %s {%s}", gtd->command_char,
+                 list_table[type].name, arg1);
 }

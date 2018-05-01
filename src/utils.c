@@ -64,7 +64,6 @@ void display_header(char *format, ...) {
   }
 
   memset(buf, '#', gts->cols);
-
   memcpy(&buf[(gts->cols - strlen(arg)) / 2], arg, strlen(arg));
 
   buf[gts->cols] = 0;

@@ -29,9 +29,7 @@ DO_COMMAND(do_read) {
   if (!isgraph((int)temp[0]) || isalpha((int)temp[0])) {
     display_printf("%cERROR: {%s} - Invalid start of file", gtd->command_char,
                    filename);
-
     fclose(fp);
-
     return;
   }
 
@@ -47,9 +45,7 @@ DO_COMMAND(do_read) {
       (bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
     display_printf("%cERROR: {%s} - Failed to allocate memory",
                    gtd->command_char, filename);
-
     fclose(fp);
-
     return;
   }
 
@@ -68,17 +64,14 @@ DO_COMMAND(do_read) {
         lvl++;
         last = DEFAULT_OPEN;
         break;
-
       case DEFAULT_CLOSE:
         *pto++ = *pti++;
         lvl--;
         last = DEFAULT_CLOSE;
         break;
-
       case ' ':
         *pto++ = *pti++;
         break;
-
       case '/':
         if (lvl == 0 && pti[1] == '*') {
           pti += 2;
@@ -87,26 +80,19 @@ DO_COMMAND(do_read) {
           *pto++ = *pti++;
         }
         break;
-
       case '\t':
         *pto++ = *pti++;
         break;
-
       case '\r':
         pti++;
         break;
-
       case '\n':
         lnc++;
-
         pto--;
-
         while (isspace((int)*pto)) {
           pto--;
         }
-
         pto++;
-
         if (fix == 0 && pti[1] == gtd->command_char) {
           if (lvl == 0) {
             ok = lnc + 1;
@@ -154,7 +140,6 @@ DO_COMMAND(do_read) {
             }
           }
         break;
-
       default:
         *pto++ = *pti++;
         last = 0;
@@ -170,7 +155,6 @@ DO_COMMAND(do_read) {
           pti += 1;
         }
         break;
-
       case '*':
         if (pti[1] == '/') {
           pti += 2;
@@ -179,18 +163,17 @@ DO_COMMAND(do_read) {
           pti += 1;
         }
         break;
-
       case '\n':
         lnc++;
         pti++;
         break;
-
       default:
         pti++;
         break;
       }
     }
   }
+
   *pto++ = '\n';
   *pto = '\0';
 
@@ -201,10 +184,8 @@ DO_COMMAND(do_read) {
                    fix == 0 ? lnc + 1 : fix);
 
     fclose(fp);
-
     free(bufi);
     free(bufo);
-
     return;
   }
 
@@ -213,17 +194,16 @@ DO_COMMAND(do_read) {
                    filename, abs(com), com < 0 ? "/*" : "*/");
 
     fclose(fp);
-
     free(bufi);
     free(bufo);
-
     return;
   }
 
-  sprintf(temp, "{COMMAND CHAR} {%c}", bufo[0]);
-
   gtd->quiet++;
 
+  // Read the first character in the output buffer and configure that as the
+  // command char
+  sprintf(temp, "{COMMAND CHAR} {%c}", bufo[0]);
   do_configure(temp);
 
   pti = bufo;
@@ -239,16 +219,14 @@ DO_COMMAND(do_read) {
     if (strlen(bufi) >= BUFFER_SIZE) {
       gtd->quiet--;
 
+      // Only output the first 20 characters of the overflowing command
       bufi[20] = 0;
-
       display_printf("%cERROR: {%s} - Buffer overflow at command: %s", filename,
                      bufi);
 
       fclose(fp);
-
       free(bufi);
       free(bufo);
-
       return;
     }
 
@@ -263,7 +241,6 @@ DO_COMMAND(do_read) {
   gtd->quiet--;
 
   fclose(fp);
-
   free(bufi);
   free(bufo);
 }

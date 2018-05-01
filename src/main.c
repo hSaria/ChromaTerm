@@ -68,8 +68,6 @@ int main(int argc, char **argv) {
   }
 
   mainloop();
-
-  return 0;
 }
 
 void init_program() {
@@ -79,7 +77,8 @@ void init_program() {
   gtd = (struct global_data *)calloc(1, sizeof(struct global_data));
 
   for (index = 0; index < LIST_MAX; index++) {
-    gts->list[index] = init_list(index, 32);
+    // initial size is 8, but is dynamically resized as required
+    gts->list[index] = init_list(index, 8);
   }
 
   gts->socket = 1;
@@ -106,10 +105,10 @@ void help_menu(int error, char c, char *proc_name) {
   }
 
   display_printf("Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf("  -e  Execute function");
-  display_printf("  -h  This help section");
-  display_printf("  -c  Specify configuration file");
-  display_printf("  -t  Set title");
+  display_printf("    -e       Execute function");
+  display_printf("    -h       This help section");
+  display_printf("    -c       Specify configuration file");
+  display_printf("    -t       Set title");
 
   quitmsg(NULL, error);
 }
