@@ -31,9 +31,6 @@ AC_CHECK_LIB(util, forkpty)
 # Checks for header files.
 AC_CHECK_HEADERS([ctype.h errno.h regex.h signal.h stdarg.h stdlib.h string.h sys/ioctl.h sys/stat.h sys/time.h unistd.h util.h wordexp.h])
 
-# Checks for typedefs, structures, and compiler characteristics.
-AC_TYPE_SIZE_T
-
 # Checks for library functions.
 AC_CHECK_FUNCS([gettimeofday memmove memset select strchr strdup strcasecmp strncasecmp strstr forkpty])
 

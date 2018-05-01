@@ -71,7 +71,7 @@ void display_header(char *format, ...) {
   display_printf(buf);
 }
 
-void socket_printf(size_t length, char *format, ...) {
+void socket_printf(unsigned int length, char *format, ...) {
   char buf[BUFFER_SIZE * 2];
   va_list args;
 

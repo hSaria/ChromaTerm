@@ -382,7 +382,7 @@ char *capitalize(char *str);
 int cat_sprintf(char *dest, char *fmt, ...);
 void ins_sprintf(char *dest, char *fmt, ...);
 void display_header(char *format, ...);
-void socket_printf(size_t length, char *format, ...);
+void socket_printf(unsigned int length, char *format, ...);
 void display_printf(char *format, ...);
 void printline(char *str, int isaprompt);
 
