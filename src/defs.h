@@ -17,11 +17,11 @@
 
 #include "config.h"
 
-#ifdef HAVE_FORKPTY
-#include <pty.h>
-#else
 #ifdef HAVE_UTIL_H
 #include <util.h>
+#else
+#ifdef HAVE_FORKPTY
+#include <pty.h>
 #endif
 #endif
 
