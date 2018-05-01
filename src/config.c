@@ -43,6 +43,8 @@ DO_COMMAND(do_configure) {
 }
 
 DO_CONFIG(config_commandchar) {
+  char single_char[2];
+
   if (arg[0]) {
     gtd->command_char = arg[0];
   } else {
@@ -51,7 +53,6 @@ DO_CONFIG(config_commandchar) {
     return FALSE;
   }
 
-  char single_char[2];
   single_char[0] = arg[0];
   update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
                    single_char, "");
