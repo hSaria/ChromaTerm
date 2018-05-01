@@ -256,8 +256,8 @@ void delete_node_with_wild(int type, char *text) {
   node = search_node_list(root, arg1);
 
   if (node) {
-    display_printf("%cDELETE: {%s} is no longer a %s", gtd->command_char,
-                   node->left, list_table[type].name);
+    display_printf("%cUN%s: {%s} is no longer a %s", list_table[type].name,
+                   gtd->command_char, node->left, list_table[type].name);
     delete_index_list(gts->list[type],
                       search_index_list(gts->list[type], node->left, node->pr));
     return;
@@ -265,8 +265,8 @@ void delete_node_with_wild(int type, char *text) {
 
   for (i = root->used - 1; i >= 0; i--) {
     if (root->list[i]->left == arg1) {
-      display_printf("%cDELETE: {%s} is no longer a %s", gtd->command_char,
-                     root->list[i]->left, list_table[type].name);
+      display_printf("%cUN%s: {%s} is no longer a %s", list_table[type].name,
+                     gtd->command_char, node->left, list_table[type].name);
       delete_index_list(root, i);
       return;
     }
