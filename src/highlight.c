@@ -52,7 +52,16 @@ DO_COMMAND(do_highlight) {
   }
 }
 
-DO_COMMAND(do_unhighlight) { delete_node_with_wild(LIST_HIGHLIGHT, arg); }
+DO_COMMAND(do_unhighlight) {
+  get_arg_in_braces(arg, arg, GET_ONE);
+  if (*arg == 0) {
+    display_printf("%cSYNTAX: %cUNHIGHLIGHT {MATCH CONDITION TO REMOVE}",
+                   gtd->command_char, gtd->command_char);
+    return;
+  }
+
+  delete_node_with_wild(LIST_HIGHLIGHT, arg);
+}
 
 void check_all_highlights(char *original, char *line) {
   struct listroot *root = gts->list[LIST_HIGHLIGHT];

@@ -248,30 +248,17 @@ int nsearch_list(struct listroot *root, char *text) {
 void delete_node_with_wild(int type, char *text) {
   struct listroot *root = gts->list[type];
   struct listnode *node;
-  char arg1[BUFFER_SIZE];
-  int i;
 
-  get_arg_in_braces(text, arg1, GET_ONE);
-
-  node = search_node_list(root, arg1);
+  node = search_node_list(root, text);
 
   if (node) {
-    display_printf("%cUN%s: {%s} is no longer a %s", list_table[type].name,
-                   gtd->command_char, node->left, list_table[type].name);
+    display_printf("%cUN%s: {%s} is no longer a %s", gtd->command_char,
+                   list_table[type].name, node->left, list_table[type].name);
     delete_index_list(gts->list[type],
                       search_index_list(gts->list[type], node->left, node->pr));
     return;
   }
 
-  for (i = root->used - 1; i >= 0; i--) {
-    if (root->list[i]->left == arg1) {
-      display_printf("%cUN%s: {%s} is no longer a %s", list_table[type].name,
-                     gtd->command_char, node->left, list_table[type].name);
-      delete_index_list(root, i);
-      return;
-    }
-  }
-
   display_printf("%cERROR: No matches for %s {%s}", gtd->command_char,
-                 list_table[type].name, arg1);
+                 list_table[type].name, text);
 }
