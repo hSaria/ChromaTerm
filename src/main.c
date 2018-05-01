@@ -39,7 +39,6 @@ int main(int argc, char **argv) {
       case 'h':
         help_menu(FALSE, c, argv[0]);
         break;
-
       default:
         help_menu(TRUE, c, argv[0]);
         break;
@@ -50,7 +49,7 @@ int main(int argc, char **argv) {
       do_read(argv[optind]);
     }
   } else {
-    display_printf(TRUE, "#HELP for more info");
+    display_printf("%cHELP for more info", gtd->command_char);
   }
 
   if (getenv("HOME") != NULL) {
@@ -102,21 +101,16 @@ void init_program() {
 
 void help_menu(int error, char c, char *proc_name) {
   if (error) {
-    display_printf(TRUE, "Unknown option '%c'", c);
+    display_printf("Unknown option '%c'", c);
   }
 
-  display_printf(TRUE, "Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf(TRUE, "  -e  Execute function");
-  display_printf(TRUE, "  -h  This help section");
-  display_printf(TRUE, "  -c  Specify configuration file");
-  display_printf(TRUE, "  -t  Set title");
+  display_printf("Usage: %s [OPTION]... [FILE]...", proc_name);
+  display_printf("  -e  Execute function");
+  display_printf("  -h  This help section");
+  display_printf("  -c  Specify configuration file");
+  display_printf("  -t  Set title");
 
-  restore_terminal();
-  if (error) {
-    exit(64);
-  } else {
-    quitmsg(NULL, 0);
-  }
+  quitmsg(NULL, error);
 }
 
 void quitmsg(char *message, int exit_signal) {
@@ -135,7 +129,7 @@ void abort_and_trap_handler(int sig) { quitmsg("abort_and_trap_handler", sig); }
 
 void pipe_handler(int sig) {
   restore_terminal();
-  display_printf(TRUE, "broken_pipe: %i", sig);
+  display_printf("broken_pipe: %i", sig);
 }
 
 void suspend_handler(int sig) { quitmsg("suspend_handler", sig); }

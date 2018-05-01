@@ -544,8 +544,7 @@ DO_CURSOR(cursor_right_word) {
 DO_CURSOR(cursor_suspend) { suspend_handler(1); }
 
 DO_CURSOR(cursor_test) {
-  display_printf(FALSE,
-                 "bar_len %d off %d pos %d hid %d cur %d len %d max %d tot %d",
+  display_printf("bar_len %d off %d pos %d hid %d cur %d len %d max %d tot %d",
                  inputline_max_str_len(), gtd->input_off, gtd->input_pos,
                  gtd->input_hid, gtd->input_cur, gtd->input_len,
                  inputline_max_str_len(), inputline_cur_str_len());

@@ -2,23 +2,16 @@
 
 #include "defs.h"
 
-int regexp_compare(char *str, char *exp, char *result) {
-  regex_t regexp;
+int regex_compare(regex_t *compiled_regex, char *str, char *result) {
   regmatch_t pmatch[1];
 
-  if (regcomp(&regexp, exp, REG_EXTENDED | REG_NEWLINE) != 0) {
-    return FALSE;
-  }
-
-  if (regexec(&regexp, str, 1, pmatch, 0) != 0) {
-    regfree(&regexp);
+  if (regexec(compiled_regex, str, 1, pmatch, 0) != 0) {
     return FALSE;
   }
 
   sprintf(result, "%.*s", (int)(pmatch[0].rm_eo - pmatch[0].rm_so),
           &str[pmatch[0].rm_so]);
 
-  regfree(&regexp);
   return TRUE;
 }
 

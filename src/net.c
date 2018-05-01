@@ -6,9 +6,8 @@ void write_line_socket(char *line, int size) {
   static int retry;
 
   if (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
-    display_printf(FALSE,
-                   "#SESSION NOT CONNECTED. USE: %cRUN {command} TO CONNECT",
-                   gtd->command_char);
+    display_printf("%cERROR: No child process. Use %cRUN {PROCESS}",
+                   gtd->command_char, gtd->command_char);
     return;
   }
 

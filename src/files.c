@@ -19,14 +19,15 @@ DO_COMMAND(do_read) {
   wordfree(&p);
 
   if ((fp = fopen(filename, "r")) == NULL) {
-    display_printf(TRUE, "#READ {%s} - FILE NOT FOUND", filename);
+    display_printf("%cREAD: {%s} - File not found", gtd->command_char,
+                   filename);
     return;
   }
 
   temp[0] = getc(fp);
 
   if (!isgraph((int)temp[0]) || isalpha((int)temp[0])) {
-    display_printf(TRUE, "#ERROR: #READ {%s} - INVALID START OF FILE",
+    display_printf("%cERROR: {%s} - Invalid start of file", gtd->command_char,
                    filename);
 
     fclose(fp);
@@ -44,8 +45,8 @@ DO_COMMAND(do_read) {
 
   if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL ||
       (bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf(TRUE, "#ERROR: #READ {%s} - FAILED TO ALLOCATE MEMORY",
-                   filename);
+    display_printf("%cERROR: {%s} - Failed to allocate memory",
+                   gtd->command_char, filename);
 
     fclose(fp);
 
@@ -194,10 +195,10 @@ DO_COMMAND(do_read) {
   *pto = '\0';
 
   if (lvl) {
-    display_printf(
-        TRUE, "#ERROR: #READ {%s} - MISSING %d '%c' BETWEEN LINE %d AND %d",
-        filename, abs(lvl), lvl < 0 ? DEFAULT_OPEN : DEFAULT_CLOSE,
-        fix == 0 ? 1 : ok, fix == 0 ? lnc + 1 : fix);
+    display_printf("%cERROR: {%s} - Missing %d '%c' between line %d and %d",
+                   gtd->command_char, filename, abs(lvl),
+                   lvl < 0 ? DEFAULT_OPEN : DEFAULT_CLOSE, fix == 0 ? 1 : ok,
+                   fix == 0 ? lnc + 1 : fix);
 
     fclose(fp);
 
@@ -208,8 +209,8 @@ DO_COMMAND(do_read) {
   }
 
   if (com) {
-    display_printf(TRUE, "#ERROR: #READ {%s} - MISSING %d '%s'", filename,
-                   abs(com), com < 0 ? "/*" : "*/");
+    display_printf("%cERROR: {%s} - Missing %d '%s'", gtd->command_char,
+                   filename, abs(com), com < 0 ? "/*" : "*/");
 
     fclose(fp);
 
@@ -240,9 +241,8 @@ DO_COMMAND(do_read) {
 
       bufi[20] = 0;
 
-      display_printf(TRUE,
-                     "#ERROR: #READ {%s} - BUFFER OVERFLOW AT COMMAND: %s",
-                     filename, bufi);
+      display_printf("%cERROR: {%s} - Buffer overflow at command: %s", filename,
+                     bufi);
 
       fclose(fp);
 
@@ -282,7 +282,7 @@ DO_COMMAND(do_write) {
   wordfree(&p);
 
   if (*filename == 0 || (file = fopen(filename, "w")) == NULL) {
-    display_printf(TRUE, "#ERROR: #WRITE: COULDN'T OPEN {%s} TO WRITE",
+    display_printf("%cERROR: {%s} - Could not open to write", gtd->command_char,
                    filename);
     return;
   }
@@ -298,10 +298,11 @@ DO_COMMAND(do_write) {
 
   fclose(file);
 
-  show_message("#WRITE: %d COMMANDS WRITTEN TO {%s}", cnt, filename);
+  display_printf("%cWRITE: {%s} - %d commands written ", gtd->command_char,
+                 filename, cnt);
 }
 
-void write_node(int list, struct listnode_highlight *node, FILE *file) {
+void write_node(int list, struct listnode *node, FILE *file) {
   char result[STRING_SIZE];
 
   int llen = UMAX(20, (int)strlen(node->left));

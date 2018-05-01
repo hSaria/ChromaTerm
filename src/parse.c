@@ -55,7 +55,7 @@ char *get_arg_in_braces(char *string, char *result, int flag) {
   }
 
   if (*pti == 0) {
-    display_printf(FALSE, "#ERROR: UNMATCHED BRACKETS");
+    display_printf("%cERROR: Unmatched brackets", gtd->command_char);
   } else {
     pti++;
   }

@@ -51,19 +51,6 @@ void ins_sprintf(char *dest, char *fmt, ...) {
   strcat(dest, tmp);
 }
 
-void show_message(char *format, ...) {
-  char buf[STRING_SIZE];
-  va_list args;
-
-  va_start(args, format);
-  vsprintf(buf, format, args);
-  va_end(args);
-
-  if (gts->input_level == 0) {
-    display_puts(FALSE, TRUE, buf);
-  }
-}
-
 void display_header(char *format, ...) {
   char arg[BUFFER_SIZE], buf[BUFFER_SIZE];
   va_list args;
@@ -82,7 +69,7 @@ void display_header(char *format, ...) {
 
   buf[gts->cols] = 0;
 
-  display_puts(FALSE, FALSE, buf);
+  display_printf(buf);
 }
 
 void socket_printf(size_t length, char *format, ...) {
@@ -98,7 +85,12 @@ void socket_printf(size_t length, char *format, ...) {
   }
 }
 
-void display_printf(int came_from_commend, char *format, ...) {
+// Used by commands
+void display_printf(char *format, ...) {
+  if (gtd->quiet) {
+    return;
+  }
+
   char buf[STRING_SIZE];
   va_list args;
 
@@ -106,39 +98,7 @@ void display_printf(int came_from_commend, char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  if (came_from_commend) {
-    display_puts(TRUE, TRUE, buf);
-  } else {
-    display_puts(FALSE, TRUE, buf);
-  }
-}
-
-void display_puts(int came_from_mud, int with_color, char *string) {
-  char output[STRING_SIZE];
-
-  if (came_from_mud) {
-    do_one_line(string);
-  }
-
-  if (gtd->quiet) {
-    return;
-  }
-
-  if (with_color) {
-    if (strip_vt102_strlen(gts->more_output) != 0) {
-      sprintf(output, "\n\033[0m%s\033[0m", string);
-    } else {
-      sprintf(output, "\033[0m%s\033[0m", string);
-    }
-  } else {
-    if (strip_vt102_strlen(gts->more_output) != 0) {
-      sprintf(output, "\n%s", string);
-    } else {
-      sprintf(output, "%s", string);
-    }
-  }
-
-  printline(output, FALSE);
+  printline(buf, FALSE);
 }
 
 void printline(char *str, int prompt) {
@@ -149,26 +109,8 @@ void printline(char *str, int prompt) {
   } else {
     strcpy(wrapped_str, str);
   }
-
-  if (prompt) {
-    printf("%s", wrapped_str);
-  } else {
-    printf("%s\n", wrapped_str);
+  printf("%s", wrapped_str);
+  if (!prompt) {
+    printf("\n");
   }
-
-  return;
-}
-
-// print system call error message and terminate
-void syserr(char *msg) {
-  char s[128], *syserrmsg;
-
-  syserrmsg = strerror(errno);
-
-  if (syserrmsg) {
-    sprintf(s, "ERROR: %s (%d: %s)", msg, errno, syserrmsg);
-  } else {
-    sprintf(s, "ERROR: %s (%d)", msg, errno);
-  }
-  quitmsg(s, 1);
 }

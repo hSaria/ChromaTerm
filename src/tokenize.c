@@ -22,7 +22,8 @@ int find_command(char *command) {
 
 void parse_script(struct scriptnode *token) {
   if (token->cmd == -1) {
-    display_printf(TRUE, "#ERROR: #UNKNOWN COMMAND '%s'", token->str);
+    display_printf("%cERROR: Unknown command '%s'", gtd->command_char,
+                   token->str);
   } else {
     (*command_table[token->cmd].command)(token->str);
   }

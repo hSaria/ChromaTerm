@@ -206,12 +206,12 @@ DO_COMMAND(do_help) {
   if (*left == 0) {
     for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
       if ((int)strlen(add) + 19 > gts->cols) {
-        display_puts(FALSE, TRUE, add);
+        display_printf(add);
         add[0] = 0;
       }
       cat_sprintf(add, "%19s", help_table[cnt].name);
     }
-    display_puts(TRUE, TRUE, add);
+    display_printf(add);
   } else {
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
       if (is_abbrev(left, help_table[cnt].name) || is_abbrev(left, "all")) {
@@ -228,7 +228,7 @@ DO_COMMAND(do_help) {
           }
           *ptf++ = 0;
 
-          display_puts(FALSE, FALSE, pto);
+          display_printf(pto);
 
           pto = ptf;
         }
@@ -236,7 +236,7 @@ DO_COMMAND(do_help) {
     }
 
     if (!found) {
-      display_printf(FALSE, "#HELP: No help found for topic '%s'", left);
+      display_printf("#HELP: No help found for topic '%s'", left);
     }
   }
 }

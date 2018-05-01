@@ -17,15 +17,14 @@ DO_COMMAND(do_highlight) {
   if (*arg1 == 0 || *arg2 == 0) {
     int i;
 
-    display_header(" %s ", list_table[LIST_HIGHLIGHT].name_multi);
+    display_header(" HIGHLIGHTS ");
 
     for (i = 0; i < gts->list[LIST_HIGHLIGHT]->used; i++) {
-      struct listnode_highlight *node = gts->list[LIST_HIGHLIGHT]->list[i];
-      display_printf(FALSE,
-                     "%c%s "
+      struct listnode *node = gts->list[LIST_HIGHLIGHT]->list[i];
+      display_printf("%c%s "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
-                     "\033[1;31m{\033[0m%s\033[1;31m}",
+                     "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
                      gtd->command_char, list_table[LIST_HIGHLIGHT].name,
                      node->left, node->right, node->pr);
     }
@@ -33,17 +32,22 @@ DO_COMMAND(do_highlight) {
     display_header("");
   } else {
     if (get_highlight_codes(arg2, temp) == FALSE) {
-      display_printf(FALSE, "#HIGHLIGHT: VALID COLORS ARE:\n");
       display_printf(
-          FALSE,
-          "reset, bold, light, faint, dim, dark, underscore, blink, reverse, "
-          "black, red, green, yellow, blue, magenta, cyan, white, b black, b "
-          "red, b green, b yellow, b blue, b magenta, b cyan, b white, azure, "
-          "ebony, jade, lime, orange, pink, silver, tan, violet");
+          "%cHIGHLIGHT: Named codes are:\n"
+          "bold, dim, underscore, blink, azure, black, blue, cyan, ebony, "
+          "green, jade,\nlime, magenta, orange, pink, red, silver, tan, "
+          "violet, white, yellow, b azure,\nb black, b blue, b cyan, b ebony, "
+          "b green, b jade, b lime, b magenta, b orange,\nb pink, b red, b "
+          "silver, b tan, b violet, b white, b yellow, light azure,\nlight "
+          "ebony, light jade, light lime, light orange, light pink, light "
+          "silver,\nlight tan, light violet\n",
+          gtd->command_char);
+
     } else {
       update_node_list(gts->list[LIST_HIGHLIGHT], arg1, arg2, arg3);
 
-      show_message("#OK. {%s} NOW HIGHLIGHTS {%s} {%s}", arg1, arg2, arg3);
+      display_printf("%cHIGHLIGHT: {%s} now highlighted with {%s} {%s}",
+                     gtd->command_char, arg1, arg2, arg3);
     }
   }
 }
@@ -57,7 +61,8 @@ void check_all_highlights(char *original, char *line) {
       output[BUFFER_SIZE], plain[BUFFER_SIZE], result[BUFFER_SIZE];
 
   for (root->update = 0; root->update < root->used; root->update++) {
-    if (regexp_compare(line, root->list[root->update]->left, result)) {
+    if (regex_compare(&root->list[root->update]->compiled_regex, line,
+                      result)) {
       get_highlight_codes(root->list[root->update]->right, color);
 
       *output = *reset = 0;
@@ -90,10 +95,10 @@ void check_all_highlights(char *original, char *line) {
         cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
 
         pto = ptm + strlen(match);
-      } while (regexp_compare(ptl, root->list[root->update]->left, result));
+      } while (regex_compare(&root->list[root->update]->compiled_regex, ptl,
+                             result));
 
       strcat(output, pto);
-
       strcpy(original, output);
     }
   }
@@ -106,7 +111,6 @@ int get_highlight_codes(char *string, char *result) {
 
   if (*string == '<') {
     substitute(string, result);
-
     return TRUE;
   }
 
@@ -117,7 +121,6 @@ int get_highlight_codes(char *string, char *result) {
           substitute(color_table[cnt].code, result);
 
           result += strlen(result);
-
           break;
         }
       }

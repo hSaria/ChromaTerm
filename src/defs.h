@@ -80,17 +80,18 @@
 
 // Structures
 struct listroot {
-  struct listnode_highlight **list;
+  struct listnode **list;
   int size;
   int used;
   int type;
   int update;
 };
 
-struct listnode_highlight {
+struct listnode {
   char *left;
   char *right;
   char *pr;
+  regex_t compiled_regex;
 };
 
 struct session {
@@ -209,14 +210,13 @@ DO_CURSOR(cursor_test);
 #define __DATA_H__
 
 struct listroot *init_list(int type, int size);
-struct listnode_highlight *insert_node_list(struct listroot *root, char *ltext,
+struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext);
-struct listnode_highlight *update_node_list(struct listroot *root, char *ltext,
+struct listnode *update_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext);
-struct listnode_highlight *insert_index_list(struct listroot *root, struct listnode_highlight *node,
+struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
                                    int index);
-struct listnode_highlight *search_node_list(struct listroot *root, char *text);
-void delete_node_list(int type, struct listnode_highlight *node);
+struct listnode *search_node_list(struct listroot *root, char *text);
 void delete_node_with_wild(int index, char *string);
 void delete_index_list(struct listroot *root, int index);
 int search_index_list(struct listroot *root, char *text, char *priority);
@@ -234,7 +234,7 @@ int nsearch_list(struct listroot *root, char *text);
 DO_COMMAND(do_read);
 DO_COMMAND(do_write);
 
-void write_node(int mode, struct listnode_highlight *node, FILE *file);
+void write_node(int mode, struct listnode *node, FILE *file);
 
 #endif
 
@@ -318,7 +318,7 @@ void do_one_line(char *line);
 #define __REGEXP_H__
 
 void substitute(char *string, char *result);
-int regexp_compare(char *str, char *exp, char *result);
+int regex_compare(regex_t *compiled_regex, char *str, char *result);
 
 #endif
 
@@ -374,12 +374,9 @@ int is_abbrev(char *s1, char *s2);
 char *capitalize(char *str);
 int cat_sprintf(char *dest, char *fmt, ...);
 void ins_sprintf(char *dest, char *fmt, ...);
-void syserr(char *msg);
-void show_message(char *format, ...);
 void display_header(char *format, ...);
 void socket_printf(size_t length, char *format, ...);
-void display_printf(int came_from_command, char *format, ...);
-void display_puts(int came_from_mud, int with_color, char *string);
+void display_printf(char *format, ...);
 void printline(char *str, int isaprompt);
 
 #endif
