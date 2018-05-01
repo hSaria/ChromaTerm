@@ -1,8 +1,8 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
-// get all arguments
+/* get all arguments */
 char *get_arg_all(char *string, char *result, int with_spaces) {
   char *pto, *pti;
 
@@ -22,7 +22,7 @@ char *get_arg_all(char *string, char *result, int with_spaces) {
   return pti;
 }
 
-// Braces are stripped in braced arguments leaving all else as is.
+/* Braces are stripped in braced arguments leaving all else as is */
 char *get_arg_in_braces(char *string, char *result, int flag) {
   char *pti, *pto;
   int nest = 1;
@@ -64,7 +64,7 @@ char *get_arg_in_braces(char *string, char *result, int flag) {
   return pti;
 }
 
-// get one arg, stop at a space
+/* get one arg, stop at a space */
 char *get_arg_stop_spaces(char *string, char *result) {
   char *pto, *pti;
 
@@ -83,7 +83,7 @@ char *get_arg_stop_spaces(char *string, char *result) {
   return pti;
 }
 
-// advance ptr to next none-space
+/* advance ptr to next none-space */
 char *space_out(char *string) {
   while (isspace((int)*string)) {
     string++;
@@ -91,7 +91,7 @@ char *space_out(char *string) {
   return string;
 }
 
-// do all of the VT102 code substitution beforehand.
+/* do all of the VT102 code substitution beforehand */
 void do_one_line(char *line) {
   char strip[BUFFER_SIZE];
 

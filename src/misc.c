@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -43,8 +43,7 @@ DO_COMMAND(do_run) {
   char *argv[4] = {"sh", "-c", "", NULL};
 
   get_arg_in_braces(arg, command, GET_ALL);
-
-  // Limit to single process
+  /* Limit to single process */
   if (process_already_running) {
     display_printf("%cRUN: A process is already running", gtd->command_char);
     return;
@@ -52,7 +51,7 @@ DO_COMMAND(do_run) {
     process_already_running = TRUE;
   }
 
-  // If no process is provided, use the SHELL environment variable
+  /* If no process is provided, use the SHELL environment variable */
   if (*command == 0) {
     strcpy(command, getenv("SHELL") ? getenv("SHELL") : "");
   }

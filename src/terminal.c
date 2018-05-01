@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -11,8 +11,7 @@ void init_terminal() {
   }
 
   io = gtd->active_terminal;
-
-  //  Canonical mode off
+  /*  Canonical mode off */
   DEL_BIT(io.c_lflag, ICANON);
 
   io.c_cc[VMIN] = 1;

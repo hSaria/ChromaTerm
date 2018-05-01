@@ -1,11 +1,11 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
 struct session *gts;
 struct global_data *gtd;
 
-// main() - setup signals - init lists - readcoms - mainloop()
+/* main() - setup signals - init lists - readcoms - mainloop() */
 int main(int argc, char **argv) {
   signal(SIGTERM, abort_and_trap_handler);
   signal(SIGSEGV, abort_and_trap_handler);
@@ -77,7 +77,7 @@ void init_program() {
   gtd = (struct global_data *)calloc(1, sizeof(struct global_data));
 
   for (index = 0; index < LIST_MAX; index++) {
-    // initial size is 8, but is dynamically resized as required
+    /* initial size is 8, but is dynamically resized as required */
     gts->list[index] = init_list(index, 8);
   }
 
@@ -136,7 +136,7 @@ void suspend_handler(int sig) { quitmsg("suspend_handler", sig); }
 
 void winch_handler(int sig) {
   if (sig) {
-    // Just to make a compiler warning shut up.
+    /* Just to make a compiler warning shut up */
   }
   init_screen_size();
 }

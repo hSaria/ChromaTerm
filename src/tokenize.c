@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -39,8 +39,7 @@ void script_driver(char *str) {
     if (*str == gtd->command_char) {
       char *args, line[BUFFER_SIZE];
       int cmd;
-
-      // Command stored in line, rest of string in args
+      /* Command stored in line, rest of string in args */
       args = get_arg_stop_spaces(str, line);
       cmd = find_command(line + 1);
 

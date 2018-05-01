@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include <ctype.h>
 #include <errno.h>
@@ -29,9 +29,9 @@
 #define FALSE 0
 #define TRUE 1
 
-// Openning braces ignore these rules
-#define GET_ONE 0 // stop at a space
-#define GET_ALL 1 // don't stop (believing)
+/* Openning braces ignore these rules */
+#define GET_ONE 0 /* stop at a space */
+#define GET_ALL 1 /* don't stop (believing) */
 
 #define SCREEN_WIDTH 80
 #define SCREEN_HEIGHT 24
@@ -48,12 +48,12 @@
 
 #define PULSE_PER_SECOND 500
 
-// Index for lists
+/* Index for lists */
 #define LIST_CONFIG 0
 #define LIST_HIGHLIGHT 1
 #define LIST_MAX 2
 
-// Various flags
+/* Various flags */
 #define COL_BLD (1 << 0)
 #define COL_UND (1 << 1)
 #define COL_BLK (1 << 2)
@@ -73,13 +73,13 @@
 #define SES_FLAG_UTF8 (1 << 2)
 #define SES_FLAG_HIGHLIGHT (1 << 3)
 
-// Bit operations
+/* Bit operations */
 #define HAS_BIT(bitvector, bit) ((bitvector) & (bit))
 #define SET_BIT(bitvector, bit) ((bitvector) |= (bit))
 #define DEL_BIT(bitvector, bit) ((bitvector) &= (~(bit)))
 #define TOG_BIT(bitvector, bit) ((bitvector) ^= (bit))
 
-// Generic
+/* Generic */
 #define URANGE(a, b, c) ((b) < (a) ? (a) : (b) > (c) ? (c) : (b))
 #define UMAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -87,7 +87,7 @@
 #define DO_CONFIG(config) int config(char *arg, int index)
 #define DO_CURSOR(cursor) void cursor(void)
 
-// Structures
+/* Structures */
 struct listroot {
   struct listnode **list;
   int size;
@@ -130,12 +130,12 @@ struct global_data {
   char command_char;
 };
 
-// Typedefs
+/* Typedefs */
 typedef void COMMAND(char *arg);
 typedef int CONFIG(char *arg, int index);
 typedef void CURSOR(void);
 
-// Structures for tables.c
+/* Structures for tables.c */
 struct color_type {
   char *name;
   char *code;
@@ -167,7 +167,7 @@ struct cursor_type {
 
 #endif
 
-// Function declarations
+/* Function declarations */
 
 #ifndef __CONFIG_H__
 #define __CONFIG_H__

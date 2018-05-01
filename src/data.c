@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -18,7 +18,7 @@ struct listroot *init_list(int type, int size) {
   return listhead;
 }
 
-// create a node and stuff it into the list in the desired order
+/* create a node and stuff it into the list in the desired order */
 struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
   struct listnode *node;
@@ -58,13 +58,13 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
     }
 
     switch (list_table[root->type].mode) {
-    case PRIORITY: // Highlight
+    case PRIORITY: /* Highlight */
       if (atof(node->pr) != atof(prtext)) {
         delete_index_list(root, index);
         return insert_node_list(root, ltext, rtext, prtext);
       }
       break;
-    case ALPHA: // Config
+    case ALPHA: /* Config */
       if (strcmp(node->pr, prtext) != 0) {
         free(node->pr);
         node->pr = strdup(prtext);
@@ -153,7 +153,7 @@ int search_index_list(struct listroot *root, char *text, char *priority) {
   return nsearch_list(root, text);
 }
 
-// Return insertion index.
+/* Return insertion index */
 int locate_index_list(struct listroot *root, char *text, char *priority) {
   switch (list_table[root->type].mode) {
   case ALPHA:

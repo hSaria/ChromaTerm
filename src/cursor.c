@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -88,7 +88,7 @@ int inputline_str_raw_len(int start, int end) {
   return ret_cnt;
 }
 
-// Get string length of the input area
+/* Get string length of the input area */
 int inputline_max_str_len(void) { return gts->cols + 1 - gtd->input_off; }
 
 int inputline_cur_str_len(void) {
@@ -96,7 +96,7 @@ int inputline_cur_str_len(void) {
                                gtd->input_hid + inputline_max_str_len());
 }
 
-// Check for invalid characters.
+/* Check for invalid characters. */
 int inputline_str_chk(int offset, int totlen) {
   while (offset < totlen) {
     if (HAS_BIT(gts->flags, SES_FLAG_UTF8)) {
@@ -443,11 +443,10 @@ DO_CURSOR(cursor_redraw_line) {
       return;
     }
   }
-
-  // Erase current input
+  /* Erase current input */
   input_printf("\033[%dG\033[%dP", gtd->input_off, inputline_max_str_len());
 
-  // Center long lines of input
+  /* Center long lines of input */
   if (gtd->input_pos > inputline_max_str_len() - 3) {
     while (gtd->input_pos - gtd->input_hid > inputline_max_str_len() - 3) {
       gtd->input_hid += inputline_max_str_len() / 2;
@@ -462,7 +461,7 @@ DO_CURSOR(cursor_redraw_line) {
     }
   }
 
-  // Print the entire thing
+  /* Print the entire thing */
   if (gtd->input_hid) {
     if (gtd->input_hid + inputline_max_str_len() >=
         inputline_raw_str_len(0, gtd->input_len)) {

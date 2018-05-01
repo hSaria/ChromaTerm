@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -15,8 +15,8 @@ int regex_compare(regex_t *compiled_regex, char *str, char *result) {
   return TRUE;
 }
 
-// copy *string into *result, but substitute the various expressions with the
-// values they stand for.
+/* copy *string into *result, but substitute the various expressions with the
+ * values they stand for */
 void substitute(char *string, char *result) {
   char buffer[BUFFER_SIZE], *pti, *pto;
   char old[6] = {0};

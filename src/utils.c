@@ -1,8 +1,8 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
-// return: TRUE if s1 is an abbrevation of s2
+/* return: TRUE if s1 is an abbrevation of s2 */
 int is_abbrev(char *s1, char *s2) {
   if (*s1 == 0) {
     return FALSE;
@@ -84,7 +84,6 @@ void socket_printf(size_t length, char *format, ...) {
   }
 }
 
-// Used by commands
 void display_printf(char *format, ...) {
   if (gtd->quiet) {
     return;

@@ -1,8 +1,8 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
-// read and execute a command file, supports multi lines - Igor
+/* read and execute a command file, supports multi lines */
 DO_COMMAND(do_read) {
   FILE *fp;
   struct stat filedata;
@@ -212,8 +212,8 @@ DO_COMMAND(do_read) {
 
   gtd->quiet++;
 
-  // Read the first character in the output buffer and configure that as the
-  // command char
+  /* Read the first character in the output buffer and configure that as the
+   command char  */
   sprintf(temp, "{COMMAND CHAR} {%c}", bufo[0]);
   do_configure(temp);
 
@@ -229,8 +229,7 @@ DO_COMMAND(do_read) {
 
     if (strlen(bufi) >= BUFFER_SIZE) {
       gtd->quiet--;
-
-      // Only output the first 20 characters of the overflowing command
+      /* Only output the first 20 characters of the overflowing command */
       bufi[20] = 0;
       display_printf("%cERROR: {%s} - Buffer overflow at command: %s", filename,
                      bufi);
