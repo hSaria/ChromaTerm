@@ -430,8 +430,7 @@ DO_CURSOR(cursor_paste_buffer) {
 }
 
 DO_CURSOR(cursor_redraw_input) {
-  input_printf("\033[1G\033[0K%s%s\033[0K", gts->more_output,
-               gtd->input_buf);
+  input_printf("\033[1G\033[0K%s%s\033[0K", gts->more_output, gtd->input_buf);
 
   gtd->input_cur = gtd->input_len;
 
@@ -542,7 +541,7 @@ DO_CURSOR(cursor_right_word) {
   cursor_redraw_line();
 }
 
-DO_CURSOR(cursor_suspend) { suspend_handler(1); }
+DO_CURSOR(cursor_suspend) { suspend_handler(); }
 
 DO_CURSOR(cursor_test) {
   display_printf(FALSE,
