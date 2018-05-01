@@ -51,7 +51,8 @@ DO_CONFIG(config_commandchar) {
     return FALSE;
   }
 
-  char single_char[2] = {arg[0], 0};
+  char single_char[2];
+  single_char[0] = arg[0];
   update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
                    single_char, "");
   return TRUE;
