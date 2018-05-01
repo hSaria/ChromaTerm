@@ -94,7 +94,7 @@ void init_program() {
   do_configure("{COMMAND CHAR}        {#}");
   do_configure("{CONVERT META}      {OFF}");
   do_configure("{HIGHLIGHT}          {ON}");
-  gtd->quiet++;
+  gtd->quiet--;
 
   init_terminal();
 }
