@@ -37,8 +37,8 @@ DO_COMMAND(do_configure) {
         return;
       }
     }
-    display_printf("%cERROR: {%s} is not a valid option",
-                   gtd->command_char, capitalize(left));
+    display_printf("%cERROR: {%s} is not a valid option", gtd->command_char,
+                   capitalize(left));
   }
 }
 
@@ -58,9 +58,9 @@ DO_CONFIG(config_commandchar) {
 }
 
 DO_CONFIG(config_convertmeta) {
-  if (!strcasecmp(arg, "ON")) {
+  if (!strncasecmp(arg, "ON")) {
     SET_BIT(gts->flags, SES_FLAG_CONVERTMETA);
-  } else if (!strcasecmp(arg, "OFF")) {
+  } else if (!strncasecmp(arg, "OFF")) {
     DEL_BIT(gts->flags, SES_FLAG_CONVERTMETA);
   } else {
     display_printf("%cSYNTAX: %cCONFIG {%s} {ON|OFF}", gtd->command_char,
@@ -74,14 +74,29 @@ DO_CONFIG(config_convertmeta) {
 }
 
 DO_CONFIG(config_charset) {
-  if (!strcasecmp(arg, "UTF-8")) {
+  if (!strncasecmp(arg, "UTF-8")) {
     SET_BIT(gts->flags, SES_FLAG_UTF8);
-  } else if (!strcasecmp(arg, "ASCII")) {
+  } else if (!strncasecmp(arg, "ASCII")) {
     DEL_BIT(gts->flags, SES_FLAG_UTF8);
   } else {
-    display_printf("%cSYNTAX: %cCONFIG {%s} <ASCII|UTF-8>",
-                   gtd->command_char, gtd->command_char,
-                   config_table[index].name);
+    display_printf("%cSYNTAX: %cCONFIG {%s} <ASCII|UTF-8>", gtd->command_char,
+                   gtd->command_char, config_table[index].name);
+    return FALSE;
+  }
+
+  update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
+                   capitalize(arg), "");
+  return TRUE;
+}
+
+DO_CONFIG(config_highlight) {
+  if (!strncasecmp(arg, "ON")) {
+    SET_BIT(gts->flags, SES_FLAG_HIGHLIGHT);
+  } else if (!strncasecmp(arg, "OFF")) {
+    DEL_BIT(gts->flags, SES_FLAG_HIGHLIGHT);
+  } else {
+    display_printf("%cSYNTAX: %cCONFIG {%s} {ON|OFF}", gtd->command_char,
+                   gtd->command_char, config_table[index].name);
     return FALSE;
   }
 

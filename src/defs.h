@@ -63,6 +63,7 @@
 #define SES_FLAG_CONNECTED (1 << 0)
 #define SES_FLAG_CONVERTMETA (1 << 1)
 #define SES_FLAG_UTF8 (1 << 2)
+#define SES_FLAG_HIGHLIGHT (1 << 3)
 
 // Bit operations
 #define HAS_BIT(bitvector, bit) ((bitvector) & (bit))
@@ -101,7 +102,6 @@ struct session {
   int pid;
   int socket;
   int flags;
-  int input_level;
   char more_output[BUFFER_SIZE * 2];
 };
 
@@ -170,6 +170,7 @@ DO_COMMAND(do_configure);
 DO_CONFIG(config_commandchar);
 DO_CONFIG(config_convertmeta);
 DO_CONFIG(config_charset);
+DO_CONFIG(config_highlight);
 
 #endif
 

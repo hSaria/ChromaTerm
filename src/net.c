@@ -67,7 +67,9 @@ void process_mud_output(char *linebuf, int prompt) {
 
   strip_vt102_codes(linebuf, line);
 
-  do_one_line(linebuf); /* changes linebuf */
+  if (HAS_BIT(gts->flags, SES_FLAG_HIGHLIGHT)) {
+    do_one_line(linebuf); /* changes linebuf */
+  }
 
   printline(linebuf, prompt);
 }

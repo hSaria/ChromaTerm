@@ -22,6 +22,7 @@ struct config_type config_table[] = {
     {"CHARSET", "The character set encoding used", config_charset},
     {"COMMAND CHAR", "The character used for commands", config_commandchar},
     {"CONVERT META", "Convert meta and control characters", config_convertmeta},
+    {"HIGHLIGHT", "Highlight according to rules", config_highlight},
     {"", "", NULL}};
 
 struct color_type color_table[] = {

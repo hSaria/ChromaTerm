@@ -90,11 +90,12 @@ void init_program() {
 
   init_screen_size();
 
-  gts->input_level++;
+  gts->quiet++;
   do_configure("{CHARSET}         {UTF-8}");
   do_configure("{COMMAND CHAR}        {#}");
   do_configure("{CONVERT META}      {OFF}");
-  gts->input_level--;
+  do_configure("{HIGHLIGHT}         {ON}");
+  gts->quiet--;
 
   init_terminal();
 }
