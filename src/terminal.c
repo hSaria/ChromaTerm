@@ -7,7 +7,6 @@ void init_terminal() {
 
   if (tcgetattr(0, &gtd->active_terminal)) {
     perror("tcgetattr");
-
     exit(errno);
   }
 
@@ -27,7 +26,6 @@ void init_terminal() {
 
   if (tcsetattr(0, TCSANOW, &io)) {
     perror("tcsetattr");
-
     exit(errno);
   }
 }
