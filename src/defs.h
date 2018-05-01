@@ -29,6 +29,7 @@
 #define FALSE 0
 #define TRUE 1
 
+// Openning braces ignore these rules
 #define GET_ONE 0 // stop at a space
 #define GET_ALL 1 // don't stop (believing)
 

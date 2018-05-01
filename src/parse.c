@@ -31,7 +31,7 @@ char *get_arg_in_braces(char *string, char *result, int flag) {
   pto = result;
 
   if (*pti != DEFAULT_OPEN) {
-    if (!HAS_BIT(flag, GET_ALL)) {
+    if (!HAS_BIT(flag, GET_ONE)) {
       pti = get_arg_stop_spaces(pti, result);
     } else {
       pti = get_arg_all(pti, result, TRUE);

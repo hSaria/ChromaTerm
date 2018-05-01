@@ -7,8 +7,8 @@ DO_COMMAND(do_highlight) {
       temp[BUFFER_SIZE];
 
   arg = get_arg_in_braces(arg, arg1, GET_ONE);
-  arg = get_arg_in_braces(arg, arg2, GET_ALL);
-  get_arg_in_braces(arg, arg3, GET_ALL);
+  arg = get_arg_in_braces(arg, arg2, GET_ONE);
+  get_arg_in_braces(arg, arg3, GET_ONE);
 
   if (*arg3 == 0) {
     strcpy(arg3, "5");
