@@ -277,10 +277,10 @@ extern int main(int argc, char **argv);
 extern void init_program(void);
 extern void help_menu(int error, char c, char *proc_name);
 extern void quitmsg(char *message, int exit_signal);
-extern void abort_and_trap_handler(void);
-extern void pipe_handler(void);
-extern void suspend_handler(void);
-extern void winch_handler(void);
+extern void abort_and_trap_handler();
+extern void pipe_handler();
+extern void suspend_handler();
+extern void winch_handler();
 
 #endif
 
