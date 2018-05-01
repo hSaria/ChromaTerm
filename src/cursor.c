@@ -541,7 +541,7 @@ DO_CURSOR(cursor_right_word) {
   cursor_redraw_line();
 }
 
-DO_CURSOR(cursor_suspend) { suspend_handler(); }
+DO_CURSOR(cursor_suspend) { suspend_handler(1); }
 
 DO_CURSOR(cursor_test) {
   display_printf(FALSE,

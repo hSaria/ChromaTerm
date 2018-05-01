@@ -131,13 +131,18 @@ void quitmsg(char *message, int exit_signal) {
   exit(exit_signal);
 }
 
-void abort_and_trap_handler() { quitmsg("abort_and_trap_handler", 1); }
+void abort_and_trap_handler(int sig) { quitmsg("abort_and_trap_handler", sig); }
 
-void pipe_handler() {
+void pipe_handler(int sig) {
   restore_terminal();
-  display_printf(TRUE, "broken_pipe");
+  display_printf(TRUE, "broken_pipe: %i", sig);
 }
 
-void suspend_handler() { quitmsg("suspend_handler", 1); }
+void suspend_handler(int sig) { quitmsg("suspend_handler", sig); }
 
-void winch_handler() { init_screen_size(); }
+void winch_handler(int sig) {
+  if (sig) {
+    // Just to make a compiler warning shut up.
+  }
+  init_screen_size();
+}

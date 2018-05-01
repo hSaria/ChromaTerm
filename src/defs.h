@@ -277,10 +277,10 @@ int main(int argc, char **argv);
 void init_program(void);
 void help_menu(int error, char c, char *proc_name);
 void quitmsg(char *message, int exit_signal);
-void abort_and_trap_handler();
-void pipe_handler();
-void suspend_handler();
-void winch_handler();
+void abort_and_trap_handler(int sig);
+void pipe_handler(int sig);
+void suspend_handler(int sig);
+void winch_handler(int sig);
 
 #endif
 
