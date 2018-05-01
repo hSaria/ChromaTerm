@@ -4,7 +4,7 @@
 
 DO_COMMAND(do_configure) {
   char left[BUFFER_SIZE], right[BUFFER_SIZE];
-  struct listnode *node;
+  struct listnode_highlight *node;
   int index;
 
   arg = get_arg_in_braces(arg, left, GET_ONE);

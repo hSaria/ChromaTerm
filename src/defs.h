@@ -80,14 +80,14 @@
 
 // Structures
 struct listroot {
-  struct listnode **list;
+  struct listnode_highlight **list;
   int size;
   int used;
   int type;
   int update;
 };
 
-struct listnode {
+struct listnode_highlight {
   char *left;
   char *right;
   char *pr;
@@ -209,14 +209,14 @@ DO_CURSOR(cursor_test);
 #define __DATA_H__
 
 struct listroot *init_list(int type, int size);
-struct listnode *insert_node_list(struct listroot *root, char *ltext,
+struct listnode_highlight *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext);
-struct listnode *update_node_list(struct listroot *root, char *ltext,
+struct listnode_highlight *update_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext);
-struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
+struct listnode_highlight *insert_index_list(struct listroot *root, struct listnode_highlight *node,
                                    int index);
-struct listnode *search_node_list(struct listroot *root, char *text);
-void delete_node_list(int type, struct listnode *node);
+struct listnode_highlight *search_node_list(struct listroot *root, char *text);
+void delete_node_list(int type, struct listnode_highlight *node);
 void delete_node_with_wild(int index, char *string);
 void delete_index_list(struct listroot *root, int index);
 int search_index_list(struct listroot *root, char *text, char *priority);
@@ -234,7 +234,7 @@ int nsearch_list(struct listroot *root, char *text);
 DO_COMMAND(do_read);
 DO_COMMAND(do_write);
 
-void write_node(int mode, struct listnode *node, FILE *file);
+void write_node(int mode, struct listnode_highlight *node, FILE *file);
 
 #endif
 

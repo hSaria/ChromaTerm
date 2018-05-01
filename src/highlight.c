@@ -20,7 +20,7 @@ DO_COMMAND(do_highlight) {
     display_header(" %s ", list_table[LIST_HIGHLIGHT].name_multi);
 
     for (i = 0; i < gts->list[LIST_HIGHLIGHT]->used; i++) {
-      struct listnode *node = gts->list[LIST_HIGHLIGHT]->list[i];
+      struct listnode_highlight *node = gts->list[LIST_HIGHLIGHT]->list[i];
       display_printf(FALSE,
                      "%c%s "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "

@@ -301,7 +301,7 @@ DO_COMMAND(do_write) {
   show_message("#WRITE: %d COMMANDS WRITTEN TO {%s}", cnt, filename);
 }
 
-void write_node(int list, struct listnode *node, FILE *file) {
+void write_node(int list, struct listnode_highlight *node, FILE *file) {
   char result[STRING_SIZE];
 
   int llen = UMAX(20, (int)strlen(node->left));

@@ -11,7 +11,7 @@ struct listroot *init_list(int type, int size) {
     exit(1);
   }
 
-  listhead->list = (struct listnode **)calloc(size, sizeof(struct listnode *));
+  listhead->list = (struct listnode_highlight **)calloc(size, sizeof(struct listnode_highlight *));
   listhead->size = size;
   listhead->type = type;
 
@@ -19,12 +19,12 @@ struct listroot *init_list(int type, int size) {
 }
 
 // create a node and stuff it into the list in the desired order
-struct listnode *insert_node_list(struct listroot *root, char *ltext,
+struct listnode_highlight *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
   int index;
-  struct listnode *node;
+  struct listnode_highlight *node;
 
-  node = (struct listnode *)calloc(1, sizeof(struct listnode));
+  node = (struct listnode_highlight *)calloc(1, sizeof(struct listnode_highlight));
 
   node->left = strdup(ltext);
   node->right = strdup(rtext);
@@ -40,10 +40,10 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
   return insert_index_list(root, node, index);
 }
 
-struct listnode *update_node_list(struct listroot *root, char *ltext,
+struct listnode_highlight *update_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
   int index;
-  struct listnode *node;
+  struct listnode_highlight *node;
 
   index = search_index_list(root, ltext, NULL);
 
@@ -79,32 +79,32 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
   }
 }
 
-struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
+struct listnode_highlight *insert_index_list(struct listroot *root, struct listnode_highlight *node,
                                    int index) {
   root->used++;
 
   if (root->used == root->size) {
     root->size *= 2;
 
-    root->list = (struct listnode **)realloc(
-        root->list, (root->size) * sizeof(struct listnode *));
+    root->list = (struct listnode_highlight **)realloc(
+        root->list, (root->size) * sizeof(struct listnode_highlight *));
   }
 
   memmove(&root->list[index + 1], &root->list[index],
-          (root->used - index) * sizeof(struct listnode *));
+          (root->used - index) * sizeof(struct listnode_highlight *));
 
   root->list[index] = node;
 
   return node;
 }
 
-void delete_node_list(int type, struct listnode *node) {
+void delete_node_list(int type, struct listnode_highlight *node) {
   delete_index_list(gts->list[type],
                     search_index_list(gts->list[type], node->left, node->pr));
 }
 
 void delete_index_list(struct listroot *root, int index) {
-  struct listnode *node = root->list[index];
+  struct listnode_highlight *node = root->list[index];
 
   if (index <= root->update) {
     root->update--;
@@ -116,14 +116,14 @@ void delete_index_list(struct listroot *root, int index) {
   free(node);
 
   memmove(&root->list[index], &root->list[index + 1],
-          (root->used - index) * sizeof(struct listnode *));
+          (root->used - index) * sizeof(struct listnode_highlight *));
 
   root->used--;
 
   return;
 }
 
-struct listnode *search_node_list(struct listroot *root, char *text) {
+struct listnode_highlight *search_node_list(struct listroot *root, char *text) {
   int index;
 
   switch (list_table[root->type].mode) {
@@ -249,7 +249,7 @@ int nsearch_list(struct listroot *root, char *text) {
 
 void delete_node_with_wild(int type, char *text) {
   struct listroot *root = gts->list[type];
-  struct listnode *node;
+  struct listnode_highlight *node;
   char arg1[BUFFER_SIZE];
   int i, found = FALSE;
 
