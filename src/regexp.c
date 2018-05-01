@@ -11,6 +11,7 @@ int regexp_compare(char *str, char *exp, char *result) {
   }
 
   if (regexec(&regexp, str, 1, pmatch, 0) != 0) {
+    regfree(&regexp);
     return FALSE;
   }
 
@@ -18,7 +19,6 @@ int regexp_compare(char *str, char *exp, char *result) {
           &str[pmatch[0].rm_so]);
 
   regfree(&regexp);
-
   return TRUE;
 }
 
