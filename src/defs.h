@@ -33,7 +33,6 @@
 #define DEFAULT_OPEN '{'
 #define DEFAULT_CLOSE '}'
 
-#define STRING_SIZE 45000
 #define BUFFER_SIZE 20000
 
 #define ESCAPE 27
@@ -102,7 +101,6 @@ struct session {
   int pid;
   int socket;
   int flags;
-  char more_output[BUFFER_SIZE * 2];
 };
 
 struct global_data {
@@ -147,7 +145,6 @@ struct config_type {
 
 struct list_type {
   char *name;
-  char *name_multi;
   int mode;
   int args;
 };

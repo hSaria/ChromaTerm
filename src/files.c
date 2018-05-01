@@ -280,7 +280,7 @@ DO_COMMAND(do_write) {
 }
 
 void write_node(int list, struct listnode *node, FILE *file) {
-  char result[STRING_SIZE];
+  char result[BUFFER_SIZE * 2];
 
   int llen = UMAX(20, (int)strlen(node->left));
   int rlen = UMAX(25, (int)strlen(node->right));

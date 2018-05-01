@@ -70,7 +70,7 @@ void read_key(void) {
 }
 
 void read_line() {
-  char buffer[STRING_SIZE];
+  char buffer[BUFFER_SIZE * 2];
   int len, cnt, match;
 
   gtd->input_buf[gtd->input_len] = 0;
@@ -226,7 +226,7 @@ void convert_meta(char *input, char *output) {
 }
 
 void input_printf(char *format, ...) {
-  char buf[STRING_SIZE];
+  char buf[BUFFER_SIZE * 2];
   va_list args;
 
   va_start(args, format);

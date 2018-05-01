@@ -14,9 +14,8 @@ struct command_type command_table[] = {{"commands", do_commands},
                                        {"write", do_write},
                                        {"", NULL}};
 
-struct list_type list_table[LIST_MAX] = {
-    {"CONFIG", "CONFIGURATIONS", ALPHA, 2},
-    {"HIGHLIGHT", "HIGHLIGHTS", PRIORITY, 3}};
+struct list_type list_table[LIST_MAX] = {{"CONFIG", ALPHA, 2},
+                                         {"HIGHLIGHT", PRIORITY, 3}};
 
 struct config_type config_table[] = {
     {"CHARSET", "The character set encoding used", config_charset},

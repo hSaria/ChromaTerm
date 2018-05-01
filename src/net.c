@@ -63,7 +63,7 @@ void readmud() {
 }
 
 void process_mud_output(char *linebuf, int prompt) {
-  char line[STRING_SIZE];
+  char line[BUFFER_SIZE * 2];
 
   strip_vt102_codes(linebuf, line);
 

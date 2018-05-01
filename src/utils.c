@@ -23,7 +23,7 @@ char *capitalize(char *str) {
 }
 
 int cat_sprintf(char *dest, char *fmt, ...) {
-  char buf[STRING_SIZE];
+  char buf[BUFFER_SIZE * 2];
   int size;
 
   va_list args;
@@ -38,7 +38,7 @@ int cat_sprintf(char *dest, char *fmt, ...) {
 }
 
 void ins_sprintf(char *dest, char *fmt, ...) {
-  char buf[STRING_SIZE], tmp[STRING_SIZE];
+  char buf[BUFFER_SIZE * 2], tmp[BUFFER_SIZE * 2];
 
   va_list args;
 
@@ -72,7 +72,7 @@ void display_header(char *format, ...) {
 }
 
 void socket_printf(size_t length, char *format, ...) {
-  char buf[STRING_SIZE];
+  char buf[BUFFER_SIZE * 2];
   va_list args;
 
   va_start(args, format);
@@ -90,7 +90,7 @@ void display_printf(char *format, ...) {
     return;
   }
 
-  char buf[STRING_SIZE];
+  char buf[BUFFER_SIZE * 2];
   va_list args;
 
   va_start(args, format);
@@ -101,7 +101,7 @@ void display_printf(char *format, ...) {
 }
 
 void printline(char *str, int prompt) {
-  char wrapped_str[STRING_SIZE];
+  char wrapped_str[BUFFER_SIZE * 2];
 
   if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA)) {
     convert_meta(str, wrapped_str);
