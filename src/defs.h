@@ -17,7 +17,7 @@
 
 #include "config.h"
 
-#ifdef HAVE_PTY_H
+#ifdef HAVE_FORKPTY
 #include <pty.h>
 #else
 #ifdef HAVE_UTIL_H

@@ -68,6 +68,8 @@ int main(int argc, char **argv) {
   }
 
   mainloop();
+
+  return 0;
 }
 
 void init_program() {
