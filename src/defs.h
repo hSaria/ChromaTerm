@@ -11,8 +11,17 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <util.h>
 #include <wordexp.h>
+
+#include "config.h"
+
+#ifdef HAVE_PTY_H
+#include <pty.h>
+#else
+#ifdef HAVE_UTIL_H
+#include <util.h>
+#endif
+#endif
 
 #ifndef __DEFS_H__
 #define __DEFS_H__
