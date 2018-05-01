@@ -165,105 +165,105 @@ struct cursor_type {
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-extern DO_COMMAND(do_configure);
-extern DO_CONFIG(config_commandchar);
-extern DO_CONFIG(config_convertmeta);
-extern DO_CONFIG(config_charset);
+DO_COMMAND(do_configure);
+DO_CONFIG(config_commandchar);
+DO_CONFIG(config_convertmeta);
+DO_CONFIG(config_charset);
 
 #endif
 
 #ifndef __CURSOR_H__
 #define __CURSOR_H__
 
-extern DO_CURSOR(cursor_backspace);
-extern DO_CURSOR(cursor_check_line);
-extern DO_CURSOR(cursor_check_line_modified);
-extern DO_CURSOR(cursor_clear_left);
-extern DO_CURSOR(cursor_clear_line);
-extern DO_CURSOR(cursor_clear_right);
-extern DO_CURSOR(cursor_convert_meta);
-extern DO_CURSOR(cursor_delete);
-extern DO_CURSOR(cursor_delete_or_exit);
-extern DO_CURSOR(cursor_delete_word_left);
-extern DO_CURSOR(cursor_delete_word_right);
-extern DO_CURSOR(cursor_echo_on);
-extern DO_CURSOR(cursor_echo_off);
-extern DO_CURSOR(cursor_end);
-extern DO_CURSOR(cursor_enter);
-extern DO_CURSOR(cursor_exit);
-extern DO_CURSOR(cursor_home);
-extern DO_CURSOR(cursor_insert);
-extern DO_CURSOR(cursor_left);
-extern DO_CURSOR(cursor_left_word);
-extern DO_CURSOR(cursor_paste_buffer);
-extern DO_CURSOR(cursor_redraw_input);
-extern DO_CURSOR(cursor_redraw_line);
-extern DO_CURSOR(cursor_right);
-extern DO_CURSOR(cursor_right_word);
-extern DO_CURSOR(cursor_suspend);
-extern DO_CURSOR(cursor_test);
+DO_CURSOR(cursor_backspace);
+DO_CURSOR(cursor_check_line);
+DO_CURSOR(cursor_check_line_modified);
+DO_CURSOR(cursor_clear_left);
+DO_CURSOR(cursor_clear_line);
+DO_CURSOR(cursor_clear_right);
+DO_CURSOR(cursor_convert_meta);
+DO_CURSOR(cursor_delete);
+DO_CURSOR(cursor_delete_or_exit);
+DO_CURSOR(cursor_delete_word_left);
+DO_CURSOR(cursor_delete_word_right);
+DO_CURSOR(cursor_echo_on);
+DO_CURSOR(cursor_echo_off);
+DO_CURSOR(cursor_end);
+DO_CURSOR(cursor_enter);
+DO_CURSOR(cursor_exit);
+DO_CURSOR(cursor_home);
+DO_CURSOR(cursor_insert);
+DO_CURSOR(cursor_left);
+DO_CURSOR(cursor_left_word);
+DO_CURSOR(cursor_paste_buffer);
+DO_CURSOR(cursor_redraw_input);
+DO_CURSOR(cursor_redraw_line);
+DO_CURSOR(cursor_right);
+DO_CURSOR(cursor_right_word);
+DO_CURSOR(cursor_suspend);
+DO_CURSOR(cursor_test);
 
 #endif
 
 #ifndef __DATA_H__
 #define __DATA_H__
 
-extern struct listroot *init_list(int type, int size);
-extern struct listnode *insert_node_list(struct listroot *root, char *ltext,
-                                         char *rtext, char *prtext);
-extern struct listnode *update_node_list(struct listroot *root, char *ltext,
-                                         char *rtext, char *prtext);
-extern struct listnode *insert_index_list(struct listroot *root,
-                                          struct listnode *node, int index);
-extern struct listnode *search_node_list(struct listroot *root, char *text);
-extern void delete_node_list(int type, struct listnode *node);
-extern void delete_node_with_wild(int index, char *string);
-extern void delete_index_list(struct listroot *root, int index);
-extern int search_index_list(struct listroot *root, char *text, char *priority);
-extern int locate_index_list(struct listroot *root, char *text, char *priority);
-extern int bsearch_alpha_list(struct listroot *root, char *text, int seek);
-extern int bsearch_priority_list(struct listroot *root, char *text,
-                                 char *priority, int seek);
-extern int nsearch_list(struct listroot *root, char *text);
+struct listroot *init_list(int type, int size);
+struct listnode *insert_node_list(struct listroot *root, char *ltext,
+                                  char *rtext, char *prtext);
+struct listnode *update_node_list(struct listroot *root, char *ltext,
+                                  char *rtext, char *prtext);
+struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
+                                   int index);
+struct listnode *search_node_list(struct listroot *root, char *text);
+void delete_node_list(int type, struct listnode *node);
+void delete_node_with_wild(int index, char *string);
+void delete_index_list(struct listroot *root, int index);
+int search_index_list(struct listroot *root, char *text, char *priority);
+int locate_index_list(struct listroot *root, char *text, char *priority);
+int bsearch_alpha_list(struct listroot *root, char *text, int seek);
+int bsearch_priority_list(struct listroot *root, char *text, char *priority,
+                          int seek);
+int nsearch_list(struct listroot *root, char *text);
 
 #endif
 
 #ifndef __FILES_H__
 #define __FILES_H__
 
-extern DO_COMMAND(do_read);
-extern DO_COMMAND(do_write);
+DO_COMMAND(do_read);
+DO_COMMAND(do_write);
 
-extern void write_node(int mode, struct listnode *node, FILE *file);
+void write_node(int mode, struct listnode *node, FILE *file);
 
 #endif
 
 #ifndef __HELP_H__
 #define __HELP_H__
 
-extern DO_COMMAND(do_help);
+DO_COMMAND(do_help);
 
 #endif
 
 #ifndef __HIGHLIGHT_H__
 #define __HIGHLIGHT_H__
 
-extern DO_COMMAND(do_highlight);
-extern DO_COMMAND(do_unhighlight);
+DO_COMMAND(do_highlight);
+DO_COMMAND(do_unhighlight);
 
-extern void check_all_highlights(char *original, char *line);
-extern int get_highlight_codes(char *htype, char *result);
+void check_all_highlights(char *original, char *line);
+int get_highlight_codes(char *htype, char *result);
 
 #endif
 
 #ifndef __INPUT_H__
 #define __INPUT_H__
 
-extern void process_input(void);
-extern void read_key(void);
-extern void read_line(void);
-extern void convert_meta(char *input, char *output);
-extern void input_printf(char *format, ...);
+void process_input(void);
+void read_key(void);
+void read_line(void);
+void convert_meta(char *input, char *output);
+void input_printf(char *format, ...);
 
 #endif
 
@@ -273,60 +273,60 @@ extern void input_printf(char *format, ...);
 extern struct session *gts;
 extern struct global_data *gtd;
 
-extern int main(int argc, char **argv);
-extern void init_program(void);
-extern void help_menu(int error, char c, char *proc_name);
-extern void quitmsg(char *message, int exit_signal);
-extern void abort_and_trap_handler();
-extern void pipe_handler();
-extern void suspend_handler();
-extern void winch_handler();
+int main(int argc, char **argv);
+void init_program(void);
+void help_menu(int error, char c, char *proc_name);
+void quitmsg(char *message, int exit_signal);
+void abort_and_trap_handler();
+void pipe_handler();
+void suspend_handler();
+void winch_handler();
 
 #endif
 
 #ifndef __MISC_H__
 #define __MISC_H__
 
-extern DO_COMMAND(do_commands);
-extern DO_COMMAND(do_exit);
-extern DO_COMMAND(do_run);
+DO_COMMAND(do_commands);
+DO_COMMAND(do_exit);
+DO_COMMAND(do_run);
 
 #endif
 
 #ifndef __NET_H__
 #define __NET_H__
 
-extern void write_line_socket(char *line, int size);
-extern int read_buffer_mud(void);
-extern void readmud(void);
-extern void process_mud_output(char *linebuf, int prompt);
+void write_line_socket(char *line, int size);
+int read_buffer_mud(void);
+void readmud(void);
+void process_mud_output(char *linebuf, int prompt);
 
 #endif
 
 #ifndef __PARSE_H__
 #define __PARSE_H__
 
-extern char *get_arg_all(char *string, char *result, int with_spaces);
-extern char *get_arg_in_braces(char *string, char *result, int flag);
-extern char *get_arg_stop_spaces(char *string, char *result);
-extern char *space_out(char *string);
-extern void do_one_line(char *line);
+char *get_arg_all(char *string, char *result, int with_spaces);
+char *get_arg_in_braces(char *string, char *result, int flag);
+char *get_arg_stop_spaces(char *string, char *result);
+char *space_out(char *string);
+void do_one_line(char *line);
 
 #endif
 
 #ifndef __REGEXP_H__
 #define __REGEXP_H__
 
-extern void substitute(char *string, char *result);
-extern int regexp_compare(char *str, char *exp, char *result);
+void substitute(char *string, char *result);
+int regexp_compare(char *str, char *exp, char *result);
 
 #endif
 
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
-extern struct session *new_session(int pid, int socket);
-extern void cleanup_session(void);
+struct session *new_session(int pid, int socket);
+void cleanup_session(void);
 
 #endif
 
@@ -344,53 +344,53 @@ extern struct list_type list_table[LIST_MAX];
 #ifndef __TERMINAL_H__
 #define __TERMINAL_H__
 
-extern void init_terminal(void);
-extern void restore_terminal(void);
-extern void init_screen_size(void);
-extern int get_scroll_size(void);
+void init_terminal(void);
+void restore_terminal(void);
+void init_screen_size(void);
+int get_scroll_size(void);
 
 #endif
 
 #ifndef __TOKENIZE_H__
 #define __TOKENIZE_H__
 
-extern void script_driver(char *str);
+void script_driver(char *str);
 
 #endif
 
 #ifndef __UPDATE_H__
 #define __UPDATE_H__
 
-extern void mainloop(void);
-extern void poll_input(void);
-extern void poll_sessions(void);
+void mainloop(void);
+void poll_input(void);
+void poll_sessions(void);
 
 #endif
 
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-extern int is_abbrev(char *s1, char *s2);
-extern char *capitalize(char *str);
-extern int cat_sprintf(char *dest, char *fmt, ...);
-extern void ins_sprintf(char *dest, char *fmt, ...);
-extern void syserr(char *msg);
-extern void show_message(char *format, ...);
-extern void display_header(char *format, ...);
-extern void socket_printf(size_t length, char *format, ...);
-extern void display_printf(int came_from_command, char *format, ...);
-extern void display_puts(int came_from_mud, int with_color, char *string);
-extern void printline(char *str, int isaprompt);
+int is_abbrev(char *s1, char *s2);
+char *capitalize(char *str);
+int cat_sprintf(char *dest, char *fmt, ...);
+void ins_sprintf(char *dest, char *fmt, ...);
+void syserr(char *msg);
+void show_message(char *format, ...);
+void display_header(char *format, ...);
+void socket_printf(size_t length, char *format, ...);
+void display_printf(int came_from_command, char *format, ...);
+void display_puts(int came_from_mud, int with_color, char *string);
+void printline(char *str, int isaprompt);
 
 #endif
 
 #ifndef __VT102_H__
 #define __VT102_H__
 
-extern int skip_vt102_codes(char *str);
-extern void strip_vt102_codes(char *str, char *buf);
-extern void get_color_codes(char *old, char *str, char *buf);
-extern int find_non_color_codes(char *str);
-extern int strip_vt102_strlen(char *str);
+int skip_vt102_codes(char *str);
+void strip_vt102_codes(char *str, char *buf);
+void get_color_codes(char *old, char *str, char *buf);
+int find_non_color_codes(char *str);
+int strip_vt102_strlen(char *str);
 
 #endif
