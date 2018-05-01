@@ -9,7 +9,6 @@ DO_COMMAND(do_read) {
   char *bufi, *bufo, filename[BUFFER_SIZE], temp[BUFFER_SIZE], *pti, *pto,
       last = 0;
   int lvl, cnt, com, lnc, fix, ok;
-  int counter[LIST_MAX];
   wordexp_t p;
 
   get_arg_in_braces(arg, filename, GET_ALL);
@@ -45,10 +44,6 @@ DO_COMMAND(do_read) {
   }
 
   ungetc(temp[0], fp);
-
-  for (cnt = 0; cnt < LIST_MAX; cnt++) {
-    counter[cnt] = gts->list[cnt]->used;
-  }
 
   stat(filename, &filedata);
 
