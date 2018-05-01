@@ -34,6 +34,9 @@ install: ct
 	-mkdir -p $(bindir)
 	cp ct $(bindir)
 
+uninstall:
+	rm -f $(bindir)/ct
+
 # Autocompile all .c files into .o files using this rule:
 .c.o:
 	$(CC) $(CFLAGS) -c $<
