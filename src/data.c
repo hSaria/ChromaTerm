@@ -26,9 +26,11 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
 
   node = (struct listnode *)calloc(1, sizeof(struct listnode));
 
-  node->left = strdup(ltext);
-  node->right = strdup(rtext);
-  node->pr = strdup(prtext);
+  strcpy(node->left, ltext);
+  strcpy(node->right, rtext);
+  if (list_table[root->type].mode == PRIORITY) {
+    strcpy(node->pr, prtext);
+  }
 
   if (root->type == LIST_HIGHLIGHT) {
     if (regcomp(&compiled_regex, ltext, REG_EXTENDED | REG_NEWLINE) != 0) {
@@ -53,27 +55,14 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
     node = root->list[index];
 
     if (strcmp(node->right, rtext) != 0) {
-      free(node->right);
-      node->right = strdup(rtext);
+      strcpy(node->right, rtext);
     }
 
-    switch (list_table[root->type].mode) {
-    case PRIORITY: /* Highlight */
+    if (list_table[root->type].mode == PRIORITY) {
       if (atof(node->pr) != atof(prtext)) {
         delete_index_list(root, index);
         return insert_node_list(root, ltext, rtext, prtext);
       }
-      break;
-    case ALPHA: /* Config */
-      if (strcmp(node->pr, prtext) != 0) {
-        free(node->pr);
-        node->pr = strdup(prtext);
-      }
-      break;
-    default:
-      display_printf("%cBUG: update_node_list: unknown mode: %d",
-                     gtd->command_char, list_table[root->type].mode);
-      break;
     }
     return node;
   } else {
@@ -103,13 +92,6 @@ struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
 void delete_index_list(struct listroot *root, int index) {
   struct listnode *node = root->list[index];
 
-  if (index <= root->update) {
-    root->update--;
-  }
-
-  free(node->left);
-  free(node->right);
-  free(node->pr);
   regfree(&node->compiled_regex);
   free(node);
 
@@ -117,8 +99,6 @@ void delete_index_list(struct listroot *root, int index) {
           (root->used - index) * sizeof(struct listnode *));
 
   root->used--;
-
-  return;
 }
 
 struct listnode *search_node_list(struct listroot *root, char *text) {

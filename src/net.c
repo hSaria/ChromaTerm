@@ -2,30 +2,15 @@
 
 #include "defs.h"
 
-void write_line_socket(char *line, int size) {
-  static int retry;
+void process_mud_output(char *linebuf, int prompt) {
+  char line[BUFFER_SIZE];
+  strcpy(line, linebuf);
 
-  if (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
-    display_printf("%cERROR: No child process. Use %cRUN {PROCESS}",
-                   gtd->command_char, gtd->command_char);
-    return;
+  if (HAS_BIT(gts->flags, SES_FLAG_HIGHLIGHT)) {
+    check_all_highlights(line);
   }
 
-  if (write(gts->socket, line, size) == -1) {
-    if (retry++ < 10) {
-      usleep(100000);
-
-      write_line_socket(line, size);
-
-      return;
-    }
-    perror("write in write_line_socket");
-    quitmsg(NULL, 74);
-
-    return;
-  }
-
-  retry = 0;
+  printline(line, prompt);
 }
 
 int read_buffer_mud() {
@@ -62,13 +47,28 @@ void readmud() {
   }
 }
 
-void process_mud_output(char *linebuf, int prompt) {
-  char line[BUFFER_SIZE];
-  strcpy(line, linebuf);
+void write_line_socket(char *line, int size) {
+  static int retry;
 
-  if (HAS_BIT(gts->flags, SES_FLAG_HIGHLIGHT)) {
-    check_all_highlights(line);
+  if (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
+    display_printf("%cERROR: No child process. Use %cRUN {PROCESS}",
+                   gtd->command_char, gtd->command_char);
+    return;
   }
 
-  printline(line, prompt);
+  if (write(gts->socket, line, size) == -1) {
+    if (retry++ < 10) {
+      usleep(100000);
+
+      write_line_socket(line, size);
+
+      return;
+    }
+    perror("write in write_line_socket");
+    quitmsg(NULL, 74);
+
+    return;
+  }
+
+  retry = 0;
 }

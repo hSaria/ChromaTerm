@@ -2,6 +2,87 @@
 
 #include "defs.h"
 
+void convert_meta(char *input, char *output) {
+  char *pti, *pto;
+
+  DEL_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR);
+
+  pti = input;
+  pto = output;
+
+  while (*pti) {
+    switch (*pti) {
+    case ESCAPE:
+      *pto++ = '\\';
+      *pto++ = 'e';
+      pti++;
+      break;
+
+    case 127:
+      *pto++ = '\\';
+      *pto++ = 'b';
+      pti++;
+      break;
+
+    case '\a':
+      *pto++ = '\\';
+      *pto++ = 'a';
+      pti++;
+      break;
+
+    case '\b':
+      *pto++ = '\\';
+      *pto++ = 'b';
+      pti++;
+      break;
+
+    case '\t':
+      *pto++ = '\\';
+      *pto++ = 't';
+      pti++;
+      break;
+
+    case '\r':
+      *pto++ = '\\';
+      *pto++ = 'r';
+      pti++;
+      break;
+
+    case '\n':
+      *pto++ = *pti++;
+      break;
+
+    default:
+      if (*pti > 0 && *pti < 32) {
+        *pto++ = '\\';
+        *pto++ = 'c';
+        if (*pti <= 26) {
+          *pto++ = 'a' + *pti - 1;
+        } else {
+          *pto++ = 'A' + *pti - 1;
+        }
+        pti++;
+        break;
+      } else {
+        *pto++ = *pti++;
+      }
+      break;
+    }
+  }
+  *pto = 0;
+}
+
+void input_printf(char *format, ...) {
+  char buf[BUFFER_SIZE * 2];
+  va_list args;
+
+  va_start(args, format);
+  vsprintf(buf, format, args);
+  va_end(args);
+
+  printf("%s", buf);
+}
+
 void process_input(void) {
   read_key();
 
@@ -154,85 +235,4 @@ void read_line() {
       break;
     }
   }
-}
-
-void convert_meta(char *input, char *output) {
-  char *pti, *pto;
-
-  DEL_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR);
-
-  pti = input;
-  pto = output;
-
-  while (*pti) {
-    switch (*pti) {
-    case ESCAPE:
-      *pto++ = '\\';
-      *pto++ = 'e';
-      pti++;
-      break;
-
-    case 127:
-      *pto++ = '\\';
-      *pto++ = 'b';
-      pti++;
-      break;
-
-    case '\a':
-      *pto++ = '\\';
-      *pto++ = 'a';
-      pti++;
-      break;
-
-    case '\b':
-      *pto++ = '\\';
-      *pto++ = 'b';
-      pti++;
-      break;
-
-    case '\t':
-      *pto++ = '\\';
-      *pto++ = 't';
-      pti++;
-      break;
-
-    case '\r':
-      *pto++ = '\\';
-      *pto++ = 'r';
-      pti++;
-      break;
-
-    case '\n':
-      *pto++ = *pti++;
-      break;
-
-    default:
-      if (*pti > 0 && *pti < 32) {
-        *pto++ = '\\';
-        *pto++ = 'c';
-        if (*pti <= 26) {
-          *pto++ = 'a' + *pti - 1;
-        } else {
-          *pto++ = 'A' + *pti - 1;
-        }
-        pti++;
-        break;
-      } else {
-        *pto++ = *pti++;
-      }
-      break;
-    }
-  }
-  *pto = 0;
-}
-
-void input_printf(char *format, ...) {
-  char buf[BUFFER_SIZE * 2];
-  va_list args;
-
-  va_start(args, format);
-  vsprintf(buf, format, args);
-  va_end(args);
-
-  printf("%s", buf);
 }

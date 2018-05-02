@@ -17,7 +17,7 @@ DO_COMMAND(do_configure) {
       node = search_node_list(gts->list[LIST_CONFIG], config_table[index].name);
 
       if (node) {
-        display_printf("[%-14s] [%9s] [%s]", node->left, node->right,
+        display_printf("[%-14s] [%6s] [%s]", node->left, node->right,
                        config_table[index].description);
       }
     }
@@ -42,9 +42,23 @@ DO_COMMAND(do_configure) {
   }
 }
 
-DO_CONFIG(config_commandchar) {
-  char single_char[2];
+DO_CONFIG(config_charset) {
+  if (!strcasecmp(arg, "UTF-8")) {
+    SET_BIT(gts->flags, SES_FLAG_UTF8);
+  } else if (!strcasecmp(arg, "ASCII")) {
+    DEL_BIT(gts->flags, SES_FLAG_UTF8);
+  } else {
+    display_printf("%cSYNTAX: %cCONFIG {%s} <ASCII|UTF-8>", gtd->command_char,
+                   gtd->command_char, config_table[index].name);
+    return FALSE;
+  }
 
+  update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
+                   capitalize(arg), "");
+  return TRUE;
+}
+
+DO_CONFIG(config_commandchar) {
   if (arg[0]) {
     gtd->command_char = arg[0];
   } else {
@@ -53,9 +67,8 @@ DO_CONFIG(config_commandchar) {
     return FALSE;
   }
 
-  single_char[0] = arg[0];
-  update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
-                   single_char, "");
+  arg[1] = '\0';
+  update_node_list(gts->list[LIST_CONFIG], config_table[index].name, arg, "");
   return TRUE;
 }
 
@@ -66,22 +79,6 @@ DO_CONFIG(config_convertmeta) {
     DEL_BIT(gts->flags, SES_FLAG_CONVERTMETA);
   } else {
     display_printf("%cSYNTAX: %cCONFIG {%s} {ON|OFF}", gtd->command_char,
-                   gtd->command_char, config_table[index].name);
-    return FALSE;
-  }
-
-  update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
-                   capitalize(arg), "");
-  return TRUE;
-}
-
-DO_CONFIG(config_charset) {
-  if (!strcasecmp(arg, "UTF-8")) {
-    SET_BIT(gts->flags, SES_FLAG_UTF8);
-  } else if (!strcasecmp(arg, "ASCII")) {
-    DEL_BIT(gts->flags, SES_FLAG_UTF8);
-  } else {
-    display_printf("%cSYNTAX: %cCONFIG {%s} <ASCII|UTF-8>", gtd->command_char,
                    gtd->command_char, config_table[index].name);
     return FALSE;
   }
