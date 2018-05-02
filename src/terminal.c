@@ -2,6 +2,20 @@
 
 #include "defs.h"
 
+int get_scroll_size() { return gts->rows; }
+
+void init_screen_size() {
+  struct winsize screen;
+
+  if (ioctl(0, TIOCGWINSZ, &screen) == -1) {
+    gts->rows = SCREEN_HEIGHT;
+    gts->cols = SCREEN_WIDTH;
+  } else {
+    gts->rows = screen.ws_row;
+    gts->cols = screen.ws_col;
+  }
+}
+
 void init_terminal() {
   struct termios io;
 
@@ -30,17 +44,3 @@ void init_terminal() {
 }
 
 void restore_terminal(void) { tcsetattr(0, TCSANOW, &gtd->active_terminal); }
-
-void init_screen_size() {
-  struct winsize screen;
-
-  if (ioctl(0, TIOCGWINSZ, &screen) == -1) {
-    gts->rows = SCREEN_HEIGHT;
-    gts->cols = SCREEN_WIDTH;
-  } else {
-    gts->rows = screen.ws_row;
-    gts->cols = screen.ws_col;
-  }
-}
-
-int get_scroll_size() { return gts->rows; }

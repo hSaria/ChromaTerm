@@ -223,14 +223,6 @@ DO_CURSOR(cursor_convert_meta) {
   SET_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR);
 }
 
-DO_CURSOR(cursor_delete_or_exit) {
-  if (gtd->input_len == 0) {
-    cursor_exit();
-  } else {
-    cursor_delete();
-  }
-}
-
 DO_CURSOR(cursor_delete) {
   if (gtd->input_len == 0) {
     return;
@@ -262,6 +254,14 @@ DO_CURSOR(cursor_delete) {
     cursor_redraw_line();
   } else {
     input_printf("\033[1P");
+  }
+}
+
+DO_CURSOR(cursor_delete_or_exit) {
+  if (gtd->input_len == 0) {
+    cursor_exit();
+  } else {
+    cursor_delete();
   }
 }
 

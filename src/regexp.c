@@ -15,7 +15,7 @@ int regex_compare(regex_t *compiled_regex, char *str, char *result) {
   return TRUE;
 }
 
-/* copy *string into *result, but substitute the various expressions with the
+/* copy *string into *result, but substitute the various colors with the
  * values they stand for */
 void substitute(char *string, char *result) {
   char buffer[BUFFER_SIZE], *pti, *pto;

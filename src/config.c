@@ -42,6 +42,22 @@ DO_COMMAND(do_configure) {
   }
 }
 
+DO_CONFIG(config_charset) {
+  if (!strcasecmp(arg, "UTF-8")) {
+    SET_BIT(gts->flags, SES_FLAG_UTF8);
+  } else if (!strcasecmp(arg, "ASCII")) {
+    DEL_BIT(gts->flags, SES_FLAG_UTF8);
+  } else {
+    display_printf("%cSYNTAX: %cCONFIG {%s} <ASCII|UTF-8>", gtd->command_char,
+                   gtd->command_char, config_table[index].name);
+    return FALSE;
+  }
+
+  update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
+                   capitalize(arg), "");
+  return TRUE;
+}
+
 DO_CONFIG(config_commandchar) {
   if (arg[0]) {
     gtd->command_char = arg[0];
@@ -63,22 +79,6 @@ DO_CONFIG(config_convertmeta) {
     DEL_BIT(gts->flags, SES_FLAG_CONVERTMETA);
   } else {
     display_printf("%cSYNTAX: %cCONFIG {%s} {ON|OFF}", gtd->command_char,
-                   gtd->command_char, config_table[index].name);
-    return FALSE;
-  }
-
-  update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
-                   capitalize(arg), "");
-  return TRUE;
-}
-
-DO_CONFIG(config_charset) {
-  if (!strcasecmp(arg, "UTF-8")) {
-    SET_BIT(gts->flags, SES_FLAG_UTF8);
-  } else if (!strcasecmp(arg, "ASCII")) {
-    DEL_BIT(gts->flags, SES_FLAG_UTF8);
-  } else {
-    display_printf("%cSYNTAX: %cCONFIG {%s} <ASCII|UTF-8>", gtd->command_char,
                    gtd->command_char, config_table[index].name);
     return FALSE;
   }

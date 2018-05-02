@@ -95,7 +95,6 @@ struct listroot {
   int size;
   int used;
   int type;
-  int update;
 };
 
 struct listnode {
@@ -175,9 +174,9 @@ struct cursor_type {
 #define __CONFIG_H__
 
 DO_COMMAND(do_configure);
+DO_CONFIG(config_charset);
 DO_CONFIG(config_commandchar);
 DO_CONFIG(config_convertmeta);
-DO_CONFIG(config_charset);
 DO_CONFIG(config_highlight);
 
 #endif
@@ -196,8 +195,6 @@ DO_CURSOR(cursor_delete);
 DO_CURSOR(cursor_delete_or_exit);
 DO_CURSOR(cursor_delete_word_left);
 DO_CURSOR(cursor_delete_word_right);
-DO_CURSOR(cursor_echo_on);
-DO_CURSOR(cursor_echo_off);
 DO_CURSOR(cursor_end);
 DO_CURSOR(cursor_enter);
 DO_CURSOR(cursor_exit);
@@ -268,11 +265,11 @@ int get_highlight_codes(char *htype, char *result);
 #ifndef __INPUT_H__
 #define __INPUT_H__
 
+void convert_meta(char *input, char *output);
+void input_printf(char *format, ...);
 void process_input(void);
 void read_key(void);
 void read_line(void);
-void convert_meta(char *input, char *output);
-void input_printf(char *format, ...);
 
 #endif
 
@@ -305,10 +302,10 @@ DO_COMMAND(do_run);
 #ifndef __NET_H__
 #define __NET_H__
 
-void write_line_socket(char *line, int size);
+void process_mud_output(char *linebuf, int prompt);
 int read_buffer_mud(void);
 void readmud(void);
-void process_mud_output(char *linebuf, int prompt);
+void write_line_socket(char *line, int size);
 
 #endif
 
@@ -325,16 +322,16 @@ char *space_out(char *string);
 #ifndef __REGEXP_H__
 #define __REGEXP_H__
 
-void substitute(char *string, char *result);
 int regex_compare(regex_t *compiled_regex, char *str, char *result);
+void substitute(char *string, char *result);
 
 #endif
 
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
-struct session *new_session(int pid, int socket);
 void cleanup_session(void);
+struct session *new_session(int pid, int socket);
 
 #endif
 
@@ -352,10 +349,10 @@ extern struct list_type list_table[LIST_MAX];
 #ifndef __TERMINAL_H__
 #define __TERMINAL_H__
 
-void init_terminal(void);
-void restore_terminal(void);
-void init_screen_size(void);
 int get_scroll_size(void);
+void init_terminal(void);
+void init_screen_size(void);
+void restore_terminal(void);
 
 #endif
 
@@ -378,23 +375,23 @@ void poll_sessions(void);
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-int is_abbrev(char *s1, char *s2);
 char *capitalize(char *str);
 int cat_sprintf(char *dest, char *fmt, ...);
-void ins_sprintf(char *dest, char *fmt, ...);
 void display_header(char *format, ...);
-void socket_printf(unsigned int length, char *format, ...);
 void display_printf(char *format, ...);
+void ins_sprintf(char *dest, char *fmt, ...);
+int is_abbrev(char *s1, char *s2);
 void printline(char *str, int isaprompt);
+void socket_printf(unsigned int length, char *format, ...);
 
 #endif
 
 #ifndef __VT102_H__
 #define __VT102_H__
 
+int find_non_color_codes(char *str);
+void get_color_codes(char *old, char *str, char *buf);
 int skip_vt102_codes(char *str);
 void strip_vt102_codes(char *str, char *buf);
-void get_color_codes(char *old, char *str, char *buf);
-int find_non_color_codes(char *str);
 
 #endif

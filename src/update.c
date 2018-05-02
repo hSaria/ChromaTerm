@@ -57,24 +57,22 @@ void poll_sessions(void) {
   fd_set readfds;
   static struct timeval to;
 
-  if (gts) {
-    FD_ZERO(&readfds);
+  FD_ZERO(&readfds);
 
-    if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
-      while (TRUE) {
-        FD_SET(gts->socket, &readfds);
+  if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
+    while (TRUE) {
+      FD_SET(gts->socket, &readfds);
 
-        if (select(FD_SETSIZE, &readfds, NULL, NULL, &to) <= 0) {
-          break;
-        }
+      if (select(FD_SETSIZE, &readfds, NULL, NULL, &to) <= 0) {
+        break;
+      }
 
-        if (read_buffer_mud() == FALSE) {
-          quitmsg(NULL, 0);
-        }
+      if (read_buffer_mud() == FALSE) {
+        quitmsg(NULL, 0);
+      }
 
-        if (gtd->mud_output_len) {
-          readmud();
-        }
+      if (gtd->mud_output_len) {
+        readmud();
       }
     }
   }

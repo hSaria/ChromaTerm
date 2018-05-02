@@ -2,14 +2,6 @@
 
 #include "defs.h"
 
-/* return: TRUE if s1 is an abbrevation of s2 */
-int is_abbrev(char *s1, char *s2) {
-  if (*s1 == 0) {
-    return FALSE;
-  }
-  return !strncasecmp(s2, s1, strlen(s1));
-}
-
 char *capitalize(char *str) {
   static char outbuf[BUFFER_SIZE];
   int cnt;
@@ -37,20 +29,6 @@ int cat_sprintf(char *dest, char *fmt, ...) {
   return size;
 }
 
-void ins_sprintf(char *dest, char *fmt, ...) {
-  char buf[BUFFER_SIZE * 2], tmp[BUFFER_SIZE * 2];
-
-  va_list args;
-
-  va_start(args, fmt);
-  vsprintf(buf, fmt, args);
-  va_end(args);
-
-  strcpy(tmp, dest);
-  strcpy(dest, buf);
-  strcat(dest, tmp);
-}
-
 void display_header(char *format, ...) {
   char arg[BUFFER_SIZE], buf[BUFFER_SIZE];
   va_list args;
@@ -71,19 +49,6 @@ void display_header(char *format, ...) {
   display_printf(buf);
 }
 
-void socket_printf(unsigned int length, char *format, ...) {
-  char buf[BUFFER_SIZE * 2];
-  va_list args;
-
-  va_start(args, format);
-  vsprintf(buf, format, args);
-  va_end(args);
-
-  if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
-    write(gts->socket, buf, length);
-  }
-}
-
 void display_printf(char *format, ...) {
   if (gtd->quiet) {
     return;
@@ -99,6 +64,28 @@ void display_printf(char *format, ...) {
   printline(buf, FALSE);
 }
 
+void ins_sprintf(char *dest, char *fmt, ...) {
+  char buf[BUFFER_SIZE * 2], tmp[BUFFER_SIZE * 2];
+
+  va_list args;
+
+  va_start(args, fmt);
+  vsprintf(buf, fmt, args);
+  va_end(args);
+
+  strcpy(tmp, dest);
+  strcpy(dest, buf);
+  strcat(dest, tmp);
+}
+
+/* return: TRUE if s1 is an abbrevation of s2 */
+int is_abbrev(char *s1, char *s2) {
+  if (*s1 == 0) {
+    return FALSE;
+  }
+  return !strncasecmp(s2, s1, strlen(s1));
+}
+
 void printline(char *str, int prompt) {
   char wrapped_str[BUFFER_SIZE * 2];
 
@@ -110,5 +97,18 @@ void printline(char *str, int prompt) {
   printf("%s", wrapped_str);
   if (!prompt) {
     printf("\n");
+  }
+}
+
+void socket_printf(unsigned int length, char *format, ...) {
+  char buf[BUFFER_SIZE * 2];
+  va_list args;
+
+  va_start(args, format);
+  vsprintf(buf, format, args);
+  va_end(args);
+
+  if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
+    write(gts->socket, buf, length);
   }
 }

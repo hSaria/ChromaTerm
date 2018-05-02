@@ -92,10 +92,6 @@ struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
 void delete_index_list(struct listroot *root, int index) {
   struct listnode *node = root->list[index];
 
-  if (index <= root->update) {
-    root->update--;
-  }
-
   regfree(&node->compiled_regex);
   free(node);
 

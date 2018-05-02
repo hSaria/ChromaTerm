@@ -69,13 +69,13 @@ void check_all_highlights(char *original) {
   char match[BUFFER_SIZE], color[BUFFER_SIZE], line[BUFFER_SIZE],
       reset[BUFFER_SIZE], output[BUFFER_SIZE], plain[BUFFER_SIZE],
       result[BUFFER_SIZE];
+  int i;
 
   strip_vt102_codes(original, line);
 
-  for (root->update = 0; root->update < root->used; root->update++) {
-    if (regex_compare(&root->list[root->update]->compiled_regex, line,
-                      result)) {
-      get_highlight_codes(root->list[root->update]->right, color);
+  for (i = 0; i < root->used; i++) {
+    if (regex_compare(&root->list[i]->compiled_regex, line, result)) {
+      get_highlight_codes(root->list[i]->right, color);
 
       *output = *reset = 0;
 
@@ -107,8 +107,7 @@ void check_all_highlights(char *original) {
         cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
 
         pto = ptm + strlen(match);
-      } while (regex_compare(&root->list[root->update]->compiled_regex, ptl,
-                             result));
+      } while (regex_compare(&root->list[i]->compiled_regex, ptl, result));
 
       strcat(output, pto);
       strcpy(original, output);

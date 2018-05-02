@@ -2,28 +2,6 @@
 
 #include "defs.h"
 
-struct command_type command_table[] = {{"commands", do_commands},
-                                       {"config", do_configure},
-                                       {"exit", do_exit},
-                                       {"help", do_help},
-                                       {"highlight", do_highlight},
-                                       {"quit", do_exit},
-                                       {"read", do_read},
-                                       {"run", do_run},
-                                       {"unhighlight", do_unhighlight},
-                                       {"write", do_write},
-                                       {"", NULL}};
-
-struct list_type list_table[LIST_MAX] = {{"CONFIG", ALPHA, 2},
-                                         {"HIGHLIGHT", PRIORITY, 3}};
-
-struct config_type config_table[] = {
-    {"CHARSET", "The character set encoding used", config_charset},
-    {"COMMAND CHAR", "The character used for commands", config_commandchar},
-    {"CONVERT META", "Convert meta and control characters", config_convertmeta},
-    {"HIGHLIGHT", "Highlight according to rules", config_highlight},
-    {"", "", NULL}};
-
 struct color_type color_table[] = {
     {"bold", "<188>"},         {"dim", "<288>"},
     {"underscore", "<488>"},   {"blink", "<588>"},
@@ -49,6 +27,25 @@ struct color_type color_table[] = {
     {"silver", "<ccc>"},       {"tan", "<cba>"},
     {"violet", "<bad>"},       {"white", "<878>"},
     {"yellow", "<838>"},       {"", "<099>"}};
+
+struct command_type command_table[] = {{"commands", do_commands},
+                                       {"config", do_configure},
+                                       {"exit", do_exit},
+                                       {"help", do_help},
+                                       {"highlight", do_highlight},
+                                       {"quit", do_exit},
+                                       {"read", do_read},
+                                       {"run", do_run},
+                                       {"unhighlight", do_unhighlight},
+                                       {"write", do_write},
+                                       {"", NULL}};
+
+struct config_type config_table[] = {
+    {"CHARSET", "The character set encoding used", config_charset},
+    {"COMMAND CHAR", "The character used for commands", config_commandchar},
+    {"CONVERT META", "Convert meta and control characters", config_convertmeta},
+    {"HIGHLIGHT", "Highlight according to rules", config_highlight},
+    {"", "", NULL}};
 
 struct cursor_type cursor_table[] = {
     {"BACKSPACE", "Delete backward character", "", cursor_backspace},
@@ -98,3 +95,6 @@ struct cursor_type cursor_table[] = {
     {"", "", "", cursor_delete_word_left},
     {"", "", "d", cursor_delete_word_right},
     {"", "", "", NULL}};
+
+struct list_type list_table[LIST_MAX] = {{"CONFIG", ALPHA, 2},
+                                         {"HIGHLIGHT", PRIORITY, 3}};
