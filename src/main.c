@@ -92,10 +92,10 @@ void init_program() {
   init_screen_size();
 
   gtd->quiet++;
-  do_configure("CHARSET   UTF-8");
-  do_configure("COMMAND   #");
-  do_configure("CONVERT   OFF");
-  do_configure("HIGHLIGHT ON");
+  do_configure("CHARSET    UTF-8");
+  do_configure("COMMAND    #");
+  do_configure("CONVERT    OFF");
+  do_configure("HIGHLIGHT  ON");
   gtd->quiet--;
 
   init_terminal();
