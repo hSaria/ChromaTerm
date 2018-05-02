@@ -156,7 +156,6 @@ struct config_type {
 struct list_type {
   char *name;
   int mode;
-  int args;
 };
 
 struct cursor_type {
