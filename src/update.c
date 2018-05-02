@@ -2,8 +2,12 @@
 
 #include "defs.h"
 
-void *poll_input() {
+void *poll_input(void *arg) {
   fd_set readfds;
+
+  if (arg) {
+    /* Making a warning shut up */
+  }
 
   while (TRUE) {
     FD_ZERO(&readfds);
@@ -18,8 +22,12 @@ void *poll_input() {
   }
 }
 
-void *poll_session() {
+void *poll_session(void *arg) {
   fd_set readfds;
+
+  if (arg) {
+    /* Making a warning shut up */
+  }
 
   while (TRUE) {
     if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
