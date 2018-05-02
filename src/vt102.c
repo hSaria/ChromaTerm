@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -6,11 +6,9 @@ int skip_vt102_codes(char *str) {
   int skip;
 
   switch (str[0]) {
-  case 5: /* ENQ */
-  case 7: /* BEL */
-  case 8: /* BS  */
-  // case 9:   /* HT  */
-  // case 10:  /* LF  */
+  case 5:   /* ENQ */
+  case 7:   /* BEL */
+  case 8:   /* BS  */
   case 11:  /* VT  */
   case 12:  /* FF  */
   case 13:  /* CR  */
@@ -88,14 +86,13 @@ void strip_vt102_codes(char *str, char *buf) {
   *pto = 0;
 }
 
-// mix old and str, then copy compressed color string to buf which can point to
-// old.
+/* mix old and str, then copy compressed color string to buf which can point to
+old */
 void get_color_codes(char *old, char *str, char *buf) {
   char *pti, *pto, col[100], tmp[BUFFER_SIZE];
   int len, vtc, fgc, bgc, cnt;
 
   pto = tmp;
-
   pti = old;
 
   while (*pti) {
@@ -221,13 +218,8 @@ void get_color_codes(char *old, char *str, char *buf) {
               SET_BIT(vtc, COL_XTB);
               bgc = -1;
               break;
-            default:
+            default: /* 256 color's 16 color notation */
               DEL_BIT(vtc, COL_256);
-
-              /*
-                      Use 256 color's 16 color notation
-              */
-
               if (atoi(col) / 10 == 4) {
                 bgc = atoi(col) % 10;
               }
@@ -326,31 +318,4 @@ int find_non_color_codes(char *str) {
     }
   }
   return 0;
-}
-
-int strip_vt102_strlen(char *str) {
-  char *pti;
-  int i = 0;
-
-  pti = str;
-
-  while (*pti) {
-    if (skip_vt102_codes(pti)) {
-      pti += skip_vt102_codes(pti);
-
-      continue;
-    }
-
-    if (HAS_BIT(gts->flags, SES_FLAG_UTF8) && (*pti & 192) == 192) {
-      pti++;
-
-      while ((*pti & 192) == 128) {
-        pti++;
-      }
-    } else {
-      pti++;
-    }
-    i++;
-  }
-  return i;
 }

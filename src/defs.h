@@ -1,20 +1,29 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include <ctype.h>
 #include <errno.h>
+#include <regex.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <termios.h>
 #include <unistd.h>
-#include <util.h>
 #include <wordexp.h>
 
-#include "pcre.h"
+#include "config.h"
+
+#ifdef HAVE_UTIL_H
+#include <util.h>
+#else
+#ifdef HAVE_FORKPTY
+#include <pty.h>
+#endif
+#endif
 
 #ifndef __DEFS_H__
 #define __DEFS_H__
@@ -22,9 +31,9 @@
 #define FALSE 0
 #define TRUE 1
 
-#define GET_ONE 0 // stop at spaces
-#define GET_ALL 1 // stop at semicolon
-#define GET_NST 2 // nest square brackets
+/* Openning braces ignore these rules */
+#define GET_ONE 0 /* stop at a space */
+#define GET_ALL 1 /* don't stop (believing) */
 
 #define SCREEN_WIDTH 80
 #define SCREEN_HEIGHT 24
@@ -35,27 +44,18 @@
 #define DEFAULT_OPEN '{'
 #define DEFAULT_CLOSE '}'
 
-#define COMMAND_SEPARATOR ';'
-
-#define STRING_SIZE 45000
 #define BUFFER_SIZE 20000
 
 #define ESCAPE 27
 
 #define PULSE_PER_SECOND 500
 
-// Index for lists
+/* Index for lists */
 #define LIST_CONFIG 0
 #define LIST_HIGHLIGHT 1
 #define LIST_MAX 2
 
-// Command type
-enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
-
-// generic define for show_message
-#define LIST_MESSAGE -1
-
-// Various flags
+/* Various flags */
 #define COL_BLD (1 << 0)
 #define COL_UND (1 << 1)
 #define COL_BLK (1 << 2)
@@ -65,12 +65,6 @@ enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
 #define COL_256 (1 << 6)
 
 #define SUB_NONE 0
-#define SUB_ARG (1 << 0)
-#define SUB_COL (1 << 1)
-#define SUB_ESC (1 << 2)
-#define SUB_CMD (1 << 3)
-#define SUB_EOL (1 << 4)
-#define SUB_FIX (1 << 5)
 
 #define GLOBAL_FLAG_CONVERTMETACHAR (1 << 0)
 #define GLOBAL_FLAG_PROCESSINPUT (1 << 1)
@@ -79,56 +73,25 @@ enum operators { TOKEN_TYPE_COMMAND, TOKEN_TYPE_SESSION, TOKEN_TYPE_STRING };
 #define SES_FLAG_CONNECTED (1 << 0)
 #define SES_FLAG_CONVERTMETA (1 << 1)
 #define SES_FLAG_UTF8 (1 << 2)
+#define SES_FLAG_HIGHLIGHT (1 << 3)
 
-// Some macros to deal with double linked lists
-#define LINK(link, head, tail)                                                 \
-  {                                                                            \
-    if ((head) == NULL) {                                                      \
-      (head) = (link);                                                         \
-    } else {                                                                   \
-      (tail)->next = (link);                                                   \
-    }                                                                          \
-    (link)->next = NULL;                                                       \
-    (link)->prev = (tail);                                                     \
-    (tail) = (link);                                                           \
-  }
-
-#define UNLINK(link, head, tail)                                               \
-  {                                                                            \
-    if ((link)->prev == NULL) {                                                \
-      (head) = (link)->next;                                                   \
-    } else {                                                                   \
-      (link)->prev->next = (link)->next;                                       \
-    }                                                                          \
-    if ((link)->next == NULL) {                                                \
-      (tail) = (link)->prev;                                                   \
-    } else {                                                                   \
-      (link)->next->prev = (link)->prev;                                       \
-    }                                                                          \
-    (link)->next = NULL;                                                       \
-    (link)->prev = NULL;                                                       \
-  }
-
-// Bit operations
+/* Bit operations */
 #define HAS_BIT(bitvector, bit) ((bitvector) & (bit))
 #define SET_BIT(bitvector, bit) ((bitvector) |= (bit))
 #define DEL_BIT(bitvector, bit) ((bitvector) &= (~(bit)))
 #define TOG_BIT(bitvector, bit) ((bitvector) ^= (bit))
 
-// Generic
+/* Generic */
 #define URANGE(a, b, c) ((b) < (a) ? (a) : (b) > (c) ? (c) : (b))
 #define UMAX(a, b) ((a) > (b) ? (a) : (b))
-
-#define up(u) (u < 99 ? u++ : u)
 
 #define DO_COMMAND(command) void command(char *arg)
 #define DO_CONFIG(config) int config(char *arg, int index)
 #define DO_CURSOR(cursor) void cursor(void)
 
-// Structures
+/* Structures */
 struct listroot {
   struct listnode **list;
-  struct session *ses;
   int size;
   int used;
   int type;
@@ -136,11 +99,10 @@ struct listroot {
 };
 
 struct listnode {
-  struct listroot *root;
   char *left;
   char *right;
   char *pr;
-  pcre *regex;
+  regex_t compiled_regex;
 };
 
 struct session {
@@ -150,8 +112,6 @@ struct session {
   int pid;
   int socket;
   int flags;
-  int input_level;
-  char more_output[BUFFER_SIZE * 2];
 };
 
 struct global_data {
@@ -170,17 +130,14 @@ struct global_data {
   int flags;
   int quiet;
   char command_char;
-  char *vars[100];
-  char *cmds[100];
-  int args[100];
 };
 
-// Typedefs
+/* Typedefs */
 typedef void COMMAND(char *arg);
 typedef int CONFIG(char *arg, int index);
 typedef void CURSOR(void);
 
-// Structures for tables.c
+/* Structures for tables.c */
 struct color_type {
   char *name;
   char *code;
@@ -189,7 +146,6 @@ struct color_type {
 struct command_type {
   char *name;
   COMMAND *command;
-  int type;
 };
 
 struct config_type {
@@ -200,7 +156,6 @@ struct config_type {
 
 struct list_type {
   char *name;
-  char *name_multi;
   int mode;
   int args;
 };
@@ -214,117 +169,110 @@ struct cursor_type {
 
 #endif
 
-// Function declarations
+/* Function declarations */
 
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-extern DO_COMMAND(do_configure);
-extern DO_CONFIG(config_commandchar);
-extern DO_CONFIG(config_convertmeta);
-extern DO_CONFIG(config_charset);
+DO_COMMAND(do_configure);
+DO_CONFIG(config_commandchar);
+DO_CONFIG(config_convertmeta);
+DO_CONFIG(config_charset);
+DO_CONFIG(config_highlight);
 
 #endif
 
 #ifndef __CURSOR_H__
 #define __CURSOR_H__
 
-extern DO_CURSOR(cursor_backspace);
-extern DO_CURSOR(cursor_check_line);
-extern DO_CURSOR(cursor_check_line_modified);
-extern DO_CURSOR(cursor_clear_left);
-extern DO_CURSOR(cursor_clear_line);
-extern DO_CURSOR(cursor_clear_right);
-extern DO_CURSOR(cursor_convert_meta);
-extern DO_CURSOR(cursor_delete);
-extern DO_CURSOR(cursor_delete_or_exit);
-extern DO_CURSOR(cursor_delete_word_left);
-extern DO_CURSOR(cursor_delete_word_right);
-extern DO_CURSOR(cursor_echo_on);
-extern DO_CURSOR(cursor_echo_off);
-extern DO_CURSOR(cursor_end);
-extern DO_CURSOR(cursor_enter);
-extern DO_CURSOR(cursor_exit);
-extern DO_CURSOR(cursor_home);
-extern DO_CURSOR(cursor_insert);
-extern DO_CURSOR(cursor_left);
-extern DO_CURSOR(cursor_left_word);
-extern DO_CURSOR(cursor_paste_buffer);
-extern DO_CURSOR(cursor_redraw_input);
-extern DO_CURSOR(cursor_redraw_line);
-extern DO_CURSOR(cursor_right);
-extern DO_CURSOR(cursor_right_word);
-extern DO_CURSOR(cursor_suspend);
-extern DO_CURSOR(cursor_test);
+DO_CURSOR(cursor_backspace);
+DO_CURSOR(cursor_check_line);
+DO_CURSOR(cursor_check_line_modified);
+DO_CURSOR(cursor_clear_left);
+DO_CURSOR(cursor_clear_line);
+DO_CURSOR(cursor_clear_right);
+DO_CURSOR(cursor_convert_meta);
+DO_CURSOR(cursor_delete);
+DO_CURSOR(cursor_delete_or_exit);
+DO_CURSOR(cursor_delete_word_left);
+DO_CURSOR(cursor_delete_word_right);
+DO_CURSOR(cursor_echo_on);
+DO_CURSOR(cursor_echo_off);
+DO_CURSOR(cursor_end);
+DO_CURSOR(cursor_enter);
+DO_CURSOR(cursor_exit);
+DO_CURSOR(cursor_home);
+DO_CURSOR(cursor_insert);
+DO_CURSOR(cursor_left);
+DO_CURSOR(cursor_left_word);
+DO_CURSOR(cursor_paste_buffer);
+DO_CURSOR(cursor_redraw_input);
+DO_CURSOR(cursor_redraw_line);
+DO_CURSOR(cursor_right);
+DO_CURSOR(cursor_right_word);
+DO_CURSOR(cursor_suspend);
+DO_CURSOR(cursor_test);
 
 #endif
 
 #ifndef __DATA_H__
 #define __DATA_H__
 
-extern struct listroot *init_list(int type, int size);
-extern void kill_list(struct listroot *root);
-extern void free_list(struct listroot *root);
-extern struct listnode *insert_node_list(struct listroot *root, char *ltext,
-                                         char *rtext, char *prtext);
-extern struct listnode *update_node_list(struct listroot *root, char *ltext,
-                                         char *rtext, char *prtext);
-extern struct listnode *insert_index_list(struct listroot *root,
-                                          struct listnode *node, int index);
-extern int show_node_with_wild(char *cptr, int type);
-extern void show_node(struct listroot *root, struct listnode *node, int level);
-extern void show_nest_node(struct listnode *node, char *result, int initialize);
-extern void show_nest(struct listnode *node, char *result);
-extern void show_list(struct listroot *root, int level);
-extern struct listnode *search_node_list(struct listroot *root, char *text);
-extern void delete_node_list(int type, struct listnode *node);
-extern void delete_node_with_wild(int index, char *string);
-extern void delete_index_list(struct listroot *root, int index);
-extern int search_index_list(struct listroot *root, char *text, char *priority);
-extern int locate_index_list(struct listroot *root, char *text, char *priority);
-extern int bsearch_alpha_list(struct listroot *root, char *text, int seek);
-extern int bsearch_priority_list(struct listroot *root, char *text,
-                                 char *priority, int seek);
-extern int nsearch_list(struct listroot *root, char *text);
+struct listroot *init_list(int type, int size);
+struct listnode *insert_node_list(struct listroot *root, char *ltext,
+                                  char *rtext, char *prtext);
+struct listnode *update_node_list(struct listroot *root, char *ltext,
+                                  char *rtext, char *prtext);
+struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
+                                   int index);
+struct listnode *search_node_list(struct listroot *root, char *text);
+void delete_node_with_wild(int index, char *string);
+void delete_index_list(struct listroot *root, int index);
+int search_index_list(struct listroot *root, char *text, char *priority);
+int locate_index_list(struct listroot *root, char *text, char *priority);
+int bsearch_alpha_list(struct listroot *root, char *text, int seek);
+int bsearch_priority_list(struct listroot *root, char *text, char *priority,
+                          int seek);
+int nsearch_list(struct listroot *root, char *text);
 
 #endif
 
 #ifndef __FILES_H__
 #define __FILES_H__
 
-extern DO_COMMAND(do_read);
-extern DO_COMMAND(do_write);
+DO_COMMAND(do_read);
+DO_COMMAND(do_write);
 
-extern void write_node(int mode, struct listnode *node, FILE *file);
+void write_node(int mode, struct listnode *node, FILE *file);
 
 #endif
 
 #ifndef __HELP_H__
 #define __HELP_H__
 
-extern DO_COMMAND(do_help);
+DO_COMMAND(do_help);
 
 #endif
 
 #ifndef __HIGHLIGHT_H__
 #define __HIGHLIGHT_H__
 
-extern DO_COMMAND(do_highlight);
-extern DO_COMMAND(do_unhighlight);
+DO_COMMAND(do_highlight);
+DO_COMMAND(do_unhighlight);
 
-extern void check_all_highlights(char *original, char *line);
-extern int get_highlight_codes(char *htype, char *result);
+void check_all_highlights(char *original);
+int get_highlight_codes(char *htype, char *result);
 
 #endif
 
 #ifndef __INPUT_H__
 #define __INPUT_H__
 
-extern void process_input(void);
-extern void read_key(void);
-extern void read_line(void);
-extern void convert_meta(char *input, char *output);
-extern void input_printf(char *format, ...);
+void process_input(void);
+void read_key(void);
+void read_line(void);
+void convert_meta(char *input, char *output);
+void input_printf(char *format, ...);
 
 #endif
 
@@ -334,76 +282,59 @@ extern void input_printf(char *format, ...);
 extern struct session *gts;
 extern struct global_data *gtd;
 
-extern int main(int argc, char **argv);
-extern void init_program(void);
-extern void help_menu(int error, char c, char *proc_name);
-extern void quitmsg(char *message, int exit_signal);
-extern void abort_and_trap_handler(int sig);
-extern void pipe_handler(int sig);
-extern void suspend_handler(int sig);
-extern void winch_handler(int sig);
-
-#endif
-
-#ifndef __MEMORY_H__
-#define __MEMORY_H__
-
-extern char *refstring(char *point, char *fmt, ...);
+int main(int argc, char **argv);
+void init_program(void);
+void help_menu(int error, char c, char *proc_name);
+void quitmsg(char *message, int exit_signal);
+void abort_and_trap_handler(int sig);
+void pipe_handler(int sig);
+void suspend_handler(int sig);
+void winch_handler(int sig);
 
 #endif
 
 #ifndef __MISC_H__
 #define __MISC_H__
 
-extern DO_COMMAND(do_commands);
-extern DO_COMMAND(do_exit);
-extern DO_COMMAND(do_run);
+DO_COMMAND(do_commands);
+DO_COMMAND(do_exit);
+DO_COMMAND(do_run);
 
 #endif
 
 #ifndef __NET_H__
 #define __NET_H__
 
-extern void write_line_socket(char *line, int size);
-extern int read_buffer_mud(void);
-extern void readmud(void);
-extern void process_mud_output(char *linebuf, int prompt);
+void write_line_socket(char *line, int size);
+int read_buffer_mud(void);
+void readmud(void);
+void process_mud_output(char *linebuf, int prompt);
 
 #endif
 
 #ifndef __PARSE_H__
 #define __PARSE_H__
 
-extern struct session *parse_input(char *input);
-extern struct session *parse_command(char *input);
-extern char *get_arg_all(char *string, char *result);
-extern char *get_arg_in_braces(char *string, char *result, int flag);
-extern char *sub_arg_in_braces(char *string, char *result, int flag, int sub);
-extern char *get_arg_with_spaces(char *string, char *result);
-extern char *get_arg_stop_spaces(char *string, char *result, int flag);
-extern char *space_out(char *string);
-extern void write_mud(char *command, int flags);
-extern void do_one_line(char *line);
+char *get_arg_all(char *string, char *result, int with_spaces);
+char *get_arg_in_braces(char *string, char *result, int flag);
+char *get_arg_stop_spaces(char *string, char *result);
+char *space_out(char *string);
 
 #endif
 
 #ifndef __REGEXP_H__
 #define __REGEXP_H__
 
-extern int substitute(char *string, char *result, int flags);
-extern int match(char *str, char *exp, int flags);
-extern int regexp_compare(pcre *regex, char *str, char *exp, int option,
-                          int flag);
-extern int check_one_regexp(struct listnode *node, char *line, int option);
-extern int regexp(pcre *pcre, char *str, char *exp, int option, int flag);
+void substitute(char *string, char *result);
+int regex_compare(regex_t *compiled_regex, char *str, char *result);
 
 #endif
 
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
-extern struct session *new_session(int pid, int socket);
-extern void cleanup_session(void);
+struct session *new_session(int pid, int socket);
+void cleanup_session(void);
 
 #endif
 
@@ -421,55 +352,49 @@ extern struct list_type list_table[LIST_MAX];
 #ifndef __TERMINAL_H__
 #define __TERMINAL_H__
 
-extern void init_terminal(void);
-extern void restore_terminal(void);
-extern void init_screen_size(void);
-extern int get_scroll_size(void);
+void init_terminal(void);
+void restore_terminal(void);
+void init_screen_size(void);
+int get_scroll_size(void);
 
 #endif
 
 #ifndef __TOKENIZE_H__
 #define __TOKENIZE_H__
 
-extern struct session *script_driver(char *str);
+void script_driver(char *str);
 
 #endif
 
 #ifndef __UPDATE_H__
 #define __UPDATE_H__
 
-extern void mainloop(void);
-extern void poll_input(void);
-extern void poll_sessions(void);
+void mainloop(void);
+void poll_input(void);
+void poll_sessions(void);
 
 #endif
 
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-extern int is_abbrev(char *s1, char *s2);
-extern int hex_number(char *str);
-extern int oct_number(char *str);
-extern char *capitalize(char *str);
-extern int cat_sprintf(char *dest, char *fmt, ...);
-extern void ins_sprintf(char *dest, char *fmt, ...);
-extern void syserr(char *msg);
-extern void show_message(char *format, ...);
-extern void display_header(char *format, ...);
-extern void socket_printf(size_t length, char *format, ...);
-extern void display_printf(int came_from_command, char *format, ...);
-extern void display_puts(int came_from_mud, int with_color, char *string);
-extern void printline(char *str, int isaprompt);
+int is_abbrev(char *s1, char *s2);
+char *capitalize(char *str);
+int cat_sprintf(char *dest, char *fmt, ...);
+void ins_sprintf(char *dest, char *fmt, ...);
+void display_header(char *format, ...);
+void socket_printf(unsigned int length, char *format, ...);
+void display_printf(char *format, ...);
+void printline(char *str, int isaprompt);
 
 #endif
 
 #ifndef __VT102_H__
 #define __VT102_H__
 
-extern int skip_vt102_codes(char *str);
-extern void strip_vt102_codes(char *str, char *buf);
-extern void get_color_codes(char *old, char *str, char *buf);
-extern int find_non_color_codes(char *str);
-extern int strip_vt102_strlen(char *str);
+int skip_vt102_codes(char *str);
+void strip_vt102_codes(char *str, char *buf);
+void get_color_codes(char *old, char *str, char *buf);
+int find_non_color_codes(char *str);
 
 #endif

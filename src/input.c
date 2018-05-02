@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -11,13 +11,13 @@ void process_input(void) {
 
   DEL_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
 
-  gts = script_driver(gtd->input_buf);
+  script_driver(gtd->input_buf);
 
   gtd->input_buf[0] = 0;
 }
 
-// The current output of the screen cannot be determined which means we can only
-// listen for commands after a new line.
+/* The current output of the screen cannot be determined which means we can only
+ * listen for commands after a new line. */
 void read_key(void) {
   char buffer[BUFFER_SIZE];
   int len, cnt;
@@ -36,20 +36,19 @@ void read_key(void) {
   } else {
     strcat(gtd->macro_buf, buffer);
   }
-
-  // Handles normal input and transfering to CT
+  /* Handles normal input and transfering to CT */
   for (cnt = 0; gtd->macro_buf[cnt]; cnt++) {
-    switch (gtd->macro_buf[cnt]) {
-    case '\n': // Reset: \n is needed before a command
+    if (gtd->macro_buf[cnt] ==
+        '\n') { /* Reset: \n is needed before a command */
       gtd->macro_buf[0] = 0;
       gtd->input_buf[0] = 0;
       gtd->input_len = 0;
 
       socket_printf(1, "%c", '\r');
-      break;
-    default: // Normal input
+    } else { /* Normal input */
       if (gtd->macro_buf[cnt] == gtd->command_char &&
-          gtd->input_buf[0] == 0) { // Transfer to CT on next call of read_key
+          gtd->input_buf[0] ==
+              0) { /* Transfer to CT on next call of read_key */
         if (gtd->input_len != gtd->input_cur) {
           printf("\033[1@%c", gtd->macro_buf[cnt]);
         } else {
@@ -61,19 +60,18 @@ void read_key(void) {
         gtd->input_len = 1;
         gtd->input_cur = 1;
         gtd->input_pos = 1;
-      } else { // If not destined to CT, send to socket
+      } else { /* If not destined to CT, send to socket */
         socket_printf(1, "%c", gtd->macro_buf[cnt]);
-        gtd->input_buf[0] = 127; // != 0 means a reset (\n) is required
+        gtd->input_buf[0] = 127; /* != 0 means a reset (\n) is required */
         gtd->macro_buf[0] = 0;
         gtd->input_len = 0;
       }
-      break;
     }
   }
 }
 
 void read_line() {
-  char buffer[STRING_SIZE];
+  char buffer[BUFFER_SIZE * 2];
   int len, cnt, match;
 
   gtd->input_buf[gtd->input_len] = 0;
@@ -96,7 +94,6 @@ void read_line() {
       if (!strcmp(gtd->macro_buf, cursor_table[cnt].code)) {
         cursor_table[cnt].fun();
         gtd->macro_buf[0] = 0;
-
         return;
       } else if (!strncmp(gtd->macro_buf, cursor_table[cnt].code,
                           strlen(gtd->macro_buf))) {
@@ -111,7 +108,6 @@ void read_line() {
 
   if (gtd->macro_buf[0] == ESCAPE) {
     strcpy(buffer, gtd->macro_buf);
-
     convert_meta(buffer, gtd->macro_buf);
   }
 
@@ -120,7 +116,6 @@ void read_line() {
     case 10:
       cursor_enter();
       break;
-
     default:
       if (HAS_BIT(gtd->flags, GLOBAL_FLAG_INSERTINPUT) &&
           gtd->input_len != gtd->input_cur) {
@@ -232,7 +227,7 @@ void convert_meta(char *input, char *output) {
 }
 
 void input_printf(char *format, ...) {
-  char buf[STRING_SIZE];
+  char buf[BUFFER_SIZE * 2];
   va_list args;
 
   va_start(args, format);

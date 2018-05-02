@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -6,51 +6,76 @@ DO_COMMAND(do_highlight) {
   char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE],
       temp[BUFFER_SIZE];
 
-  arg = sub_arg_in_braces(arg, arg1, GET_ONE, SUB_NONE);
-  arg = sub_arg_in_braces(arg, arg2, GET_ALL, SUB_NONE);
-  get_arg_in_braces(arg, arg3, TRUE);
+  arg = get_arg_in_braces(arg, arg1, GET_ONE);
+  arg = get_arg_in_braces(arg, arg2, GET_ONE);
+  get_arg_in_braces(arg, arg3, GET_ONE);
 
   if (*arg3 == 0) {
     strcpy(arg3, "5");
   }
 
-  if (*arg1 == 0) {
-    show_list(gts->list[LIST_HIGHLIGHT], 0);
-  } else if (*arg1 && *arg2 == 0) {
-    if (show_node_with_wild(arg1, LIST_HIGHLIGHT) == FALSE) {
-      show_message("#HIGHLIGHT: NO MATCH(ES) FOUND FOR {%s}", arg1);
+  if (*arg1 == 0 || *arg2 == 0) {
+    int i;
+
+    display_header(" HIGHLIGHTS ");
+
+    for (i = 0; i < gts->list[LIST_HIGHLIGHT]->used; i++) {
+      struct listnode *node = gts->list[LIST_HIGHLIGHT]->list[i];
+      display_printf("%c%s "
+                     "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                     "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                     "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
+                     gtd->command_char, list_table[LIST_HIGHLIGHT].name,
+                     node->left, node->right, node->pr);
     }
+
+    display_header("");
   } else {
     if (get_highlight_codes(arg2, temp) == FALSE) {
-      display_printf(FALSE, "#HIGHLIGHT: VALID COLORS ARE:\n");
       display_printf(
-          FALSE,
-          "reset, bold, light, faint, dim, dark, underscore, blink, reverse, "
-          "black, red, green, yellow, blue, magenta, cyan, white, b black, b "
-          "red, b green, b yellow, b blue, b magenta, b cyan, b white, azure, "
-          "ebony, jade, lime, orange, pink, silver, tan, violet");
+          "%cHIGHLIGHT: Named codes are:\n"
+          "bold, dim, underscore, blink, azure, black, blue, cyan, ebony, "
+          "green, jade,\nlime, magenta, orange, pink, red, silver, tan, "
+          "violet, white, yellow, b azure,\nb black, b blue, b cyan, b ebony, "
+          "b green, b jade, b lime, b magenta, b orange,\nb pink, b red, b "
+          "silver, b tan, b violet, b white, b yellow, light azure,\nlight "
+          "ebony, light jade, light lime, light orange, light pink, light "
+          "silver,\nlight tan, light violet\n",
+          gtd->command_char);
+
     } else {
       update_node_list(gts->list[LIST_HIGHLIGHT], arg1, arg2, arg3);
 
-      show_message("#OK. {%s} NOW HIGHLIGHTS {%s} {%s}", arg1, arg2, arg3);
+      display_printf("%cHIGHLIGHT: {%s} now highlighted with {%s} {%s}",
+                     gtd->command_char, arg1, arg2, arg3);
     }
   }
 }
 
-DO_COMMAND(do_unhighlight) { delete_node_with_wild(LIST_HIGHLIGHT, arg); }
+DO_COMMAND(do_unhighlight) {
+  get_arg_in_braces(arg, arg, GET_ONE);
+  if (*arg == 0) {
+    display_printf("%cSYNTAX: %cUNHIGHLIGHT {MATCH CONDITION TO REMOVE}",
+                   gtd->command_char, gtd->command_char);
+    return;
+  }
 
-void check_all_highlights(char *original, char *line) {
+  delete_node_with_wild(LIST_HIGHLIGHT, arg);
+}
+
+void check_all_highlights(char *original) {
   struct listroot *root = gts->list[LIST_HIGHLIGHT];
-  struct listnode *node;
   char *pto, *ptl, *ptm;
-  char match[BUFFER_SIZE], color[BUFFER_SIZE], reset[BUFFER_SIZE],
-      output[BUFFER_SIZE], plain[BUFFER_SIZE];
+  char match[BUFFER_SIZE], color[BUFFER_SIZE], line[BUFFER_SIZE],
+      reset[BUFFER_SIZE], output[BUFFER_SIZE], plain[BUFFER_SIZE],
+      result[BUFFER_SIZE];
+
+  strip_vt102_codes(original, line);
 
   for (root->update = 0; root->update < root->used; root->update++) {
-    if (check_one_regexp(root->list[root->update], line, 0)) {
-      node = root->list[root->update];
-
-      get_highlight_codes(node->right, color);
+    if (regex_compare(&root->list[root->update]->compiled_regex, line,
+                      result)) {
+      get_highlight_codes(root->list[root->update]->right, color);
 
       *output = *reset = 0;
 
@@ -58,11 +83,11 @@ void check_all_highlights(char *original, char *line) {
       ptl = line;
 
       do {
-        if (*gtd->vars[0] == 0) {
+        if (*result == 0) {
           break;
         }
 
-        strcpy(match, gtd->vars[0]);
+        strcpy(match, result);
 
         strip_vt102_codes(match, plain);
 
@@ -82,10 +107,10 @@ void check_all_highlights(char *original, char *line) {
         cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
 
         pto = ptm + strlen(match);
-      } while (check_one_regexp(node, ptl, 0));
+      } while (regex_compare(&root->list[root->update]->compiled_regex, ptl,
+                             result));
 
       strcat(output, pto);
-
       strcpy(original, output);
     }
   }
@@ -97,8 +122,7 @@ int get_highlight_codes(char *string, char *result) {
   *result = 0;
 
   if (*string == '<') {
-    substitute(string, result, SUB_COL);
-
+    substitute(string, result);
     return TRUE;
   }
 
@@ -106,10 +130,9 @@ int get_highlight_codes(char *string, char *result) {
     if (isalpha((int)*string)) {
       for (cnt = 0; *color_table[cnt].name; cnt++) {
         if (is_abbrev(color_table[cnt].name, string)) {
-          substitute(color_table[cnt].code, result, SUB_COL);
+          substitute(color_table[cnt].code, result);
 
           result += strlen(result);
-
           break;
         }
       }

@@ -1,57 +1,13 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
-// return: TRUE if s1 is an abbrevation of s2
+/* return: TRUE if s1 is an abbrevation of s2 */
 int is_abbrev(char *s1, char *s2) {
   if (*s1 == 0) {
     return FALSE;
   }
   return !strncasecmp(s2, s1, strlen(s1));
-}
-
-int hex_number(char *str) {
-  int value = 0;
-
-  if (str) {
-    if (isdigit((int)*str)) {
-      value += 16 * (*str - '0');
-    } else {
-      value += 16 * (toupper((int)*str) - 'A' + 10);
-    }
-    str++;
-  }
-
-  if (str) {
-    if (isdigit((int)*str)) {
-      value += *str - '0';
-    } else {
-      value += toupper((int)*str) - 'A' + 10;
-    }
-    str++;
-  }
-
-  return value;
-}
-
-int oct_number(char *str) {
-  int value = 0;
-
-  if (str) {
-    if (isdigit((int)*str)) {
-      value += 8 * (*str - '0');
-    }
-    str++;
-  }
-
-  if (str) {
-    if (isdigit((int)*str)) {
-      value += *str - '0';
-    }
-    str++;
-  }
-
-  return value;
 }
 
 char *capitalize(char *str) {
@@ -67,7 +23,7 @@ char *capitalize(char *str) {
 }
 
 int cat_sprintf(char *dest, char *fmt, ...) {
-  char buf[STRING_SIZE];
+  char buf[BUFFER_SIZE * 2];
   int size;
 
   va_list args;
@@ -82,7 +38,7 @@ int cat_sprintf(char *dest, char *fmt, ...) {
 }
 
 void ins_sprintf(char *dest, char *fmt, ...) {
-  char buf[STRING_SIZE], tmp[STRING_SIZE];
+  char buf[BUFFER_SIZE * 2], tmp[BUFFER_SIZE * 2];
 
   va_list args;
 
@@ -93,19 +49,6 @@ void ins_sprintf(char *dest, char *fmt, ...) {
   strcpy(tmp, dest);
   strcpy(dest, buf);
   strcat(dest, tmp);
-}
-
-void show_message(char *format, ...) {
-  char buf[STRING_SIZE];
-  va_list args;
-
-  va_start(args, format);
-  vsprintf(buf, format, args);
-  va_end(args);
-
-  if (gts->input_level == 0) {
-    display_puts(FALSE, TRUE, buf);
-  }
 }
 
 void display_header(char *format, ...) {
@@ -121,16 +64,15 @@ void display_header(char *format, ...) {
   }
 
   memset(buf, '#', gts->cols);
-
   memcpy(&buf[(gts->cols - strlen(arg)) / 2], arg, strlen(arg));
 
   buf[gts->cols] = 0;
 
-  display_puts(FALSE, FALSE, buf);
+  display_printf(buf);
 }
 
-void socket_printf(size_t length, char *format, ...) {
-  char buf[STRING_SIZE];
+void socket_printf(unsigned int length, char *format, ...) {
+  char buf[BUFFER_SIZE * 2];
   va_list args;
 
   va_start(args, format);
@@ -142,77 +84,31 @@ void socket_printf(size_t length, char *format, ...) {
   }
 }
 
-void display_printf(int came_from_commend, char *format, ...) {
-  char buf[STRING_SIZE];
+void display_printf(char *format, ...) {
+  if (gtd->quiet) {
+    return;
+  }
+
+  char buf[BUFFER_SIZE * 2];
   va_list args;
 
   va_start(args, format);
   vsprintf(buf, format, args);
   va_end(args);
 
-  if (came_from_commend) {
-    display_puts(TRUE, TRUE, buf);
-  } else {
-    display_puts(FALSE, TRUE, buf);
-  }
-}
-
-void display_puts(int came_from_mud, int with_color, char *string) {
-  char output[STRING_SIZE];
-
-  if (came_from_mud) {
-    do_one_line(string);
-  }
-
-  if (gtd->quiet) {
-    return;
-  }
-
-  if (with_color) {
-    if (strip_vt102_strlen(gts->more_output) != 0) {
-      sprintf(output, "\n\033[0m%s\033[0m", string);
-    } else {
-      sprintf(output, "\033[0m%s\033[0m", string);
-    }
-  } else {
-    if (strip_vt102_strlen(gts->more_output) != 0) {
-      sprintf(output, "\n%s", string);
-    } else {
-      sprintf(output, "%s", string);
-    }
-  }
-
-  printline(output, FALSE);
+  printline(buf, FALSE);
 }
 
 void printline(char *str, int prompt) {
-  char wrapped_str[STRING_SIZE];
+  char wrapped_str[BUFFER_SIZE * 2];
 
   if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA)) {
     convert_meta(str, wrapped_str);
   } else {
     strcpy(wrapped_str, str);
   }
-
-  if (prompt) {
-    printf("%s", wrapped_str);
-  } else {
-    printf("%s\n", wrapped_str);
+  printf("%s", wrapped_str);
+  if (!prompt) {
+    printf("\n");
   }
-
-  return;
-}
-
-// print system call error message and terminate
-void syserr(char *msg) {
-  char s[128], *syserrmsg;
-
-  syserrmsg = strerror(errno);
-
-  if (syserrmsg) {
-    sprintf(s, "ERROR: %s (%d: %s)", msg, errno, syserrmsg);
-  } else {
-    sprintf(s, "ERROR: %s (%d)", msg, errno);
-  }
-  quitmsg(s, 1);
 }

@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -18,24 +18,11 @@ struct listroot *init_list(int type, int size) {
   return listhead;
 }
 
-void kill_list(struct listroot *root) {
-  while (root->used) {
-    delete_index_list(root, root->used - 1);
-  }
-}
-
-void free_list(struct listroot *root) {
-  kill_list(root);
-
-  free(root->list);
-  free(root);
-}
-
-// create a node and stuff it into the list in the desired order
+/* create a node and stuff it into the list in the desired order */
 struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
-  int index;
   struct listnode *node;
+  regex_t compiled_regex;
 
   node = (struct listnode *)calloc(1, sizeof(struct listnode));
 
@@ -43,14 +30,16 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
   node->right = strdup(rtext);
   node->pr = strdup(prtext);
 
-  switch (root->type) {
-  case LIST_HIGHLIGHT:
-    break;
+  if (root->type == LIST_HIGHLIGHT) {
+    if (regcomp(&compiled_regex, ltext, REG_EXTENDED | REG_NEWLINE) != 0) {
+      display_printf(
+          "%cWARNING: Regular expression failed to compile; check syntax",
+          gtd->command_char);
+    }
+    node->compiled_regex = compiled_regex;
   }
 
-  index = locate_index_list(root, ltext, prtext);
-
-  return insert_index_list(root, node, index);
+  return insert_index_list(root, node, locate_index_list(root, ltext, prtext));
 }
 
 struct listnode *update_node_list(struct listroot *root, char *ltext,
@@ -69,21 +58,21 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
     }
 
     switch (list_table[root->type].mode) {
-    case PRIORITY:
+    case PRIORITY: /* Highlight */
       if (atof(node->pr) != atof(prtext)) {
         delete_index_list(root, index);
         return insert_node_list(root, ltext, rtext, prtext);
       }
       break;
-    case ALPHA:
+    case ALPHA: /* Config */
       if (strcmp(node->pr, prtext) != 0) {
         free(node->pr);
         node->pr = strdup(prtext);
       }
       break;
     default:
-      display_printf(FALSE, "#BUG: update_node_list: unknown mode: %d",
-                     list_table[root->type].mode);
+      display_printf("%cBUG: update_node_list: unknown mode: %d",
+                     gtd->command_char, list_table[root->type].mode);
       break;
     }
     return node;
@@ -111,17 +100,8 @@ struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
   return node;
 }
 
-void delete_node_list(int type, struct listnode *node) {
-  delete_index_list(gts->list[type],
-                    search_index_list(gts->list[type], node->left, node->pr));
-}
-
 void delete_index_list(struct listroot *root, int index) {
   struct listnode *node = root->list[index];
-
-  if (node->root) {
-    free_list(node->root);
-  }
 
   if (index <= root->update) {
     root->update--;
@@ -130,10 +110,7 @@ void delete_index_list(struct listroot *root, int index) {
   free(node->left);
   free(node->right);
   free(node->pr);
-
-  if (node->regex) {
-    free(node->regex);
-  }
+  regfree(&node->compiled_regex);
   free(node);
 
   memmove(&root->list[index], &root->list[index + 1],
@@ -176,7 +153,7 @@ int search_index_list(struct listroot *root, char *text, char *priority) {
   return nsearch_list(root, text);
 }
 
-// Return insertion index.
+/* Return insertion index */
 int locate_index_list(struct listroot *root, char *text, char *priority) {
   switch (list_table[root->type].mode) {
   case ALPHA:
@@ -268,140 +245,20 @@ int nsearch_list(struct listroot *root, char *text) {
   return -1;
 }
 
-// show contens of a node on screen
-void show_node(struct listroot *root, struct listnode *node, int level) {
-  char arg[STRING_SIZE];
-
-  show_nest_node(node, arg, TRUE);
-
-  switch (list_table[root->type].args) {
-  case 3:
-    display_printf(
-        FALSE,
-        "%*s#%s "
-        "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m \033[1;31m{\033[0m%s\033[1;"
-        "31m} \033[1;36m\033[1;31m{\033[0m%s\033[1;31m}",
-        level * 2, "", list_table[root->type].name, node->left, arg, node->pr);
-    break;
-  case 2:
-    display_printf(FALSE,
-                   "%*s#%s "
-                   "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m=\033[1;31m{\033["
-                   "0m%s\033[1;31m}",
-                   level * 2, "", list_table[root->type].name, node->left, arg);
-    break;
-  case 1:
-    display_printf(FALSE, "%*s#%s \033[1;31m{\033[0m%s\033[1;31m}", level * 2,
-                   "", list_table[root->type].name, node->left);
-    break;
-  }
-}
-
-void show_nest_node(struct listnode *node, char *result, int initialize) {
-  if (initialize) {
-    *result = 0;
-  }
-
-  if (node->root == NULL) {
-    if (initialize) {
-      strcat(result, node->right);
-    } else {
-      cat_sprintf(result, "{%s}", node->right);
-    }
-  } else {
-    struct listroot *root = node->root;
-    int i;
-
-    if (!initialize) {
-      strcat(result, "{");
-    }
-
-    for (i = 0; i < root->used; i++) {
-      cat_sprintf(result, "{%s}", root->list[i]->left);
-
-      show_nest_node(root->list[i], result, FALSE);
-    }
-    if (!initialize) {
-      strcat(result, "}");
-    }
-  }
-}
-
-// list contens of a list on screen
-void show_list(struct listroot *root, int level) {
-  int i;
-
-  if (root == gts->list[root->type]) {
-    display_header(" %s ", list_table[root->type].name_multi);
-  }
-
-  for (i = 0; i < root->used; i++) {
-    show_node(root, root->list[i], level);
-  }
-}
-
-int show_node_with_wild(char *text, int type) {
+void delete_node_with_wild(int type, char *text) {
   struct listroot *root = gts->list[type];
   struct listnode *node;
-  int i, flag = FALSE;
 
   node = search_node_list(root, text);
 
   if (node) {
-    show_node(root, node, 0);
-
-    return TRUE;
-  }
-
-  for (i = 0; i < root->used; i++) {
-    if (match(root->list[i]->left, text, SUB_NONE)) {
-      show_node(root, root->list[i], 0);
-
-      flag = TRUE;
-    }
-  }
-  return flag;
-}
-
-void delete_node_with_wild(int type, char *text) {
-  struct listroot *root = gts->list[type];
-  struct listnode *node;
-  char arg1[BUFFER_SIZE];
-  int i, found = FALSE;
-
-  sub_arg_in_braces(text, arg1, GET_ALL, SUB_NONE);
-
-  node = search_node_list(root, arg1);
-
-  if (node) {
-    show_message(
-        "#OK. {%s} IS NO LONGER %s %s", node->left,
-        (*list_table[type].name == 'A' || *list_table[type].name == 'E') ? "AN"
-                                                                         : "A",
-        list_table[type].name);
-
-    delete_node_list(type, node);
-
+    display_printf("%cUN%s: {%s} is no longer a %s", gtd->command_char,
+                   list_table[type].name, node->left, list_table[type].name);
+    delete_index_list(gts->list[type],
+                      search_index_list(gts->list[type], node->left, node->pr));
     return;
   }
 
-  for (i = root->used - 1; i >= 0; i--) {
-    if (match(root->list[i]->left, arg1, SUB_NONE)) {
-      show_message(
-          "#OK. {%s} IS NO LONGER %s %s", root->list[i]->left,
-          (*list_table[type].name == 'A' || *list_table[type].name == 'E')
-              ? "AN"
-              : "A",
-          list_table[type].name);
-
-      delete_index_list(root, i);
-
-      found = TRUE;
-    }
-  }
-
-  if (found == 0) {
-    show_message("#ERROR: NO MATCHES FOUND FOR %s {%s}", list_table[type].name,
-                 arg1);
-  }
+  display_printf("%cERROR: No matches for %s {%s}", gtd->command_char,
+                 list_table[type].name, text);
 }

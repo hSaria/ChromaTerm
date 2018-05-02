@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -13,9 +13,7 @@ struct session *new_session(int pid, int socket) {
 
 void cleanup_session() {
   if (kill(gts->pid, 0) && gts->socket) {
-    if (close(gts->socket) == -1) {
-      syserr("close in cleanup");
-    }
+    close(gts->socket);
     if (gts->pid) {
       kill(gts->pid, SIGKILL);
     }

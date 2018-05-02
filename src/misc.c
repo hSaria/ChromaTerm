@@ -1,4 +1,4 @@
-// This program is protected under the GNU GPL (See COPYING)
+/* This program is protected under the GNU GPL (See COPYING) */
 
 #include "defs.h"
 
@@ -15,14 +15,14 @@ DO_COMMAND(do_commands) {
       continue;
     }
     if ((int)strlen(buf) + 20 > gts->cols) {
-      display_puts(FALSE, TRUE, buf);
+      display_printf(buf);
       buf[0] = 0;
     }
     sprintf(add, "%20s", command_table[cmd].name);
     strcat(buf, add);
   }
   if (buf[0]) {
-    display_puts(FALSE, TRUE, buf);
+    display_printf(buf);
   }
   display_header("");
 }
@@ -36,25 +36,23 @@ DO_COMMAND(do_exit) {
 }
 
 DO_COMMAND(do_run) {
-  char command[BUFFER_SIZE], temp[BUFFER_SIZE];
+  char temp[BUFFER_SIZE];
   int desc, pid;
   struct winsize size;
 
   char *argv[4] = {"sh", "-c", "", NULL};
 
-  sub_arg_in_braces(arg, command, GET_ALL, SUB_NONE);
-
-  // Limit to single process
+  /* Limit to single process */
   if (process_already_running) {
-    display_printf(FALSE, "#RUN: A PROCESS IS ALREADY RUNNING");
+    display_printf("%cRUN: A process is already running", gtd->command_char);
     return;
   } else {
     process_already_running = TRUE;
   }
 
-  // If no process is provided, use the SHELL environment variable
-  if (*command == 0) {
-    strcpy(command, getenv("SHELL") ? getenv("SHELL") : "");
+  /* If no process is provided, use the SHELL environment variable */
+  if (*arg == 0) {
+    strcpy(arg, getenv("SHELL") ? getenv("SHELL") : "");
   }
 
   size.ws_row = get_scroll_size();
@@ -67,7 +65,7 @@ DO_COMMAND(do_run) {
     perror("forkpty");
     break;
   case 0:
-    sprintf(temp, "exec %s", command);
+    sprintf(temp, "exec %s", arg);
     argv[2] = temp;
     execv("/bin/sh", argv);
     break;
