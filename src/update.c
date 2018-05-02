@@ -54,7 +54,7 @@ void poll_input(void) {
 }
 
 void poll_session(void) {
-  int poll_limit 0;
+  int poll_limit = 0;
   fd_set readfds;
   static struct timeval to;
 
