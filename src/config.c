@@ -59,10 +59,10 @@ DO_CONFIG(config_charset) {
 }
 
 DO_CONFIG(config_commandchar) {
-  if (!isgraph((int)arg[0]) || isalpha((int)arg[0])) {
-    display_printf(
-        "%cERROR: The command char cannot be a part of the alphabet or a digit",
-        gtd->command_char);
+  if (!ispunct((int)arg[0])) {
+    display_printf("%cERROR: Commad char must me a punctuation: "
+                   "!@#$%%^&*-+=',.\"\\/:;?_`<>()[]{}|~",
+                   gtd->command_char);
     return FALSE;
   }
   if (arg[0]) {
