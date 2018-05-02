@@ -10,7 +10,7 @@ Quick summary of changes from the original ChromaTerm:
 - Changed the regex library (was PCRE, now POSIX regex). **Extended regular expressions** are enabled.
 - Optimised the search through highlight rules which results in over **60% improvement in output processing speed**. This is very notable when you are using a lot of rules and/or outputting a long string of text.
 - **Reduced the dependency** on many libraries. ChromaTerm-- should  require fewer, if any, additional installations.
-- ChromaTerm-- **multithreads** the input and output operations which significantly increases the **responsiveness**, and allowed polling to be removed. Furthermore, this nearly negates the overhead of CT while wrapping around a process.
+- ChromaTerm-- **multithreads** the input and output operations which significantly increases the **responsiveness**, which allowed polling to be removed. This nearly negates the overhead of CT while wrapping around a process.
 - Added an option to **toggle highlighting off**.
 - Removed nearly every function apart from **Highlight**, which is the only thing I think this program should do. This significantly reduced the overhead on all operations of CT.
 
