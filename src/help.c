@@ -106,7 +106,7 @@ struct help_type help_table[] = {
      "         use <<888>G00> to <<888>G23>.\n"
      "\n"
      "         Use <178>#help colordemo<078> to get a long (not complete) list "
-     "of colors\n\n\n"},
+     "of colors<099>\n\n\n"},
     {"CONFIG",
      "<028>Command<078>: #config <178>{<078>option<178>}<078> "
      "<178>{<078>argument<178>}<078>\n"
