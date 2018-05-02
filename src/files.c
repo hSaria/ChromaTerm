@@ -37,8 +37,9 @@ DO_COMMAND(do_read) {
   temp[0] = getc(fp);
 
   if (!isgraph((int)temp[0]) || isalpha((int)temp[0])) {
-    display_printf("%cERROR: {%s} - Start of file is a normal character",
-                   gtd->command_char, filename);
+    display_printf(
+        "%cERROR: {%s} - Start of file is a normal character; see #help read",
+        gtd->command_char, filename);
     fclose(fp);
     return;
   }
