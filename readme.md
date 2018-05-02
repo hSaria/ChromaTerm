@@ -19,7 +19,8 @@ Quick summary of changes from the original ChromaTerm:
 ChromaTerm-- (CT--) is a slimmed-down version of [ChromaTerm](https://github.com/tunnelsup/chromaterm). It essentially acts as a wrapper for a process (e.g. a shell). Any activity within the process is ran through CT--.
 While running,  CT-- listens for keywords and executes commands that allow you to configure CT--. Primarily, the `#highlight` command is the one you are after.
 
-The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has way more features if you are interested. This fork just removes a lot of those features (I am only interested in the #highlight and any supporting commands for it).
+The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has way more features if you are interested.
+
 
 ## Screenshots
 Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.
@@ -42,8 +43,8 @@ make install  # Optional: Move ct to the /usr/local/bin
 
 
 # Usage
-You will need a terminal program that can handle VT100 and ANSI color codes (many of them do).
-- You can start CT-- by `./ct` or just `ct` if installed to /usr/local/bin.
+You will need a terminal program that can handle VT100 and ANSI color codes (many of them do, if not all).
+- You can start CT-- by `./ct` or just `ct` if installed using `make install`.
 
 ## Modes
 You have two options for running ChromaTerm--:
@@ -52,12 +53,12 @@ You have two options for running ChromaTerm--:
 
 The only difference is that the **direct** mode runs with the `-e` flag. For example:
 ```
-ct -e "#highlight {%d.%d.%d.%d} {bold green}; #write {./chromatermrc_for_ipv4}; #run /bin/bash"
+ct -c ~/.custom_chromatermrc -e "#run /bin/bash"
 ```
 
-This example will open up CT--, create a new highlight rule, write all rules and configuration to a file, run a process (bash, in this case). Once the process closes, CT-- will close, too.
+This example will open up CT--, load a custom configuration file (more on that later), then run a process (bash, in this case). Once the process closes, CT-- will too.
 
-You can still run commands even while a process is running; type # on a new line that is empty then follow it with the require command. You can change the default command character (#); see `#help config`.
+You can still run commands even while a process is running; type # on a new line that is empty then follow it with the require command. You can change the default command character (#); try `#config`.
 
 ## Commands
 Below are quick summaries for some of the important commands.
@@ -69,35 +70,35 @@ Below are quick summaries for some of the important commands.
 > Before writing a CT-- command, be sure to hit enter first. This is a limitation which I documented in `read_key` function in input.c.
 
 #### `#highlight {condition} {action}` and `#unhighlight {condition}`
-The output is scanned according to the condition. If a part of the text matches the condition, the action is takes on that text.
+The output is scanned according to the condition. If a part of the text matches the condition, the action is taken on that text.
 ```
-#highlight {%d.%d.%d.%d} {bold green}
-#highlight {{(E|e)rr..}} {bold red}
+#highlight {([0-9]{2}:){2}[0-9]{2}} {bold green}
+#highlight {(E|e)rr..} {<fca>}
 ```
-The first will find four digits separated by dots then highlight them bold yellow. The second has a regular expression (enclosed by two sets of curly brackets).
+The first will find the time in the format of "HH:MM:SS" and highlight it bold green. The second will highlight Err or err, and the following two characters. This is regular expression, so you can do a lot more.
 
-You can remove a rule by using the `#unhighlight`.
+You can remove a rule by using the `#unhighlight`. 
 ```
 #unhighlight {{(E|e)rr..}}
-#unhighlight %*
 ```
-The first will remove a specific rule, while the second will remove all highlight rules.
+
+You can also globally toggle highlighting by using `#config highlight <on|off>`. The default is on.
 
 #### `#read {file}` and `#write {file}`
 You can read a configuration file while inside a session. Any rules will be **merged** with the existing ones. Furthermore, you can write the configuration of the current session to a file.
 
 #### `#run {process} ...`
-This command will run a process and pass any arguments to it.
+This command will run a process and pass any arguments to it. CT will close once the process dies.
 
 #### `#exit`
-Exits CT--. The child process is terminated, too. If the child process dies, CT-- will automatically exit.
+Exits CT--. The child process is terminated, too. `#quit` does the same thing.
 
 ## Configuration File
-CT-- will look for a configuration file called `.chromatermrc` in the current directory then the home directory, and will load the first one it finds. The file should contain CT-- commands.
+CT-- will look for a configuration file called `.chromatermrc` in the current directory then your home directory. It will load the first one it finds. The file should contain CT-- commands.
 
 You may also override which configuration file is loaded by using the `-c` parameter. For example:
 ```
-ct -c $HOME/.config/chromaterm--/.chromatermrc
+ct -c $HOME/.config/ChromaTerm--/.chromatermrc
 ```
 
 There is a sample file in the project. Feel free to use it.
@@ -121,7 +122,7 @@ Additionally, there are help topics within the tool. The following commands show
 ```
 #help
 #help highlight
-#help %*
+#help all
 ```
 
 ## Questions or Bugs
