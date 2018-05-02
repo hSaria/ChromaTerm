@@ -264,7 +264,7 @@ DO_COMMAND(do_write) {
       strcpy(filename, *p.we_wordv);
       wordfree(&p);
     } else {
-      display_printf("%cSYNTAX: %cREAD {FILE LOCATION}", gtd->command_char,
+      display_printf("%cSYNTAX: %cWRITE {FILE LOCATION}", gtd->command_char,
                      gtd->command_char);
       return;
     }
