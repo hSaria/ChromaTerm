@@ -181,6 +181,13 @@ struct help_type help_table[] = {
      "         the currently loaded commands (duplicate commands are "
      "overwritten).\n"
      "\n"
+     "         When reading a file, the first character that is not a part of "
+     "a comment\n"
+     "         is considered the command character.\n"
+     "\n"
+     "         Commad char must me a punctuation: \n"
+     "                 !@#$%%^&*-+=',.\"\\/:;?_`<>()[]{}|~,\n"
+     "\n"
      "         You can comment out triggers using /* text */<099>\n\n\n"},
     {"RUN", "<028>Command<078>: #run <178>{<078>shell command<178>}<078>\n"
             "\n"

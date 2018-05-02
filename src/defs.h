@@ -2,6 +2,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <pthread.h>
 #include <regex.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -47,8 +48,6 @@
 #define BUFFER_SIZE 20000
 
 #define ESCAPE 27
-
-#define PULSE_PER_SECOND 500
 
 /* Index for lists */
 #define LIST_CONFIG 0
@@ -116,6 +115,7 @@ struct session {
 struct global_data {
   struct termios active_terminal;
   char *mud_output_buf;
+  char *mud_output_current_line_start;
   int mud_output_max;
   int mud_output_len;
   char input_buf[BUFFER_SIZE];
@@ -156,7 +156,6 @@ struct config_type {
 struct list_type {
   char *name;
   int mode;
-  int args;
 };
 
 struct cursor_type {
@@ -279,6 +278,9 @@ void read_line(void);
 extern struct session *gts;
 extern struct global_data *gtd;
 
+extern pthread_t input_thread;
+extern pthread_t output_thread;
+
 int main(int argc, char **argv);
 void init_program(void);
 void help_menu(int error, char c, char *proc_name);
@@ -305,7 +307,6 @@ DO_COMMAND(do_run);
 void process_mud_output(char *linebuf, int prompt);
 int read_buffer_mud(void);
 void readmud(void);
-void write_line_socket(char *line, int size);
 
 #endif
 
@@ -366,9 +367,8 @@ void script_driver(char *str);
 #ifndef __UPDATE_H__
 #define __UPDATE_H__
 
-void mainloop(void);
-void poll_input(void);
-void poll_sessions(void);
+void *poll_input(void *);
+void *poll_session(void *);
 
 #endif
 

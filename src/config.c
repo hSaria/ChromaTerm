@@ -59,6 +59,12 @@ DO_CONFIG(config_charset) {
 }
 
 DO_CONFIG(config_commandchar) {
+  if (!ispunct((int)arg[0])) {
+    display_printf("%cERROR: Commad char must me a punctuation: "
+                   "!@#$%%^&*-+=',.\"\\/:;?_`<>()[]{}|~",
+                   gtd->command_char);
+    return FALSE;
+  }
   if (arg[0]) {
     gtd->command_char = arg[0];
   } else {

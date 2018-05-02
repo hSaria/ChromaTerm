@@ -2,69 +2,40 @@
 
 #include "defs.h"
 
-void mainloop(void) {
-  static struct timeval curr_time, wait_time, last_time;
-  int usec_loop, usec_wait;
-
-  wait_time.tv_sec = 0;
-
-  while (TRUE) {
-    gettimeofday(&last_time, NULL);
-
-    poll_input();
-    poll_sessions();
-    fflush(stdout);
-
-    gettimeofday(&curr_time, NULL);
-
-    if (curr_time.tv_sec == last_time.tv_sec) {
-      usec_loop = curr_time.tv_usec - last_time.tv_usec;
-    } else {
-      usec_loop = 1000000 - last_time.tv_usec + curr_time.tv_usec;
-    }
-
-    usec_wait = 1000000 / PULSE_PER_SECOND - usec_loop;
-
-    wait_time.tv_usec = usec_wait;
-
-    if (usec_wait > 0) {
-      select(0, NULL, NULL, NULL, &wait_time);
-    }
-  }
-}
-
-void poll_input(void) {
+void *poll_input(void *arg) {
   fd_set readfds;
-  static struct timeval to;
+
+  if (arg) {
+    /* Making a warning shut up */
+  }
 
   while (TRUE) {
     FD_ZERO(&readfds);
     FD_SET(0, &readfds);
 
-    if (select(FD_SETSIZE, &readfds, NULL, NULL, &to) <= 0) {
-      return;
-    }
+    /* Blocking operation */
+    select(FD_SETSIZE, &readfds, NULL, NULL, NULL);
 
-    if (FD_ISSET(0, &readfds)) {
-      process_input();
-    } else {
-      return;
-    }
+    process_input();
+
+    fflush(stdout);
   }
 }
 
-void poll_sessions(void) {
+void *poll_session(void *arg) {
   fd_set readfds;
-  static struct timeval to;
 
-  FD_ZERO(&readfds);
+  if (arg) {
+    /* Making a warning shut up */
+  }
 
-  if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
-    while (TRUE) {
+  while (TRUE) {
+    if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
       FD_SET(gts->socket, &readfds);
 
-      if (select(FD_SETSIZE, &readfds, NULL, NULL, &to) <= 0) {
-        break;
+      /* Blocking operation */
+      if (select(FD_SETSIZE, &readfds, NULL, NULL, NULL) <= 0) {
+        quitmsg(NULL, 0);
       }
 
       if (read_buffer_mud() == FALSE) {
@@ -74,6 +45,8 @@ void poll_sessions(void) {
       if (gtd->mud_output_len) {
         readmud();
       }
+
+      fflush(stdout);
     }
   }
 }

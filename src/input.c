@@ -127,9 +127,8 @@ void read_key(void) {
 
       socket_printf(1, "%c", '\r');
     } else { /* Normal input */
-      if (gtd->macro_buf[cnt] == gtd->command_char &&
-          gtd->input_buf[0] ==
-              0) { /* Transfer to CT on next call of read_key */
+      if (gtd->macro_buf[cnt] == gtd->command_char && gtd->input_buf[0] == 0) {
+        /* Transfer to CT on next call of read_key */
         if (gtd->input_len != gtd->input_cur) {
           printf("\033[1@%c", gtd->macro_buf[cnt]);
         } else {

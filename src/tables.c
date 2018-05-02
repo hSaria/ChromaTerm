@@ -96,5 +96,5 @@ struct cursor_type cursor_table[] = {
     {"", "", "d", cursor_delete_word_right},
     {"", "", "", NULL}};
 
-struct list_type list_table[LIST_MAX] = {{"CONFIG", ALPHA, 2},
-                                         {"HIGHLIGHT", PRIORITY, 3}};
+struct list_type list_table[LIST_MAX] = {{"CONFIG", ALPHA},
+                                         {"HIGHLIGHT", PRIORITY}};

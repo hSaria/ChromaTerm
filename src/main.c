@@ -5,7 +5,9 @@
 struct session *gts;
 struct global_data *gtd;
 
-/* main() - setup signals - init lists - readcoms - mainloop() */
+pthread_t input_thread;
+pthread_t output_thread;
+
 int main(int argc, char **argv) {
   signal(SIGTERM, abort_and_trap_handler);
   signal(SIGSEGV, abort_and_trap_handler);
@@ -67,8 +69,13 @@ int main(int argc, char **argv) {
     }
   }
 
-  mainloop();
+  if (pthread_create(&input_thread, NULL, poll_input, NULL) != 0) {
+    quitmsg("faild to create input thread", 1);
+  }
 
+  pthread_join(input_thread, NULL);
+
+  quitmsg(NULL, 0);
   return 0;
 }
 

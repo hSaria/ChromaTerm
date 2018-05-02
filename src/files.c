@@ -36,9 +36,10 @@ DO_COMMAND(do_read) {
 
   temp[0] = getc(fp);
 
-  if (!isgraph((int)temp[0]) || isalpha((int)temp[0])) {
-    display_printf("%cERROR: {%s} - Invalid start of file", gtd->command_char,
-                   filename);
+  if (!ispunct((int)temp[0])) {
+    display_printf(
+        "%cERROR: {%s} - Start of file is not a punctuation; see #help read",
+        gtd->command_char, filename);
     fclose(fp);
     return;
   }
@@ -49,13 +50,18 @@ DO_COMMAND(do_read) {
 
   if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL ||
       (bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf("%cERROR: {%s} - Failed to allocate memory",
-                   gtd->command_char, filename);
+    display_printf(
+        "%cERROR: {%s} - Failed to allocate memory to process the file",
+        gtd->command_char, filename);
     fclose(fp);
     return;
   }
 
-  fread(bufi, 1, filedata.st_size, fp);
+  if (fread(bufi, 1, filedata.st_size, fp) <= 0) {
+    display_printf("%cERROR: {%s} - File is empty", gtd->command_char,
+                   filename);
+    return;
+  };
 
   pti = bufi;
   pto = bufo;
@@ -253,7 +259,6 @@ DO_COMMAND(do_read) {
 DO_COMMAND(do_write) {
   FILE *file;
   char filename[BUFFER_SIZE];
-  struct listroot *root;
   int i, j, cnt = 0;
   wordexp_t p;
 
@@ -264,7 +269,7 @@ DO_COMMAND(do_write) {
       strcpy(filename, *p.we_wordv);
       wordfree(&p);
     } else {
-      display_printf("%cSYNTAX: %cREAD {FILE LOCATION}", gtd->command_char,
+      display_printf("%cSYNTAX: %cWRITE {FILE LOCATION}", gtd->command_char,
                      gtd->command_char);
       return;
     }
@@ -277,10 +282,8 @@ DO_COMMAND(do_write) {
   }
 
   for (i = 0; i < LIST_MAX; i++) {
-    root = gts->list[i];
-    for (j = 0; j < root->used; j++) {
-      write_node(i, root->list[j], file);
-
+    for (j = 0; j < gts->list[i]->used; j++) {
+      write_node(i, gts->list[i]->list[j], file);
       cnt++;
     }
   }
@@ -292,21 +295,18 @@ DO_COMMAND(do_write) {
 }
 
 void write_node(int list, struct listnode *node, FILE *file) {
-  char result[BUFFER_SIZE];
+  char result[BUFFER_SIZE * 4];
 
   int llen = UMAX(20, (int)strlen(node->left));
   int rlen = UMAX(25, (int)strlen(node->right));
 
-  switch (list_table[list].args) {
-  case 2:
-    sprintf(result, "%c%-16s {%s} %*s {%s}\n", gtd->command_char,
+  if (list == LIST_CONFIG) {
+    sprintf(result, "%c%-10s {%s} %*s {%s}\n", gtd->command_char,
             list_table[list].name, node->left, 20 - llen, "", node->right);
-    break;
-  case 3:
-    sprintf(result, "%c%-16s {%s} %*s {%s} %*s {%s}\n", gtd->command_char,
+  } else if (list == LIST_HIGHLIGHT) {
+    sprintf(result, "%c%-10s {%s} %*s {%s} %*s {%s}\n", gtd->command_char,
             list_table[list].name, node->left, 20 - llen, "", node->right,
             25 - rlen, "", node->pr);
-    break;
   }
 
   fputs(result, file);

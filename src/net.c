@@ -37,6 +37,8 @@ void readmud() {
     next_line = strchr(line, '\n');
 
     if (next_line) {
+      /* Used to repair the mud line when a command's output clears it */
+      gtd->mud_output_current_line_start = gtd->mud_output_buf;
       *next_line = 0;
       next_line++;
     } else if (*line == 0) {
@@ -45,30 +47,4 @@ void readmud() {
 
     process_mud_output(line, next_line == NULL);
   }
-}
-
-void write_line_socket(char *line, int size) {
-  static int retry;
-
-  if (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
-    display_printf("%cERROR: No child process. Use %cRUN {PROCESS}",
-                   gtd->command_char, gtd->command_char);
-    return;
-  }
-
-  if (write(gts->socket, line, size) == -1) {
-    if (retry++ < 10) {
-      usleep(100000);
-
-      write_line_socket(line, size);
-
-      return;
-    }
-    perror("write in write_line_socket");
-    quitmsg(NULL, 74);
-
-    return;
-  }
-
-  retry = 0;
 }
