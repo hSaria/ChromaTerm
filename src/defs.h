@@ -48,7 +48,7 @@
 
 #define ESCAPE 27
 
-#define PULSE_PER_SECOND 500
+#define PULSE_PER_SECOND 250
 
 /* Index for lists */
 #define LIST_CONFIG 0
