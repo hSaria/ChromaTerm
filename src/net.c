@@ -63,9 +63,12 @@ void readmud() {
 }
 
 void process_mud_output(char *linebuf, int prompt) {
+  char line[BUFFER_SIZE];
+  strcpy(line, linebuf);
+
   if (HAS_BIT(gts->flags, SES_FLAG_HIGHLIGHT)) {
-    check_all_highlights(linebuf);
+    check_all_highlights(line);
   }
 
-  printline(linebuf, prompt);
+  printline(line, prompt);
 }

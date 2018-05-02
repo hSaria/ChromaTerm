@@ -396,6 +396,5 @@ int skip_vt102_codes(char *str);
 void strip_vt102_codes(char *str, char *buf);
 void get_color_codes(char *old, char *str, char *buf);
 int find_non_color_codes(char *str);
-int strip_vt102_strlen(char *str);
 
 #endif

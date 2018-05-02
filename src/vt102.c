@@ -319,30 +319,3 @@ int find_non_color_codes(char *str) {
   }
   return 0;
 }
-
-int strip_vt102_strlen(char *str) {
-  char *pti;
-  int i = 0;
-
-  pti = str;
-
-  while (*pti) {
-    if (skip_vt102_codes(pti)) {
-      pti += skip_vt102_codes(pti);
-
-      continue;
-    }
-
-    if (HAS_BIT(gts->flags, SES_FLAG_UTF8) && (*pti & 192) == 192) {
-      pti++;
-
-      while ((*pti & 192) == 128) {
-        pti++;
-      }
-    } else {
-      pti++;
-    }
-    i++;
-  }
-  return i;
-}
