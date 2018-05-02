@@ -127,31 +127,19 @@ void read_key(void) {
 
       socket_printf(1, "%c", '\r');
     } else { /* Normal input */
-      if ((gtd->macro_buf[cnt] == gtd->command_char &&
-           gtd->input_buf[0] == 0) ||
-          !HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
+      if (gtd->macro_buf[cnt] == gtd->command_char && gtd->input_buf[0] == 0) {
         /* Transfer to CT on next call of read_key */
-
-        if (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED) &&
-            gtd->macro_buf[cnt] != gtd->command_char) {
-          printf("%c", gtd->command_char);
-        }
-
         if (gtd->input_len != gtd->input_cur) {
           printf("\033[1@%c", gtd->macro_buf[cnt]);
         } else {
           printf("%c", gtd->macro_buf[cnt]);
         }
-
         gtd->input_buf[0] = gtd->command_char;
-        gtd->input_buf[1] = (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED))
-                                ? gtd->macro_buf[cnt]
-                                : 0;
-        gtd->input_buf[2] = 0;
+        gtd->input_buf[1] = 0;
         gtd->macro_buf[0] = 0;
-        gtd->input_len = (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) ? 2 : 1;
-        gtd->input_cur = (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) ? 2 : 1;
-        gtd->input_pos = (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) ? 2 : 1;
+        gtd->input_len = 1;
+        gtd->input_cur = 1;
+        gtd->input_pos = 1;
       } else { /* If not destined to CT, send to socket */
         socket_printf(1, "%c", gtd->macro_buf[cnt]);
         gtd->input_buf[0] = 127; /* != 0 means a reset (\n) is required */
