@@ -28,7 +28,9 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
 
   node->left = strdup(ltext);
   node->right = strdup(rtext);
-  node->pr = strdup(prtext);
+  if (list_table[root->type].mode == PRIORITY) {
+    node->pr = strdup(prtext);
+  }
 
   if (root->type == LIST_HIGHLIGHT) {
     if (regcomp(&compiled_regex, ltext, REG_EXTENDED | REG_NEWLINE) != 0) {
@@ -57,23 +59,11 @@ struct listnode *update_node_list(struct listroot *root, char *ltext,
       node->right = strdup(rtext);
     }
 
-    switch (list_table[root->type].mode) {
-    case PRIORITY: /* Highlight */
+    if (list_table[root->type].mode == PRIORITY) {
       if (atof(node->pr) != atof(prtext)) {
         delete_index_list(root, index);
         return insert_node_list(root, ltext, rtext, prtext);
       }
-      break;
-    case ALPHA: /* Config */
-      if (strcmp(node->pr, prtext) != 0) {
-        free(node->pr);
-        node->pr = strdup(prtext);
-      }
-      break;
-    default:
-      display_printf("%cBUG: update_node_list: unknown mode: %d",
-                     gtd->command_char, list_table[root->type].mode);
-      break;
     }
     return node;
   } else {
