@@ -2,6 +2,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <pthread.h>
 #include <regex.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -47,8 +48,6 @@
 #define BUFFER_SIZE 20000
 
 #define ESCAPE 27
-
-#define PULSE_PER_SECOND 250
 
 /* Index for lists */
 #define LIST_CONFIG 0
@@ -278,6 +277,9 @@ void read_line(void);
 extern struct session *gts;
 extern struct global_data *gtd;
 
+extern pthread_t input_thread;
+extern pthread_t output_thread;
+
 int main(int argc, char **argv);
 void init_program(void);
 void help_menu(int error, char c, char *proc_name);
@@ -364,9 +366,8 @@ void script_driver(char *str);
 #ifndef __UPDATE_H__
 #define __UPDATE_H__
 
-void mainloop(void);
-void poll_input(void);
-void poll_session(void);
+void *poll_input(void *);
+void *poll_session(void *);
 
 #endif
 
