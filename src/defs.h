@@ -99,9 +99,9 @@ struct listroot {
 };
 
 struct listnode {
-  char *left;
-  char *right;
-  char *pr;
+  char left[BUFFER_SIZE];
+  char right[BUFFER_SIZE];
+  char pr[BUFFER_SIZE];
   regex_t compiled_regex;
 };
 
