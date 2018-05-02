@@ -304,7 +304,6 @@ DO_COMMAND(do_run);
 void process_mud_output(char *linebuf, int prompt);
 int read_buffer_mud(void);
 void readmud(void);
-void write_line_socket(char *line, int size);
 
 #endif
 

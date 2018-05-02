@@ -46,29 +46,3 @@ void readmud() {
     process_mud_output(line, next_line == NULL);
   }
 }
-
-void write_line_socket(char *line, int size) {
-  static int retry;
-
-  if (!HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
-    display_printf("%cERROR: No child process. Use %cRUN {PROCESS}",
-                   gtd->command_char, gtd->command_char);
-    return;
-  }
-
-  if (write(gts->socket, line, size) == -1) {
-    if (retry++ < 10) {
-      usleep(100000);
-
-      write_line_socket(line, size);
-
-      return;
-    }
-    perror("write in write_line_socket");
-    quitmsg(NULL, 74);
-
-    return;
-  }
-
-  retry = 0;
-}
