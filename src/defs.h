@@ -368,7 +368,7 @@ void script_driver(char *str);
 
 void mainloop(void);
 void poll_input(void);
-void poll_sessions(void);
+void poll_session(void);
 
 #endif
 

@@ -12,7 +12,7 @@ void mainloop(void) {
     gettimeofday(&last_time, NULL);
 
     poll_input();
-    poll_sessions();
+    poll_session();
     fflush(stdout);
 
     gettimeofday(&curr_time, NULL);
@@ -53,7 +53,8 @@ void poll_input(void) {
   }
 }
 
-void poll_sessions(void) {
+void poll_session(void) {
+  int poll_limit 0;
   fd_set readfds;
   static struct timeval to;
 
@@ -61,6 +62,9 @@ void poll_sessions(void) {
 
   if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
     while (TRUE) {
+      if (poll_limit++ > 100) {
+        return;
+      }
       FD_SET(gts->socket, &readfds);
 
       if (select(FD_SETSIZE, &readfds, NULL, NULL, &to) <= 0) {
