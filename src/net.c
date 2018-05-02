@@ -37,6 +37,8 @@ void readmud() {
     next_line = strchr(line, '\n');
 
     if (next_line) {
+      /* Used to repair the mud line when a command's output clears it */
+      gtd->mud_output_current_line_start = gtd->mud_output_buf;
       *next_line = 0;
       next_line++;
     } else if (*line == 0) {

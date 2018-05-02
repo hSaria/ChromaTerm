@@ -20,6 +20,9 @@ void parse_script(char *str, int cmd) {
     display_printf("%cERROR: Unknown command '%s'", gtd->command_char, str);
   } else {
     (*command_table[cmd].command)(str);
+
+    /* Repair the mud's current line */
+    printline(gtd->mud_output_buf, TRUE);
   }
 }
 

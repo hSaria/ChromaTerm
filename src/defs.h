@@ -115,6 +115,7 @@ struct session {
 struct global_data {
   struct termios active_terminal;
   char *mud_output_buf;
+  char *mud_output_current_line_start;
   int mud_output_max;
   int mud_output_len;
   char input_buf[BUFFER_SIZE];
