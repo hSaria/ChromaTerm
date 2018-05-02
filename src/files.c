@@ -56,7 +56,11 @@ DO_COMMAND(do_read) {
     return;
   }
 
-  fread(bufi, 1, filedata.st_size, fp);
+  if (fread(bufi, 1, filedata.st_size, fp) <= 0) {
+    display_printf("%cERROR: {%s} - File is empty", gtd->command_char,
+                   filename);
+    return;
+  };
 
   pti = bufi;
   pto = bufo;
@@ -290,7 +294,7 @@ DO_COMMAND(do_write) {
 }
 
 void write_node(int list, struct listnode *node, FILE *file) {
-  char result[BUFFER_SIZE];
+  char result[BUFFER_SIZE * 4];
 
   int llen = UMAX(20, (int)strlen(node->left));
   int rlen = UMAX(25, (int)strlen(node->right));

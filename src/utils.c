@@ -109,6 +109,8 @@ void socket_printf(unsigned int length, char *format, ...) {
   va_end(args);
 
   if (HAS_BIT(gts->flags, SES_FLAG_CONNECTED)) {
-    write(gts->socket, buf, length);
+    if (write(gts->socket, buf, length) < 0) {
+      quitmsg("faild on socket write", 1);
+    }
   }
 }
