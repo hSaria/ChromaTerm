@@ -211,22 +211,22 @@ DO_CURSOR(cursor_test);
 #ifndef __DATA_H__
 #define __DATA_H__
 
-struct listroot *init_list(int type, int size);
-struct listnode *insert_node_list(struct listroot *root, char *ltext,
-                                  char *rtext, char *prtext);
-struct listnode *update_node_list(struct listroot *root, char *ltext,
-                                  char *rtext, char *prtext);
-struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
-                                   int index);
-struct listnode *search_node_list(struct listroot *root, char *text);
-void delete_node_with_wild(int index, char *string);
-void delete_index_list(struct listroot *root, int index);
-int search_index_list(struct listroot *root, char *text, char *priority);
-int locate_index_list(struct listroot *root, char *text, char *priority);
 int bsearch_alpha_list(struct listroot *root, char *text, int seek);
 int bsearch_priority_list(struct listroot *root, char *text, char *priority,
                           int seek);
+void delete_index_list(struct listroot *root, int index);
+void delete_node_with_wild(int type, char *text);
+struct listroot *init_list(int type, int size);
+struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
+                                   int index);
+struct listnode *insert_node_list(struct listroot *root, char *ltext,
+                                  char *rtext, char *prtext);
+int locate_index_list(struct listroot *root, char *text, char *priority);
 int nsearch_list(struct listroot *root, char *text);
+int search_index_list(struct listroot *root, char *text, char *priority);
+struct listnode *search_node_list(struct listroot *root, char *text);
+struct listnode *update_node_list(struct listroot *root, char *ltext,
+                                  char *rtext, char *prtext);
 
 #endif
 
@@ -236,7 +236,7 @@ int nsearch_list(struct listroot *root, char *text);
 DO_COMMAND(do_read);
 DO_COMMAND(do_write);
 
-void write_node(int mode, struct listnode *node, FILE *file);
+void write_node(int list, struct listnode *node, FILE *file);
 
 #endif
 
@@ -254,7 +254,7 @@ DO_COMMAND(do_highlight);
 DO_COMMAND(do_unhighlight);
 
 void check_all_highlights(char *original);
-int get_highlight_codes(char *htype, char *result);
+int get_highlight_codes(char *string, char *result);
 
 #endif
 

@@ -3,9 +3,8 @@
 #include "defs.h"
 
 int find_command(char *command) {
-  int cmd;
-
   if (isalpha((int)*command)) {
+    int cmd;
     for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
       if (is_abbrev(command, command_table[cmd].name)) {
         return cmd;
