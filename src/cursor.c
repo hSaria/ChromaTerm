@@ -219,10 +219,6 @@ DO_CURSOR(cursor_clear_right) {
   gtd->input_len = gtd->input_cur;
 }
 
-DO_CURSOR(cursor_convert_meta) {
-  SET_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR);
-}
-
 DO_CURSOR(cursor_delete) {
   if (gtd->input_len == 0) {
     return;
