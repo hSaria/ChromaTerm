@@ -47,6 +47,8 @@ struct config_type config_table[] = {
     {"HIGHLIGHT", "Highlight according to rules", config_highlight},
     {"", "", NULL}};
 
+/* Those are not empty codes; they just cannot be displayed on most editors.
+ * DO NOT REMOVE THE FOLLOWING LINES */
 struct cursor_type cursor_table[] = {
     {"BACKSPACE", "Delete backward character", "", cursor_backspace},
     {"BACKWARD", "Move cursor backward", "", cursor_left},
