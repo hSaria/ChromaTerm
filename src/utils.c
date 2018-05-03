@@ -86,7 +86,7 @@ int is_abbrev(char *s1, char *s2) {
   return !strncasecmp(s2, s1, strlen(s1));
 }
 
-void printline(char *str, int prompt) {
+void printline(char *str, int isaprompt) {
   char wrapped_str[BUFFER_SIZE * 2];
 
   if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA)) {
