@@ -83,20 +83,6 @@ void input_printf(char *format, ...) {
   printf("%s", buf);
 }
 
-void process_input(void) {
-  read_key();
-
-  if (!HAS_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT)) {
-    return;
-  }
-
-  DEL_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
-
-  script_driver(gtd->input_buf);
-
-  gtd->input_buf[0] = 0;
-}
-
 /* The current output of the screen cannot be determined which means we can only
  * listen for commands after a new line. */
 void read_key(void) {

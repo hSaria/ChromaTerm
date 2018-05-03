@@ -16,7 +16,7 @@ void *poll_input(void *arg) {
     /* Blocking operation */
     select(FD_SETSIZE, &readfds, NULL, NULL, NULL);
 
-    process_input();
+    read_key();
 
     fflush(stdout);
   }

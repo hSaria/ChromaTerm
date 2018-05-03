@@ -350,7 +350,8 @@ DO_CURSOR(cursor_enter) {
   gtd->input_off = 1;
   gtd->macro_buf[0] = 0;
 
-  SET_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
+  script_driver(gtd->input_buf);
+  gtd->input_buf[0] = 0;
 }
 
 DO_CURSOR(cursor_exit) { do_exit(NULL); }
