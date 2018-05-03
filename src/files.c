@@ -55,7 +55,6 @@ DO_COMMAND(do_read) {
         gtd->command_char, filename);
     fclose(fp);
     return;
-    free(bufi);
   } else if ((bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
     display_printf(
         "%cERROR: {%s} - Failed to allocate memory to process the file",
