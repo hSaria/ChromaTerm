@@ -19,7 +19,7 @@ Quick summary of changes from the original ChromaTerm:
 ChromaTerm-- (CT--) is a slimmed-down version of [ChromaTerm](https://github.com/tunnelsup/chromaterm). It essentially acts as a wrapper for a process (e.g. a shell). Any activity within the process is ran through CT--.
 While running,  CT-- listens for keywords and executes commands that allow you to configure CT--. Primarily, the `#highlight` command is the one you are after.
 
-The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has way more features if you are interested.
+The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has way more features if you are interested, though it doesn't seem to be maintained anymore and is far less responsive.
 
 
 ## Screenshots
