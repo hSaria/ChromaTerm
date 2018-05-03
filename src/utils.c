@@ -95,7 +95,7 @@ void printline(char *str, int isaprompt) {
     strcpy(wrapped_str, str);
   }
   printf("%s", wrapped_str);
-  if (!prompt) {
+  if (!isaprompt) {
     printf("\n");
   }
 }
