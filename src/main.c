@@ -123,8 +123,28 @@ void help_menu(int error, char c, char *proc_name) {
 }
 
 void quitmsg(char *message, int exit_signal) {
+  int i, j;
   cleanup_session();
   restore_terminal();
+
+  if (input_thread) {
+    pthread_kill(input_thread, 0);
+  }
+
+  if (output_thread) {
+    pthread_kill(output_thread, 0);
+  }
+
+  for (i = 0; i < LIST_MAX; i++) {
+    for (j = 0; j < gts->list[i]->used; j++) {
+      delete_index_list(gts->list[i], j);
+    }
+    free(gts->list[i]);
+  }
+
+  free(gts);
+  free(gtd->mud_output_buf);
+  free(gtd);
 
   if (message) {
     printf("\n%s\n", message);
