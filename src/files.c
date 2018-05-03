@@ -20,6 +20,7 @@ DO_COMMAND(do_read) {
     } else {
       display_printf("%cSYNTAX: %cREAD {FILE LOCATION}", gtd->command_char,
                      gtd->command_char);
+      wordfree(&p);
       return;
     }
   } else {
@@ -271,6 +272,7 @@ DO_COMMAND(do_write) {
     } else {
       display_printf("%cSYNTAX: %cWRITE {FILE LOCATION}", gtd->command_char,
                      gtd->command_char);
+      wordfree(&p);
       return;
     }
   }

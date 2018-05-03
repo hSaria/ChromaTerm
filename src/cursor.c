@@ -219,10 +219,6 @@ DO_CURSOR(cursor_clear_right) {
   gtd->input_len = gtd->input_cur;
 }
 
-DO_CURSOR(cursor_convert_meta) {
-  SET_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR);
-}
-
 DO_CURSOR(cursor_delete) {
   if (gtd->input_len == 0) {
     return;
@@ -350,7 +346,8 @@ DO_CURSOR(cursor_enter) {
   gtd->input_off = 1;
   gtd->macro_buf[0] = 0;
 
-  SET_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
+  script_driver(gtd->input_buf);
+  gtd->input_buf[0] = 0;
 }
 
 DO_CURSOR(cursor_exit) { do_exit(NULL); }

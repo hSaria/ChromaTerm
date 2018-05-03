@@ -65,9 +65,7 @@
 
 #define SUB_NONE 0
 
-#define GLOBAL_FLAG_CONVERTMETACHAR (1 << 0)
-#define GLOBAL_FLAG_PROCESSINPUT (1 << 1)
-#define GLOBAL_FLAG_INSERTINPUT (1 << 2)
+#define GLOBAL_FLAG_INSERTINPUT (1 << 0)
 
 #define SES_FLAG_CONNECTED (1 << 0)
 #define SES_FLAG_CONVERTMETA (1 << 1)
@@ -189,7 +187,6 @@ DO_CURSOR(cursor_check_line_modified);
 DO_CURSOR(cursor_clear_left);
 DO_CURSOR(cursor_clear_line);
 DO_CURSOR(cursor_clear_right);
-DO_CURSOR(cursor_convert_meta);
 DO_CURSOR(cursor_delete);
 DO_CURSOR(cursor_delete_or_exit);
 DO_CURSOR(cursor_delete_word_left);
@@ -266,7 +263,6 @@ int get_highlight_codes(char *htype, char *result);
 
 void convert_meta(char *input, char *output);
 void input_printf(char *format, ...);
-void process_input(void);
 void read_key(void);
 void read_line(void);
 

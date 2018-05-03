@@ -47,6 +47,8 @@ struct config_type config_table[] = {
     {"HIGHLIGHT", "Highlight according to rules", config_highlight},
     {"", "", NULL}};
 
+/* Those are not empty codes; they just cannot be displayed on most editors.
+ * DO NOT REMOVE THE FOLLOWING LINES */
 struct cursor_type cursor_table[] = {
     {"BACKSPACE", "Delete backward character", "", cursor_backspace},
     {"BACKWARD", "Move cursor backward", "", cursor_left},
@@ -55,8 +57,6 @@ struct cursor_type cursor_table[] = {
     {"CLEAR LINE", "Delete the input line", "", cursor_clear_line},
     {"CLEAR RIGHT", "Delete from cursor to end of input", "",
      cursor_clear_right},
-    {"CONVERT META", "Meta convert the next character", "",
-     cursor_convert_meta},
     {"CTRL DELETE", "Delete one character, exit on an empty line", "",
      cursor_delete_or_exit},
     {"DELETE", "Delete character at cursor", "[3~", cursor_delete},

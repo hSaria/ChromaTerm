@@ -16,7 +16,7 @@ void *poll_input(void *arg) {
     /* Blocking operation */
     select(FD_SETSIZE, &readfds, NULL, NULL, NULL);
 
-    process_input();
+    read_key();
 
     fflush(stdout);
   }
@@ -24,6 +24,7 @@ void *poll_input(void *arg) {
 
 void *poll_session(void *arg) {
   fd_set readfds;
+  FD_ZERO(&readfds); /* Initialise the file descriptor */
 
   if (arg) {
     /* Making a warning shut up */

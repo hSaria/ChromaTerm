@@ -5,8 +5,6 @@
 void convert_meta(char *input, char *output) {
   char *pti, *pto;
 
-  DEL_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR);
-
   pti = input;
   pto = output;
 
@@ -83,20 +81,6 @@ void input_printf(char *format, ...) {
   printf("%s", buf);
 }
 
-void process_input(void) {
-  read_key();
-
-  if (!HAS_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT)) {
-    return;
-  }
-
-  DEL_BIT(gtd->flags, GLOBAL_FLAG_PROCESSINPUT);
-
-  script_driver(gtd->input_buf);
-
-  gtd->input_buf[0] = 0;
-}
-
 /* The current output of the screen cannot be determined which means we can only
  * listen for commands after a new line. */
 void read_key(void) {
@@ -108,15 +92,10 @@ void read_key(void) {
     return;
   }
   len = (int)read(0, buffer, 1);
-
   buffer[len] = 0;
 
-  if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA) ||
-      HAS_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR)) {
-    convert_meta(buffer, &gtd->macro_buf[strlen(gtd->macro_buf)]);
-  } else {
-    strcat(gtd->macro_buf, buffer);
-  }
+  strcat(gtd->macro_buf, buffer);
+
   /* Handles normal input and transfering to CT */
   for (cnt = 0; gtd->macro_buf[cnt]; cnt++) {
     if (gtd->macro_buf[cnt] ==
@@ -152,24 +131,16 @@ void read_key(void) {
 
 void read_line() {
   char buffer[BUFFER_SIZE * 2];
-  int len, cnt, match;
+  int len, cnt, match = FALSE;
 
   gtd->input_buf[gtd->input_len] = 0;
 
   len = (int)read(0, buffer, 1);
-
   buffer[len] = 0;
 
-  if (HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA) ||
-      HAS_BIT(gtd->flags, GLOBAL_FLAG_CONVERTMETACHAR)) {
-    convert_meta(buffer, &gtd->macro_buf[strlen(gtd->macro_buf)]);
-  } else {
-    strcat(gtd->macro_buf, buffer);
-  }
+  strcat(gtd->macro_buf, buffer);
 
   if (!HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA)) {
-    match = 0;
-
     for (cnt = 0; *cursor_table[cnt].fun != NULL; cnt++) {
       if (!strcmp(gtd->macro_buf, cursor_table[cnt].code)) {
         cursor_table[cnt].fun();
@@ -177,7 +148,7 @@ void read_line() {
         return;
       } else if (!strncmp(gtd->macro_buf, cursor_table[cnt].code,
                           strlen(gtd->macro_buf))) {
-        match = 1;
+        match = TRUE;
       }
     }
 
