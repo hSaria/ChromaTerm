@@ -55,12 +55,17 @@ DO_COMMAND(do_read) {
         "%cERROR: {%s} - Failed to allocate memory to process the file",
         gtd->command_char, filename);
     fclose(fp);
+    free(bufi);
+    free(bufo);
     return;
   }
 
   if (fread(bufi, 1, filedata.st_size, fp) <= 0) {
     display_printf("%cERROR: {%s} - File is empty", gtd->command_char,
                    filename);
+    fclose(fp);
+    free(bufi);
+    free(bufo);
     return;
   };
 
@@ -280,6 +285,7 @@ DO_COMMAND(do_write) {
   if (*filename == 0 || (file = fopen(filename, "w")) == NULL) {
     display_printf("%cERROR: {%s} - Could not open to write", gtd->command_char,
                    filename);
+    fclose(file);
     return;
   }
 
