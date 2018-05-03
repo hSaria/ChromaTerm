@@ -205,8 +205,8 @@ struct help_type help_table[] = {
     {"", ""}};
 
 DO_COMMAND(do_help) {
-  char left[BUFFER_SIZE], add[BUFFER_SIZE], buf[BUFFER_SIZE], *ptf, *pto;
-  int cnt, found = 0;
+  char left[BUFFER_SIZE], add[BUFFER_SIZE], buf[BUFFER_SIZE], *ptf;
+  int cnt;
 
   get_arg_in_braces(arg, left, GET_ONE);
 
@@ -220,12 +220,13 @@ DO_COMMAND(do_help) {
     }
     display_printf(add);
   } else {
+    int found = FALSE;
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
       if (is_abbrev(left, help_table[cnt].name) || is_abbrev(left, "all")) {
         found = TRUE;
 
         substitute(help_table[cnt].text, buf);
-        pto = buf;
+        char *pto = buf;
 
         while (*pto) {
           ptf = strchr(pto, '\n');

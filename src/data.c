@@ -47,12 +47,11 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
 struct listnode *update_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
   int index;
-  struct listnode *node;
 
   index = search_index_list(root, ltext, NULL);
 
   if (index != -1) {
-    node = root->list[index];
+    struct listnode *node = root->list[index];
 
     if (strcmp(node->right, rtext) != 0) {
       strcpy(node->right, rtext);
@@ -149,14 +148,13 @@ int locate_index_list(struct listroot *root, char *text, char *priority) {
 
 int bsearch_alpha_list(struct listroot *root, char *text, int seek) {
   int bot, top, val;
-  double srt;
 
   bot = 0;
   top = root->used - 1;
   val = top;
 
   while (bot <= top) {
-    srt = strcmp(text, root->list[val]->left);
+    double srt = strcmp(text, root->list[val]->left);
 
     if (srt == 0) {
       return val;
@@ -181,14 +179,13 @@ int bsearch_alpha_list(struct listroot *root, char *text, int seek) {
 int bsearch_priority_list(struct listroot *root, char *text, char *priority,
                           int seek) {
   int bot, top, val;
-  double srt;
 
   bot = 0;
   top = root->used - 1;
   val = top;
 
   while (bot <= top) {
-    srt = atof(priority) - atof(root->list[val]->pr);
+    double srt = atof(priority) - atof(root->list[val]->pr);
 
     if (!srt) {
       srt = strcmp(text, root->list[val]->left);

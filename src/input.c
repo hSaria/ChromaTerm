@@ -131,7 +131,7 @@ void read_key(void) {
 
 void read_line() {
   char buffer[BUFFER_SIZE * 2];
-  int len, cnt, match = FALSE;
+  int len, cnt;
 
   gtd->input_buf[gtd->input_len] = 0;
 
@@ -141,6 +141,8 @@ void read_line() {
   strcat(gtd->macro_buf, buffer);
 
   if (!HAS_BIT(gts->flags, SES_FLAG_CONVERTMETA)) {
+    int match = FALSE;
+
     for (cnt = 0; *cursor_table[cnt].fun != NULL; cnt++) {
       if (!strcmp(gtd->macro_buf, cursor_table[cnt].code)) {
         cursor_table[cnt].fun();

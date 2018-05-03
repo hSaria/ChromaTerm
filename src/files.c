@@ -49,18 +49,23 @@ DO_COMMAND(do_read) {
 
   stat(filename, &filedata);
 
-  if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL ||
-      (bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
+  if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
     display_printf(
         "%cERROR: {%s} - Failed to allocate memory to process the file",
         gtd->command_char, filename);
     fclose(fp);
+    return;
     free(bufi);
-    free(bufo);
+  } else if ((bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
+    display_printf(
+        "%cERROR: {%s} - Failed to allocate memory to process the file",
+        gtd->command_char, filename);
+    free(bufi);
+    fclose(fp);
     return;
   }
 
-  if (fread(bufi, 1, filedata.st_size, fp) <= 0) {
+  if (fread(bufi, 1, filedata.st_size, fp) == 0) {
     display_printf("%cERROR: {%s} - File is empty", gtd->command_char,
                    filename);
     fclose(fp);
@@ -282,10 +287,9 @@ DO_COMMAND(do_write) {
     }
   }
 
-  if (*filename == 0 || (file = fopen(filename, "w")) == NULL) {
+  if ((file = fopen(filename, "w")) == NULL) {
     display_printf("%cERROR: {%s} - Could not open to write", gtd->command_char,
                    filename);
-    fclose(file);
     return;
   }
 
