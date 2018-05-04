@@ -94,7 +94,9 @@ void read_key(void) {
 
     /* Ignore inturrupt signals */
     signal(SIGINT, print_backspace);
-    read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
+    if (read(STDIN_FILENO, command_buffer, sizeof(command_buffer)) <= 0) {
+      return;
+    }
     signal(SIGINT, abort_and_trap_handler);
 
     /* Restore CT terminal state (noncanonical mode) */
