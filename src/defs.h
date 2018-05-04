@@ -208,6 +208,7 @@ int get_highlight_codes(char *string, char *result);
 #define __INPUT_H__
 
 void convert_meta(char *input, char *output);
+void print_backspace(int sig);
 void read_key(void);
 
 #endif

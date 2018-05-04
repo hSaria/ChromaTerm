@@ -17,41 +17,34 @@ void convert_meta(char *input, char *output) {
       *pto++ = 'e';
       pti++;
       break;
-
     case 127:
       *pto++ = '\\';
       *pto++ = 'b';
       pti++;
       break;
-
     case '\a':
       *pto++ = '\\';
       *pto++ = 'a';
       pti++;
       break;
-
     case '\b':
       *pto++ = '\\';
       *pto++ = 'b';
       pti++;
       break;
-
     case '\t':
       *pto++ = '\\';
       *pto++ = 't';
       pti++;
       break;
-
     case '\r':
       *pto++ = '\\';
       *pto++ = 'r';
       pti++;
       break;
-
     case '\n':
       *pto++ = *pti++;
       break;
-
     default:
       if (*pti > 0 && *pti < 32) {
         *pto++ = '\\';
@@ -72,8 +65,17 @@ void convert_meta(char *input, char *output) {
   *pto = 0;
 }
 
-/* The current output of the screen cannot be determined which means we can only
- * listen for commands after a new line. */
+/* To remove ^C from the output of read */
+void print_backspace(int sig) {
+  if (sig) {
+    /* Just to make a compiler warning shut up */
+  }
+  /* Two backspaces for each char, then overwrite the output with spaces, then
+   * remove said spaces */
+  printf("\b\b  \b\b\n%c:", gtd->command_char);
+  fflush(stdout);
+}
+
 void read_key(void) {
   char c = getchar();
 
@@ -90,8 +92,10 @@ void read_key(void) {
     /* Recover original terminal state */
     tcsetattr(STDIN_FILENO, TCSANOW, &gtd->saved_terminal);
 
-    /* Read command */
+    /* Ignore inturrupt signals */
+    signal(SIGINT, print_backspace);
     read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
+    signal(SIGINT, abort_and_trap_handler);
 
     /* Restore CT terminal state (noncanonical mode) */
     tcsetattr(STDIN_FILENO, TCSANOW, &temp_attributes);
