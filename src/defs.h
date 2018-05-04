@@ -111,7 +111,6 @@ struct global_data {
   char *mud_output_current_line_start;
   int mud_output_max;
   int mud_output_len;
-  int flags;
   int quiet;
   char command_char;
 };
