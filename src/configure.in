@@ -29,7 +29,7 @@ AC_PROG_MAKE_SET
 AC_CHECK_LIB(util, forkpty)
 
 # Checks for header files.
-AC_CHECK_HEADERS([ctype.h errno.h pthread.h regex.h signal.h stdarg.h stdlib.h string.h sys/ioctl.h sys/stat.h unistd.h util.h wordexp.h])
+AC_CHECK_HEADERS([ctype.h errno.h pthread.h regex.h signal.h stdarg.h stdlib.h string.h sys/ioctl.h sys/stat.h sys/time.h unistd.h util.h wordexp.h])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([memmove memset select strchr strcasecmp strncasecmp strstr forkpty])
