@@ -135,6 +135,7 @@ void quitmsg(char *message, int exit_signal) {
     for (j = 0; j < gts->list[i]->used; j++) {
       delete_index_list(gts->list[i], j);
     }
+    free(gts->list[i]->list);
     free(gts->list[i]);
   }
 
