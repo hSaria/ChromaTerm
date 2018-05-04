@@ -23,7 +23,7 @@ void readmud() {
 
   /* separate into lines and print away */
   for (line = gtd->mud_output_buf; line && *line; line = next_line) {
-    char line_buf[BUFFER_SIZE];
+    char linebuf[BUFFER_SIZE];
     next_line = strchr(line, '\n');
 
     if (next_line) {
