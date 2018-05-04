@@ -5,7 +5,7 @@
 int read_buffer_mud() {
   gtd->mud_output_len +=
       read(gts->socket, &gtd->mud_output_buf[gtd->mud_output_len],
-           gtd->mud_output_max - gtd->mud_output_len - 1);
+           MUD_OUTPUT_MAX - gtd->mud_output_len - 1);
 
   if (gtd->mud_output_len <= 0) {
     return FALSE;

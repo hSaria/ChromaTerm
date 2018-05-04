@@ -92,9 +92,6 @@ void init_program() {
 
   gts->socket = 1;
 
-  gtd->mud_output_max = 16384;
-  gtd->mud_output_buf = (char *)calloc(1, gtd->mud_output_max);
-
   init_screen_size();
 
   gtd->quiet++;
@@ -123,6 +120,7 @@ void help_menu(int error, char c, char *proc_name) {
 
 void quitmsg(char *message, int exit_signal) {
   int i, j;
+  reset_terminal();
   cleanup_session();
 
   if (input_thread) {
@@ -141,7 +139,6 @@ void quitmsg(char *message, int exit_signal) {
   }
 
   free(gts);
-  free(gtd->mud_output_buf);
   free(gtd);
 
   if (message) {

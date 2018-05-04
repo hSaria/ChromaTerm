@@ -21,7 +21,6 @@ void init_terminal() {
 
   /* Save current terminal attributes and reset at exit */
   tcgetattr(STDIN_FILENO, &gtd->saved_terminal);
-  atexit(reset_terminal);
 
   if (tcgetattr(STDIN_FILENO, &gtd->active_terminal)) {
     perror("tcgetattr");
