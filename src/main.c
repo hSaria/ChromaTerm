@@ -119,7 +119,8 @@ void help_menu(int error, char c, char *proc_name) {
 }
 
 void quitmsg(char *message, int exit_signal) {
-  int i, j;
+  int i;
+
   reset_terminal();
   cleanup_session();
 
@@ -132,8 +133,8 @@ void quitmsg(char *message, int exit_signal) {
   }
 
   for (i = 0; i < LIST_MAX; i++) {
-    for (j = 0; j < gts->list[i]->used; j++) {
-      delete_index_list(gts->list[i], j);
+    while (gts->list[i]->used) {
+      delete_index_list(gts->list[i], 0);
     }
     free(gts->list[i]->list);
     free(gts->list[i]);
