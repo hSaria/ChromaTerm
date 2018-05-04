@@ -63,14 +63,9 @@
 #define COL_XTB (1 << 5)
 #define COL_256 (1 << 6)
 
-#define SUB_NONE 0
-
-#define GLOBAL_FLAG_INSERTINPUT (1 << 0)
-
 #define SES_FLAG_CONNECTED (1 << 0)
 #define SES_FLAG_CONVERTMETA (1 << 1)
-#define SES_FLAG_UTF8 (1 << 2)
-#define SES_FLAG_HIGHLIGHT (1 << 3)
+#define SES_FLAG_HIGHLIGHT (1 << 2)
 
 /* Bit operations */
 #define HAS_BIT(bitvector, bit) ((bitvector) & (bit))
@@ -84,7 +79,6 @@
 
 #define DO_COMMAND(command) void command(char *arg)
 #define DO_CONFIG(config) int config(char *arg, int index)
-#define DO_CURSOR(cursor) void cursor(void)
 
 /* Structures */
 struct listroot {
@@ -112,7 +106,7 @@ struct session {
 
 struct global_data {
   struct termios active_terminal;
-  struct termios saved_attributes;
+  struct termios saved_terminal;
   char *mud_output_buf;
   char *mud_output_current_line_start;
   int mud_output_max;
@@ -156,7 +150,6 @@ struct list_type {
 #define __CONFIG_H__
 
 DO_COMMAND(do_configure);
-DO_CONFIG(config_charset);
 DO_CONFIG(config_commandchar);
 DO_CONFIG(config_convertmeta);
 DO_CONFIG(config_highlight);
@@ -253,7 +246,6 @@ DO_COMMAND(do_run);
 #ifndef __NET_H__
 #define __NET_H__
 
-void process_mud_output(char *linebuf, int prompt);
 int read_buffer_mud(void);
 void readmud(void);
 
@@ -299,8 +291,8 @@ extern struct list_type list_table[LIST_MAX];
 #define __TERMINAL_H__
 
 int get_scroll_size(void);
-void init_terminal(void);
 void init_screen_size(void);
+void init_terminal(void);
 void reset_terminal(void);
 
 #endif

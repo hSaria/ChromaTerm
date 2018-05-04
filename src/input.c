@@ -88,7 +88,7 @@ void read_key(void) {
     tcgetattr(STDIN_FILENO, &temp_attributes);
 
     /* Recover original terminal state */
-    tcsetattr(STDIN_FILENO, TCSANOW, &gtd->saved_attributes);
+    tcsetattr(STDIN_FILENO, TCSANOW, &gtd->saved_terminal);
 
     /* Read command */
     read(STDIN_FILENO, command_buffer, sizeof(command_buffer));

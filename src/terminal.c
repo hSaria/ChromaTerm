@@ -20,7 +20,7 @@ void init_terminal() {
   struct termios io;
 
   /* Save current terminal attributes and reset at exit */
-  tcgetattr(STDIN_FILENO, &gtd->saved_attributes);
+  tcgetattr(STDIN_FILENO, &gtd->saved_terminal);
   atexit(reset_terminal);
 
   if (tcgetattr(STDIN_FILENO, &gtd->active_terminal)) {
@@ -49,5 +49,5 @@ void init_terminal() {
 }
 
 void reset_terminal(void) {
-  tcsetattr(STDIN_FILENO, TCSANOW, &gtd->saved_attributes);
+  tcsetattr(STDIN_FILENO, TCSANOW, &gtd->saved_terminal);
 }
