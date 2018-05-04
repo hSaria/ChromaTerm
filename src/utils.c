@@ -64,20 +64,6 @@ void display_printf(char *format, ...) {
   printline(buf, FALSE);
 }
 
-void ins_sprintf(char *dest, char *fmt, ...) {
-  char buf[BUFFER_SIZE * 2], tmp[BUFFER_SIZE * 2];
-
-  va_list args;
-
-  va_start(args, fmt);
-  vsprintf(buf, fmt, args);
-  va_end(args);
-
-  strcpy(tmp, dest);
-  strcpy(dest, buf);
-  strcat(dest, tmp);
-}
-
 /* return: TRUE if s1 is an abbrevation of s2 */
 int is_abbrev(char *s1, char *s2) {
   if (*s1 == 0) {

@@ -211,6 +211,7 @@ DO_COMMAND(do_help) {
   get_arg_in_braces(arg, left, GET_ONE);
 
   if (*left == 0) {
+    display_header(" HELP TOPICS ");
     for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
       if ((int)strlen(add) + 19 > gts->cols) {
         display_printf(add);
@@ -219,6 +220,7 @@ DO_COMMAND(do_help) {
       cat_sprintf(add, "%19s", help_table[cnt].name);
     }
     display_printf(add);
+    display_header("");
   } else {
     int found = FALSE;
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {

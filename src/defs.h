@@ -112,18 +112,11 @@ struct session {
 
 struct global_data {
   struct termios active_terminal;
+  struct termios saved_attributes;
   char *mud_output_buf;
   char *mud_output_current_line_start;
   int mud_output_max;
   int mud_output_len;
-  char input_buf[BUFFER_SIZE];
-  char macro_buf[BUFFER_SIZE];
-  char paste_buf[BUFFER_SIZE];
-  int input_off;
-  int input_len;
-  int input_cur;
-  int input_pos;
-  int input_hid;
   int flags;
   int quiet;
   char command_char;
@@ -132,7 +125,6 @@ struct global_data {
 /* Typedefs */
 typedef void COMMAND(char *arg);
 typedef int CONFIG(char *arg, int index);
-typedef void CURSOR(void);
 
 /* Structures for tables.c */
 struct color_type {
@@ -156,13 +148,6 @@ struct list_type {
   int mode;
 };
 
-struct cursor_type {
-  char *name;
-  char *desc;
-  char *code;
-  CURSOR *fun;
-};
-
 #endif
 
 /* Function declarations */
@@ -175,36 +160,6 @@ DO_CONFIG(config_charset);
 DO_CONFIG(config_commandchar);
 DO_CONFIG(config_convertmeta);
 DO_CONFIG(config_highlight);
-
-#endif
-
-#ifndef __CURSOR_H__
-#define __CURSOR_H__
-
-DO_CURSOR(cursor_backspace);
-DO_CURSOR(cursor_check_line);
-DO_CURSOR(cursor_check_line_modified);
-DO_CURSOR(cursor_clear_left);
-DO_CURSOR(cursor_clear_line);
-DO_CURSOR(cursor_clear_right);
-DO_CURSOR(cursor_delete);
-DO_CURSOR(cursor_delete_or_exit);
-DO_CURSOR(cursor_delete_word_left);
-DO_CURSOR(cursor_delete_word_right);
-DO_CURSOR(cursor_end);
-DO_CURSOR(cursor_enter);
-DO_CURSOR(cursor_exit);
-DO_CURSOR(cursor_home);
-DO_CURSOR(cursor_insert);
-DO_CURSOR(cursor_left);
-DO_CURSOR(cursor_left_word);
-DO_CURSOR(cursor_paste_buffer);
-DO_CURSOR(cursor_redraw_input);
-DO_CURSOR(cursor_redraw_line);
-DO_CURSOR(cursor_right);
-DO_CURSOR(cursor_right_word);
-DO_CURSOR(cursor_suspend);
-DO_CURSOR(cursor_test);
 
 #endif
 
@@ -262,9 +217,7 @@ int get_highlight_codes(char *string, char *result);
 #define __INPUT_H__
 
 void convert_meta(char *input, char *output);
-void input_printf(char *format, ...);
 void read_key(void);
-void read_line(void);
 
 #endif
 
@@ -338,7 +291,6 @@ struct session *new_session(int pid, int socket);
 extern struct color_type color_table[];
 extern struct command_type command_table[];
 extern struct config_type config_table[];
-extern struct cursor_type cursor_table[];
 extern struct list_type list_table[LIST_MAX];
 
 #endif
@@ -349,7 +301,7 @@ extern struct list_type list_table[LIST_MAX];
 int get_scroll_size(void);
 void init_terminal(void);
 void init_screen_size(void);
-void restore_terminal(void);
+void reset_terminal(void);
 
 #endif
 
@@ -375,7 +327,6 @@ char *capitalize(char *str);
 int cat_sprintf(char *dest, char *fmt, ...);
 void display_header(char *format, ...);
 void display_printf(char *format, ...);
-void ins_sprintf(char *dest, char *fmt, ...);
 int is_abbrev(char *s1, char *s2);
 void printline(char *str, int isaprompt);
 void socket_printf(unsigned int length, char *format, ...);

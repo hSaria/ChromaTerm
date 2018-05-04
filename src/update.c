@@ -11,7 +11,7 @@ void *poll_input(void *arg) {
 
   while (TRUE) {
     FD_ZERO(&readfds);
-    FD_SET(0, &readfds);
+    FD_SET(STDIN_FILENO, &readfds);
 
     /* Blocking operation */
     select(FD_SETSIZE, &readfds, NULL, NULL, NULL);
