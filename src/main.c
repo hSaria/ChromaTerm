@@ -92,10 +92,6 @@ void init_program() {
 
   gts->socket = 1;
 
-  gtd->mud_output_max = 16384;
-  gtd->mud_output_buf = (char *)calloc(1, gtd->mud_output_max);
-  gtd->input_off = 1;
-
   init_screen_size();
 
   gtd->quiet++;
@@ -123,9 +119,10 @@ void help_menu(int error, char c, char *proc_name) {
 }
 
 void quitmsg(char *message, int exit_signal) {
-  int i, j;
+  int i;
+
+  reset_terminal();
   cleanup_session();
-  restore_terminal();
 
   if (input_thread) {
     pthread_kill(input_thread, 0);
@@ -136,14 +133,14 @@ void quitmsg(char *message, int exit_signal) {
   }
 
   for (i = 0; i < LIST_MAX; i++) {
-    for (j = 0; j < gts->list[i]->used; j++) {
-      delete_index_list(gts->list[i], j);
+    while (gts->list[i]->used) {
+      delete_index_list(gts->list[i], 0);
     }
+    free(gts->list[i]->list);
     free(gts->list[i]);
   }
 
   free(gts);
-  free(gtd->mud_output_buf);
   free(gtd);
 
   if (message) {
@@ -156,10 +153,7 @@ void quitmsg(char *message, int exit_signal) {
 
 void abort_and_trap_handler(int sig) { quitmsg("abort_and_trap_handler", sig); }
 
-void pipe_handler(int sig) {
-  restore_terminal();
-  display_printf("broken_pipe: %i", sig);
-}
+void pipe_handler(int sig) { display_printf("broken_pipe: %i", sig); }
 
 void suspend_handler(int sig) { quitmsg("suspend_handler", sig); }
 

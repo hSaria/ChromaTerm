@@ -41,60 +41,10 @@ struct command_type command_table[] = {{"commands", do_commands},
                                        {"", NULL}};
 
 struct config_type config_table[] = {
-    {"CHARSET", "The character set encoding used", config_charset},
     {"COMMAND CHAR", "The character used for commands", config_commandchar},
     {"CONVERT META", "Convert meta and control characters", config_convertmeta},
     {"HIGHLIGHT", "Highlight according to rules", config_highlight},
     {"", "", NULL}};
-
-/* Those are not empty codes; they just cannot be displayed on most editors.
- * DO NOT REMOVE THE FOLLOWING LINES */
-struct cursor_type cursor_table[] = {
-    {"BACKSPACE", "Delete backward character", "", cursor_backspace},
-    {"BACKWARD", "Move cursor backward", "", cursor_left},
-    {"CLEAR LEFT", "Delete from cursor to start of input", "",
-     cursor_clear_left},
-    {"CLEAR LINE", "Delete the input line", "", cursor_clear_line},
-    {"CLEAR RIGHT", "Delete from cursor to end of input", "",
-     cursor_clear_right},
-    {"CTRL DELETE", "Delete one character, exit on an empty line", "",
-     cursor_delete_or_exit},
-    {"DELETE", "Delete character at cursor", "[3~", cursor_delete},
-    {"DELETE WORD LEFT", "Delete backwards till next space", "",
-     cursor_delete_word_left},
-    {"DELETE WORD RIGHT", "Delete forwards till next space", "",
-     cursor_delete_word_right},
-    {"END", "Move cursor to end of input", "", cursor_end},
-    {"ENTER", "Process the input line", "", cursor_enter},
-    {"EXIT", "Exit current session", "", cursor_exit},
-    {"FORWARD", "Move cursor forward", "", cursor_right},
-    {"HOME", "Move the cursor to start of input", "", cursor_home},
-    {"INSERT", "Turn insert mode on or off", "", cursor_insert},
-    {"NEXT WORD", "Move cursor to the next word", "f", cursor_right_word},
-    {"PASTE BUFFER", "Paste the previously deleted input text", "",
-     cursor_paste_buffer},
-    {"PREV WORD", "Move cursor to the previous word", "b", cursor_left_word},
-    {"REDRAW INPUT", "Redraw the input line", "", cursor_redraw_input},
-    {"SUSPEND", "Suspend program, return with fg", "", cursor_suspend},
-    {"TEST", "Print debugging information", "", cursor_test},
-
-    {"", "", "OM", cursor_enter},
-    {"", "", "[7~", cursor_home},
-    {"", "", "[1~", cursor_home},
-    {"", "", "OH", cursor_home},
-    {"", "", "[H", cursor_home},
-    {"", "", "OD", cursor_left},
-    {"", "", "[D", cursor_left},
-    {"", "", "[8~", cursor_end},
-    {"", "", "[4~", cursor_end},
-    {"", "", "OF", cursor_end},
-    {"", "", "[F", cursor_end},
-    {"", "", "OC", cursor_right},
-    {"", "", "[C", cursor_right},
-    {"", "", "", cursor_backspace},
-    {"", "", "", cursor_delete_word_left},
-    {"", "", "d", cursor_delete_word_right},
-    {"", "", "", NULL}};
 
 struct list_type list_table[LIST_MAX] = {{"CONFIG", ALPHA},
                                          {"HIGHLIGHT", PRIORITY}};

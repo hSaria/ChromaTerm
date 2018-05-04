@@ -42,22 +42,6 @@ DO_COMMAND(do_configure) {
   }
 }
 
-DO_CONFIG(config_charset) {
-  if (!strcasecmp(arg, "UTF-8")) {
-    SET_BIT(gts->flags, SES_FLAG_UTF8);
-  } else if (!strcasecmp(arg, "ASCII")) {
-    DEL_BIT(gts->flags, SES_FLAG_UTF8);
-  } else {
-    display_printf("%cSYNTAX: %cCONFIG {%s} <ASCII|UTF-8>", gtd->command_char,
-                   gtd->command_char, config_table[index].name);
-    return FALSE;
-  }
-
-  update_node_list(gts->list[LIST_CONFIG], config_table[index].name,
-                   capitalize(arg), "");
-  return TRUE;
-}
-
 DO_CONFIG(config_commandchar) {
   if (!ispunct((int)arg[0])) {
     display_printf("%cERROR: Commad char must me a punctuation: "

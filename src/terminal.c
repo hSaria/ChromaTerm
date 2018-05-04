@@ -7,7 +7,7 @@ int get_scroll_size() { return gts->rows; }
 void init_screen_size() {
   struct winsize screen;
 
-  if (ioctl(0, TIOCGWINSZ, &screen) == -1) {
+  if (ioctl(STDIN_FILENO, TIOCGWINSZ, &screen) == -1) {
     gts->rows = SCREEN_HEIGHT;
     gts->cols = SCREEN_WIDTH;
   } else {
@@ -19,12 +19,16 @@ void init_screen_size() {
 void init_terminal() {
   struct termios io;
 
-  if (tcgetattr(0, &gtd->active_terminal)) {
+  /* Save current terminal attributes and reset at exit */
+  tcgetattr(STDIN_FILENO, &gtd->saved_terminal);
+
+  if (tcgetattr(STDIN_FILENO, &gtd->active_terminal)) {
     perror("tcgetattr");
     exit(errno);
   }
 
   io = gtd->active_terminal;
+
   /*  Canonical mode off */
   DEL_BIT(io.c_lflag, ICANON);
 
@@ -37,10 +41,12 @@ void init_terminal() {
 
   SET_BIT(io.c_cflag, CS8);
 
-  if (tcsetattr(0, TCSANOW, &io)) {
+  if (tcsetattr(STDIN_FILENO, TCSANOW, &io)) {
     perror("tcsetattr");
     exit(errno);
   }
 }
 
-void restore_terminal(void) { tcsetattr(0, TCSANOW, &gtd->active_terminal); }
+void reset_terminal(void) {
+  tcsetattr(STDIN_FILENO, TCSANOW, &gtd->saved_terminal);
+}

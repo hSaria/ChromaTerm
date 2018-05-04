@@ -3380,7 +3380,7 @@ done
 
 
 # Checks for library functions.
-for ac_func in gettimeofday memmove memset select strchr strcasecmp strncasecmp strstr forkpty
+for ac_func in memmove memset select strchr strcasecmp strncasecmp strstr forkpty
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
