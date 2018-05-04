@@ -81,6 +81,7 @@ void read_key(void) {
 
   if (beginning_of_line &&
       (c == gtd->command_char || !HAS_BIT(gts->flags, SES_FLAG_CONNECTED))) {
+    int len = 0;
     char command_buffer[BUFFER_SIZE];
     struct termios temp_attributes;
 
@@ -94,9 +95,8 @@ void read_key(void) {
 
     /* Ignore inturrupt signals */
     signal(SIGINT, print_backspace);
-    if (read(STDIN_FILENO, command_buffer, sizeof(command_buffer)) <= 0) {
-      return;
-    }
+
+    len = read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
     signal(SIGINT, abort_and_trap_handler);
 
     /* Restore CT terminal state (noncanonical mode) */
@@ -105,7 +105,7 @@ void read_key(void) {
     /* Remove the trailing \n */
     command_buffer[strlen(command_buffer) - 1] = 0;
     script_driver(command_buffer);
-    memset(&command_buffer, 0, strlen(command_buffer));
+    memset(&command_buffer, 0, len);
   } else {
     if (c == '\n') {
       beginning_of_line = TRUE;
