@@ -109,6 +109,7 @@ void help_menu(int error, char c, char *proc_name) {
     display_printf("Unknown option '%c'", c);
   }
 
+  display_printf("ChromaTerm-- v%s", VERSION);
   display_printf("Usage: %s [OPTION]... [FILE]...", proc_name);
   display_printf("    -e       Execute function");
   display_printf("    -h       This help section");
