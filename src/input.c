@@ -77,42 +77,44 @@ void print_backspace(int sig) {
 }
 
 void read_key(void) {
-  char c = getc(stdin);
+  char c;
+  while ((c = getc(stdin)) != EOF) {
 
-  if (beginning_of_line &&
-      (c == gtd->command_char || !HAS_BIT(gts->flags, SES_FLAG_CONNECTED))) {
-    int len = 0;
-    char command_buffer[BUFFER_SIZE];
-    struct termios temp_attributes;
+    if (beginning_of_line &&
+        (c == gtd->command_char || !HAS_BIT(gts->flags, SES_FLAG_CONNECTED))) {
+      int len = 0;
+      char command_buffer[BUFFER_SIZE];
+      struct termios temp_attributes;
 
-    printf("%c:", gtd->command_char);
-    fflush(stdout);
+      printf("%c:", gtd->command_char);
+      fflush(stdout);
 
-    tcgetattr(STDIN_FILENO, &temp_attributes);
+      tcgetattr(STDIN_FILENO, &temp_attributes);
 
-    /* Recover original terminal state */
-    tcsetattr(STDIN_FILENO, TCSANOW, &gtd->saved_terminal);
+      /* Recover original terminal state */
+      tcsetattr(STDIN_FILENO, TCSANOW, &gtd->saved_terminal);
 
-    /* Ignore inturrupt signals */
-    signal(SIGINT, print_backspace);
+      /* Ignore inturrupt signals */
+      signal(SIGINT, print_backspace);
 
-    len = read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
-    signal(SIGINT, abort_and_trap_handler);
+      len = read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
+      signal(SIGINT, abort_and_trap_handler);
 
-    /* Restore CT terminal state (noncanonical mode) */
-    tcsetattr(STDIN_FILENO, TCSANOW, &temp_attributes);
+      /* Restore CT terminal state (noncanonical mode) */
+      tcsetattr(STDIN_FILENO, TCSANOW, &temp_attributes);
 
-    /* Remove the trailing \n */
-    command_buffer[strlen(command_buffer) - 1] = 0;
-    script_driver(command_buffer);
-    memset(&command_buffer, 0, len);
-  } else {
-    if (c == '\n') {
-      beginning_of_line = TRUE;
-      socket_printf(1, "%c", '\r');
+      /* Remove the trailing \n */
+      command_buffer[strlen(command_buffer) - 1] = 0;
+      script_driver(command_buffer);
+      memset(&command_buffer, 0, len);
     } else {
-      beginning_of_line = FALSE;
-      socket_printf(1, "%c", c);
+      if (c == '\n') {
+        beginning_of_line = TRUE;
+        socket_printf(1, "%c", '\r');
+      } else {
+        beginning_of_line = FALSE;
+        socket_printf(1, "%c", c);
+      }
     }
   }
 }
