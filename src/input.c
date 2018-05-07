@@ -78,10 +78,10 @@ void print_backspace(int sig) {
 
 void read_key(void) {
   char c;
-  while ((c = getc(stdin)) != EOF) {
-
-    if (beginning_of_line &&
-        (c == gtd->command_char || !HAS_BIT(gts->flags, SES_FLAG_CONNECTED))) {
+  while (command_prompt || (c = getc(stdin)) != EOF) {
+    if (command_prompt ||
+        (beginning_of_line && (c == gtd->command_char ||
+                               !HAS_BIT(gts->flags, SES_FLAG_CONNECTED)))) {
       int len = 0;
       char command_buffer[BUFFER_SIZE];
       struct termios temp_attributes;

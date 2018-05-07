@@ -40,6 +40,8 @@ DO_COMMAND(do_run) {
   int desc, pid;
   struct winsize size;
 
+  command_prompt = FALSE;
+
   char *argv[4] = {"sh", "-c", "", NULL};
 
   /* Limit to single process */

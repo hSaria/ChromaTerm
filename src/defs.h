@@ -226,6 +226,8 @@ extern struct global_data *gtd;
 extern pthread_t input_thread;
 extern pthread_t output_thread;
 
+extern int command_prompt;
+
 int main(int argc, char **argv);
 void init_program(void);
 void help_menu(int error, char c, char *proc_name);

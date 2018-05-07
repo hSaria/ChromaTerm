@@ -8,6 +8,8 @@ struct global_data *gtd;
 pthread_t input_thread;
 pthread_t output_thread;
 
+int command_prompt = TRUE;
+
 int main(int argc, char **argv) {
   signal(SIGTERM, abort_and_trap_handler);
   signal(SIGSEGV, abort_and_trap_handler);
@@ -36,6 +38,7 @@ int main(int argc, char **argv) {
         }
         break;
       case 'e':
+        command_prompt = FALSE;
         script_driver(optarg);
         break;
       case 'h':
