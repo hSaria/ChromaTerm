@@ -35,9 +35,6 @@ void script_driver(char *str) {
     } else {
       (*command_table[cmd].command)(args);
       *args = 0;
-
-      /* Repair the mud's current line */
-      printline(gtd->mud_output_buf, TRUE);
     }
   }
 }
