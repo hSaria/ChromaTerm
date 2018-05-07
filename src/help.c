@@ -105,6 +105,10 @@ struct help_type help_table[] = {
      "grayscale background colors\n"
      "         use <<888>G00> to <<888>G23>.\n"
      "\n"
+     "         You can apply multiple actions (e.g. foreground and background "
+     "colors).\n"
+     "         For example: <<888>FCA><<888>baf>\n"
+     "\n"
      "         Use <178>#help colordemo<078> to get a long (not complete) list "
      "of colors<099>\n\n\n"},
     {"CONFIG",
