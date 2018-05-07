@@ -1,51 +1,15 @@
-#high {255.%d.%d.%d} {yellow}
-#high {192.168.%d.%d} {bold yellow}
-#high {10.%d.%d.%d} {bold yellow}
-#high {172.%d.%d.%d} {bold yellow}
-#high {%d.%d.%d.%d} {bold yellow}
-#high { any } {bold white}
-#high {{permit(ted)*}} {bold green}
-#high {{(d|D)eny}} {bold red}
-#high {{ (E|e)rr..}} {bold white}
-#high {host} {underscore}
-#high {access-list} {bold cyan}
-#high {^static} {bold cyan}
-#high {INSIDE} {bold blue}
-#high {inside} {bold blue}
-#high { INT } {bold blue}
-#high {OUTSIDE} {bold green}
-#high {outside} {bold green}
-#high {EXT} {bold green}
-#high {DMZ} {bold magenta}
-#high {dmz} {bold magenta}
-#high {{(Fast)*Ethernet}} {bold white}
-#high {Gigabit} {bold white}
-#high {Serial} {bold white}
-#high {Multilink} {bold white}
-#high {ASA55%d} {bold red}
-#high {^username} {bold red}
-#high {PIX-5%d} {bold red}
-#high {PIX-5%dE} {bold red}
-#high {crypto} {bold cyan}
-#high {^isakmp} {bold cyan}
-#high {{^route(r)*}} {bold cyan}
-#high {tunnel-group} {bold cyan}
-#high {^policy-map} {bold cyan}
-#high {^group-policy} {bold cyan}
-#high {class-map} {bold cyan}
-#high {service-policy} {bold cyan}
-#high {S%d.0} {bold yellow}
-#high {%S.bin} {yellow}
-#high {icmp_seq} {green}
-#high {transmit} {bold green}
-#high {receiv} {bold cyan}
-#high { up } {bold green}
-#high { down } {bold red}
-#high {Line protocol on Interface} {bold magenta}
-#high {changed state to up} {bold green}
-#high {changed state to down} {bold red}
-#high {(hitcnt=%d)} {pink}
-#high {(hitcnt=0)} {light black}
-#high {>} {magenta}
-#high {NotRunning} {bold red underscore}
-#high {object-group} {bold cyan}
+#CONFIG     {COMMAND CHAR} {#}
+#CONFIG     {CONVERT META} {OFF}
+#CONFIG     {HIGHLIGHT} {ON}
+
+/* IPv4 */
+#HIGHLIGHT  {((25[0-5]|(2[0-4]|[0-1]?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|[0-1]?[0-9])?[0-9])} {<cdf>} {5}
+
+/* IPv6 */
+#HIGHLIGHT  {([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|[0-1]?[0-9])?[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|[0-1]?[0-9])?[0-9])} {<cdc>} {5}
+
+/* MAC */
+#HIGHLIGHT  {([0-9a-fA-F]{4}\.){2}[0-9a-fA-F]{4}|([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}} {yellow} {5}
+
+/* Password or password */
+#HIGHLIGHT  {(P|p)assword} {red} {5}
