@@ -126,4 +126,4 @@ Additionally, there are help topics within the tool. The following commands show
 ```
 
 ## Questions or Bugs
-To ask questions or submit bugs, please create an issue on **this** fork.
+To ask questions or submit bugs, please create an issue.
