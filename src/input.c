@@ -67,8 +67,7 @@ void convert_meta(char *input, char *output) {
 
 /* To remove ^C from the output of read */
 void print_backspace(int sig) {
-  if (sig) {
-    /* Just to make a compiler warning shut up */
+  if (sig) { /* Just to make a compiler warning shut up */
   }
   /* Two backspaces for each char, then overwrite the output with spaces, then
    * remove said spaces */

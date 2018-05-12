@@ -9,8 +9,7 @@ void *poll_input(void *arg) {
     read_key();
   }
 
-  if (arg) {
-    /* Making a warning shut up */
+  if (arg) { /* Making a warning shut up */
   }
 
   while (TRUE) {
@@ -30,8 +29,7 @@ void *poll_session(void *arg) {
   fd_set readfds;
   FD_ZERO(&readfds); /* Initialise the file descriptor */
 
-  if (arg) {
-    /* Making a warning shut up */
+  if (arg) { /* Making a warning shut up */
   }
 
   while (TRUE) {

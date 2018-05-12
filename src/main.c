@@ -162,8 +162,7 @@ void pipe_handler(int sig) { display_printf("broken_pipe: %i", sig); }
 void suspend_handler(int sig) { quitmsg("suspend_handler", sig); }
 
 void winch_handler(int sig) {
-  if (sig) {
-    /* Just to make a compiler warning shut up */
+  if (sig) { /* Just to make a compiler warning shut up */
   }
   init_screen_size();
 }
