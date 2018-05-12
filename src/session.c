@@ -20,7 +20,7 @@ struct session *new_session(int pid, int socket) {
   SET_BIT(gts->flags, SES_FLAG_CONNECTED);
 
   if (pthread_create(&output_thread, NULL, poll_session, NULL) != 0) {
-    quitmsg("faild to create input thread", 1);
+    quitmsg("failed to create input thread", 1);
   }
 
   return gts;

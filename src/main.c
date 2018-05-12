@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
   }
 
   if (pthread_create(&input_thread, NULL, poll_input, NULL) != 0) {
-    quitmsg("faild to create input thread", 1);
+    quitmsg("failed to create input thread", 1);
   }
 
   pthread_join(input_thread, NULL);
