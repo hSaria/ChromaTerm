@@ -49,7 +49,7 @@ You will need a terminal program that can handle VT100 and ANSI color codes (man
 ## Modes
 You have two options for running ChromaTerm--:
 - Interactive: Open up CT-- without running any process. Good for testing commands.
-- Direct: Run your commands then exit. Great for using `ct` as part of a script.
+- Direct: Run a command then exit. Great for using `ct` as part of a script.
 
 The only difference is that the **direct** mode runs with the `-e` flag. For example:
 ```
