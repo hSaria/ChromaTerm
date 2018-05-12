@@ -2,6 +2,9 @@
 
 #include "defs.h"
 
+/* BUG: Because the read might be faster than the socket's output, the read
+ * might stop somewhere in the middle of a line, which causes the output to be
+ * processed even when there's more output on the same line */
 int read_buffer_mud() {
   gtd->mud_output_len +=
       read(gts->socket, &gtd->mud_output_buf[gtd->mud_output_len],
@@ -27,8 +30,6 @@ void readmud() {
     next_line = strchr(line, '\n');
 
     if (next_line) {
-      /* Used to repair the mud line when a command's output clears it */
-      gtd->mud_output_current_line_start = gtd->mud_output_buf;
       *next_line = 0;
       next_line++;
     } else if (*line == 0) {
