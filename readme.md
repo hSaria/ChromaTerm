@@ -79,11 +79,7 @@ The first will find the time in the format of "HH:MM:SS" and highlight it bold g
 
 You can remove a rule by using the `%unhighlight`.
 ```
-<<<<<<< HEAD
-%unhighlight {{(E|e)rr..}}
-=======
-#unhighlight {(E|e)rr..}
->>>>>>> 08ea71fca13261d04da83030de91efecd4ffa314
+%unhighlight {(E|e)rr..}
 ```
 
 You can also globally toggle highlighting by using `%config highlight <on|off>`. The default is on.
