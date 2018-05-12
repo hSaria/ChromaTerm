@@ -99,7 +99,7 @@ void init_program() {
 
   gtd->quiet++;
   do_configure("CHARSET    UTF-8");
-  do_configure("COMMAND    #");
+  do_configure("COMMAND    %%");
   do_configure("CONVERT    OFF");
   do_configure("HIGHLIGHT  ON");
   gtd->quiet--;

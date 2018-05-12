@@ -109,15 +109,16 @@ struct help_type help_table[] = {
      "colors).\n"
      "         For example: <<888>FCA><<888>baf>\n"
      "\n"
-     "         Use <178>#help colordemo<078> to get a long (not complete) list "
+     "         Use <178>%%help colordemo<078> to get a long (not complete) "
+     "list "
      "of colors<099>\n\n\n"},
     {"CONFIG",
-     "<028>Command<078>: #config <178>{<078>option<178>}<078> "
+     "<028>Command<078>: %%config <178>{<078>option<178>}<078> "
      "<178>{<078>argument<178>}<078>\n"
      "\n"
      "         This allows you to configure various settings, the settings can "
      "be\n"
-     "         written to file with the <178>#write<078> command.\n"
+     "         written to file with the <178>%%write<078> command.\n"
      "\n"
      "         It's advised to make a configuration file to read on startup if "
      "you\n"
@@ -125,20 +126,20 @@ struct help_type help_table[] = {
      "\n"
      "         For debugging purposes, this hidden command can show color and "
      "codes:\n"
-     "         <178>#CONFIG {CONVERT META} {ON|OFF}<099>\n\n\n"},
-    {"EXIT", "<028>Command<078>: #exit\n"
+     "         <178>%%CONFIG {CONVERT META} {ON|OFF}<099>\n\n\n"},
+    {"EXIT", "<028>Command<078>: %%exit\n"
              "\n"
              "         Terminates the program and any child process.\n"
-             "         You can also use <178>#quit<078>\n\n\n"},
-    {"HELP", "<028>Command<078>: #help <178>{<078>subject<178>}<078>\n"
+             "         You can also use <178>%%quit<078>\n\n\n"},
+    {"HELP", "<028>Command<078>: %%help <178>{<078>subject<178>}<078>\n"
              "\n"
-             "         Without an argument #help will list all available help "
+             "         Without an argument %%help will list all available help "
              "subjects.\n"
              "\n"
-             "         Using <178>#help all<078> will display all help "
+             "         Using <178>%%help all<078> will display all help "
              "entries.<099>\n\n\n"},
     {"HIGHLIGHT",
-     "<028>Command<078>: #highlight <178>{<078>regular expression<178>}<078> "
+     "<028>Command<078>: %%highlight <178>{<078>regular expression<178>}<078> "
      "<178>{<078>color names<178>}<078> <178>{<078>priority<178>}<078>\n"
      "\n"
      "         The highlight command is used to allow you to highlight strings "
@@ -156,7 +157,7 @@ struct help_type help_table[] = {
      "         light pink, light silver, light tan, light violet.\n"
      "\n"
      "         Besides color names also <<888>abc> color codes can be used. \n"
-     "         Use the <178>#help color<078> for more info on that.\n"
+     "         Use the <178>%%help color<078> for more info on that.\n"
      "\n"
      "         You may start the string to highlight with a ^ to only "
      "highlight text\n"
@@ -165,20 +166,20 @@ struct help_type help_table[] = {
      "         You may specify a priority to give a highlight precedence.\n"
      "         Default priority is 5. Lower is better.\n"
      "\n"
-     "<078>Example<078>: #high {Valgar} {reverse}\n"
+     "<078>Example<078>: %%high {Valgar} {reverse}\n"
      "         Prints every occurrence of 'Valgar' in reverse video.\n"
-     "<078>Example<078>: #high {^(P|p)assword} {bold yellow}\n"
+     "<078>Example<078>: %%high {^(P|p)assword} {bold yellow}\n"
      "         Boldfaces any line that starts with 'Password' or 'password' in "
      "yellow.\n"
-     "<078>Example<078>: #high {Bubba} {red underscore blink}\n"
+     "<078>Example<078>: %%high {Bubba} {red underscore blink}\n"
      "         Highlights the name Bubba as blinking, red, underscored text\n"
      "<078>Comment<078>: This command only works with ANSI/VT100 terminals or "
      "emulators.\n"
      "<078>Comment<078>: You can remove a highlight with the "
-     "<178>#unhighlight<078> "
+     "<178>%%unhighlight<078> "
      "command.<099>\n\n\n"},
     {"READ",
-     "<028>Command<078>: #read <178>{<078>filename<178>}<078>\n"
+     "<028>Command<078>: %%read <178>{<078>filename<178>}<078>\n"
      "\n"
      "         Reads commands from a file.  The commands file is "
      "merged in with\n"
@@ -193,15 +194,15 @@ struct help_type help_table[] = {
      "                 !@#$%%^&*-+=',.\"\\/:;?_`<>()[]{}|~,\n"
      "\n"
      "         You can comment out triggers using /* text */<099>\n\n\n"},
-    {"RUN", "<028>Command<078>: #run <178>{<078>shell command<178>}<078>\n"
+    {"RUN", "<028>Command<078>: %%run <178>{<078>shell command<178>}<078>\n"
             "\n"
             "         The run command calls the shell command which it wraps "
             "around."
             "\n"
             "         You can only run one process per CT instance."
             "\n"
-            "<078>Example<078>: #run {ssh someone@somewhere.com}<099>\n\n\n"},
-    {"WRITE", "<028>Command<078>: #write <178>{<078>filename<178>}<078>\n"
+            "<078>Example<078>: %%run {ssh someone@somewhere.com}<099>\n\n\n"},
+    {"WRITE", "<028>Command<078>: %%write <178>{<078>filename<178>}<078>\n"
               "\n"
               "         Writes all current configuration and highlight rules "
               "to the specified \n"
@@ -250,7 +251,8 @@ DO_COMMAND(do_help) {
     }
 
     if (!found) {
-      display_printf("#HELP: No help found for topic '%s'", left);
+      display_printf("%cHELP: No help found for topic '%s'", gtd->command_char,
+                     left);
     }
   }
 }

@@ -29,7 +29,7 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
-#define VERSION "0.02"
+#define VERSION "0.03"
 
 #define FALSE 0
 #define TRUE 1

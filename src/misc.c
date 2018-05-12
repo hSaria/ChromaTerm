@@ -75,4 +75,6 @@ DO_COMMAND(do_run) {
     new_session(pid, desc);
     break;
   }
+
+  memset(arg, 0, strlen(arg));
 }

@@ -39,8 +39,8 @@ DO_COMMAND(do_read) {
 
   if (!ispunct((int)temp[0])) {
     display_printf(
-        "%cERROR: {%s} - Start of file is not a punctuation; see #help read",
-        gtd->command_char, filename);
+        "%cERROR: {%s} - Start of file is not a punctuation; see %chelp read",
+        gtd->command_char, filename, gtd->command_char);
     fclose(fp);
     return;
   }
