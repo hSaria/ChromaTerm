@@ -139,6 +139,11 @@ struct config_type {
   CONFIG *config;
 };
 
+struct help_type {
+  char *name;
+  char *text;
+};
+
 struct list_type {
   char *name;
   int mode;
@@ -190,13 +195,6 @@ void write_node(int list, struct listnode *node, FILE *file);
 
 #endif
 
-#ifndef __HELP_H__
-#define __HELP_H__
-
-DO_COMMAND(do_help);
-
-#endif
-
 #ifndef __HIGHLIGHT_H__
 #define __HIGHLIGHT_H__
 
@@ -205,15 +203,19 @@ DO_COMMAND(do_unhighlight);
 
 void check_all_highlights(char *original);
 int get_highlight_codes(char *string, char *result);
+int regex_compare(regex_t *compiled_regex, char *str, char *result);
+void substitute(char *string, char *result);
 
 #endif
 
-#ifndef __INPUT_H__
-#define __INPUT_H__
+#ifndef __IO_H__
+#define __IO_H__
 
 void convert_meta(char *input, char *output);
 void print_backspace(int sig);
+int read_buffer_mud(void);
 void read_key(void);
+void readmud(void);
 
 #endif
 
@@ -242,15 +244,8 @@ void winch_handler(int sig);
 
 DO_COMMAND(do_commands);
 DO_COMMAND(do_exit);
+DO_COMMAND(do_help);
 DO_COMMAND(do_run);
-
-#endif
-
-#ifndef __NET_H__
-#define __NET_H__
-
-int read_buffer_mud(void);
-void readmud(void);
 
 #endif
 
@@ -264,19 +259,14 @@ char *space_out(char *string);
 
 #endif
 
-#ifndef __REGEXP_H__
-#define __REGEXP_H__
-
-int regex_compare(regex_t *compiled_regex, char *str, char *result);
-void substitute(char *string, char *result);
-
-#endif
-
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
 void cleanup_session(void);
 struct session *new_session(int pid, int socket);
+void *poll_input(void *);
+void *poll_session(void *);
+void script_driver(char *str);
 
 #endif
 
@@ -287,6 +277,7 @@ extern struct color_type color_table[];
 extern struct command_type command_table[];
 extern struct config_type config_table[];
 extern struct list_type list_table[LIST_MAX];
+extern struct help_type help_table[];
 
 #endif
 
@@ -297,21 +288,6 @@ int get_scroll_size(void);
 void init_screen_size(void);
 void init_terminal(void);
 void reset_terminal(void);
-
-#endif
-
-#ifndef __TOKENIZE_H__
-#define __TOKENIZE_H__
-
-void script_driver(char *str);
-
-#endif
-
-#ifndef __UPDATE_H__
-#define __UPDATE_H__
-
-void *poll_input(void *);
-void *poll_session(void *);
 
 #endif
 
