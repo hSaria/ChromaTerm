@@ -4,5 +4,5 @@ echo fe80:1%tun
 echo fe80::1%tun
 echo 01:23:45:67:89
 echo 01:23:45:67:89:AB
-echo PAssword
+echo Pass1word
 echo Password
