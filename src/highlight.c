@@ -74,7 +74,7 @@ void check_all_highlights(char *original) {
   strip_vt102_codes(original, line);
 
   for (i = 0; i < root->used; i++) {
-    if (regex_compare(&root->list[i]->compiled_regex, line, result)) {
+    if (regex_compare(root->list[i]->compiled_regex, line, result)) {
       get_highlight_codes(root->list[i]->right, color);
 
       *output = *reset = 0;
@@ -107,7 +107,7 @@ void check_all_highlights(char *original) {
         cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
 
         pto = ptm + strlen(match);
-      } while (regex_compare(&root->list[i]->compiled_regex, ptl, result));
+      } while (regex_compare(root->list[i]->compiled_regex, ptl, result));
 
       strcat(output, pto);
       strcpy(original, output);
@@ -159,15 +159,14 @@ int get_highlight_codes(char *string, char *result) {
   return TRUE;
 }
 
-int regex_compare(regex_t *compiled_regex, char *str, char *result) {
-  regmatch_t pmatch[1];
+int regex_compare(pcre *compiled_regex, char *str, char *result) {
+  int match[3];
 
-  if (regexec(compiled_regex, str, 1, pmatch, 0) != 0) {
+  if (pcre_exec(compiled_regex, NULL, str, strlen(str), 0, 0, match, 3) <= 0) {
     return FALSE;
   }
 
-  sprintf(result, "%.*s", (int)(pmatch[0].rm_eo - pmatch[0].rm_so),
-          &str[pmatch[0].rm_so]);
+  sprintf(result, "%.*s", match[1] - match[0], &str[match[0]]);
 
   return TRUE;
 }

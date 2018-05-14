@@ -2,8 +2,8 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <pcre.h>
 #include <pthread.h>
-#include <regex.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -96,7 +96,7 @@ struct listnode {
   char left[BUFFER_SIZE];
   char right[BUFFER_SIZE];
   char pr[BUFFER_SIZE];
-  regex_t compiled_regex;
+  pcre *compiled_regex;
 };
 
 struct session {
@@ -203,7 +203,7 @@ DO_COMMAND(do_unhighlight);
 
 void check_all_highlights(char *original);
 int get_highlight_codes(char *string, char *result);
-int regex_compare(regex_t *compiled_regex, char *str, char *result);
+int regex_compare(pcre *compiled_regex, char *str, char *result);
 void substitute(char *string, char *result);
 
 #endif
