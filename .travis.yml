@@ -2,4 +2,4 @@ language: c
 compiler:
   - clang
   - gcc
-script: cd ./ChromaTerm--/src && ./configure && make
+script: cd $TRAVIS_BUILD_DIR/ChromaTerm--/src && ./configure && make
