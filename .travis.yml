@@ -5,6 +5,8 @@ os:
 compiler:
   - clang
   - gcc
+install:
+  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install cppcheck; else brew install cppcheck; fi
 script:
-  - cd $TRAVIS_BUILD_DIR/src && ./configure && make
-  - ./ct -c ../.chromatermrc -e ../.test.sh
+  - cd $TRAVIS_BUILD_DIR/src && ./configure && make && make test
+  - cppcheck --enable=all -q
