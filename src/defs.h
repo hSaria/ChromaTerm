@@ -114,6 +114,7 @@ struct global_data {
   char mud_output_buf[MUD_OUTPUT_MAX];
   int mud_output_len;
   int quiet;
+  int command_prompt;
   char command_char;
 };
 
@@ -224,8 +225,6 @@ extern struct global_data *gtd;
 
 extern pthread_t input_thread;
 extern pthread_t output_thread;
-
-extern int command_prompt;
 
 int main(int argc, char **argv);
 void init_program(void);

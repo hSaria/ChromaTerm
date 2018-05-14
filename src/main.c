@@ -8,8 +8,6 @@ struct global_data *gtd;
 pthread_t input_thread;
 pthread_t output_thread;
 
-int command_prompt = TRUE;
-
 int main(int argc, char **argv) {
   int config_override = FALSE;
 
@@ -43,6 +41,7 @@ int main(int argc, char **argv) {
       case 'e':
         command_prompt = FALSE;
         script_driver(optarg);
+        gtd->command_prompt = FALSE;
         break;
       case 'h':
         help_menu(FALSE, c, argv[0]);
@@ -91,6 +90,8 @@ void init_program() {
 
   gts = (struct session *)calloc(1, sizeof(struct session));
   gtd = (struct global_data *)calloc(1, sizeof(struct global_data));
+
+  gtd->command_prompt = TRUE;
 
   for (index = 0; index < LIST_MAX; index++) {
     /* initial size is 8, but is dynamically resized as required */

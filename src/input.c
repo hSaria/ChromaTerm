@@ -77,8 +77,8 @@ void print_backspace(int sig) {
 
 void read_key(void) {
   char c;
-  while (command_prompt || (c = getc(stdin)) != EOF) {
-    if (command_prompt ||
+  while (gtd->command_prompt || (c = getc(stdin)) != EOF) {
+    if (gtd->command_prompt ||
         (beginning_of_line && (c == gtd->command_char ||
                                !HAS_BIT(gts->flags, SES_FLAG_CONNECTED)))) {
       int len = 0;

@@ -5,7 +5,7 @@
 void *poll_input(void *arg) {
   fd_set readfds;
 
-  if (command_prompt) {
+  if (gtd->command_prompt) {
     read_key();
   }
 
