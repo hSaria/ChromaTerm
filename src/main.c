@@ -11,6 +11,8 @@ pthread_t output_thread;
 int command_prompt = TRUE;
 
 int main(int argc, char **argv) {
+  int config_override = FALSE;
+
   signal(SIGTERM, abort_and_trap_handler);
   signal(SIGSEGV, abort_and_trap_handler);
   signal(SIGHUP, abort_and_trap_handler);
@@ -35,6 +37,7 @@ int main(int argc, char **argv) {
       case 'c':
         if (access(optarg, R_OK) == 0) {
           do_read(optarg);
+          config_override = TRUE;
         }
         break;
       case 'e':
@@ -57,17 +60,18 @@ int main(int argc, char **argv) {
     display_printf("%cHELP for more info", gtd->command_char);
   }
 
-  if (getenv("HOME") != NULL) {
-    char filename[256];
-    sprintf(filename, "%s", ".chromatermrc");
-
-    if (access(filename, R_OK) == 0) {
-      do_read(filename);
+  if (!config_override) {
+    if (access(".chromatermrc", R_OK) == 0) {
+      do_read(".chromatermrc");
     } else {
-      sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
+      if (getenv("HOME") != NULL) {
+        char filename[256];
 
-      if (access(filename, R_OK) == 0) {
-        do_read(filename);
+        sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
+
+        if (access(filename, R_OK) == 0) {
+          do_read(filename);
+        }
       }
     }
   }
