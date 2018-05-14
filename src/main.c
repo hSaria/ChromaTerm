@@ -39,15 +39,14 @@ int main(int argc, char **argv) {
         }
         break;
       case 'e':
-        command_prompt = FALSE;
         script_driver(optarg);
         gtd->command_prompt = FALSE;
         break;
       case 'h':
-        help_menu(FALSE, c, argv[0]);
+        help_menu(FALSE, argv[0]);
         break;
       default:
-        help_menu(TRUE, c, argv[0]);
+        help_menu(TRUE, argv[0]);
         break;
       }
     }
@@ -112,17 +111,13 @@ void init_program() {
   init_terminal();
 }
 
-void help_menu(int error, char c, char *proc_name) {
-  if (error) {
-    display_printf("Unknown option '%c'", c);
-  }
-
+void help_menu(int error, char *proc_name) {
   display_printf("ChromaTerm-- v%s", VERSION);
   display_printf("Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf("    -e       Execute function");
-  display_printf("    -h       This help section");
-  display_printf("    -c       Specify configuration file");
-  display_printf("    -t       Set title");
+  display_printf("    -h                    This help section");
+  display_printf("    -c {CONFIG_FILE}      Override configuration file");
+  display_printf("    -e [EXECUTABLE]       Run executable");
+  display_printf("    -t {TITLE}            Set title");
 
   quitmsg(NULL, error);
 }
