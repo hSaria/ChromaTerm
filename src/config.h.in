@@ -12,9 +12,6 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `util' library (-lutil). */
-#undef HAVE_LIBUTIL
-
 /* Define to 1 if you have the `memmove' function. */
 #undef HAVE_MEMMOVE
 
@@ -41,6 +38,9 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
