@@ -3,8 +3,7 @@
 #include "defs.h"
 
 DO_COMMAND(do_highlight) {
-  char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE],
-      temp[BUFFER_SIZE];
+  char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE];
 
   arg = get_arg_in_braces(arg, arg1, GET_ONE);
   arg = get_arg_in_braces(arg, arg2, GET_ONE);
@@ -31,6 +30,7 @@ DO_COMMAND(do_highlight) {
 
     display_header("");
   } else {
+    char temp[BUFFER_SIZE];
     if (get_highlight_codes(arg2, temp) == FALSE) {
       display_printf(
           "%cHIGHLIGHT: Named codes are:\n"
