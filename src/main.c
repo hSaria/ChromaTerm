@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
         }
         break;
       case 'e':
-        script_driver(optarg);
         gtd->command_prompt = FALSE;
+        do_run(optarg);
         break;
       case 'h':
         help_menu(FALSE, argv[0]);
