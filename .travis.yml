@@ -1,5 +1,29 @@
 language: c
+os:
+  - linux
+  - osx
+env:
+  - distribution: centos
+    version: 7
+  - distribution: centos
+    version: 6
+  - distribution: fedora
+    version: 28
+  - distribution: fedora
+    version: 27
+  - distribution: fedora
+    version: 26
+  - distribution: ubuntu
+    version: xenial
+  - distribution: ubuntu
+    version: trusty
+  - distribution: debian
+    version: stretch
+  - distribution: debian
+    version: jessie
 compiler:
   - clang
   - gcc
-script: cd $TRAVIS_BUILD_DIR/src && ./configure && make
+script: cd $TRAVIS_BUILD_DIR/src
+script: ./configure
+script: make
