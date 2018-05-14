@@ -53,10 +53,10 @@ You have two options for running ChromaTerm--:
 
 The only difference is that the **direct** mode runs with the `-e` flag. For example:
 ```
-ct -c ~/.custom_chromatermrc -e "%run /bin/bash"
+ct -c ~/.custom_chromatermrc -e "/bin/bash"
 ```
 
-This example will open up CT--, load a custom configuration file (more on that later), then run a process (bash, in this case). Once the process closes, CT-- will too.
+This example will open up CT--, load a custom configuration file (more on that later), then run an executable (bash, in this case). Once the process closes, CT-- will too.
 
 You can still run commands even while a process is running; type % on a new line that is empty then follow it with the require command. You can change the default command character (%); try `%config`.
 
@@ -75,7 +75,7 @@ The output is scanned according to the condition. If a part of the text matches 
 %highlight {([0-9]{2}:){2}[0-9]{2}} {bold green}
 %highlight {(E|e)rr..} {<fca>}
 ```
-The first will find the time in the format of "HH:MM:SS" and highlight it bold green. The second will highlight Err or err, and the following two characters. This is regular expression, so you can do a lot more.
+The first will highlight "dd:dd:dd" bold green (d for digit). The second will highlight Err or err, and the following two characters. This is regular expression, so you can do a lot more.
 
 You can remove a rule by using the `%unhighlight`.
 ```
@@ -101,7 +101,7 @@ You may also override which configuration file is loaded by using the `-c` param
 ct -c $HOME/.config/ChromaTerm--/.chromatermrc
 ```
 
-There is a sample file in the project. Feel free to use it.
+> There is a sample file in the project. Feel free to use it.
 
 
 # Help
