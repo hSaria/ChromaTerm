@@ -6,7 +6,7 @@ MAKE = @MAKE@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = ${DESTDIR}@bindir@
-CFLAGS += -O2 -Wall -Wextra
+CFLAGS += -pthread -O2 -Wall -Wextra
 LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
@@ -37,7 +37,7 @@ uninstall:
 
 # Autocompile all .c files into .o files using this rule:
 .c.o:
-	$(CC) -pthread $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 
 clean:
 	rm -f $(OFILES) config.status config.log
