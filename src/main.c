@@ -10,6 +10,8 @@ pthread_t output_thread;
 
 int main(int argc, char **argv) {
   int config_override = FALSE;
+  int run_command = FALSE;
+  char command[BUFFER_SIZE];
 
   signal(SIGTERM, abort_and_trap_handler);
   signal(SIGSEGV, abort_and_trap_handler);
@@ -39,8 +41,8 @@ int main(int argc, char **argv) {
         }
         break;
       case 'e':
-        gtd->command_prompt = FALSE;
-        do_run(optarg);
+        run_command = TRUE;
+        strcpy(command, optarg);
         break;
       case 'h':
         help_menu(FALSE, argv[0]);
@@ -72,6 +74,11 @@ int main(int argc, char **argv) {
         }
       }
     }
+  }
+
+  if (run_command) {
+    gtd->command_prompt = FALSE;
+    do_run(command);
   }
 
   if (pthread_create(&input_thread, NULL, poll_input, NULL) != 0) {
