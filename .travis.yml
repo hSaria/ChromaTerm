@@ -1,9 +1,7 @@
 language: c
-- os: linux
-  dist: precise
-- os: linux
-  dist: trusy
-- os: osx
+os:
+  - linux
+  - osx
 compiler:
   - clang
   - gcc
