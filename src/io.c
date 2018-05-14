@@ -93,7 +93,7 @@ int read_buffer_mud() {
 }
 
 void read_key(void) {
-  char c;
+  char c = 0;
   while (gtd->command_prompt || (c = getc(stdin)) != EOF) {
     if (gtd->command_prompt ||
         (beginning_of_line && (c == gtd->command_char ||
@@ -113,7 +113,7 @@ void read_key(void) {
       /* Ignore inturrupt signals */
       signal(SIGINT, print_backspace);
 
-      len = read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
+      len = (int)read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
       signal(SIGINT, abort_and_trap_handler);
 
       /* Restore CT terminal state (noncanonical mode) */
