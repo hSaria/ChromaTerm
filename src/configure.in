@@ -22,6 +22,8 @@ else
 	MYLIB=""
 fi
 
+-AC_CHECK_LIB(util, forkpty)
+
 AC_PROG_CC
 AC_PROG_MAKE_SET
 

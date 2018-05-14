@@ -35,6 +35,54 @@ DO_COMMAND(do_exit) {
   }
 }
 
+DO_COMMAND(do_help) {
+  char left[BUFFER_SIZE], add[BUFFER_SIZE], buf[BUFFER_SIZE], *ptf;
+  int cnt;
+
+  get_arg_in_braces(arg, left, GET_ONE);
+
+  if (*left == 0) {
+    display_header(" HELP TOPICS ");
+    for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
+      if ((int)strlen(add) + 19 > gts->cols) {
+        display_printf(add);
+        add[0] = 0;
+      }
+      cat_sprintf(add, "%19s", help_table[cnt].name);
+    }
+    display_printf(add);
+    display_header("");
+  } else {
+    int found = FALSE;
+    for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
+      if (is_abbrev(left, help_table[cnt].name) || is_abbrev(left, "all")) {
+        found = TRUE;
+
+        substitute(help_table[cnt].text, buf);
+        char *pto = buf;
+
+        while (*pto) {
+          ptf = strchr(pto, '\n');
+
+          if (ptf == NULL) {
+            break;
+          }
+          *ptf++ = 0;
+
+          display_printf(pto);
+
+          pto = ptf;
+        }
+      }
+    }
+
+    if (!found) {
+      display_printf("%cHELP: No help found for topic '%s'", gtd->command_char,
+                     left);
+    }
+  }
+}
+
 DO_COMMAND(do_run) {
   char temp[BUFFER_SIZE];
   int desc, pid;
