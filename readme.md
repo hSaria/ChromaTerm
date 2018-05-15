@@ -33,10 +33,8 @@ Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.
 
 # Installation
 ```
-git clone https://github.com/hSaria/chromaterm--.git
-cd chromaterm--/src/
-./configure
-make
+git clone https://github.com/hSaria/ChromaTerm--.git
+cd ChromaTerm--/src/ && ./configure && make
 make install  # Optional: Move ct to the /usr/local/bin
 ```
 
