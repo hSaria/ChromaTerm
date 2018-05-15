@@ -10,7 +10,7 @@ DO_COMMAND(do_highlight) {
   get_arg_in_braces(arg, arg3, GET_ONE);
 
   if (*arg3 == 0) {
-    strcpy(arg3, "5");
+    strcpy(arg3, "1000");
   }
 
   if (*arg1 == 0 || *arg2 == 0) {
