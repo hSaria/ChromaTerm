@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
 
     if (argv[optind] != NULL) {
       do_read(argv[optind]);
+      config_override = TRUE;
     }
   } else {
     display_printf("%cHELP for more info", gtd->command_char);
