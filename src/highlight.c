@@ -122,6 +122,7 @@ void check_all_highlights(char *original) {
 
         /* Move pto to after the match, and skip any vt102 codes, too. */
         pto = ptt;
+        ptm = pto; /* Sync: next iteration should simulate a fresh call */
 
         /* Move to the remaining of the stripped string */
         pts = strstr(pts, match);
