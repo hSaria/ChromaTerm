@@ -115,6 +115,7 @@ struct global_data {
   int mud_output_len;
   int quiet;
   int command_prompt;
+  int run_overriden;
   char command_char;
 };
 
