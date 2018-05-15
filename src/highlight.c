@@ -65,49 +65,54 @@ DO_COMMAND(do_unhighlight) {
 
 void check_all_highlights(char *original) {
   struct listroot *root = gts->list[LIST_HIGHLIGHT];
-  char *pto, *ptl, *ptm;
-  char match[BUFFER_SIZE], color[BUFFER_SIZE], line[BUFFER_SIZE],
-      reset[BUFFER_SIZE], output[BUFFER_SIZE], plain[BUFFER_SIZE],
-      result[BUFFER_SIZE];
+  char *pto, *pts, *ptm;
+  char match[BUFFER_SIZE], color[BUFFER_SIZE], stripped[BUFFER_SIZE],
+      output[BUFFER_SIZE];
   int i;
 
-  strip_vt102_codes(original, line);
-
-  for (i = 0; i < root->used; i++) {
-    if (regex_compare(root->list[i]->compiled_regex, line, result)) {
+  /* Apply from the bottom since the top ones may overwrite them */
+  for (i = root->used - 1; i > -1; i--) {
+    strip_vt102_codes(original, stripped, -1);
+    int start_position =
+        regex_compare(root->list[i]->compiled_regex, stripped, match);
+    if (start_position != -1) {
       get_highlight_codes(root->list[i]->right, color);
 
-      *output = *reset = 0;
+      *output = 0;
 
-      pto = original;
-      ptl = line;
+      pto = ptm = original;
+      pts = stripped;
 
       do {
-        if (*result == 0) {
-          break;
+        int count_inc_skipped = 0;
+        /* Seek ptm (original with vt102 codes) until beginning of match */
+        while (*ptm && start_position > 0) {
+          while (skip_vt102_codes(ptm)) {
+            count_inc_skipped += skip_vt102_codes(ptm);
+            ptm += skip_vt102_codes(ptm);
+          }
+
+          if (*ptm) {
+            ptm++;
+            pts++;
+            start_position--;
+            count_inc_skipped++;
+          }
         }
 
-        strcpy(match, result);
+        cat_sprintf(output, "%.*s%s%s\033[0m", count_inc_skipped, pto, color,
+                    match);
 
-        strip_vt102_codes(match, plain);
-
-        ptm = strstr(pto, match);
-
-        if (ptm == NULL) {
-          break;
-        }
-
-        ptl = strstr(ptl, match);
-        ptl = ptl + strlen(match);
-
-        *ptm = 0;
-
-        get_color_codes(reset, pto, reset);
-
-        cat_sprintf(output, "%s%s%s\033[0m%s", pto, color, plain, reset);
-
+        /* Move pto to after the match */
         pto = ptm + strlen(match);
-      } while (regex_compare(root->list[i]->compiled_regex, ptl, result));
+
+        /* Move to the remaining of the stripped string */
+        pts = strstr(pts, match);
+        pts = pts + strlen(match);
+
+        start_position =
+            regex_compare(root->list[i]->compiled_regex, pts, match);
+      } while (start_position != -1);
 
       strcat(output, pto);
       strcpy(original, output);
@@ -164,12 +169,13 @@ int regex_compare(pcre *compiled_regex, char *str, char *result) {
 
   if (pcre_exec(compiled_regex, NULL, str, strlen(str), 0, 0, match, 2000) <=
       0) {
-    return FALSE;
+    return -1;
   }
 
   sprintf(result, "%.*s", match[1] - match[0], &str[match[0]]);
 
-  return TRUE;
+  return match[0];
+}
 
 int skip_vt102_codes(char *str) {
   int skip;
