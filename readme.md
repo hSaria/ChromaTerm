@@ -24,10 +24,16 @@ The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has
 ## Screenshots
 Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"width="220"/>
-  <img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png" width="220"/>
-</p>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"width="800"/>
+  <div align="left" width="50%">
+    <img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png" width="400"/>
+  </div>
+  <div align="right" width="50%">
+    <img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/ios-show-interface.png" width="400"/>
+  </div>
+</div>
+
 
 # Installation
 ```
