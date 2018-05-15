@@ -1,75 +1,94 @@
 #!/bin/bash
 
+# Stores the correct ones
+yes=()
+# Stores the incorrect ones
+no=()
+
 ### IPv4 ###
 
-echo 1.2.3.4/32
-echo 255.255.255.255
-echo X 1.2.3
-echo X 1.2.3.4/33
-echo X 255.256.255.255
+yes+=("1.2.3.4/32")
+yes+=("255.255.255.255")
+no+=("X 1.2.3")
+no+=("X 1.2.3.4/33")
+no+=("X 255.256.255.255")
 
 
 ### IPv6 ###
 
-echo A:b:3:4:5:6:7:8
+yes+=("A:b:3:4:5:6:7:8")
 
-echo ::
+yes+=("::")
 
-echo A::
-echo A:b:3:4:5:6:7::
-echo A::8
-echo ::b:3:4:5:6:7:8
-echo ::8
+yes+=("A::")
+yes+=("A:b:3:4:5:6:7::")
+yes+=("A::8")
+yes+=("::b:3:4:5:6:7:8")
+yes+=("::8")
 
-echo A:b:3:4:5:6::8
-echo A:b:3:4:5::7:8
-echo A:b:3:4::6:7:8
-echo A:b:3::5:6:7:8
-echo A:b::4:5:6:7:8
-echo A::3:4:5:6:7:8
+yes+=("A:b:3:4:5:6::8")
+yes+=("A:b:3:4:5::7:8")
+yes+=("A:b:3:4::6:7:8")
+yes+=("A:b:3::5:6:7:8")
+yes+=("A:b::4:5:6:7:8")
+yes+=("A::3:4:5:6:7:8")
 
-echo A::7:8
-echo A:b:3:4:5::8
-echo A::6:7:8
-echo A:b:3:4::8
-echo A::5:6:7:8
-echo A:b:3::8
-echo A::4:5:6:7:8
-echo A:b::8
-echo A::8
+yes+=("A::7:8")
+yes+=("A:b:3:4:5::8")
+yes+=("A::6:7:8")
+yes+=("A:b:3:4::8")
+yes+=("A::5:6:7:8")
+yes+=("A:b:3::8")
+yes+=("A::4:5:6:7:8")
+yes+=("A:b::8")
+yes+=("A::8")
 
-echo A:b:3:4:5:6:7:8/64
+yes+=("A:b:3:4:5:6:7:8/64")
 
-echo ::255.255.255.255
-echo ::ffff:255.255.255.255
-echo ::ffff:0:255.255.255.255
-echo 00A:db8:3:4::192.0.2.33
-echo 64:ff9b::192.0.2.33
+yes+=("::255.255.255.255")
+yes+=("::ffff:255.255.255.255")
+yes+=("::ffff:0:255.255.255.255")
+yes+=("00A:db8:3:4::192.0.2.33")
+yes+=("64:ff9b::192.0.2.33")
 
-echo fe80::1%tun
+yes+=("fe80::1%tun")
 
-echo X fe80:1%tun
-echo X A:b::8/129
-echo X :::
+no+=("X fe80:1%tun")
+no+=("X A:b::8/129")
+no+=("X :::")
 
 
 ### MAC Addresses ###
 
-echo 0A:23:45:67:89:AB
-echo 0A23.4567.89AB
-echo X 0A:23:45:67:89
-echo X 0A23.4567.89.AB
+yes+=("0A:23:45:67:89:AB")
+yes+=("0A23.4567.89AB")
+no+=("X 0A:23:45:67:89")
+no+=("X 0A23.4567.89.AB")
 
 
 ### Password ###
 
-echo Password
-echo X Pass1word
+yes+=("Password")
+no+=("X Pass1word")
 
 
 ### Syslog date ###
 
-echo Dec 03 12:34:56
-echo jan 03 12:34:56
-echo X Dec 03 12:334:56
-echo X abc 03 12:34:56
+yes+=("Dec 03 12:34:56")
+yes+=("jan 03 12:34:56")
+no+=("X Dec 03 12:334:56")
+no+=("X abc 03 12:34:56")
+
+
+
+### Print all yes then all no
+
+for ((i=0;i<${#yes[@]};++i)); do
+  echo "${yes[$i]}"
+done
+
+echo ""
+
+for ((i=0;i<${#no[@]};++i)); do
+  echo "${no[$i]}"
+done
