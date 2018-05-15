@@ -14,5 +14,5 @@
 /* Password or password */
 %HIGHLIGHT  {(?i)password} {red} {5}
 
-/* Date in MMM DD hh:mm:ss format */
-%HIGHLIGHT  {(?i)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-1]|([0-2]\d)))\s((2[0-3])|[0-1]\d):[0-5]\d:[0-5]\d} {<fca>} {5}
+/* Date in MMM DD hh:mm:ss.SSS format (msec optional) */
+%HIGHLIGHT  {(?i)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-1]|([0-2]\d)))\s((2[0-3])|[0-1]\d):[0-5]\d:[0-5]\d(\.\d{3})?} {<fca>} {5}
