@@ -65,9 +65,7 @@ DO_COMMAND(do_unhighlight) {
 
 void check_all_highlights(char *original) {
   struct listroot *root = gts->list[LIST_HIGHLIGHT];
-  char *pto, *pts, *ptm;
-  char match[BUFFER_SIZE], color[BUFFER_SIZE], stripped[BUFFER_SIZE],
-      output[BUFFER_SIZE];
+  char match[BUFFER_SIZE], stripped[BUFFER_SIZE];
   int i;
 
   strip_vt102_codes(original, stripped, -1);
@@ -77,6 +75,8 @@ void check_all_highlights(char *original) {
     int start_position =
         regex_compare(root->list[i]->compiled_regex, stripped, match);
     if (start_position != -1) {
+      char *pto, *pts, *ptm;
+      char color[BUFFER_SIZE], output[BUFFER_SIZE];
       get_highlight_codes(root->list[i]->right, color);
 
       *output = 0;
@@ -86,7 +86,6 @@ void check_all_highlights(char *original) {
 
       do {
         int count_inc_skipped = 0;   /* Skipped bytes until the match */
-        int count_match_skipped = 0; /* Skipped inside of the match */
         int to_skip = strlen(match); /* Number of chars to skip in match */
         char *ptt;
 
@@ -109,7 +108,6 @@ void check_all_highlights(char *original) {
 
         while (*ptt && to_skip > 0) {
           while (skip_vt102_codes(ptt)) {
-            count_match_skipped += skip_vt102_codes(ptt);
             ptt += skip_vt102_codes(ptt);
           }
 
