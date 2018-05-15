@@ -160,9 +160,10 @@ int get_highlight_codes(char *string, char *result) {
 }
 
 int regex_compare(pcre *compiled_regex, char *str, char *result) {
-  int match[3];
+  int match[2000];
 
-  if (pcre_exec(compiled_regex, NULL, str, strlen(str), 0, 0, match, 3) <= 0) {
+  if (pcre_exec(compiled_regex, NULL, str, strlen(str), 0, 0, match, 2000) <=
+      0) {
     return FALSE;
   }
 
