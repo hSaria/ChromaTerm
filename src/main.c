@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
 
     if (argv[optind] != NULL) {
       do_read(argv[optind]);
+      config_override = TRUE;
     }
   } else {
     display_printf("%cHELP for more info", gtd->command_char);
@@ -76,9 +77,14 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (run_command) {
+  if (run_command && !gtd->run_overriden) {
     gtd->command_prompt = FALSE;
+    gtd->run_overriden = TRUE;
     do_run(command);
+  }
+
+  if (!gtd->run_overriden) {
+    do_run(NULL);
   }
 
   if (pthread_create(&input_thread, NULL, poll_input, NULL) != 0) {

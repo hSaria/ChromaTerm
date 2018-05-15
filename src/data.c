@@ -70,7 +70,6 @@ int bsearch_priority_list(struct listroot *root, char *text, char *priority,
 void delete_index_list(struct listroot *root, int index) {
   struct listnode *node = root->list[index];
 
-  regfree(&node->compiled_regex);
   free(node);
 
   memmove(&root->list[index], &root->list[index + 1],
@@ -135,8 +134,10 @@ struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
 /* create a node and stuff it into the list in the desired order */
 struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
+  const char *error_pointer;
+  int error_offset;
   struct listnode *node;
-  regex_t compiled_regex;
+  pcre *compiled_regex;
 
   node = (struct listnode *)calloc(1, sizeof(struct listnode));
 
@@ -147,10 +148,11 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
   }
 
   if (root->type == LIST_HIGHLIGHT) {
-    if (regcomp(&compiled_regex, ltext, REG_EXTENDED | REG_NEWLINE) != 0) {
-      display_printf(
-          "%cWARNING: Regular expression failed to compile; check syntax",
-          gtd->command_char);
+    compiled_regex =
+        pcre_compile(ltext, 0, &error_pointer, &error_offset, NULL);
+    if (compiled_regex == NULL) {
+      display_printf("%cWARNING: Error when compiling regex at %i: %s",
+                     gtd->command_char, error_offset, error_pointer);
     }
     node->compiled_regex = compiled_regex;
   }
