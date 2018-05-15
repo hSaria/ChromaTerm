@@ -65,3 +65,11 @@ echo X 0A23.4567.89.AB
 
 echo Password
 echo X Pass1word
+
+
+### Syslog date ###
+
+echo Dec 03 12:34:56
+echo jan 03 12:34:56
+echo X Dec 03 12:334:56
+echo X abc 03 12:34:56
