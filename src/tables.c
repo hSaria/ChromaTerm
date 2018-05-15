@@ -233,9 +233,9 @@ struct help_type help_table[] = {
      "                 !@#$%%^&*-+=',.\"\\/:;?_`<>()[]{}|~,\n"
      "\n"
      "         You can comment out triggers using /* text */<099>\n\n\n"},
-    {"RUN", "<028>Command<078>: %%run <178>{<078>shell command<178>}<078>\n"
+    {"RUN", "<028>Command<078>: %%run <178>{<078>process<178>}<078>\n"
             "\n"
-            "         The run command calls the shell command which it wraps "
+            "         The run command calls a process which it wraps "
             "around."
             "\n"
             "         You can only run one process per CT instance."
