@@ -70,9 +70,10 @@ void check_all_highlights(char *original) {
       output[BUFFER_SIZE];
   int i;
 
+  strip_vt102_codes(original, stripped, -1);
+
   /* Apply from the bottom since the top ones may overwrite them */
   for (i = root->used - 1; i > -1; i--) {
-    strip_vt102_codes(original, stripped, -1);
     int start_position =
         regex_compare(root->list[i]->compiled_regex, stripped, match);
     if (start_position != -1) {
@@ -84,7 +85,11 @@ void check_all_highlights(char *original) {
       pts = stripped;
 
       do {
-        int count_inc_skipped = 0;
+        int count_inc_skipped = 0;   /* Skipped bytes until the match */
+        int count_match_skipped = 0; /* Skipped inside of the match */
+        int to_skip = strlen(match); /* Number of chars to skip in match */
+        char *ptt;
+
         /* Seek ptm (original with vt102 codes) until beginning of match */
         while (*ptm && start_position > 0) {
           while (skip_vt102_codes(ptm)) {
@@ -100,11 +105,25 @@ void check_all_highlights(char *original) {
           }
         }
 
+        ptt = ptm;
+
+        while (*ptt && to_skip > 0) {
+          while (skip_vt102_codes(ptt)) {
+            count_match_skipped += skip_vt102_codes(ptt);
+            ptt += skip_vt102_codes(ptt);
+          }
+
+          if (*ptt) {
+            ptt++;
+            to_skip--;
+          }
+        }
+
         cat_sprintf(output, "%.*s%s%s\033[0m", count_inc_skipped, pto, color,
                     match);
 
-        /* Move pto to after the match */
-        pto = ptm + strlen(match);
+        /* Move pto to after the match, and skip any vt102 codes, too. */
+        pto = ptt;
 
         /* Move to the remaining of the stripped string */
         pts = strstr(pts, match);
@@ -114,6 +133,7 @@ void check_all_highlights(char *original) {
             regex_compare(root->list[i]->compiled_regex, pts, match);
       } while (start_position != -1);
 
+      /* Add the remainder of the string and then copy it to*/
       strcat(output, pto);
       strcpy(original, output);
     }
