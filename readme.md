@@ -22,13 +22,13 @@ The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has
 
 
 ## Screenshots
-
-<img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"/>
-<br/>
-<img height=405px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png"/>
-<img height=405px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/ios-show-interface.png"/>
-<div style="height: 20px; width 100%"></div>
-
+<p align=center>
+  <img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"/>
+</p>
+<p align=center>
+  <img height=400px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png"/>
+  <img height=400px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/ios-show-interface.png"/>
+  </p>
 
 
 # Installation
