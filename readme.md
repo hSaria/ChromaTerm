@@ -24,12 +24,10 @@ The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has
 ## Screenshots
 Below are screenshots of using chromaterm while SSH'd into a Cisco firewall.
 
-![Chromaterm IMG](http://tunnelsup.com/images/chroma1.PNG)
-
-![Chromaterm IMG](http://tunnelsup.com/images/chroma2.PNG)
-
-![Chromaterm IMG](http://tunnelsup.com/images/chroma3.PNG)
-
+<p align="center">
+  <img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"/>
+  <img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png"/>
+</p>
 
 # Installation
 ```
