@@ -170,6 +170,95 @@ int regex_compare(pcre *compiled_regex, char *str, char *result) {
   sprintf(result, "%.*s", match[1] - match[0], &str[match[0]]);
 
   return TRUE;
+
+int skip_vt102_codes(char *str) {
+  int skip;
+
+  switch (str[0]) {
+  case 5:   /* ENQ */
+  case 7:   /* BEL */
+  case 8:   /* BS  */
+  case 11:  /* VT  */
+  case 12:  /* FF  */
+  case 13:  /* CR  */
+  case 14:  /* SO  */
+  case 15:  /* SI  */
+  case 17:  /* DC1 */
+  case 19:  /* DC3 */
+  case 24:  /* CAN */
+  case 26:  /* SUB */
+  case 127: /* DEL */
+    return 1;
+  case 27: /* ESC */
+    break;
+  default:
+    return 0;
+  }
+
+  switch (str[1]) {
+  case '\0':
+    return 1;
+  case '%':
+  case '#':
+  case '(':
+  case ')':
+    return str[2] ? 3 : 2;
+  case ']':
+    switch (str[2]) {
+    case 'P':
+      for (skip = 3; skip < 10; skip++) {
+        if (str[skip] == 0) {
+          break;
+        }
+      }
+      return skip;
+    case 'R':
+      return 3;
+    }
+    return 2;
+  case '[':
+    break;
+  default:
+    return 2;
+  }
+
+  for (skip = 2; str[skip] != 0; skip++) {
+    if (isalpha((int)str[skip])) {
+      return skip + 1;
+    }
+
+    switch (str[skip]) {
+    case '@':
+    case '`':
+    case ']':
+      return skip + 1;
+    }
+  }
+  return skip;
+}
+
+/* If n is not null, then this function seeks n times, exluding vt102 codes */
+void strip_vt102_codes(char *str, char *buf, int n) {
+  char *pti, *pto;
+
+  pti = str;
+  pto = buf;
+
+  while (*pti && (n < 0 || n > 0)) {
+    while (skip_vt102_codes(pti)) {
+      pti += skip_vt102_codes(pti);
+    }
+
+    if (*pti) {
+      *pto++ = *pti++;
+      n--;
+    }
+  }
+
+  /* Only add null-termination if it isn't in seek-mode */
+  if (n < 0) {
+    *pto = 0;
+  }
 }
 
 /* copy *string into *result, but substitute the various colors with the
