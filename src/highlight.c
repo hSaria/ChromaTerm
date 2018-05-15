@@ -85,8 +85,8 @@ void check_all_highlights(char *original) {
       pts = stripped;
 
       do {
-        int count_inc_skipped = 0;   /* Skipped bytes until the match */
-        int to_skip = strlen(match); /* Number of chars to skip in match */
+        int count_inc_skipped = 0;        /* Skipped bytes until the match */
+        int to_skip = (int)strlen(match); /* Number of chars to skip in match */
         char *ptt;
 
         /* Seek ptm (original with vt102 codes) until beginning of match */
@@ -185,8 +185,8 @@ int get_highlight_codes(char *string, char *result) {
 int regex_compare(pcre *compiled_regex, char *str, char *result) {
   int match[2000];
 
-  if (pcre_exec(compiled_regex, NULL, str, strlen(str), 0, 0, match, 2000) <=
-      0) {
+  if (pcre_exec(compiled_regex, NULL, str, (int)strlen(str), 0, 0, match,
+                2000) <= 0) {
     return -1;
   }
 
