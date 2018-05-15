@@ -2098,7 +2098,7 @@ else
 	MYLIB=""
 fi
 
--ac_ext=c
+ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -2931,6 +2931,53 @@ _ACEOF
 
   LIBS="-lutil $LIBS"
 
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pcre_compile in -lpcre" >&5
+$as_echo_n "checking for pcre_compile in -lpcre... " >&6; }
+if ${ac_cv_lib_pcre_pcre_compile+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpcre  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pcre_compile ();
+int
+main ()
+{
+return pcre_compile ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_pcre_pcre_compile=yes
+else
+  ac_cv_lib_pcre_pcre_compile=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pcre_pcre_compile" >&5
+$as_echo "$ac_cv_lib_pcre_pcre_compile" >&6; }
+if test "x$ac_cv_lib_pcre_pcre_compile" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBPCRE 1
+_ACEOF
+
+  LIBS="-lpcre $LIBS"
+
+else
+  as_fn_error $? "pcre runtime library not working, is it AND the corresponding development (header) file installed and linked" "$LINENO" 5
 fi
 
 
@@ -3903,7 +3950,7 @@ fi
 done
 
 
-for ac_header in ctype.h errno.h pthread.h regex.h signal.h stdarg.h stdio.h stdlib.h string.h sys/ioctl.h sys/stat.h sys/time.h unistd.h util.h wordexp.h
+for ac_header in ctype.h errno.h pthread.h signal.h stdarg.h stdio.h stdlib.h string.h sys/ioctl.h sys/stat.h sys/time.h unistd.h util.h wordexp.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -3912,6 +3959,20 @@ if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
 #define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
 
+fi
+
+done
+
+for ac_header in pcre.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "pcre.h" "ac_cv_header_pcre_h" "$ac_includes_default"
+if test "x$ac_cv_header_pcre_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PCRE_H 1
+_ACEOF
+
+else
+  as_fn_error $? "pcre header file not found, is the development part present" "$LINENO" 5
 fi
 
 done

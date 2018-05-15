@@ -2,7 +2,7 @@
 
 #include "defs.h"
 
-int process_already_running = FALSE;
+static int process_already_running = FALSE;
 
 DO_COMMAND(do_commands) {
   char buf[BUFFER_SIZE] = {0}, add[BUFFER_SIZE];
@@ -90,6 +90,11 @@ DO_COMMAND(do_run) {
 
   gtd->command_prompt = FALSE;
 
+  /* If it's quiet, then that must mean we're reading a file */
+  if (gtd->quiet) {
+    gtd->run_overriden = TRUE;
+  }
+
   char *argv[4] = {"sh", "-c", "", NULL};
 
   /* Limit to single process */
@@ -101,8 +106,12 @@ DO_COMMAND(do_run) {
   }
 
   /* If no process is provided, use the SHELL environment variable */
-  if (*arg == 0) {
-    strcpy(arg, getenv("SHELL") ? getenv("SHELL") : "");
+  strcpy(temp, "exec ");
+  if (arg == NULL || *arg == 0) {
+    strcat(temp, getenv("SHELL") ? getenv("SHELL") : "");
+  } else {
+    strcat(temp, arg);
+    memset(arg, 0, strlen(arg));
   }
 
   size.ws_row = get_scroll_size();
@@ -115,7 +124,6 @@ DO_COMMAND(do_run) {
     perror("forkpty");
     break;
   case 0:
-    sprintf(temp, "exec %s", arg);
     argv[2] = temp;
     execv("/bin/sh", argv);
     break;
@@ -123,6 +131,4 @@ DO_COMMAND(do_run) {
     new_session(pid, desc);
     break;
   }
-
-  memset(arg, 0, strlen(arg));
 }

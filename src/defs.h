@@ -2,8 +2,8 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <pcre.h>
 #include <pthread.h>
-#include <regex.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -29,7 +29,7 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
-#define VERSION "0.03"
+#define VERSION "0.05"
 
 #define FALSE 0
 #define TRUE 1
@@ -96,7 +96,7 @@ struct listnode {
   char left[BUFFER_SIZE];
   char right[BUFFER_SIZE];
   char pr[BUFFER_SIZE];
-  regex_t compiled_regex;
+  pcre *compiled_regex;
 };
 
 struct session {
@@ -115,6 +115,7 @@ struct global_data {
   int mud_output_len;
   int quiet;
   int command_prompt;
+  int run_overriden;
   char command_char;
 };
 
@@ -203,7 +204,9 @@ DO_COMMAND(do_unhighlight);
 
 void check_all_highlights(char *original);
 int get_highlight_codes(char *string, char *result);
-int regex_compare(regex_t *compiled_regex, char *str, char *result);
+int regex_compare(pcre *compiled_regex, char *str, char *result);
+int skip_vt102_codes(char *str);
+void strip_vt102_codes(char *str, char *buf, int n);
 void substitute(char *string, char *result);
 
 #endif
@@ -301,15 +304,5 @@ void display_printf(char *format, ...);
 int is_abbrev(char *s1, char *s2);
 void printline(char *str, int isaprompt);
 void socket_printf(unsigned int length, char *format, ...);
-
-#endif
-
-#ifndef __VT102_H__
-#define __VT102_H__
-
-int find_non_color_codes(char *str);
-void get_color_codes(char *old, char *str, char *buf);
-int skip_vt102_codes(char *str);
-void strip_vt102_codes(char *str, char *buf);
 
 #endif

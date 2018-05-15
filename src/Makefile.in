@@ -11,7 +11,7 @@ LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
 OFILES = config.o data.o files.o highlight.o io.o main.o misc.o parse.o \
-         session.o tables.o terminal.o utils.o vt102.o
+         session.o tables.o terminal.o utils.o
 
 default: all
 
