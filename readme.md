@@ -42,7 +42,7 @@ You will need a terminal program that can handle VT100 and ANSI color codes (man
 
 While running, type `%` at a new line then follow it with the required command. You can change the default command character (%); try `%config`.
 
-> Before typing the command character, be sure to hit enter first and no other. This is a limitation which I documented in `read_key` function in io.c.
+> Before typing the command character, be sure to hit enter first. This is a limitation which I documented in `read_key` function in io.c.
 
 ## Commands
 Below are quick summaries for some of the important commands.
