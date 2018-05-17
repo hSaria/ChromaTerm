@@ -121,8 +121,7 @@ void init_program() {
 
   /* Save current terminal attributes and reset at exit */
   if (tcgetattr(STDIN_FILENO, &gtd.saved_terminal)) {
-    perror("tcgetattr");
-    exit(errno);
+    quitmsg("tcgetattr", 1);
   }
 
   tcgetattr(STDIN_FILENO, &gtd.active_terminal);
@@ -141,8 +140,7 @@ void init_program() {
   SET_BIT(io.c_cflag, CS8);
 
   if (tcsetattr(STDIN_FILENO, TCSANOW, &io)) {
-    perror("tcsetattr");
-    exit(errno);
+    quitmsg("tcsetattr", 1);
   }
 
   atexit(quit_void);

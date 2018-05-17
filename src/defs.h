@@ -1,17 +1,15 @@
 /* This program is protected under the GNU GPL (See COPYING) */
 
 #include <ctype.h>
-#include <errno.h>
 #include <pcre.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 #include <termios.h>
 #include <unistd.h>
 #include <wordexp.h>
@@ -45,7 +43,7 @@
 
 #define BUFFER_SIZE 20000
 
-#define MUD_OUTPUT_MAX 262144
+#define MUD_OUTPUT_MAX 262144 /* 256 KiB */
 
 /* Microseconds to wait before processing a line without \n at the end */
 #define WAIT_FOR_NEW_LINE 10000
@@ -160,11 +158,8 @@ int bsearch_priority_list(struct listroot *root, char *text, char *priority,
                           int seek);
 void delete_index_list(struct listroot *root, int index);
 struct listroot *init_list(int type, int size);
-struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
-                                   int index);
 struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext);
-int locate_index_list(struct listroot *root, char *text, char *priority);
 int nsearch_list(struct listroot *root, char *text);
 int search_index_list(struct listroot *root, char *text, char *priority);
 struct listnode *search_node_list(struct listroot *root, char *text);

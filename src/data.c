@@ -98,30 +98,11 @@ struct listroot *init_list(int type, int size) {
   return listhead;
 }
 
-struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
-                                   int index) {
-  root->used++;
-
-  if (root->used == root->size) {
-    root->size *= 2;
-
-    root->list = (struct listnode **)realloc(
-        root->list, (root->size) * sizeof(struct listnode *));
-  }
-
-  memmove(&root->list[index + 1], &root->list[index],
-          (root->used - index) * sizeof(struct listnode *));
-
-  root->list[index] = node;
-
-  return node;
-}
-
 /* create a node and stuff it into the list in the desired order */
 struct listnode *insert_node_list(struct listroot *root, char *ltext,
                                   char *rtext, char *prtext) {
   const char *error_pointer;
-  int error_offset;
+  int error_offset, index;
   struct listnode *node;
 
   node = (struct listnode *)calloc(1, sizeof(struct listnode));
@@ -139,21 +120,26 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
     }
   }
 
-  return insert_index_list(root, node, locate_index_list(root, ltext, prtext));
-}
+  index = list_table[root->type].mode == ALPHA
+              ? bsearch_alpha_list(root, node->left, 1)
+              : bsearch_priority_list(root, node->left, node->pr, 1);
 
-/* Return insertion index */
-int locate_index_list(struct listroot *root, char *text, char *priority) {
-  switch (list_table[root->type].mode) {
-  case ALPHA:
-    return bsearch_alpha_list(root, text, 1);
+  root->used++;
 
-  case PRIORITY:
-    return bsearch_priority_list(root, text, priority, 1);
+  /* Expand if full; make it twice as big */
+  if (root->used == root->size) {
+    root->size *= 2;
 
-  default:
-    return root->used;
+    root->list = (struct listnode **)realloc(
+        root->list, (root->size) * sizeof(struct listnode *));
   }
+
+  memmove(&root->list[index + 1], &root->list[index],
+          (root->used - index) * sizeof(struct listnode *));
+
+  root->list[index] = node;
+
+  return node;
 }
 
 int nsearch_list(struct listroot *root, char *text) {
