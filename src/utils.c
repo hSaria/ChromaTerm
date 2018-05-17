@@ -123,6 +123,8 @@ void printline(char *str, int isaprompt) {
   if (!isaprompt) {
     printf("\n");
   }
+
+  fflush(stdout);
 }
 
 /* advance ptr to next none-space */

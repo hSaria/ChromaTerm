@@ -2,6 +2,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 #include <pcre.h>
 #include <pthread.h>
 #include <signal.h>
@@ -45,7 +46,8 @@
 
 #define BUFFER_SIZE 20000
 
-#define MUD_OUTPUT_MAX 500000
+/* Microseconds to wait before processing a line without \n at the end */
+#define WAIT_FOR_NEW_LINE 10000
 
 #define ESCAPE 27
 
@@ -97,7 +99,8 @@ struct global_data {
   struct termios active_terminal;
   struct termios saved_terminal;
   char command_char;
-  char mud_output_buf[MUD_OUTPUT_MAX];
+  char mud_output_buf[ARG_MAX];
+  int mud_output_len;
   int quiet;
   int run_overriden;
 };
@@ -198,8 +201,9 @@ void substitute(char *string, char *result);
 
 void convert_meta(char *input, char *output);
 void print_backspace(int sig);
+void readmud_buffer(void);
 void read_key(void);
-void readmud(void);
+void readmud(int wait_for_new_line);
 
 #endif
 

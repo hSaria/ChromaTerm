@@ -119,18 +119,11 @@ void read_key(void) {
   }
 }
 
-/* BUG: Because the read might be faster than the socket's output, the read
- * might stop somewhere in the middle of a line, which causes the output to be
- * processed even when there's more output on the same line */
-void readmud() {
+/* Will process only the lines that end of \n */
+void readmud(int wait_for_new_line) {
   char *line, *next_line;
-  int len = read(gts.socket, &gtd.mud_output_buf[0], MUD_OUTPUT_MAX);
 
-  if (len <= 0) {
-    quitmsg(NULL, 0);
-  }
-
-  gtd.mud_output_buf[len] = 0;
+  gtd.mud_output_buf[gtd.mud_output_len] = 0;
 
   /* separate into lines and print away */
   for (line = gtd.mud_output_buf; line && *line; line = next_line) {
@@ -141,7 +134,7 @@ void readmud() {
     if (next_line) {
       *next_line = 0;
       next_line++;
-    } else if (*line == 0) {
+    } else if (wait_for_new_line || *line == 0) {
       break;
     }
 
@@ -152,5 +145,27 @@ void readmud() {
     }
 
     printline(linebuf, next_line == NULL);
+  }
+
+  if (wait_for_new_line) {
+    char temp[BUFFER_SIZE];
+
+    strcpy(temp, line);
+    strcpy(gtd.mud_output_buf, temp);
+
+    gtd.mud_output_len = (int)strlen(line);
+    return;
+  }
+
+  gtd.mud_output_len = 0;
+}
+
+void readmud_buffer(void) {
+  gtd.mud_output_len +=
+      read(gts.socket, &gtd.mud_output_buf[gtd.mud_output_len],
+           ARG_MAX - gtd.mud_output_len - 1);
+
+  if (gtd.mud_output_len <= 0) {
+    quitmsg(NULL, 0);
   }
 }

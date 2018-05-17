@@ -13,7 +13,7 @@ void *poll_input(void *arg) {
 
   while (TRUE) {
     /* Blocking operation until FD is ready */
-    if (select(FD_SETSIZE, &readfds, NULL, NULL, NULL) <= 0) {
+    if (select(STDIN_FILENO + 1, &readfds, NULL, NULL, NULL) <= 0) {
       quitmsg(NULL, 0);
     }
 
@@ -23,24 +23,43 @@ void *poll_input(void *arg) {
   }
 }
 
+/* BUG: A SIGINT can overwrite the output buffer */
 void *poll_session(void *arg) {
   fd_set readfds;
 
   FD_ZERO(&readfds); /* Initialise the file descriptor */
-  FD_SET(gts.socket, &readfds);
 
   if (arg) { /* Making a warning shut up */
   }
 
   while (TRUE) {
-    /* Blocking operation until FD is ready */
-    if (select(FD_SETSIZE, &readfds, NULL, NULL, NULL) <= 0) {
+    /* Mandatoy wait before assuming no more output on the current line */
+    struct timeval wait = {0, WAIT_FOR_NEW_LINE};
+
+    FD_SET(gts.socket, &readfds);
+
+    /* If there's no current output on the mud, block until FD is ready */
+    int rv = select(gts.socket + 1, &readfds, NULL, NULL,
+                    gtd.mud_output_len == 0 ? NULL : &wait);
+
+    if (rv == 0) { /* timed-out while waiting for FD to be ready. */
+      /* Process all that's left */
+      readmud(FALSE);
+      continue;
+    } else if (rv < 0) { /* error */
       quitmsg(NULL, 0);
     }
 
-    readmud();
+    /* Read from buffer and process as much as you can until the line without a
+     * \n. This way, no performance hit on long output */
+    readmud_buffer();
 
-    fflush(stdout);
+    /* Failsafe: if the buffer is full, process all of pending output */
+    if (ARG_MAX - gtd.mud_output_len <= 1) {
+      readmud(FALSE);
+    } else {
+      readmud(TRUE);
+    }
   }
 }
 
