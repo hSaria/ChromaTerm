@@ -10,8 +10,6 @@ DO_COMMAND(do_configure) {
   arg = get_arg(arg, left);
 
   if (*left == 0) {
-    display_header(" CONFIGURATIONS ");
-
     for (index = 0; *config_table[index].name != 0; index++) {
       node = search_node_list(gts.list[LIST_CONFIG], config_table[index].name);
 
@@ -20,8 +18,6 @@ DO_COMMAND(do_configure) {
                        config_table[index].description);
       }
     }
-
-    display_header("");
   } else {
     for (index = 0; *config_table[index].name != 0; index++) {
       if (is_abbrev(left, config_table[index].name)) {
@@ -29,8 +25,8 @@ DO_COMMAND(do_configure) {
         get_arg(arg, right);
 
         if (config_table[index].config(right, index)) {
-          node = search_node_list(gts.list[LIST_CONFIG],
-                                  config_table[index].name);
+          node =
+              search_node_list(gts.list[LIST_CONFIG], config_table[index].name);
           if (node) {
             display_printf("%cCONFIG: {%s} has been set to {%s}",
                            gtd.command_char, config_table[index].name,

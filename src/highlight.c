@@ -16,8 +16,6 @@ DO_COMMAND(do_highlight) {
   if (*arg1 == 0 || *arg2 == 0) {
     int i;
 
-    display_header(" HIGHLIGHTS ");
-
     for (i = 0; i < gts.list[LIST_HIGHLIGHT]->used; i++) {
       struct listnode *node = gts.list[LIST_HIGHLIGHT]->list[i];
       display_printf("%c%s "
@@ -28,7 +26,6 @@ DO_COMMAND(do_highlight) {
                      node->left, node->right, node->pr);
     }
 
-    display_header("");
   } else {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(arg2, temp) == FALSE) {

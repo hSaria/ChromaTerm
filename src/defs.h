@@ -264,7 +264,6 @@ extern struct help_type help_table[];
 
 char *capitalize(char *str);
 void cat_sprintf(char *dest, char *fmt, ...);
-void display_header(char *str);
 void display_printf(char *format, ...);
 char *get_arg(char *string, char *result);
 int is_abbrev(char *s1, char *s2);
