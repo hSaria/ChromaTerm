@@ -32,6 +32,7 @@ cd ChromaTerm--/src/ && ./configure && make install
 ```
 
 > The `install` parameter is optional; it will copy `ct` to /usr/local/bin
+
 > You can uninstall `ct` by running `make uninstall`
 
 
