@@ -284,11 +284,8 @@ void strip_vt102_codes(char *str, char *buf) {
 /* copy *string into *result, but substitute the various colors with the
  * values they stand for */
 void substitute(char *string, char *result) {
-  char buffer[BUFFER_SIZE], *pti, *pto;
+  char *pti = string, *pto = result;
   char old[6] = {0};
-
-  pti = string;
-  pto = result;
 
   while (TRUE) {
     switch (*pti) {
