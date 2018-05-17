@@ -94,7 +94,7 @@ int read_buffer_mud() {
 
 void read_key(void) {
   char c = 0;
-  while ((c = getc(stdin)) != EOF) {
+  while ((c = getc(stdin)) && c != EOF) {
     if (beginning_of_line && c == gtd.command_char) {
       int len = 0;
       char command_buffer[BUFFER_SIZE];

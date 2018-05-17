@@ -269,12 +269,12 @@ int skip_vt102_codes(char *str) {
 /* If n is not null, then this function seeks n times, exluding vt102 codes */
 void strip_vt102_codes(char *str, char *buf) {
   char *pti, *pto;
-  int skip;
 
   pti = str;
   pto = buf;
 
   while (*pti) {
+    int skip;
     while ((skip = skip_vt102_codes(pti))) {
       pti += skip;
     }

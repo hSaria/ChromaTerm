@@ -38,7 +38,7 @@ DO_COMMAND(do_exit) {
 }
 
 DO_COMMAND(do_help) {
-  char left[BUFFER_SIZE], add[BUFFER_SIZE], buf[BUFFER_SIZE];
+  char left[BUFFER_SIZE], add[BUFFER_SIZE];
   int cnt;
 
   get_arg(arg, left);
@@ -60,6 +60,7 @@ DO_COMMAND(do_help) {
     int found = FALSE;
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
       if (is_abbrev(left, help_table[cnt].name) || is_abbrev(left, "all")) {
+        char buf[BUFFER_SIZE];
         found = TRUE;
 
         substitute(help_table[cnt].text, buf);
