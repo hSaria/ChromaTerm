@@ -1,29 +1,80 @@
-%CONFIG     {COMMAND CHAR} {%}
+%SHOWME   {CONF} {COMMAND CHAR} {$}
 %CONFIG     {COMMAND CHAR} {$}
+
+%SHOWME   {CONF} {COMMAND CHAR} {%}
 $CONFIG     {COMMAND CHAR} {%}
 
-%CONFIG     {CONVERT META} {OFF}
+
+
+%SHOWME   {CONF} {CONVERT META} {ON}
 %CONFIG     {CONVERT META} {ON}
+
+%SHOWME   {CONF} {CONVERT META} {OFF}
 %CONFIG     {CONVERT META} {OFF}
 
-%CONFIG     {HIGHLIGHT} {ON}
+
+
+%SHOWME   {CONF} {HIGHLIGHT} {OFF}
 %CONFIG     {HIGHLIGHT} {OFF}
+
+%SHOWME   {CONF} {HIGHLIGHT} {ON}
 %CONFIG     {HIGHLIGHT} {ON}
 
+
+
+%SHOWME   {COMMANDS}
 %COMMANDS
+
+%SHOWME   {COMMANDS} {c}
 %COMMANDS   c
 
+
+
+%SHOWME   {HELP}
 %HELP
+
+%SHOWME   {HELP} {co}
 %HELP       co
+
+%SHOWME   {HELP} {ALL}
 %HELP       ALL
 
+
+
+%SHOWME   {HIGHLIGHT} {123} {RED} {100}
 %HIGHLIGHT  {123} {RED} {100}
+
+%SHOWME   {HIGHLIGHT} {321} {<fca><FFF>}
 %HIGHLIGHT  {321} {<fca><FFF>}
+
+%SHOWME   {HIGHLIGHT} {333} {<QWE><EWQ>} {100}
 %HIGHLIGHT  {333} {<QWE><EWQ>} {100}
 
+
+
+%SHOWME   {WRITE}
+%WRITE
+
+%SHOWME   {WRITE} {./some_file}
+%WRITE      {./some_file}
+
+%SHOWME   {READ}
+%READ
+
+%SHOWME   {READ} {./some_file}
+%READ       {./some_file}
+
+
+
+%SHOWME   {UNHIGHLIGHT} {123}
 %UNHIGHLIGHT  {123}
+
+%SHOWME   {UNHIGHLIGHT} {321}
 %UNHIGHLIGHT  {321}
+
+%SHOWME   {UNHIGHLIGHT} {333}
 %UNHIGHLIGHT  {333}
+
 
 
 /* IPv4 */
@@ -40,3 +91,8 @@ $CONFIG     {COMMAND CHAR} {%}
 
 /* Date in MMM DD hh:mm:ss.SSS format (msec optional) */
 %HIGHLIGHT  {(?i)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-1]|([0-2]\d)))\s((2[0-3])|[0-1]\d):[0-5]\d:[0-5]\d(\.\d{3})?} {<fca>} {1000}
+
+
+
+%SHOWME   {RUN} {./some_file}
+%RUN ../.test.sh

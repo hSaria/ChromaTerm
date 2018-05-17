@@ -28,17 +28,13 @@ struct color_type color_table[] = {
     {"violet", "<bad>"},       {"white", "<878>"},
     {"yellow", "<838>"},       {"", "<088>"}};
 
-struct command_type command_table[] = {{"commands", do_commands},
-                                       {"config", do_configure},
-                                       {"exit", do_exit},
-                                       {"help", do_help},
-                                       {"highlight", do_highlight},
-                                       {"quit", do_exit},
-                                       {"read", do_read},
-                                       {"run", do_run},
-                                       {"unhighlight", do_unhighlight},
-                                       {"write", do_write},
-                                       {"", NULL}};
+struct command_type command_table[] = {
+    {"COMMANDS", do_commands},   {"CONFIG", do_configure},
+    {"EXIT", do_exit},           {"HELP", do_help},
+    {"HIGHLIGHT", do_highlight}, {"QUIT", do_exit},
+    {"READ", do_read},           {"RUN", do_run},
+    {"SHOWME", do_showme},       {"UNHIGHLIGHT", do_unhighlight},
+    {"WRITE", do_write},         {"", NULL}};
 
 struct config_type config_table[] = {
     {"COMMAND CHAR", "The character used for commands", config_commandchar},
@@ -214,6 +210,9 @@ struct help_type help_table[] = {
             "overwrite the\n"
             "       default process (SHELL environment variable).\n\n"
             "<078>Example<078>: %%run {ssh someone@somewhere.com}<088>\n\n"},
+    {"SHOWME", "<028>Command<078>: %%showme <178>...<078>\n\n"
+               "     Used for printing out a message to the console.\n\n"
+               "<078>Example<078>: %%showme Hello, World!<088>\n\n"},
     {"WRITE", "<028>Command<078>: %%write <178>{<078>filename<178>}<078>\n\n"
               "     Writes the current CT-- configuration to the specified "
               "filename.<088>\n\n"},

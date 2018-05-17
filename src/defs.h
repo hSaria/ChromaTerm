@@ -235,6 +235,7 @@ DO_COMMAND(do_commands);
 DO_COMMAND(do_exit);
 DO_COMMAND(do_help);
 DO_COMMAND(do_run);
+DO_COMMAND(do_showme);
 
 #endif
 

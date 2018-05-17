@@ -20,7 +20,7 @@ DO_COMMAND(do_commands) {
       buf[0] = 0;
     }
 
-    sprintf(add, "%20s", command_table[cmd].name);
+    sprintf(add, "%-14s", command_table[cmd].name);
     strcat(buf, add);
   }
   if (buf[0]) {
@@ -51,7 +51,7 @@ DO_COMMAND(do_help) {
         display_printf(add);
         add[0] = 0;
       }
-      cat_sprintf(add, "%19s", help_table[cnt].name);
+      cat_sprintf(add, "%-14s", help_table[cnt].name);
     }
     display_printf(add);
 
@@ -131,4 +131,12 @@ DO_COMMAND(do_run) {
 
     break;
   }
+}
+
+DO_COMMAND(do_showme) {
+  char *pto = space_out(arg);
+
+  check_all_highlights(pto);
+
+  printline(pto, FALSE);
 }
