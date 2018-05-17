@@ -130,6 +130,7 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
   strcpy(node->right, rtext);
   if (list_table[root->type].mode == PRIORITY) {
     strcpy(node->pr, prtext);
+    get_highlight_codes(node->right, node->processed_color);
     node->compiled_regex =
         pcre_compile(ltext, 0, &error_pointer, &error_offset, NULL);
     if (node->compiled_regex == NULL) {

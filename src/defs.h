@@ -84,6 +84,7 @@ struct listnode {
   char left[BUFFER_SIZE];
   char right[BUFFER_SIZE];
   char pr[BUFFER_SIZE];
+  char processed_color[BUFFER_SIZE];
   pcre *compiled_regex;
 };
 
