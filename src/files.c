@@ -11,27 +11,25 @@ DO_COMMAND(do_read) {
   int lvl, cnt, com, lnc, fix, ok;
   wordexp_t p;
 
-  get_arg_in_braces(arg, filename, GET_ALL);
+  get_arg(arg, filename);
 
   if (wordexp(filename, &p, 0) == 0) {
     if (*p.we_wordv != NULL) {
       strcpy(filename, *p.we_wordv);
       wordfree(&p);
     } else {
-      display_printf("%cSYNTAX: %cREAD {FILE LOCATION}", gtd->command_char,
-                     gtd->command_char);
+      display_printf("%cSYNTAX: %cREAD {FILE LOCATION}", gtd.command_char,
+                     gtd.command_char);
       wordfree(&p);
       return;
     }
   } else {
-    display_printf("%cREAD: {%s} - File not found", gtd->command_char,
-                   filename);
+    display_printf("%cREAD: {%s} - File not found", gtd.command_char, filename);
     return;
   }
 
   if ((fp = fopen(filename, "r")) == NULL) {
-    display_printf("%cREAD: {%s} - File not found", gtd->command_char,
-                   filename);
+    display_printf("%cREAD: {%s} - File not found", gtd.command_char, filename);
     return;
   }
 
@@ -40,7 +38,7 @@ DO_COMMAND(do_read) {
   if (!ispunct((int)temp[0])) {
     display_printf(
         "%cERROR: {%s} - Start of file is not a punctuation; see %chelp read",
-        gtd->command_char, filename, gtd->command_char);
+        gtd.command_char, filename, gtd.command_char);
     fclose(fp);
     return;
   }
@@ -50,23 +48,22 @@ DO_COMMAND(do_read) {
   stat(filename, &filedata);
 
   if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf(
-        "%cERROR: {%s} - Failed to allocate memory to process the file",
-        gtd->command_char, filename);
+    display_printf("%cERROR: {%s} - Failed to allocate first buffer memory to "
+                   "process the file",
+                   gtd.command_char, filename);
     fclose(fp);
     return;
   } else if ((bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf(
-        "%cERROR: {%s} - Failed to allocate memory to process the file",
-        gtd->command_char, filename);
+    display_printf("%cERROR: {%s} - Failed to allocate second buffer memory to "
+                   "process the file",
+                   gtd.command_char, filename);
     free(bufi);
     fclose(fp);
     return;
   }
 
   if (fread(bufi, 1, filedata.st_size, fp) == 0) {
-    display_printf("%cERROR: {%s} - File is empty", gtd->command_char,
-                   filename);
+    display_printf("%cERROR: {%s} - File is empty", gtd.command_char, filename);
     fclose(fp);
     free(bufi);
     free(bufo);
@@ -115,7 +112,7 @@ DO_COMMAND(do_read) {
           pto--;
         }
         pto++;
-        if (fix == 0 && pti[1] == gtd->command_char) {
+        if (fix == 0 && pti[1] == gtd.command_char) {
           if (lvl == 0) {
             ok = lnc + 1;
           } else {
@@ -130,7 +127,7 @@ DO_COMMAND(do_read) {
             if (*pti == '\n') {
               lnc++;
 
-              if (fix == 0 && pti[1] == gtd->command_char) {
+              if (fix == 0 && pti[1] == gtd.command_char) {
                 fix = lnc;
               }
             }
@@ -201,7 +198,7 @@ DO_COMMAND(do_read) {
 
   if (lvl) {
     display_printf("%cERROR: {%s} - Missing %d '%c' between line %d and %d",
-                   gtd->command_char, filename, abs(lvl),
+                   gtd.command_char, filename, abs(lvl),
                    lvl < 0 ? DEFAULT_OPEN : DEFAULT_CLOSE, fix == 0 ? 1 : ok,
                    fix == 0 ? lnc + 1 : fix);
 
@@ -212,7 +209,7 @@ DO_COMMAND(do_read) {
   }
 
   if (com) {
-    display_printf("%cERROR: {%s} - Missing %d '%s'", gtd->command_char,
+    display_printf("%cERROR: {%s} - Missing %d '%s'", gtd.command_char,
                    filename, abs(com), com < 0 ? "/*" : "*/");
 
     fclose(fp);
@@ -221,7 +218,7 @@ DO_COMMAND(do_read) {
     return;
   }
 
-  gtd->quiet++;
+  gtd.quiet++;
 
   /* Read the first character in the output buffer and configure that as the
    command char  */
@@ -239,7 +236,7 @@ DO_COMMAND(do_read) {
     *pto = 0;
 
     if (strlen(bufi) >= BUFFER_SIZE) {
-      gtd->quiet--;
+      gtd.quiet--;
       /* Only output the first 20 characters of the overflowing command */
       bufi[20] = 0;
       display_printf("%cERROR: {%s} - Buffer overflow at command: %s", filename,
@@ -259,7 +256,7 @@ DO_COMMAND(do_read) {
     pti++;
   }
 
-  gtd->quiet--;
+  gtd.quiet--;
 
   fclose(fp);
   free(bufi);
@@ -272,36 +269,36 @@ DO_COMMAND(do_write) {
   int i, j, cnt = 0;
   wordexp_t p;
 
-  get_arg_in_braces(arg, filename, GET_ALL);
+  get_arg(arg, filename);
 
   if (wordexp(filename, &p, 0) == 0) {
     if (*p.we_wordv != NULL) {
       strcpy(filename, *p.we_wordv);
       wordfree(&p);
     } else {
-      display_printf("%cSYNTAX: %cWRITE {FILE LOCATION}", gtd->command_char,
-                     gtd->command_char);
+      display_printf("%cSYNTAX: %cWRITE {FILE LOCATION}", gtd.command_char,
+                     gtd.command_char);
       wordfree(&p);
       return;
     }
   }
 
   if ((file = fopen(filename, "w")) == NULL) {
-    display_printf("%cERROR: {%s} - Could not open to write", gtd->command_char,
+    display_printf("%cERROR: {%s} - Could not open to write", gtd.command_char,
                    filename);
     return;
   }
 
   for (i = 0; i < LIST_MAX; i++) {
-    for (j = 0; j < gts->list[i]->used; j++) {
-      write_node(i, gts->list[i]->list[j], file);
+    for (j = 0; j < gts.list[i]->used; j++) {
+      write_node(i, gts.list[i]->list[j], file);
       cnt++;
     }
   }
 
   fclose(file);
 
-  display_printf("%cWRITE: {%s} - %d commands written ", gtd->command_char,
+  display_printf("%cWRITE: {%s} - %d commands written ", gtd.command_char,
                  filename, cnt);
 }
 
@@ -309,10 +306,10 @@ void write_node(int list, struct listnode *node, FILE *file) {
   char result[BUFFER_SIZE * 4];
 
   if (list == LIST_CONFIG) {
-    sprintf(result, "%c%-10s {%s} {%s}\n", gtd->command_char,
+    sprintf(result, "%c%-10s {%s} {%s}\n", gtd.command_char,
             list_table[list].name, node->left, node->right);
   } else if (list == LIST_HIGHLIGHT) {
-    sprintf(result, "%c%-10s {%s} {%s} {%s}\n", gtd->command_char,
+    sprintf(result, "%c%-10s {%s} {%s} {%s}\n", gtd.command_char,
             list_table[list].name, node->left, node->right, node->pr);
   }
 

@@ -70,30 +70,16 @@ int bsearch_priority_list(struct listroot *root, char *text, char *priority,
 void delete_index_list(struct listroot *root, int index) {
   struct listnode *node = root->list[index];
 
+  if (node->compiled_regex != NULL) {
+    pcre_free(node->compiled_regex);
+  }
+
   free(node);
 
   memmove(&root->list[index], &root->list[index + 1],
           (root->used - index) * sizeof(struct listnode *));
 
   root->used--;
-}
-
-void delete_node_with_wild(int type, char *text) {
-  struct listroot *root = gts->list[type];
-  struct listnode *node;
-
-  node = search_node_list(root, text);
-
-  if (node) {
-    display_printf("%cUN%s: {%s} is no longer a %s", gtd->command_char,
-                   list_table[type].name, node->left, list_table[type].name);
-    delete_index_list(gts->list[type],
-                      search_index_list(gts->list[type], node->left, node->pr));
-    return;
-  }
-
-  display_printf("%cERROR: No matches for %s {%s}", gtd->command_char,
-                 list_table[type].name, text);
 }
 
 struct listroot *init_list(int type, int size) {
@@ -112,10 +98,35 @@ struct listroot *init_list(int type, int size) {
   return listhead;
 }
 
-struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
-                                   int index) {
+/* create a node and stuff it into the list in the desired order */
+struct listnode *insert_node_list(struct listroot *root, char *ltext,
+                                  char *rtext, char *prtext) {
+  const char *error_pointer;
+  int error_offset, index;
+  struct listnode *node;
+
+  node = (struct listnode *)calloc(1, sizeof(struct listnode));
+
+  strcpy(node->left, ltext);
+  strcpy(node->right, rtext);
+  if (list_table[root->type].mode == PRIORITY) {
+    strcpy(node->pr, prtext);
+    get_highlight_codes(node->right, node->processed_color);
+    node->compiled_regex =
+        pcre_compile(ltext, 0, &error_pointer, &error_offset, NULL);
+    if (node->compiled_regex == NULL) {
+      display_printf("%cWARNING: Couldn't compile regex at %i: %s",
+                     gtd.command_char, error_offset, error_pointer);
+    }
+  }
+
+  index = list_table[root->type].mode == ALPHA
+              ? bsearch_alpha_list(root, node->left, 1)
+              : bsearch_priority_list(root, node->left, node->pr, 1);
+
   root->used++;
 
+  /* Expand if full; make it twice as big */
   if (root->used == root->size) {
     root->size *= 2;
 
@@ -129,49 +140,6 @@ struct listnode *insert_index_list(struct listroot *root, struct listnode *node,
   root->list[index] = node;
 
   return node;
-}
-
-/* create a node and stuff it into the list in the desired order */
-struct listnode *insert_node_list(struct listroot *root, char *ltext,
-                                  char *rtext, char *prtext) {
-  const char *error_pointer;
-  int error_offset;
-  struct listnode *node;
-  pcre *compiled_regex;
-
-  node = (struct listnode *)calloc(1, sizeof(struct listnode));
-
-  strcpy(node->left, ltext);
-  strcpy(node->right, rtext);
-  if (list_table[root->type].mode == PRIORITY) {
-    strcpy(node->pr, prtext);
-  }
-
-  if (root->type == LIST_HIGHLIGHT) {
-    compiled_regex =
-        pcre_compile(ltext, 0, &error_pointer, &error_offset, NULL);
-    if (compiled_regex == NULL) {
-      display_printf("%cWARNING: Error when compiling regex at %i: %s",
-                     gtd->command_char, error_offset, error_pointer);
-    }
-    node->compiled_regex = compiled_regex;
-  }
-
-  return insert_index_list(root, node, locate_index_list(root, ltext, prtext));
-}
-
-/* Return insertion index */
-int locate_index_list(struct listroot *root, char *text, char *priority) {
-  switch (list_table[root->type].mode) {
-  case ALPHA:
-    return bsearch_alpha_list(root, text, 1);
-
-  case PRIORITY:
-    return bsearch_priority_list(root, text, priority, 1);
-
-  default:
-    return root->used;
-  }
 }
 
 int nsearch_list(struct listroot *root, char *text) {

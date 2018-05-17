@@ -69,52 +69,38 @@ void convert_meta(char *input, char *output) {
 void print_backspace(int sig) {
   if (sig) { /* Just to make a compiler warning shut up */
   }
-  /* Two backspaces for each char, then overwrite the output with spaces, then
+  /* Two backspaces for ^C, then overwrite the output with spaces, then
    * remove said spaces */
-  printf("\b\b  \b\b\n%c:", gtd->command_char);
+  printf("\b\b  \b\b\n%c:", gtd.command_char);
   fflush(stdout);
-}
-
-/* BUG: Because the read might be faster than the socket's output, the read
- * might stop somewhere in the middle of a line, which causes the output to be
- * processed even when there's more output on the same line */
-int read_buffer_mud() {
-  gtd->mud_output_len +=
-      read(gts->socket, &gtd->mud_output_buf[gtd->mud_output_len],
-           MUD_OUTPUT_MAX - gtd->mud_output_len - 1);
-
-  if (gtd->mud_output_len <= 0) {
-    return FALSE;
-  }
-
-  gtd->mud_output_buf[gtd->mud_output_len] = 0;
-
-  return TRUE;
 }
 
 void read_key(void) {
   char c = 0;
-  while (gtd->command_prompt || (c = getc(stdin)) != EOF) {
-    if (gtd->command_prompt ||
-        (beginning_of_line && (c == gtd->command_char ||
-                               !HAS_BIT(gts->flags, SES_FLAG_CONNECTED)))) {
+  while ((int)(c = getc(stdin)) != EOF) {
+    if (beginning_of_line && c == gtd.command_char) {
       int len = 0;
       char command_buffer[BUFFER_SIZE];
       struct termios temp_attributes;
+      struct sigaction new, old;
 
-      printf("%c:", gtd->command_char);
+      new.sa_handler = print_backspace;
+
+      printf("%c:", gtd.command_char);
       fflush(stdout);
 
       tcgetattr(STDIN_FILENO, &temp_attributes);
 
       /* Recover original terminal state */
-      tcsetattr(STDIN_FILENO, TCSANOW, &gtd->saved_terminal);
+      tcsetattr(STDIN_FILENO, TCSANOW, &gtd.saved_terminal);
 
       /* Ignore inturrupt signals */
-      signal(SIGINT, print_backspace);
+      sigaction(SIGINT, &new, &old);
 
       len = (int)read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
-      signal(SIGINT, abort_and_trap_handler);
+
+      /* Restore original action */
+      sigaction(SIGINT, &old, NULL);
 
       /* Restore CT terminal state (noncanonical mode) */
       tcsetattr(STDIN_FILENO, TCSANOW, &temp_attributes);
@@ -124,40 +110,63 @@ void read_key(void) {
       script_driver(command_buffer);
       memset(&command_buffer, 0, len);
     } else {
-      if (c == '\n') {
-        beginning_of_line = TRUE;
-        socket_printf(1, "%c", '\r');
-      } else {
-        beginning_of_line = FALSE;
-        socket_printf(1, "%c", c);
+      beginning_of_line = c == '\n' ? TRUE : FALSE;
+      c = c == '\n' ? '\r' : c;
+
+      if (write(gts.socket, &c, 1) < 0) {
+        quitmsg("failed on socket write", 1);
       }
     }
   }
 }
 
-void readmud() {
+/* Will process only the lines that end of \n */
+void readmud(int wait_for_new_line) {
   char *line, *next_line;
 
-  gtd->mud_output_len = 0;
+  gtd.mud_output_buf[gtd.mud_output_len] = 0;
 
   /* separate into lines and print away */
-  for (line = gtd->mud_output_buf; line && *line; line = next_line) {
+  for (line = gtd.mud_output_buf; line && *line; line = next_line) {
     char linebuf[BUFFER_SIZE];
+
     next_line = strchr(line, '\n');
 
     if (next_line) {
       *next_line = 0;
       next_line++;
-    } else if (*line == 0) {
+    } else if (wait_for_new_line || *line == 0) {
       break;
     }
 
     strcpy(linebuf, line);
 
-    if (HAS_BIT(gts->flags, SES_FLAG_HIGHLIGHT)) {
+    if (HAS_BIT(gts.flags, SES_FLAG_HIGHLIGHT)) {
       check_all_highlights(linebuf);
     }
 
     printline(linebuf, next_line == NULL);
+  }
+
+  if (wait_for_new_line) {
+    char temp[BUFFER_SIZE];
+
+    strcpy(temp, line);
+    strcpy(gtd.mud_output_buf, temp);
+
+    gtd.mud_output_len = (int)strlen(line);
+    return;
+  }
+
+  gtd.mud_output_len = 0;
+}
+
+void readmud_buffer(void) {
+  gtd.mud_output_len +=
+      read(gts.socket, &gtd.mud_output_buf[gtd.mud_output_len],
+           MUD_OUTPUT_MAX - gtd.mud_output_len - 1);
+
+  if (gtd.mud_output_len <= 0) {
+    quitmsg(NULL, 0);
   }
 }

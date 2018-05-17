@@ -10,8 +10,8 @@ CFLAGS += -pthread -O2 -Wall -Wextra
 LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
-OFILES = config.o data.o files.o highlight.o io.o main.o misc.o parse.o \
-         session.o tables.o terminal.o utils.o
+OFILES = config.o data.o files.o highlight.o io.o main.o misc.o session.o \
+         tables.o utils.o
 
 default: all
 
@@ -43,7 +43,7 @@ clean:
 	rm -f $(OFILES) config.status config.log
 
 test:
-	./ct -c ../.chromatermrc -e ../.test.sh
+	./ct -c ../.test_chromatermrc
 
 distclean:
 	rm -f *.o config.status config.log ct Makefile config.h
