@@ -30,7 +30,7 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 
 # Checks for header files.
-AC_CHECK_HEADERS([ctype.h errno.h pthread.h signal.h stdarg.h stdio.h stdlib.h string.h sys/ioctl.h sys/stat.h sys/time.h unistd.h util.h wordexp.h])
+AC_CHECK_HEADERS([ctype.h errno.h limits.h pthread.h signal.h stdarg.h stdio.h stdlib.h string.h sys/ioctl.h sys/stat.h sys/time.h unistd.h util.h wordexp.h])
 AC_CHECK_HEADERS([pcre.h],,[AC_MSG_ERROR([pcre header file not found, is the development part present])])
 
 # Checks for library functions.
