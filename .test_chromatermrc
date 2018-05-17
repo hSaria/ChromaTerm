@@ -21,11 +21,6 @@ $CONFIG     {COMMAND CHAR} {%}
 %HIGHLIGHT  {321} {<fca><FFF>}
 %HIGHLIGHT  {333} {<QWE><EWQ>} {100}
 
-%WRITE
-%WRITE      {./some_file}
-%READ
-%READ       {./some_file}
-
 %UNHIGHLIGHT  {123}
 %UNHIGHLIGHT  {321}
 %UNHIGHLIGHT  {333}
