@@ -2,7 +2,6 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <limits.h>
 #include <pcre.h>
 #include <pthread.h>
 #include <signal.h>
@@ -45,6 +44,8 @@
 #define DEFAULT_CLOSE '}'
 
 #define BUFFER_SIZE 20000
+
+#define MUD_OUTPUT_MAX 262144
 
 /* Microseconds to wait before processing a line without \n at the end */
 #define WAIT_FOR_NEW_LINE 10000
@@ -99,7 +100,7 @@ struct global_data {
   struct termios active_terminal;
   struct termios saved_terminal;
   char command_char;
-  char mud_output_buf[ARG_MAX];
+  char mud_output_buf[MUD_OUTPUT_MAX];
   int mud_output_len;
   int quiet;
   int run_overriden;

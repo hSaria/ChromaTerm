@@ -24,14 +24,12 @@ DO_COMMAND(do_read) {
       return;
     }
   } else {
-    display_printf("%cREAD: {%s} - File not found", gtd.command_char,
-                   filename);
+    display_printf("%cREAD: {%s} - File not found", gtd.command_char, filename);
     return;
   }
 
   if ((fp = fopen(filename, "r")) == NULL) {
-    display_printf("%cREAD: {%s} - File not found", gtd.command_char,
-                   filename);
+    display_printf("%cREAD: {%s} - File not found", gtd.command_char, filename);
     return;
   }
 
@@ -50,23 +48,22 @@ DO_COMMAND(do_read) {
   stat(filename, &filedata);
 
   if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf(
-        "%cERROR: {%s} - Failed to allocate memory to process the file",
-        gtd.command_char, filename);
+    display_printf("%cERROR: {%s} - Failed to allocate first buffer memory to "
+                   "process the file",
+                   gtd.command_char, filename);
     fclose(fp);
     return;
   } else if ((bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf(
-        "%cERROR: {%s} - Failed to allocate memory to process the file",
-        gtd.command_char, filename);
+    display_printf("%cERROR: {%s} - Failed to allocate second buffer memory to "
+                   "process the file",
+                   gtd.command_char, filename);
     free(bufi);
     fclose(fp);
     return;
   }
 
   if (fread(bufi, 1, filedata.st_size, fp) == 0) {
-    display_printf("%cERROR: {%s} - File is empty", gtd.command_char,
-                   filename);
+    display_printf("%cERROR: {%s} - File is empty", gtd.command_char, filename);
     fclose(fp);
     free(bufi);
     free(bufo);

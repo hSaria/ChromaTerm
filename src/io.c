@@ -110,6 +110,7 @@ void read_key(void) {
       script_driver(command_buffer);
       memset(&command_buffer, 0, len);
     } else {
+      beginning_of_line = c == '\n' ? TRUE : FALSE;
       c = c == '\n' ? '\r' : c;
 
       if (write(gts.socket, &c, 1) < 0) {
@@ -163,7 +164,7 @@ void readmud(int wait_for_new_line) {
 void readmud_buffer(void) {
   gtd.mud_output_len +=
       read(gts.socket, &gtd.mud_output_buf[gtd.mud_output_len],
-           ARG_MAX - gtd.mud_output_len - 1);
+           MUD_OUTPUT_MAX - gtd.mud_output_len - 1);
 
   if (gtd.mud_output_len <= 0) {
     quitmsg(NULL, 0);

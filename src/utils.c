@@ -111,9 +111,9 @@ int is_abbrev(char *s1, char *s2) {
 }
 
 void printline(char *str, int isaprompt) {
-  char wrapped_str[BUFFER_SIZE * 2];
-
   if (HAS_BIT(gts.flags, SES_FLAG_CONVERTMETA)) {
+    char wrapped_str[BUFFER_SIZE * 2];
+
     convert_meta(str, wrapped_str);
     printf("%s", wrapped_str);
   } else {

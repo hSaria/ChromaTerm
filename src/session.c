@@ -55,11 +55,7 @@ void *poll_session(void *arg) {
     readmud_buffer();
 
     /* Failsafe: if the buffer is full, process all of pending output */
-    if (ARG_MAX - gtd.mud_output_len <= 1) {
-      readmud(FALSE);
-    } else {
-      readmud(TRUE);
-    }
+    readmud(MUD_OUTPUT_MAX - gtd.mud_output_len <= 1 ? FALSE : TRUE);
   }
 }
 
