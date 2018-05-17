@@ -8,8 +8,7 @@ A tool for colorizing the output of a terminal.
 
 
 # About
-ChromaTerm-- (CT--) wraps around a process (e.g. /bin/bash) and highlights any output according to user-configurable rules.
-CT-- can be configured while it is running which makes it very dynamic to your current problem. 
+ChromaTerm-- (CT--) is a process-wrapper that highlights any output according to user-configurable rules. CT-- is configured while it is running which makes it very dynamic to your current problem. 
 
 ## Screenshots
 Some quick examples. CT-- uses Regex to find matches for your rules.
