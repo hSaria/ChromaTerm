@@ -11,7 +11,7 @@ DO_COMMAND(do_read) {
   int lvl, cnt, com, lnc, fix, ok;
   wordexp_t p;
 
-  strcpy(filename, arg);
+  get_arg(arg, filename);
 
   if (wordexp(filename, &p, 0) == 0) {
     if (*p.we_wordv != NULL) {
@@ -269,7 +269,7 @@ DO_COMMAND(do_write) {
   int i, j, cnt = 0;
   wordexp_t p;
 
-  strcpy(filename, arg);
+  get_arg(arg, filename);
 
   if (wordexp(filename, &p, 0) == 0) {
     if (*p.we_wordv != NULL) {
