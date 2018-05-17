@@ -70,30 +70,16 @@ int bsearch_priority_list(struct listroot *root, char *text, char *priority,
 void delete_index_list(struct listroot *root, int index) {
   struct listnode *node = root->list[index];
 
+  if (node->compiled_regex != NULL) {
+    pcre_free(node->compiled_regex);
+  }
+
   free(node);
 
   memmove(&root->list[index], &root->list[index + 1],
           (root->used - index) * sizeof(struct listnode *));
 
   root->used--;
-}
-
-void delete_node_with_wild(int type, char *text) {
-  struct listroot *root = gts->list[type];
-  struct listnode *node;
-
-  node = search_node_list(root, text);
-
-  if (node) {
-    display_printf("%cUN%s: {%s} is no longer a %s", gtd->command_char,
-                   list_table[type].name, node->left, list_table[type].name);
-    delete_index_list(gts->list[type],
-                      search_index_list(gts->list[type], node->left, node->pr));
-    return;
-  }
-
-  display_printf("%cERROR: No matches for %s {%s}", gtd->command_char,
-                 list_table[type].name, text);
 }
 
 struct listroot *init_list(int type, int size) {
@@ -137,7 +123,6 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
   const char *error_pointer;
   int error_offset;
   struct listnode *node;
-  pcre *compiled_regex;
 
   node = (struct listnode *)calloc(1, sizeof(struct listnode));
 
@@ -148,13 +133,12 @@ struct listnode *insert_node_list(struct listroot *root, char *ltext,
   }
 
   if (root->type == LIST_HIGHLIGHT) {
-    compiled_regex =
+    node->compiled_regex =
         pcre_compile(ltext, 0, &error_pointer, &error_offset, NULL);
-    if (compiled_regex == NULL) {
-      display_printf("%cWARNING: Error when compiling regex at %i: %s",
-                     gtd->command_char, error_offset, error_pointer);
+    if (node->compiled_regex == NULL) {
+      display_printf("%cWARNING: Couldn't compile regex at %i: %s",
+                     gtd.command_char, error_offset, error_pointer);
     }
-    node->compiled_regex = compiled_regex;
   }
 
   return insert_index_list(root, node, locate_index_list(root, ltext, prtext));

@@ -5,9 +5,9 @@
 DO_COMMAND(do_highlight) {
   char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE];
 
-  arg = get_arg_in_braces(arg, arg1, GET_ONE);
-  arg = get_arg_in_braces(arg, arg2, GET_ONE);
-  get_arg_in_braces(arg, arg3, GET_ONE);
+  arg = get_arg(arg, arg1);
+  arg = get_arg(arg, arg2);
+  get_arg(arg, arg3);
 
   if (*arg3 == 0) {
     strcpy(arg3, "1000");
@@ -18,13 +18,13 @@ DO_COMMAND(do_highlight) {
 
     display_header(" HIGHLIGHTS ");
 
-    for (i = 0; i < gts->list[LIST_HIGHLIGHT]->used; i++) {
-      struct listnode *node = gts->list[LIST_HIGHLIGHT]->list[i];
+    for (i = 0; i < gts.list[LIST_HIGHLIGHT]->used; i++) {
+      struct listnode *node = gts.list[LIST_HIGHLIGHT]->list[i];
       display_printf("%c%s "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
-                     gtd->command_char, list_table[LIST_HIGHLIGHT].name,
+                     gtd.command_char, list_table[LIST_HIGHLIGHT].name,
                      node->left, node->right, node->pr);
     }
 
@@ -32,49 +32,54 @@ DO_COMMAND(do_highlight) {
   } else {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(arg2, temp) == FALSE) {
-      display_printf(
-          "%cHIGHLIGHT: Named codes are:\n"
-          "bold, dim, underscore, blink, azure, black, blue, cyan, ebony, "
-          "green, jade,\nlime, magenta, orange, pink, red, silver, tan, "
-          "violet, white, yellow, b azure,\nb black, b blue, b cyan, b ebony, "
-          "b green, b jade, b lime, b magenta, b orange,\nb pink, b red, b "
-          "silver, b tan, b violet, b white, b yellow, light azure,\nlight "
-          "ebony, light jade, light lime, light orange, light pink, light "
-          "silver,\nlight tan, light violet\n",
-          gtd->command_char);
+      display_printf("%cERROR: Invalid color code; see %chelp color",
+                     gtd.command_char, gtd.command_char);
 
     } else {
-      update_node_list(gts->list[LIST_HIGHLIGHT], arg1, arg2, arg3);
+      update_node_list(gts.list[LIST_HIGHLIGHT], arg1, arg2, arg3);
 
       display_printf("%cHIGHLIGHT: {%s} now highlighted with {%s} {%s}",
-                     gtd->command_char, arg1, arg2, arg3);
+                     gtd.command_char, arg1, arg2, arg3);
     }
   }
 }
 
 DO_COMMAND(do_unhighlight) {
-  get_arg_in_braces(arg, arg, GET_ONE);
+  struct listnode *node;
+
+  get_arg(arg, arg);
   if (*arg == 0) {
     display_printf("%cSYNTAX: %cUNHIGHLIGHT {MATCH CONDITION TO REMOVE}",
-                   gtd->command_char, gtd->command_char);
+                   gtd.command_char, gtd.command_char);
     return;
   }
 
-  delete_node_with_wild(LIST_HIGHLIGHT, arg);
+  node = search_node_list(gts.list[LIST_HIGHLIGHT], arg);
+
+  if (node) {
+    delete_index_list(
+        gts.list[LIST_HIGHLIGHT],
+        search_index_list(gts.list[LIST_HIGHLIGHT], node->left, node->pr));
+    display_printf("%cUNHIGHLIGHT: Removed", gtd.command_char);
+    return;
+  }
+
+  display_printf("%cUNHIGHLIGHT: Not found", gtd.command_char);
 }
 
 void check_all_highlights(char *original) {
-  struct listroot *root = gts->list[LIST_HIGHLIGHT];
+  struct listroot *root = gts.list[LIST_HIGHLIGHT];
   char match[BUFFER_SIZE], stripped[BUFFER_SIZE];
   int i;
 
-  strip_vt102_codes(original, stripped, -1);
+  strip_vt102_codes(original, stripped);
 
   /* Apply from the bottom since the top ones may overwrite them */
   for (i = root->used - 1; i > -1; i--) {
-    int start_position =
-        regex_compare(root->list[i]->compiled_regex, stripped, match);
-    if (start_position != -1) {
+    int start_position;
+
+    if ((start_position = regex_compare(root->list[i]->compiled_regex, stripped,
+                                        match)) != -1) {
       char *pto, *pts, *ptm;
       char color[BUFFER_SIZE], output[BUFFER_SIZE];
       get_highlight_codes(root->list[i]->right, color);
@@ -128,9 +133,8 @@ void check_all_highlights(char *original) {
         pts = strstr(pts, match);
         pts = pts + strlen(match);
 
-        start_position =
-            regex_compare(root->list[i]->compiled_regex, pts, match);
-      } while (start_position != -1);
+      } while ((start_position = regex_compare(root->list[i]->compiled_regex,
+                                               pts, match)) != -1);
 
       /* Add the remainder of the string and then copy it to*/
       strcat(output, pto);
@@ -263,27 +267,24 @@ int skip_vt102_codes(char *str) {
 }
 
 /* If n is not null, then this function seeks n times, exluding vt102 codes */
-void strip_vt102_codes(char *str, char *buf, int n) {
+void strip_vt102_codes(char *str, char *buf) {
   char *pti, *pto;
+  int skip;
 
   pti = str;
   pto = buf;
 
-  while (*pti && (n < 0 || n > 0)) {
-    while (skip_vt102_codes(pti)) {
-      pti += skip_vt102_codes(pti);
+  while (*pti) {
+    while ((skip = skip_vt102_codes(pti))) {
+      pti += skip;
     }
 
     if (*pti) {
       *pto++ = *pti++;
-      n--;
     }
   }
 
-  /* Only add null-termination if it isn't in seek-mode */
-  if (n < 0) {
-    *pto = 0;
-  }
+  *pto = 0;
 }
 
 /* copy *string into *result, but substitute the various colors with the

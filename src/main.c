@@ -2,25 +2,29 @@
 
 #include "defs.h"
 
-struct session *gts;
-struct global_data *gtd;
+struct session gts;
+struct global_data gtd;
 
 pthread_t input_thread;
 pthread_t output_thread;
 
-int main(int argc, char **argv) {
-  int config_override = FALSE;
-  int run_command = FALSE;
-  char command[BUFFER_SIZE];
+static int quit_ran = FALSE;
 
-  signal(SIGTERM, abort_and_trap_handler);
-  signal(SIGSEGV, abort_and_trap_handler);
-  signal(SIGHUP, abort_and_trap_handler);
-  signal(SIGABRT, abort_and_trap_handler);
-  signal(SIGINT, abort_and_trap_handler);
-  signal(SIGTSTP, suspend_handler);
-  signal(SIGPIPE, pipe_handler);
-  signal(SIGWINCH, winch_handler);
+int main(int argc, char **argv) {
+  int config_override = FALSE, run_command = FALSE;
+  char command[BUFFER_SIZE];
+  struct sigaction trap, pipe, winch;
+
+  trap.sa_handler = trap_handler;
+  pipe.sa_handler = pipe_handler;
+  winch.sa_handler = winch_handler;
+
+  sigaction(SIGTERM, &trap, NULL);
+  sigaction(SIGSEGV, &trap, NULL);
+  sigaction(SIGHUP, &trap, NULL);
+  sigaction(SIGABRT, &trap, NULL);
+  sigaction(SIGPIPE, &pipe, NULL);
+  sigaction(SIGWINCH, &winch, NULL);
 
   init_program();
 
@@ -58,7 +62,7 @@ int main(int argc, char **argv) {
       config_override = TRUE;
     }
   } else {
-    display_printf("%cHELP for more info", gtd->command_char);
+    display_printf("%cHELP for more info", gtd.command_char);
   }
 
   if (!config_override) {
@@ -77,13 +81,12 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (run_command && !gtd->run_overriden) {
-    gtd->command_prompt = FALSE;
-    gtd->run_overriden = TRUE;
+  if (run_command && !gtd.run_overriden) {
+    gtd.run_overriden = TRUE;
     do_run(command);
   }
 
-  if (!gtd->run_overriden) {
+  if (!gtd.run_overriden) {
     do_run(NULL);
   }
 
@@ -98,30 +101,51 @@ int main(int argc, char **argv) {
 }
 
 void init_program() {
+  struct termios io;
   int index;
-
-  gts = (struct session *)calloc(1, sizeof(struct session));
-  gtd = (struct global_data *)calloc(1, sizeof(struct global_data));
-
-  gtd->command_prompt = TRUE;
 
   for (index = 0; index < LIST_MAX; index++) {
     /* initial size is 8, but is dynamically resized as required */
-    gts->list[index] = init_list(index, 8);
+    gts.list[index] = init_list(index, 8);
   }
 
-  gts->socket = 1;
+  gts.socket = 1;
 
-  init_screen_size();
+  winch_handler(0);
 
-  gtd->quiet++;
-  do_configure("CHARSET    UTF-8");
+  gtd.quiet++;
   do_configure("COMMAND    %%");
   do_configure("CONVERT    OFF");
   do_configure("HIGHLIGHT  ON");
-  gtd->quiet--;
+  gtd.quiet--;
 
-  init_terminal();
+  /* Save current terminal attributes and reset at exit */
+  if (tcgetattr(STDIN_FILENO, &gtd.saved_terminal)) {
+    perror("tcgetattr");
+    exit(errno);
+  }
+
+  tcgetattr(STDIN_FILENO, &gtd.active_terminal);
+
+  io = gtd.active_terminal;
+
+  /*  Canonical mode off */
+  DEL_BIT(io.c_lflag, ICANON);
+
+  io.c_cc[VMIN] = 1;
+  io.c_cc[VTIME] = 0;
+  io.c_cc[VSTART] = 255;
+  io.c_cc[VSTOP] = 255;
+
+  DEL_BIT(io.c_lflag, ECHO | ECHONL | IEXTEN | ISIG);
+  SET_BIT(io.c_cflag, CS8);
+
+  if (tcsetattr(STDIN_FILENO, TCSANOW, &io)) {
+    perror("tcsetattr");
+    exit(errno);
+  }
+
+  atexit(quit_void);
 }
 
 void help_menu(int error, char *proc_name) {
@@ -135,11 +159,26 @@ void help_menu(int error, char *proc_name) {
   quitmsg(NULL, error);
 }
 
+void quit_void(void) {
+  if (!quit_ran) {
+    quitmsg(NULL, 0);
+  }
+}
+
 void quitmsg(char *message, int exit_signal) {
   int i;
 
-  reset_terminal();
-  cleanup_session();
+  quit_ran = TRUE;
+
+  /* Restore original, saved terminal */
+  tcsetattr(STDIN_FILENO, TCSANOW, &gtd.saved_terminal);
+
+  if (kill(gts.pid, 0) && gts.socket) {
+    close(gts.socket);
+    if (gts.pid) {
+      kill(gts.pid, SIGKILL);
+    }
+  }
 
   if (input_thread) {
     pthread_kill(input_thread, 0);
@@ -150,15 +189,12 @@ void quitmsg(char *message, int exit_signal) {
   }
 
   for (i = 0; i < LIST_MAX; i++) {
-    while (gts->list[i]->used) {
-      delete_index_list(gts->list[i], 0);
+    while (gts.list[i]->used) {
+      delete_index_list(gts.list[i], 0);
     }
-    free(gts->list[i]->list);
-    free(gts->list[i]);
+    free(gts.list[i]->list);
+    free(gts.list[i]);
   }
-
-  free(gts);
-  free(gtd);
 
   if (message) {
     printf("\n%s\n", message);
@@ -168,14 +204,21 @@ void quitmsg(char *message, int exit_signal) {
   exit(exit_signal);
 }
 
-void abort_and_trap_handler(int sig) { quitmsg("abort_and_trap_handler", sig); }
-
 void pipe_handler(int sig) { display_printf("broken_pipe: %i", sig); }
 
-void suspend_handler(int sig) { quitmsg("suspend_handler", sig); }
+void trap_handler(int sig) { quitmsg("trap_handler", sig); }
 
 void winch_handler(int sig) {
+  struct winsize screen;
+
   if (sig) { /* Just to make a compiler warning shut up */
   }
-  init_screen_size();
+
+  if (ioctl(STDIN_FILENO, TIOCGWINSZ, &screen) == -1) {
+    gts.rows = SCREEN_HEIGHT;
+    gts.cols = SCREEN_WIDTH;
+  } else {
+    gts.rows = screen.ws_row;
+    gts.cols = screen.ws_col;
+  }
 }

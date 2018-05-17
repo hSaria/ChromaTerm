@@ -22,7 +22,7 @@ The original tool ([ChromaTerm by TunnelsUp](www.tunnelsup.com/chromaterm/)) has
 
 
 ## Screenshots
-A few different examples. 
+A few different examples.
 
 <p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"/><img width=422px height=425px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png"/><img width=405px height=425px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/ios-show-interface.png"/></p>
 
@@ -75,7 +75,7 @@ You can read a configuration file while inside a session. Any rules will be **me
 Exits CT--. The child process is terminated, too. `%quit` does the same thing.
 
 ## Configuration File
-CT-- will look for a configuration file called `.chromatermrc` in the current directory then your home directory. It will load the first one it finds. The file should contain CT-- commands.
+CT-- will look for a configuration file called `.chromatermrc` in the current working directory (`pwd`) then your home directory. It will load the CT-- commands from the first one it finds.
 
 You may also override which configuration file is loaded by using the `-c` parameter. For example:
 ```
