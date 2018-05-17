@@ -6,13 +6,6 @@ A tool for colorizing the output of a terminal.
 - [Usage](#usage)
 - [Help](#help)
 
-Quick summary of changes from the original ChromaTerm:
-- Optimised the search through highlight rules which results in over **60% improvement in output processing speed**. This is very notable when you have a lot of rules and/or outputting a large amount of text.
-- **Reduced the dependency** on many libraries. ChromaTerm-- should  require fewer, if any, additional installations.
-- ChromaTerm-- **multithreads** the input and output operations which significantly increases the **responsiveness**. With that addition, polling at fixed intervals has been removed. This nearly negates the overhead of CT while wrapping around a process.
-- Added an option to **toggle highlighting off**.
-- Removed nearly every function apart from **Highlight**, which is the only thing I think this program should do. This significantly reduced the overhead on all operations of CT--.
-
 
 # About
 ChromaTerm-- (CT--) is a slimmed-down version of [ChromaTerm](https://github.com/tunnelsup/chromaterm). It essentially acts as a wrapper for a process (e.g. a shell). Any input to or output from the process is processed through CT--.
