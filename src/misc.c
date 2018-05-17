@@ -8,16 +8,9 @@ DO_COMMAND(do_commands) {
   char buf[BUFFER_SIZE] = {0}, add[BUFFER_SIZE];
   int cmd;
 
-  display_header(" COMMANDS ");
-
   for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
     if (*arg && !is_abbrev(arg, command_table[cmd].name)) {
       continue;
-    }
-
-    if ((int)strlen(buf) + 20 > gts.cols) {
-      display_printf(buf);
-      buf[0] = 0;
     }
 
     sprintf(add, "%-14s", command_table[cmd].name);
@@ -26,8 +19,6 @@ DO_COMMAND(do_commands) {
   if (buf[0]) {
     display_printf(buf);
   }
-
-  display_header("");
 }
 
 DO_COMMAND(do_exit) {
@@ -44,18 +35,11 @@ DO_COMMAND(do_help) {
   get_arg(arg, left);
 
   if (*left == 0) {
-    display_header(" HELP TOPICS ");
-
     for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
-      if ((int)strlen(add) + 19 > gts.cols) {
-        display_printf(add);
-        add[0] = 0;
-      }
       cat_sprintf(add, "%-14s", help_table[cnt].name);
     }
     display_printf(add);
 
-    display_header("");
   } else {
     int found = FALSE;
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {

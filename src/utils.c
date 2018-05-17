@@ -26,21 +26,6 @@ void cat_sprintf(char *dest, char *fmt, ...) {
   strcat(dest, buf);
 }
 
-void display_header(char *str) {
-  char buf[BUFFER_SIZE];
-
-  if ((int)strlen(str) > gts.cols - 2) {
-    str[gts.cols - 2] = 0;
-  }
-
-  memset(buf, '#', gts.cols);
-  memcpy(&buf[(gts.cols - strlen(str)) / 2], str, strlen(str));
-
-  buf[gts.cols] = 0;
-
-  display_printf(buf);
-}
-
 void display_printf(char *format, ...) {
   if (gtd.quiet) {
     return;
