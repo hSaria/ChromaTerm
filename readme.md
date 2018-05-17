@@ -8,12 +8,11 @@ A tool for colorizing the output of a terminal.
 
 
 # About
-ChromaTerm-- (CT--) is a slimmed-down version of [ChromaTerm](https://github.com/tunnelsup/chromaterm). It essentially acts as a wrapper for a process (e.g. a shell). Any input to or output from the process is processed through CT--.
-While running,  CT-- listens for a key command character and executes subsequent commands that allow you to configure CT--. You are probably after the `%highlight` command.
-
+ChromaTerm-- (CT--) wraps around a process (e.g. /bin/bash) and highlights any output according to user-configurable rules.
+CT-- can be configured while it is running which makes it very dynamic to your current problem. 
 
 ## Screenshots
-A few different examples.
+Some quick examples. CT-- uses Regex to find matches for your rules.
 
 <p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"/><img width=422px height=425px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png"/><img width=405px height=425px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/ios-show-interface.png"/></p>
 
