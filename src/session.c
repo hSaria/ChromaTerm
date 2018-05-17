@@ -23,7 +23,6 @@ void *poll_input(void *arg) {
   }
 }
 
-/* BUG: A SIGINT can overwrite the output buffer */
 void *poll_session(void *arg) {
   fd_set readfds;
 
