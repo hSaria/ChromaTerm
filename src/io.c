@@ -75,26 +75,9 @@ void print_backspace(int sig) {
   fflush(stdout);
 }
 
-/* BUG: Because the read might be faster than the socket's output, the read
- * might stop somewhere in the middle of a line, which causes the output to be
- * processed even when there's more output on the same line */
-int read_buffer_mud() {
-  gtd.mud_output_len +=
-      read(gts.socket, &gtd.mud_output_buf[gtd.mud_output_len],
-           MUD_OUTPUT_MAX - gtd.mud_output_len - 1);
-
-  if (gtd.mud_output_len <= 0) {
-    return FALSE;
-  }
-
-  gtd.mud_output_buf[gtd.mud_output_len] = 0;
-
-  return TRUE;
-}
-
 void read_key(void) {
   char c = 0;
-  while ((int)(c = getc(stdin)) != -1) {
+  while ((int)(c = getc(stdin)) != EOF) {
     if (beginning_of_line && c == gtd.command_char) {
       int len = 0;
       char command_buffer[BUFFER_SIZE];
@@ -127,25 +110,32 @@ void read_key(void) {
       script_driver(command_buffer);
       memset(&command_buffer, 0, len);
     } else {
-      if (c == '\n') {
-        beginning_of_line = TRUE;
-        socket_printf(1, "%c", '\r');
-      } else {
-        beginning_of_line = FALSE;
-        socket_printf(1, "%c", c);
+      c = c == '\n' ? '\r' : c;
+
+      if (write(gts.socket, &c, 1) < 0) {
+        quitmsg("failed on socket write", 1);
       }
     }
   }
 }
 
+/* BUG: Because the read might be faster than the socket's output, the read
+ * might stop somewhere in the middle of a line, which causes the output to be
+ * processed even when there's more output on the same line */
 void readmud() {
   char *line, *next_line;
+  int len = read(gts.socket, &gtd.mud_output_buf[0], MUD_OUTPUT_MAX);
 
-  gtd.mud_output_len = 0;
+  if (len <= 0) {
+    quitmsg(NULL, 0);
+  }
+
+  gtd.mud_output_buf[len] = 0;
 
   /* separate into lines and print away */
   for (line = gtd.mud_output_buf; line && *line; line = next_line) {
     char linebuf[BUFFER_SIZE];
+
     next_line = strchr(line, '\n');
 
     if (next_line) {

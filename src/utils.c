@@ -14,19 +14,16 @@ char *capitalize(char *str) {
   return outbuf;
 }
 
-int cat_sprintf(char *dest, char *fmt, ...) {
+void cat_sprintf(char *dest, char *fmt, ...) {
   char buf[BUFFER_SIZE * 2];
-  int size;
 
   va_list args;
 
   va_start(args, fmt);
-  size = vsprintf(buf, fmt, args);
+  vsprintf(buf, fmt, args);
   va_end(args);
 
   strcat(dest, buf);
-
-  return size;
 }
 
 void display_header(char *str) {
@@ -59,7 +56,7 @@ void display_printf(char *format, ...) {
   printline(buf, FALSE);
 }
 
-/* Braces are stripped in braced arguments leaving all else as is */
+/* The outer-most braces (if any) are stripped; all else left as is */
 char *get_arg(char *string, char *result) {
   char *pti, *pto;
   int nest = 1;
@@ -118,25 +115,13 @@ void printline(char *str, int isaprompt) {
 
   if (HAS_BIT(gts.flags, SES_FLAG_CONVERTMETA)) {
     convert_meta(str, wrapped_str);
+    printf("%s", wrapped_str);
   } else {
-    strcpy(wrapped_str, str);
+    printf("%s", str);
   }
-  printf("%s", wrapped_str);
+
   if (!isaprompt) {
     printf("\n");
-  }
-}
-
-void socket_printf(unsigned int length, char *format, ...) {
-  char buf[BUFFER_SIZE * 2];
-  va_list args;
-
-  va_start(args, format);
-  vsprintf(buf, format, args);
-  va_end(args);
-
-  if (write(gts.socket, buf, length) < 0) {
-    quitmsg("failed on socket write", 1);
   }
 }
 

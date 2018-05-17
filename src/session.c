@@ -5,14 +5,14 @@
 void *poll_input(void *arg) {
   fd_set readfds;
 
+  FD_ZERO(&readfds); /* Initialise the file descriptor */
+  FD_SET(STDIN_FILENO, &readfds);
+
   if (arg) { /* Making a warning shut up */
   }
 
   while (TRUE) {
-    FD_ZERO(&readfds);
-    FD_SET(STDIN_FILENO, &readfds);
-
-    /* Blocking operation */
+    /* Blocking operation until FD is ready */
     if (select(FD_SETSIZE, &readfds, NULL, NULL, NULL) <= 0) {
       quitmsg(NULL, 0);
     }
@@ -25,26 +25,20 @@ void *poll_input(void *arg) {
 
 void *poll_session(void *arg) {
   fd_set readfds;
+
   FD_ZERO(&readfds); /* Initialise the file descriptor */
+  FD_SET(gts.socket, &readfds);
 
   if (arg) { /* Making a warning shut up */
   }
 
   while (TRUE) {
-    FD_SET(gts.socket, &readfds);
-
-    /* Blocking operation */
+    /* Blocking operation until FD is ready */
     if (select(FD_SETSIZE, &readfds, NULL, NULL, NULL) <= 0) {
       quitmsg(NULL, 0);
     }
 
-    if (read_buffer_mud() == FALSE) {
-      quitmsg(NULL, 0);
-    }
-
-    if (gtd.mud_output_len) {
-      readmud();
-    }
+    readmud();
 
     fflush(stdout);
   }

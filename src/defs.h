@@ -29,7 +29,7 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
-#define VERSION "0.06"
+#define VERSION "0.07"
 
 #define FALSE 0
 #define TRUE 1
@@ -98,7 +98,6 @@ struct global_data {
   struct termios saved_terminal;
   char command_char;
   char mud_output_buf[MUD_OUTPUT_MAX];
-  int mud_output_len;
   int quiet;
   int run_overriden;
 };
@@ -199,7 +198,6 @@ void substitute(char *string, char *result);
 
 void convert_meta(char *input, char *output);
 void print_backspace(int sig);
-int read_buffer_mud(void);
 void read_key(void);
 void readmud(void);
 
@@ -259,13 +257,12 @@ extern struct help_type help_table[];
 #define __UTILS_H__
 
 char *capitalize(char *str);
-int cat_sprintf(char *dest, char *fmt, ...);
+void cat_sprintf(char *dest, char *fmt, ...);
 void display_header(char *str);
 void display_printf(char *format, ...);
 char *get_arg(char *string, char *result);
 int is_abbrev(char *s1, char *s2);
 void printline(char *str, int isaprompt);
-void socket_printf(unsigned int length, char *format, ...);
 char *space_out(char *string);
 
 #endif
