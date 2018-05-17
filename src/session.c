@@ -54,7 +54,8 @@ void *poll_session(void *arg) {
      * \n. This way, no performance hit on long output */
     readmud_buffer();
 
-    /* Failsafe: if the buffer is full, process all of pending output */
+    /* Failsafe: if the buffer is full, process all of pending output.
+     * Otherwise, process until the line that doesn't end with \n. */
     readmud(MUD_OUTPUT_MAX - gtd.mud_output_len <= 1 ? FALSE : TRUE);
   }
 }
