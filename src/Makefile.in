@@ -43,7 +43,7 @@ clean:
 	rm -f $(OFILES) config.status config.log
 
 test:
-	./ct -c ../.chromatermrc -e ../.test.sh
+	./ct -c ../.test_chromatermrc -e ../.test.sh
 
 distclean:
 	rm -f *.o config.status config.log ct Makefile config.h
