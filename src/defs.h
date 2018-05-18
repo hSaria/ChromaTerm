@@ -148,7 +148,7 @@ void readmud(int wait_for_new_line);
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-extern struct global_data gtd;
+extern struct global_data gd;
 
 extern pthread_t input_thread;
 extern pthread_t output_thread;

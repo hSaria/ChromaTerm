@@ -35,11 +35,11 @@ void *poll_session(void *arg) {
     /* Mandatoy wait before assuming no more output on the current line */
     struct timeval wait = {0, WAIT_FOR_NEW_LINE};
 
-    FD_SET(gtd.socket, &readfds);
+    FD_SET(gd.socket, &readfds);
 
     /* If there's no current output on the mud, block until FD is ready */
-    int rv = select(gtd.socket + 1, &readfds, NULL, NULL,
-                    gtd.mud_output_len == 0 ? NULL : &wait);
+    int rv = select(gd.socket + 1, &readfds, NULL, NULL,
+                    gd.mud_output_len == 0 ? NULL : &wait);
 
     if (rv == 0) { /* timed-out while waiting for FD to be ready. */
       /* Process all that's left */
@@ -55,7 +55,7 @@ void *poll_session(void *arg) {
 
     /* Failsafe: if the buffer is full, process all of pending output.
      * Otherwise, process until the line that doesn't end with \n. */
-    readmud(MUD_OUTPUT_MAX - gtd.mud_output_len <= 1 ? FALSE : TRUE);
+    readmud(MUD_OUTPUT_MAX - gd.mud_output_len <= 1 ? FALSE : TRUE);
   }
 }
 
@@ -65,7 +65,7 @@ void script_driver(char *str) {
     int cmd = -1, i;
 
     /* Skip redundant command chars before the actual command */
-    while (*str == gtd.command_char || isspace((int)*str)) {
+    while (*str == gd.command_char || isspace((int)*str)) {
       str++;
     }
 
@@ -80,7 +80,7 @@ void script_driver(char *str) {
     }
 
     if (cmd == -1) {
-      display_printf("%cERROR: Unknown command '%s'", gtd.command_char, line);
+      display_printf("%cERROR: Unknown command '%s'", gd.command_char, line);
     } else {
       (*command_table[cmd].command)(args);
       *args = 0;

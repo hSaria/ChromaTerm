@@ -15,7 +15,7 @@ void cat_sprintf(char *dest, char *fmt, ...) {
 }
 
 void display_printf(char *format, ...) {
-  if (gtd.quiet) {
+  if (gd.quiet) {
     return;
   }
 
@@ -66,7 +66,7 @@ char *get_arg(char *string, char *result) {
   }
 
   if (*pti == 0) {
-    display_printf("%cERROR: Unmatched brackets", gtd.command_char);
+    display_printf("%cERROR: Unmatched brackets", gd.command_char);
   } else {
     pti++;
   }
@@ -84,7 +84,7 @@ int is_abbrev(char *s1, char *s2) {
 }
 
 void printline(char *str, int isaprompt) {
-  if (HAS_BIT(gtd.flags, SES_FLAG_CONVERTMETA)) {
+  if (HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA)) {
     char wrapped_str[BUFFER_SIZE * 2];
 
     convert_meta(str, wrapped_str);

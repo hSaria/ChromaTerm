@@ -2,7 +2,7 @@
 
 #include "defs.h"
 
-struct global_data gtd;
+struct global_data gd;
 
 pthread_t input_thread;
 pthread_t output_thread;
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
       config_override = TRUE;
     }
   } else {
-    display_printf("%cHELP for more info", gtd.command_char);
+    display_printf("%cHELP for more info", gd.command_char);
   }
 
   if (!config_override) {
@@ -80,12 +80,12 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (run_command && !gtd.run_overriden) {
-    gtd.run_overriden = TRUE;
+  if (run_command && !gd.run_overriden) {
+    gd.run_overriden = TRUE;
     do_run(command);
   }
 
-  if (!gtd.run_overriden) {
+  if (!gd.run_overriden) {
     do_run(NULL);
   }
 
@@ -103,25 +103,25 @@ void init_program() {
   struct termios io;
 
   /* initial size is 8, but is dynamically resized as required */
-  gtd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
-  gtd.highlights_size = 8;
+  gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
+  gd.highlights_size = 8;
 
-  gtd.socket = 1;
+  gd.socket = 1;
 
   winch_handler(0);
 
   /* Default configuration values */
-  gtd.command_char = '%';
-  SET_BIT(gtd.flags, SES_FLAG_HIGHLIGHT);
+  gd.command_char = '%';
+  SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
 
   /* Save current terminal attributes and reset at exit */
-  if (tcgetattr(STDIN_FILENO, &gtd.saved_terminal)) {
+  if (tcgetattr(STDIN_FILENO, &gd.saved_terminal)) {
     quitmsg("tcgetattr", 1);
   }
 
-  tcgetattr(STDIN_FILENO, &gtd.active_terminal);
+  tcgetattr(STDIN_FILENO, &gd.active_terminal);
 
-  io = gtd.active_terminal;
+  io = gd.active_terminal;
 
   /*  Canonical mode off */
   DEL_BIT(io.c_lflag, ICANON);
@@ -162,12 +162,12 @@ void quitmsg(char *message, int exit_signal) {
   quit_ran = TRUE;
 
   /* Restore original, saved terminal */
-  tcsetattr(STDIN_FILENO, TCSANOW, &gtd.saved_terminal);
+  tcsetattr(STDIN_FILENO, TCSANOW, &gd.saved_terminal);
 
-  if (kill(gtd.pid, 0) && gtd.socket) {
-    close(gtd.socket);
-    if (gtd.pid) {
-      kill(gtd.pid, SIGKILL);
+  if (kill(gd.pid, 0) && gd.socket) {
+    close(gd.socket);
+    if (gd.pid) {
+      kill(gd.pid, SIGKILL);
     }
   }
 
@@ -179,11 +179,11 @@ void quitmsg(char *message, int exit_signal) {
     pthread_kill(output_thread, 0);
   }
 
-  while (gtd.highlights[0]) {
-    do_unhighlight(gtd.highlights[0]->condition);
+  while (gd.highlights[0]) {
+    do_unhighlight(gd.highlights[0]->condition);
   }
 
-  free(gtd.highlights);
+  free(gd.highlights);
 
   if (message) {
     printf("\n%s\n", message);
@@ -204,10 +204,10 @@ void winch_handler(int sig) {
   }
 
   if (ioctl(STDIN_FILENO, TIOCGWINSZ, &screen) == -1) {
-    gtd.rows = SCREEN_HEIGHT;
-    gtd.cols = SCREEN_WIDTH;
+    gd.rows = SCREEN_HEIGHT;
+    gd.cols = SCREEN_WIDTH;
   } else {
-    gtd.rows = screen.ws_row;
-    gtd.cols = screen.ws_col;
+    gd.rows = screen.ws_row;
+    gd.cols = screen.ws_col;
   }
 }

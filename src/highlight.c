@@ -16,20 +16,20 @@ DO_COMMAND(do_highlight) {
   if (*arg1 == 0 || *arg2 == 0) {
     int i;
 
-    for (i = 0; i < gtd.highlights_used; i++) {
+    for (i = 0; i < gd.highlights_used; i++) {
       display_printf("%cHIGHLIGHT "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
-                     gtd.command_char, gtd.highlights[i]->condition,
-                     gtd.highlights[i]->action, gtd.highlights[i]->priority);
+                     gd.command_char, gd.highlights[i]->condition,
+                     gd.highlights[i]->action, gd.highlights[i]->priority);
     }
 
   } else {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(arg2, temp) == FALSE) {
       display_printf("%cERROR: Invalid color code; see %chelp color",
-                     gtd.command_char, gtd.command_char);
+                     gd.command_char, gd.command_char);
 
     } else {
       const char *error_pointer;
@@ -38,7 +38,7 @@ DO_COMMAND(do_highlight) {
 
       /* Remove if already exists */
       if (index != -1) {
-        do_unhighlight(gtd.highlights[index]->condition);
+        do_unhighlight(gd.highlights[index]->condition);
       }
 
       highlight = (struct highlight *)calloc(1, sizeof(struct highlight));
@@ -52,16 +52,16 @@ DO_COMMAND(do_highlight) {
       if ((highlight->compiled_regex = pcre_compile(
                arg1, 0, &error_pointer, &error_offset, NULL)) == NULL) {
         display_printf("%cWARNING: Couldn't compile regex at %i: %s",
-                       gtd.command_char, error_offset, error_pointer);
+                       gd.command_char, error_offset, error_pointer);
       }
 
       /* Find the insertion index */
       bot = 0;
-      top = gtd.highlights_used - 1;
+      top = gd.highlights_used - 1;
       val = top;
 
       while (bot <= top) {
-        double srt = atof(arg3) - atof(gtd.highlights[val]->priority);
+        double srt = atof(arg3) - atof(gd.highlights[val]->priority);
 
         /* Same priority */
         if (srt == 0) {
@@ -79,20 +79,20 @@ DO_COMMAND(do_highlight) {
 
       index = UMAX(0, val);
 
-      gtd.highlights_used++;
+      gd.highlights_used++;
 
       /* Expand if full; make it twice as big */
-      if (gtd.highlights_used == gtd.highlights_size) {
-        gtd.highlights_size *= 2;
+      if (gd.highlights_used == gd.highlights_size) {
+        gd.highlights_size *= 2;
 
-        gtd.highlights = (struct highlight **)realloc(
-            gtd.highlights, gtd.highlights_size * sizeof(struct highlight *));
+        gd.highlights = (struct highlight **)realloc(
+            gd.highlights, gd.highlights_size * sizeof(struct highlight *));
       }
 
-      memmove(&gtd.highlights[index + 1], &gtd.highlights[index],
-              (gtd.highlights_used - index) * sizeof(struct highlight *));
+      memmove(&gd.highlights[index + 1], &gd.highlights[index],
+              (gd.highlights_used - index) * sizeof(struct highlight *));
 
-      gtd.highlights[index] = highlight;
+      gd.highlights[index] = highlight;
     }
   }
 }
@@ -103,11 +103,11 @@ DO_COMMAND(do_unhighlight) {
   get_arg(arg, arg);
 
   if (*arg == 0) {
-    display_printf("%cSYNTAX: %cUNHIGHLIGHT {CONDITION}", gtd.command_char,
-                   gtd.command_char);
+    display_printf("%cSYNTAX: %cUNHIGHLIGHT {CONDITION}", gd.command_char,
+                   gd.command_char);
 
   } else if ((index = find_highlight_index(arg)) != -1) {
-    struct highlight *highlight = gtd.highlights[index];
+    struct highlight *highlight = gd.highlights[index];
 
     if (highlight->compiled_regex != NULL) {
       pcre_free(highlight->compiled_regex);
@@ -115,12 +115,12 @@ DO_COMMAND(do_unhighlight) {
 
     free(highlight);
 
-    memmove(&gtd.highlights[index], &gtd.highlights[index + 1],
-            (gtd.highlights_used - index) * sizeof(struct highlight *));
+    memmove(&gd.highlights[index], &gd.highlights[index + 1],
+            (gd.highlights_used - index) * sizeof(struct highlight *));
 
-    gtd.highlights_used--;
+    gd.highlights_used--;
   } else {
-    display_printf("%cUNHIGHLIGHT: Not found", gtd.command_char);
+    display_printf("%cUNHIGHLIGHT: Not found", gd.command_char);
   }
 }
 
@@ -131,10 +131,10 @@ void check_all_highlights(char *original) {
   strip_vt102_codes(original, stripped);
 
   /* Apply from the bottom since the top ones may overwrite them */
-  for (i = gtd.highlights_used - 1; i > -1; i--) {
+  for (i = gd.highlights_used - 1; i > -1; i--) {
     int start_position;
 
-    if ((start_position = regex_compare(gtd.highlights[i]->compiled_regex,
+    if ((start_position = regex_compare(gd.highlights[i]->compiled_regex,
                                         stripped, match)) != -1) {
       char *pto, *pts, *ptm;
       char output[BUFFER_SIZE];
@@ -180,7 +180,7 @@ void check_all_highlights(char *original) {
         }
 
         cat_sprintf(output, "%.*s%s%s\033[0m", count_inc_skipped, pto,
-                    gtd.highlights[i]->processed_action, match);
+                    gd.highlights[i]->processed_action, match);
 
         /* Move pto to after the match, and skip any vt102 codes, too. */
         pto = ptt;
@@ -190,8 +190,8 @@ void check_all_highlights(char *original) {
         pts = strstr(pts, match);
         pts = pts + strlen(match);
 
-      } while ((start_position = regex_compare(
-                    gtd.highlights[i]->compiled_regex, pts, match)) != -1);
+      } while ((start_position = regex_compare(gd.highlights[i]->compiled_regex,
+                                               pts, match)) != -1);
 
       /* Add the remainder of the string and then copy it to*/
       strcat(output, pto);
@@ -203,8 +203,8 @@ void check_all_highlights(char *original) {
 int find_highlight_index(char *condition) {
   int i;
 
-  for (i = 0; i < gtd.highlights_used; i++) {
-    if (!strcmp(condition, gtd.highlights[i]->condition)) {
+  for (i = 0; i < gd.highlights_used; i++) {
+    if (!strcmp(condition, gd.highlights[i]->condition)) {
       return i;
     }
   }

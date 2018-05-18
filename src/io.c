@@ -71,14 +71,14 @@ void sigint_handler_during_read(int sig) {
   }
 
   /* Repair line before adding the command char */
-  printf("\n%s%c:", gtd.mud_current_line, gtd.command_char);
+  printf("\n%s%c:", gd.mud_current_line, gd.command_char);
   fflush(stdout);
 }
 
 void read_key(void) {
   char c = 0;
   while ((int)(c = getc(stdin)) != EOF) {
-    if (beginning_of_line && c == gtd.command_char) {
+    if (beginning_of_line && c == gd.command_char) {
       int len = 0;
       char command_buffer[BUFFER_SIZE];
       struct termios temp_attributes;
@@ -86,13 +86,13 @@ void read_key(void) {
 
       new.sa_handler = sigint_handler_during_read;
 
-      printf("%c:", gtd.command_char);
+      printf("%c:", gd.command_char);
       fflush(stdout);
 
       tcgetattr(STDIN_FILENO, &temp_attributes);
 
       /* Recover original terminal state */
-      tcsetattr(STDIN_FILENO, TCSANOW, &gtd.saved_terminal);
+      tcsetattr(STDIN_FILENO, TCSANOW, &gd.saved_terminal);
 
       /* Ignore inturrupt signals */
       sigaction(SIGINT, &new, &old);
@@ -110,12 +110,12 @@ void read_key(void) {
       script_driver(command_buffer);
       memset(&command_buffer, 0, len);
 
-      printline(gtd.mud_current_line, TRUE);
+      printline(gd.mud_current_line, TRUE);
     } else {
       beginning_of_line = c == '\n' ? TRUE : FALSE;
       c = c == '\n' ? '\r' : c;
 
-      if (write(gtd.socket, &c, 1) < 0) {
+      if (write(gd.socket, &c, 1) < 0) {
         quitmsg("failed on socket write", 1);
       }
     }
@@ -126,10 +126,10 @@ void read_key(void) {
 void readmud(int wait_for_new_line) {
   char *line, *next_line;
 
-  gtd.mud_output_buf[gtd.mud_output_len] = 0;
+  gd.mud_output_buf[gd.mud_output_len] = 0;
 
   /* separate into lines and print away */
-  for (line = gtd.mud_output_buf; line && *line; line = next_line) {
+  for (line = gd.mud_output_buf; line && *line; line = next_line) {
     char linebuf[BUFFER_SIZE];
 
     next_line = strchr(line, '\n');
@@ -139,19 +139,19 @@ void readmud(int wait_for_new_line) {
       next_line++;
 
       /* Reset the repair buffer */
-      memset(gtd.mud_current_line, 0, strlen(gtd.mud_current_line));
+      memset(gd.mud_current_line, 0, strlen(gd.mud_current_line));
     } else if (wait_for_new_line || *line == 0) {
       break;
     }
 
     strcpy(linebuf, line);
 
-    if (HAS_BIT(gtd.flags, SES_FLAG_HIGHLIGHT)) {
+    if (HAS_BIT(gd.flags, SES_FLAG_HIGHLIGHT)) {
       check_all_highlights(linebuf);
     }
 
     /* Used to repair the output after a CT command */
-    strcat(gtd.mud_current_line, linebuf);
+    strcat(gd.mud_current_line, linebuf);
 
     printline(linebuf, next_line == NULL);
   }
@@ -160,21 +160,20 @@ void readmud(int wait_for_new_line) {
     char temp[BUFFER_SIZE];
 
     strcpy(temp, line);
-    strcpy(gtd.mud_output_buf, temp);
+    strcpy(gd.mud_output_buf, temp);
 
-    gtd.mud_output_len = (int)strlen(line);
+    gd.mud_output_len = (int)strlen(line);
     return;
   }
 
-  gtd.mud_output_len = 0;
+  gd.mud_output_len = 0;
 }
 
 void readmud_buffer(void) {
-  gtd.mud_output_len +=
-      read(gtd.socket, &gtd.mud_output_buf[gtd.mud_output_len],
-           MUD_OUTPUT_MAX - gtd.mud_output_len - 1);
+  gd.mud_output_len += read(gd.socket, &gd.mud_output_buf[gd.mud_output_len],
+                            MUD_OUTPUT_MAX - gd.mud_output_len - 1);
 
-  if (gtd.mud_output_len <= 0) {
+  if (gd.mud_output_len <= 0) {
     quitmsg(NULL, 0);
   }
 }
