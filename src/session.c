@@ -23,7 +23,7 @@ void *poll_input(void *arg) {
   }
 }
 
-void *poll_session(void *arg) {
+void *poll_output(void *arg) {
   fd_set readfds;
 
   FD_ZERO(&readfds); /* Initialise the file descriptor */
@@ -37,19 +37,20 @@ void *poll_session(void *arg) {
 
     FD_SET(gd.socket, &readfds);
 
-    /* If there's no current output on the mud, block until FD is ready */
+    /* If there's no current output on the mud, block until there's something to
+     * read. However, if there's already some output in the buffer, wait a bit
+     * to see if there's more out on that line. */
     int rv = select(gd.socket + 1, &readfds, NULL, NULL,
                     gd.mud_output_len == 0 ? NULL : &wait);
 
-    if (rv == 0) { /* timed-out while waiting for FD to be ready. */
-      /* Process all that's left */
-      readmud(FALSE);
+    if (rv == 0) {    /* timed-out while waiting for FD (no more output) */
+      readmud(FALSE); /* Process all that's left */
       continue;
     } else if (rv < 0) { /* error */
-      quit_with_msg(NULL, 0);
+      quit_with_msg("poll_output", 0);
     }
 
-    /* Read whatever is in the buffer */
+    /* Read what's is in the buffer */
     gd.mud_output_len += read(gd.socket, &gd.mud_output_buf[gd.mud_output_len],
                               MUD_OUTPUT_MAX - gd.mud_output_len - 1);
 
@@ -64,30 +65,26 @@ void *poll_session(void *arg) {
 }
 
 void script_driver(char *str) {
+  /* Skip any unnecessary command chars or spaces before the actual command */
+  while (*str == gd.command_char || isspace((int)*str)) {
+    str++;
+  }
+
   if (*str != 0) {
     char *args, line[BUFFER_SIZE];
-    int cmd = -1, i;
+    int i;
 
-    /* Skip redundant command chars before the actual command */
-    while (*str == gd.command_char || isspace((int)*str)) {
-      str++;
-    }
-
-    /* Command stored in line, rest of string in args */
+    /* Command stored in line, the rest in args */
     args = get_arg(str, line);
 
     for (i = 0; *command_table[i].name != 0; i++) {
       if (is_abbrev(line, command_table[i].name)) {
-        cmd = i;
-        break;
+        (*command_table[i].command)(args);
+        *args = 0;
+        return;
       }
     }
 
-    if (cmd == -1) {
-      display_printf("%cERROR: Unknown command '%s'", gd.command_char, line);
-    } else {
-      (*command_table[cmd].command)(args);
-      *args = 0;
-    }
+    display_printf("%cERROR: Unknown command '%s'", gd.command_char, line);
   }
 }

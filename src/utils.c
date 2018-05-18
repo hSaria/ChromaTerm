@@ -19,7 +19,7 @@ void display_printf(char *format, ...) {
     return;
   }
 
-  char buf[BUFFER_SIZE * 2];
+  char buf[BUFFER_SIZE * 4];
   va_list args;
 
   va_start(args, format);
@@ -37,6 +37,7 @@ char *get_arg(char *string, char *result) {
   pti = space_out(string);
   pto = result;
 
+  /*Use a space as the separator if not wrapped with braces */
   if (*pti != DEFAULT_OPEN) {
     while (*pti) {
       if (isspace((int)*pti)) {
@@ -49,7 +50,7 @@ char *get_arg(char *string, char *result) {
     return pti;
   }
 
-  /* Advance past the DEFAULT_OPEN (nest is 1 right now) */
+  /* Advance past the DEFAULT_OPEN (nest is 1 for this reason) */
   pti++;
 
   while (*pti) {
@@ -58,7 +59,10 @@ char *get_arg(char *string, char *result) {
     } else if (*pti == DEFAULT_CLOSE) {
       nest--;
 
+      /* Stop once we've met the closing backet for the openning we advanced
+       * past before this loop */
       if (nest == 0) {
+        pti++;
         break;
       }
     }
@@ -66,16 +70,14 @@ char *get_arg(char *string, char *result) {
   }
 
   if (*pti == 0) {
-    display_printf("%cERROR: Unmatched brackets", gd.command_char);
-  } else {
-    pti++;
+    display_printf("%cERROR: No closing bracket for argument", gd.command_char);
   }
   *pto = '\0';
 
   return pti;
 }
 
-/* return: TRUE if s1 is an abbrevation of s2 */
+/* TRUE if s1 is an abbrevation of s2 (case-insensitive) */
 int is_abbrev(char *s1, char *s2) {
   if (*s1 == 0) {
     return FALSE;
@@ -100,7 +102,7 @@ void printline(char *str, int isaprompt) {
   fflush(stdout);
 }
 
-/* advance ptr to next none-space */
+/* advance ptr to the next none-space character */
 char *space_out(char *string) {
   while (isspace((int)*string)) {
     string++;

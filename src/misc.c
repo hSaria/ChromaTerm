@@ -160,7 +160,7 @@ DO_COMMAND(do_run) {
     gd.pid = pid;
     gd.socket = desc;
 
-    if (pthread_create(&output_thread, NULL, poll_session, NULL) != 0) {
+    if (pthread_create(&output_thread, NULL, poll_output, NULL) != 0) {
       quit_with_msg("failed to create input thread", 1);
     }
 

@@ -179,7 +179,7 @@ DO_COMMAND(do_showme);
 #define __SESSION_H__
 
 void *poll_input(void *);
-void *poll_session(void *);
+void *poll_output(void *);
 void script_driver(char *str);
 
 #endif
