@@ -157,7 +157,7 @@ int main(int argc, char **argv);
 void init_program(void);
 void help_menu(int error, char *proc_name);
 void quit_void(void);
-void quitmsg(char *message, int exit_signal);
+void quit_with_msg(char *message, int exit_signal);
 void pipe_handler(int sig);
 void trap_handler(int sig);
 void winch_handler(int sig);

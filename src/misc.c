@@ -74,9 +74,9 @@ DO_COMMAND(do_configure) {
 
 DO_COMMAND(do_exit) {
   if (*arg) {
-    quitmsg(arg, 0);
+    quit_with_msg(arg, 0);
   }
-  quitmsg(NULL, 0);
+  quit_with_msg(NULL, 0);
 }
 
 DO_COMMAND(do_help) {
@@ -161,7 +161,7 @@ DO_COMMAND(do_run) {
     gd.socket = desc;
 
     if (pthread_create(&output_thread, NULL, poll_session, NULL) != 0) {
-      quitmsg("failed to create input thread", 1);
+      quit_with_msg("failed to create input thread", 1);
     }
 
     break;

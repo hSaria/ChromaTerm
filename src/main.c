@@ -10,7 +10,7 @@ pthread_t output_thread;
 static int quit_ran = FALSE;
 
 int main(int argc, char **argv) {
-  int config_override = FALSE, run_command = FALSE;
+  int config_override = FALSE;
   char command[BUFFER_SIZE];
   struct sigaction trap, pipe, winch;
 
@@ -44,7 +44,6 @@ int main(int argc, char **argv) {
         }
         break;
       case 'e':
-        run_command = TRUE;
         strcpy(command, optarg);
         break;
       case 'h':
@@ -56,14 +55,13 @@ int main(int argc, char **argv) {
       }
     }
 
+    /* Execute the hanging argument */
     if (argv[optind] != NULL) {
-      do_read(argv[optind]);
-      config_override = TRUE;
+      strcpy(command, optarg);
     }
-  } else {
-    display_printf("%cHELP for more info", gd.command_char);
   }
 
+  /* Read configuration if not overridden by the launch arguments */
   if (!config_override) {
     if (access(".chromatermrc", R_OK) == 0) {
       do_read(".chromatermrc");
@@ -80,23 +78,19 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (run_command && !gd.run_overriden) {
+  /* Only run command if it wasn't overridden by a configuration file */
+  if (!gd.run_overriden) {
     gd.run_overriden = TRUE;
     do_run(command);
   }
 
-  if (!gd.run_overriden) {
-    do_run(NULL);
-  }
-
   if (pthread_create(&input_thread, NULL, poll_input, NULL) != 0) {
-    quitmsg("failed to create input thread", 1);
+    quit_with_msg("failed to create input thread", 1);
   }
 
   pthread_join(input_thread, NULL);
 
-  quitmsg(NULL, 0);
-  return 0;
+  quit_with_msg(NULL, 0);
 }
 
 void init_program() {
@@ -106,8 +100,7 @@ void init_program() {
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
   gd.highlights_size = 8;
 
-  gd.socket = 1;
-
+  /* Get the screen size */
   winch_handler(0);
 
   /* Default configuration values */
@@ -116,7 +109,7 @@ void init_program() {
 
   /* Save current terminal attributes and reset at exit */
   if (tcgetattr(STDIN_FILENO, &gd.saved_terminal)) {
-    quitmsg("tcgetattr", 1);
+    quit_with_msg("tcgetattr", 1);
   }
 
   tcgetattr(STDIN_FILENO, &gd.active_terminal);
@@ -135,7 +128,7 @@ void init_program() {
   SET_BIT(io.c_cflag, CS8);
 
   if (tcsetattr(STDIN_FILENO, TCSANOW, &io)) {
-    quitmsg("tcsetattr", 1);
+    quit_with_msg("tcsetattr", 1);
   }
 
   atexit(quit_void);
@@ -149,16 +142,17 @@ void help_menu(int error, char *proc_name) {
   display_printf("    -e [EXECUTABLE]       Run executable");
   display_printf("    -t {TITLE}            Set title");
 
-  quitmsg(NULL, error);
+  quit_with_msg(NULL, error);
 }
 
+/* Unless there's an error, the quitmsg is ran before exitting */
 void quit_void(void) {
   if (!quit_ran) {
-    quitmsg(NULL, 0);
+    quit_with_msg(NULL, 1);
   }
 }
 
-void quitmsg(char *message, int exit_signal) {
+void quit_with_msg(char *message, int exit_signal) {
   quit_ran = TRUE;
 
   /* Restore original, saved terminal */
@@ -167,6 +161,7 @@ void quitmsg(char *message, int exit_signal) {
   if (kill(gd.pid, 0) && gd.socket) {
     close(gd.socket);
     if (gd.pid) {
+      /* force kill */
       kill(gd.pid, SIGKILL);
     }
   }
@@ -179,12 +174,14 @@ void quitmsg(char *message, int exit_signal) {
     pthread_kill(output_thread, 0);
   }
 
+  /* Free memory used by highlights */
   while (gd.highlights[0]) {
     do_unhighlight(gd.highlights[0]->condition);
   }
 
   free(gd.highlights);
 
+  /* Print msg, if any */
   if (message) {
     printf("\n%s\n", message);
   }
@@ -195,7 +192,7 @@ void quitmsg(char *message, int exit_signal) {
 
 void pipe_handler(int sig) { display_printf("broken_pipe: %i", sig); }
 
-void trap_handler(int sig) { quitmsg("trap_handler", sig); }
+void trap_handler(int sig) { quit_with_msg("trap_handler", sig); }
 
 void winch_handler(int sig) {
   struct winsize screen;

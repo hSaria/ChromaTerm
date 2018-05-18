@@ -5,10 +5,7 @@
 int beginning_of_line = TRUE;
 
 void convert_meta(char *input, char *output) {
-  char *pti, *pto;
-
-  pti = input;
-  pto = output;
+  char *pti = input, *pto = output;
 
   while (*pti) {
     switch (*pti) {
@@ -116,7 +113,7 @@ void read_key(void) {
       c = c == '\n' ? '\r' : c;
 
       if (write(gd.socket, &c, 1) < 0) {
-        quitmsg("failed on socket write", 1);
+        quit_with_msg("failed on socket write", 1);
       }
     }
   }
@@ -174,6 +171,6 @@ void readmud_buffer(void) {
                             MUD_OUTPUT_MAX - gd.mud_output_len - 1);
 
   if (gd.mud_output_len <= 0) {
-    quitmsg(NULL, 0);
+    quit_with_msg(NULL, 0);
   }
 }

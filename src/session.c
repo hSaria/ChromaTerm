@@ -14,7 +14,7 @@ void *poll_input(void *arg) {
   while (TRUE) {
     /* Blocking operation until FD is ready */
     if (select(STDIN_FILENO + 1, &readfds, NULL, NULL, NULL) <= 0) {
-      quitmsg(NULL, 0);
+      quit_with_msg(NULL, 0);
     }
 
     read_key();
@@ -46,7 +46,7 @@ void *poll_session(void *arg) {
       readmud(FALSE);
       continue;
     } else if (rv < 0) { /* error */
-      quitmsg(NULL, 0);
+      quit_with_msg(NULL, 0);
     }
 
     /* Read from buffer and process as much as you can until the line without a
