@@ -49,9 +49,13 @@ void *poll_session(void *arg) {
       quit_with_msg(NULL, 0);
     }
 
-    /* Read from buffer and process as much as you can until the line without a
-     * \n. This way, no performance hit on long output */
-    readmud_buffer();
+    /* Read whatever is in the buffer */
+    gd.mud_output_len += read(gd.socket, &gd.mud_output_buf[gd.mud_output_len],
+                              MUD_OUTPUT_MAX - gd.mud_output_len - 1);
+
+    if (gd.mud_output_len <= 0) {
+      quit_with_msg(NULL, 0);
+    }
 
     /* Failsafe: if the buffer is full, process all of pending output.
      * Otherwise, process until the line that doesn't end with \n. */

@@ -153,6 +153,7 @@ void readmud(int wait_for_new_line) {
     printline(linebuf, next_line == NULL);
   }
 
+  /* If waiting for a new line, copy the last line to the buffer */
   if (wait_for_new_line) {
     char temp[BUFFER_SIZE];
 
@@ -164,13 +165,4 @@ void readmud(int wait_for_new_line) {
   }
 
   gd.mud_output_len = 0;
-}
-
-void readmud_buffer(void) {
-  gd.mud_output_len += read(gd.socket, &gd.mud_output_buf[gd.mud_output_len],
-                            MUD_OUTPUT_MAX - gd.mud_output_len - 1);
-
-  if (gd.mud_output_len <= 0) {
-    quit_with_msg(NULL, 0);
-  }
 }
