@@ -34,9 +34,6 @@
 #define SCREEN_WIDTH 80
 #define SCREEN_HEIGHT 24
 
-#define PRIORITY 0
-#define ALPHA 1
-
 #define DEFAULT_OPEN '{'
 #define DEFAULT_CLOSE '}'
 
@@ -48,11 +45,6 @@
 #define WAIT_FOR_NEW_LINE 10000
 
 #define ESCAPE 27
-
-/* Index for lists */
-#define LIST_CONFIG 0
-#define LIST_HIGHLIGHT 1
-#define LIST_MAX 2
 
 #define SES_FLAG_CONVERTMETA (1 << 0)
 #define SES_FLAG_HIGHLIGHT (1 << 1)
@@ -67,47 +59,37 @@
 #define UMAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define DO_COMMAND(command) void command(char *arg)
-#define DO_CONFIG(config) int config(char *arg, int index)
 
 /* Structures */
-struct listroot {
-  struct listnode **list;
-  int size;
-  int used;
-  int type;
-};
-
-struct listnode {
-  char left[BUFFER_SIZE];
-  char right[BUFFER_SIZE];
-  char pr[BUFFER_SIZE];
-  char processed_color[BUFFER_SIZE];
-  pcre *compiled_regex;
-};
-
-struct session {
-  struct listroot *list[LIST_MAX];
-  int rows;
-  int cols;
-  int pid;
-  int socket;
-  int flags;
-};
-
 struct global_data {
   struct termios active_terminal;
   struct termios saved_terminal;
+  struct highlight **highlights;
+  int highlights_size;
+  int highlights_used;
   char command_char;
+  int flags;
   char mud_output_buf[MUD_OUTPUT_MAX];
   char mud_current_line[MUD_OUTPUT_MAX];
   int mud_output_len;
-  int quiet;
+  int cols;
+  int rows;
+  int pid;
+  int socket;
   int run_overriden;
+  int quiet;
+};
+
+struct highlight {
+  char condition[BUFFER_SIZE];
+  char action[BUFFER_SIZE];
+  char priority[BUFFER_SIZE];
+  char processed_action[BUFFER_SIZE];
+  pcre *compiled_regex;
 };
 
 /* Typedefs */
 typedef void COMMAND(char *arg);
-typedef int CONFIG(char *arg, int index);
 
 /* Structures for tables.c */
 struct color_type {
@@ -120,61 +102,19 @@ struct command_type {
   COMMAND *command;
 };
 
-struct config_type {
-  char *name;
-  char *description;
-  CONFIG *config;
-};
-
 struct help_type {
   char *name;
   char *text;
 };
 
-struct list_type {
-  char *name;
-  int mode;
-};
-
 #endif
 
 /* Function declarations */
-
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
-
-DO_COMMAND(do_configure);
-DO_CONFIG(config_commandchar);
-DO_CONFIG(config_convertmeta);
-DO_CONFIG(config_highlight);
-
-#endif
-
-#ifndef __DATA_H__
-#define __DATA_H__
-
-int bsearch_alpha_list(struct listroot *root, char *text, int seek);
-int bsearch_priority_list(struct listroot *root, char *text, char *priority,
-                          int seek);
-void delete_index_list(struct listroot *root, int index);
-struct listroot *init_list(int type, int size);
-struct listnode *insert_node_list(struct listroot *root, char *ltext,
-                                  char *rtext, char *prtext);
-int nsearch_list(struct listroot *root, char *text);
-int search_index_list(struct listroot *root, char *text, char *priority);
-struct listnode *search_node_list(struct listroot *root, char *text);
-struct listnode *update_node_list(struct listroot *root, char *ltext,
-                                  char *rtext, char *prtext);
-
-#endif
-
 #ifndef __FILES_H__
 #define __FILES_H__
 
 DO_COMMAND(do_read);
 DO_COMMAND(do_write);
-
-void write_node(int list, struct listnode *node, FILE *file);
 
 #endif
 
@@ -185,6 +125,7 @@ DO_COMMAND(do_highlight);
 DO_COMMAND(do_unhighlight);
 
 void check_all_highlights(char *original);
+int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
 int regex_compare(pcre *compiled_regex, char *str, char *result);
 int skip_vt102_codes(char *str);
@@ -197,7 +138,7 @@ void substitute(char *string, char *result);
 #define __IO_H__
 
 void convert_meta(char *input, char *output);
-void print_backspace(int sig);
+void sigint_handler_during_read(int sig);
 void readmud_buffer(void);
 void read_key(void);
 void readmud(int wait_for_new_line);
@@ -207,7 +148,6 @@ void readmud(int wait_for_new_line);
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-extern struct session gts;
 extern struct global_data gtd;
 
 extern pthread_t input_thread;
@@ -228,6 +168,7 @@ void winch_handler(int sig);
 #define __MISC_H__
 
 DO_COMMAND(do_commands);
+DO_COMMAND(do_configure);
 DO_COMMAND(do_exit);
 DO_COMMAND(do_help);
 DO_COMMAND(do_run);
@@ -249,8 +190,6 @@ void script_driver(char *str);
 
 extern struct color_type color_table[];
 extern struct command_type command_table[];
-extern struct config_type config_table[];
-extern struct list_type list_table[LIST_MAX];
 extern struct help_type help_table[];
 
 #endif
@@ -258,7 +197,6 @@ extern struct help_type help_table[];
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-char *capitalize(char *str);
 void cat_sprintf(char *dest, char *fmt, ...);
 void display_printf(char *format, ...);
 char *get_arg(char *string, char *result);

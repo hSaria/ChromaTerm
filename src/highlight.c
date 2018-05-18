@@ -16,14 +16,13 @@ DO_COMMAND(do_highlight) {
   if (*arg1 == 0 || *arg2 == 0) {
     int i;
 
-    for (i = 0; i < gts.list[LIST_HIGHLIGHT]->used; i++) {
-      struct listnode *node = gts.list[LIST_HIGHLIGHT]->list[i];
-      display_printf("%c%s "
+    for (i = 0; i < gtd.highlights_used; i++) {
+      display_printf("%cHIGHLIGHT "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
                      "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
-                     gtd.command_char, list_table[LIST_HIGHLIGHT].name,
-                     node->left, node->right, node->pr);
+                     gtd.command_char, gtd.highlights[i]->condition,
+                     gtd.highlights[i]->action, gtd.highlights[i]->priority);
     }
 
   } else {
@@ -33,50 +32,110 @@ DO_COMMAND(do_highlight) {
                      gtd.command_char, gtd.command_char);
 
     } else {
-      update_node_list(gts.list[LIST_HIGHLIGHT], arg1, arg2, arg3);
+      const char *error_pointer;
+      struct highlight *highlight;
+      int bot, top, val, error_offset, index = find_highlight_index(arg1);
 
-      display_printf("%cHIGHLIGHT: {%s} now highlighted with {%s} {%s}",
-                     gtd.command_char, arg1, arg2, arg3);
+      /* Remove if already exists */
+      if (index != -1) {
+        do_unhighlight(gtd.highlights[index]->condition);
+      }
+
+      highlight = (struct highlight *)calloc(1, sizeof(struct highlight));
+
+      strcpy(highlight->condition, arg1);
+      strcpy(highlight->action, arg2);
+      strcpy(highlight->priority, arg3);
+
+      get_highlight_codes(arg2, highlight->processed_action);
+
+      if ((highlight->compiled_regex = pcre_compile(
+               arg1, 0, &error_pointer, &error_offset, NULL)) == NULL) {
+        display_printf("%cWARNING: Couldn't compile regex at %i: %s",
+                       gtd.command_char, error_offset, error_pointer);
+      }
+
+      /* Find the insertion index */
+      bot = 0;
+      top = gtd.highlights_used - 1;
+      val = top;
+
+      while (bot <= top) {
+        double srt = atof(arg3) - atof(gtd.highlights[val]->priority);
+
+        /* Same priority */
+        if (srt == 0) {
+          break;
+        }
+
+        if (srt < 0) {
+          top = val - 1;
+        } else {
+          bot = val + 1;
+        }
+
+        val = bot + (top - bot) / 2;
+      }
+
+      index = UMAX(0, val);
+
+      gtd.highlights_used++;
+
+      /* Expand if full; make it twice as big */
+      if (gtd.highlights_used == gtd.highlights_size) {
+        gtd.highlights_size *= 2;
+
+        gtd.highlights = (struct highlight **)realloc(
+            gtd.highlights, gtd.highlights_size * sizeof(struct highlight *));
+      }
+
+      memmove(&gtd.highlights[index + 1], &gtd.highlights[index],
+              (gtd.highlights_used - index) * sizeof(struct highlight *));
+
+      gtd.highlights[index] = highlight;
     }
   }
 }
 
 DO_COMMAND(do_unhighlight) {
-  struct listnode *node;
+  int index;
 
   get_arg(arg, arg);
+
   if (*arg == 0) {
-    display_printf("%cSYNTAX: %cUNHIGHLIGHT {MATCH CONDITION TO REMOVE}",
-                   gtd.command_char, gtd.command_char);
-    return;
+    display_printf("%cSYNTAX: %cUNHIGHLIGHT {CONDITION}", gtd.command_char,
+                   gtd.command_char);
+
+  } else if ((index = find_highlight_index(arg)) != -1) {
+    struct highlight *highlight = gtd.highlights[index];
+
+    if (highlight->compiled_regex != NULL) {
+      pcre_free(highlight->compiled_regex);
+    }
+
+    free(highlight);
+
+    memmove(&gtd.highlights[index], &gtd.highlights[index + 1],
+            (gtd.highlights_used - index) * sizeof(struct highlight *));
+
+    gtd.highlights_used--;
+  } else {
+    display_printf("%cUNHIGHLIGHT: Not found", gtd.command_char);
   }
-
-  node = search_node_list(gts.list[LIST_HIGHLIGHT], arg);
-
-  if (node) {
-    delete_index_list(
-        gts.list[LIST_HIGHLIGHT],
-        search_index_list(gts.list[LIST_HIGHLIGHT], node->left, node->pr));
-    display_printf("%cUNHIGHLIGHT: Removed", gtd.command_char);
-    return;
-  }
-
-  display_printf("%cUNHIGHLIGHT: Not found", gtd.command_char);
 }
 
 void check_all_highlights(char *original) {
-  struct listroot *root = gts.list[LIST_HIGHLIGHT];
   char match[BUFFER_SIZE], stripped[BUFFER_SIZE];
   int i;
 
   strip_vt102_codes(original, stripped);
 
   /* Apply from the bottom since the top ones may overwrite them */
-  for (i = root->used - 1; i > -1; i--) {
+  for (i = gtd.highlights_used - 1; i > -1; i--) {
     int start_position;
 
-    if ((start_position = regex_compare(root->list[i]->compiled_regex, stripped,
-                                        match)) != -1) {
+    if ((start_position = regex_compare(gtd.highlights[i]->compiled_regex,
+                                        stripped, match)) != -1) {
       char *pto, *pts, *ptm;
       char output[BUFFER_SIZE];
 
@@ -97,12 +156,13 @@ void check_all_highlights(char *original) {
             ptm += skip_vt102_codes(ptm);
           }
 
-          if (*ptm) {
+          if (*ptm && *pts) {
             ptm++;
             pts++;
-            start_position--;
             count_inc_skipped++;
           }
+
+          start_position--;
         }
 
         ptt = ptm;
@@ -114,12 +174,13 @@ void check_all_highlights(char *original) {
 
           if (*ptt) {
             ptt++;
-            to_skip--;
           }
+
+          to_skip--;
         }
 
         cat_sprintf(output, "%.*s%s%s\033[0m", count_inc_skipped, pto,
-                    root->list[i]->processed_color, match);
+                    gtd.highlights[i]->processed_action, match);
 
         /* Move pto to after the match, and skip any vt102 codes, too. */
         pto = ptt;
@@ -129,14 +190,25 @@ void check_all_highlights(char *original) {
         pts = strstr(pts, match);
         pts = pts + strlen(match);
 
-      } while ((start_position = regex_compare(root->list[i]->compiled_regex,
-                                               pts, match)) != -1);
+      } while ((start_position = regex_compare(
+                    gtd.highlights[i]->compiled_regex, pts, match)) != -1);
 
       /* Add the remainder of the string and then copy it to*/
       strcat(output, pto);
       strcpy(original, output);
     }
   }
+}
+
+int find_highlight_index(char *condition) {
+  int i;
+
+  for (i = 0; i < gtd.highlights_used; i++) {
+    if (!strcmp(condition, gtd.highlights[i]->condition)) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 int get_highlight_codes(char *string, char *result) {

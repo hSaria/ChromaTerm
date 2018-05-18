@@ -66,7 +66,7 @@ void convert_meta(char *input, char *output) {
 }
 
 /* To remove ^C from the output of read */
-void print_backspace(int sig) {
+void sigint_handler_during_read(int sig) {
   if (sig) { /* Just to make a compiler warning shut up */
   }
 
@@ -84,7 +84,7 @@ void read_key(void) {
       struct termios temp_attributes;
       struct sigaction new, old;
 
-      new.sa_handler = print_backspace;
+      new.sa_handler = sigint_handler_during_read;
 
       printf("%c:", gtd.command_char);
       fflush(stdout);
@@ -115,7 +115,7 @@ void read_key(void) {
       beginning_of_line = c == '\n' ? TRUE : FALSE;
       c = c == '\n' ? '\r' : c;
 
-      if (write(gts.socket, &c, 1) < 0) {
+      if (write(gtd.socket, &c, 1) < 0) {
         quitmsg("failed on socket write", 1);
       }
     }
@@ -146,7 +146,7 @@ void readmud(int wait_for_new_line) {
 
     strcpy(linebuf, line);
 
-    if (HAS_BIT(gts.flags, SES_FLAG_HIGHLIGHT)) {
+    if (HAS_BIT(gtd.flags, SES_FLAG_HIGHLIGHT)) {
       check_all_highlights(linebuf);
     }
 
@@ -171,7 +171,7 @@ void readmud(int wait_for_new_line) {
 
 void readmud_buffer(void) {
   gtd.mud_output_len +=
-      read(gts.socket, &gtd.mud_output_buf[gtd.mud_output_len],
+      read(gtd.socket, &gtd.mud_output_buf[gtd.mud_output_len],
            MUD_OUTPUT_MAX - gtd.mud_output_len - 1);
 
   if (gtd.mud_output_len <= 0) {

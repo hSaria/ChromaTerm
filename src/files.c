@@ -265,8 +265,8 @@ DO_COMMAND(do_read) {
 
 DO_COMMAND(do_write) {
   FILE *file;
-  char filename[BUFFER_SIZE];
-  int i, j, cnt = 0;
+  char filename[BUFFER_SIZE], result[BUFFER_SIZE];
+  int i;
   wordexp_t p;
 
   get_arg(arg, filename);
@@ -289,29 +289,24 @@ DO_COMMAND(do_write) {
     return;
   }
 
-  for (i = 0; i < LIST_MAX; i++) {
-    for (j = 0; j < gts.list[i]->used; j++) {
-      write_node(i, gts.list[i]->list[j], file);
-      cnt++;
-    }
+  sprintf(result,
+          "%1$cCONFIG     {COMMAND CHAR} {%1$c}\n"
+          "%1$cCONFIG     {CONVERT META} {%2$s}\n"
+          "%1$cCONFIG     {HIGHLIGHT} {%3$s}\n",
+          gtd.command_char,
+          HAS_BIT(gtd.flags, SES_FLAG_CONVERTMETA) ? "ON" : "OFF",
+          HAS_BIT(gtd.flags, SES_FLAG_HIGHLIGHT) ? "ON" : "OFF");
+  fputs(result, file);
+
+  for (i = 0; i < gtd.highlights_used; i++) {
+    char result[BUFFER_SIZE];
+
+    sprintf(result, "%cHIGHLIGHT  {%s} {%s} {%s}\n", gtd.command_char,
+            gtd.highlights[i]->condition, gtd.highlights[i]->action,
+            gtd.highlights[i]->priority);
+
+    fputs(result, file);
   }
 
   fclose(file);
-
-  display_printf("%cWRITE: {%s} - %d commands written ", gtd.command_char,
-                 filename, cnt);
-}
-
-void write_node(int list, struct listnode *node, FILE *file) {
-  char result[BUFFER_SIZE * 4];
-
-  if (list == LIST_CONFIG) {
-    sprintf(result, "%c%-10s {%s} {%s}\n", gtd.command_char,
-            list_table[list].name, node->left, node->right);
-  } else if (list == LIST_HIGHLIGHT) {
-    sprintf(result, "%c%-10s {%s} {%s} {%s}\n", gtd.command_char,
-            list_table[list].name, node->left, node->right, node->pr);
-  }
-
-  fputs(result, file);
 }

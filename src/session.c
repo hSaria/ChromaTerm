@@ -35,10 +35,10 @@ void *poll_session(void *arg) {
     /* Mandatoy wait before assuming no more output on the current line */
     struct timeval wait = {0, WAIT_FOR_NEW_LINE};
 
-    FD_SET(gts.socket, &readfds);
+    FD_SET(gtd.socket, &readfds);
 
     /* If there's no current output on the mud, block until FD is ready */
-    int rv = select(gts.socket + 1, &readfds, NULL, NULL,
+    int rv = select(gtd.socket + 1, &readfds, NULL, NULL,
                     gtd.mud_output_len == 0 ? NULL : &wait);
 
     if (rv == 0) { /* timed-out while waiting for FD to be ready. */

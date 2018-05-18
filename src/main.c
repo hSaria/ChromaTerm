@@ -2,7 +2,6 @@
 
 #include "defs.h"
 
-struct session gts;
 struct global_data gtd;
 
 pthread_t input_thread;
@@ -102,22 +101,18 @@ int main(int argc, char **argv) {
 
 void init_program() {
   struct termios io;
-  int index;
 
-  for (index = 0; index < LIST_MAX; index++) {
-    /* initial size is 8, but is dynamically resized as required */
-    gts.list[index] = init_list(index, 8);
-  }
+  /* initial size is 8, but is dynamically resized as required */
+  gtd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
+  gtd.highlights_size = 8;
 
-  gts.socket = 1;
+  gtd.socket = 1;
 
   winch_handler(0);
 
-  gtd.quiet++;
-  do_configure("COMMAND    %%");
-  do_configure("CONVERT    OFF");
-  do_configure("HIGHLIGHT  ON");
-  gtd.quiet--;
+  /* Default configuration values */
+  gtd.command_char = '%';
+  SET_BIT(gtd.flags, SES_FLAG_HIGHLIGHT);
 
   /* Save current terminal attributes and reset at exit */
   if (tcgetattr(STDIN_FILENO, &gtd.saved_terminal)) {
@@ -164,17 +159,15 @@ void quit_void(void) {
 }
 
 void quitmsg(char *message, int exit_signal) {
-  int i;
-
   quit_ran = TRUE;
 
   /* Restore original, saved terminal */
   tcsetattr(STDIN_FILENO, TCSANOW, &gtd.saved_terminal);
 
-  if (kill(gts.pid, 0) && gts.socket) {
-    close(gts.socket);
-    if (gts.pid) {
-      kill(gts.pid, SIGKILL);
+  if (kill(gtd.pid, 0) && gtd.socket) {
+    close(gtd.socket);
+    if (gtd.pid) {
+      kill(gtd.pid, SIGKILL);
     }
   }
 
@@ -186,13 +179,11 @@ void quitmsg(char *message, int exit_signal) {
     pthread_kill(output_thread, 0);
   }
 
-  for (i = 0; i < LIST_MAX; i++) {
-    while (gts.list[i]->used) {
-      delete_index_list(gts.list[i], 0);
-    }
-    free(gts.list[i]->list);
-    free(gts.list[i]);
+  while (gtd.highlights[0]) {
+    do_unhighlight(gtd.highlights[0]->condition);
   }
+
+  free(gtd.highlights);
 
   if (message) {
     printf("\n%s\n", message);
@@ -213,10 +204,10 @@ void winch_handler(int sig) {
   }
 
   if (ioctl(STDIN_FILENO, TIOCGWINSZ, &screen) == -1) {
-    gts.rows = SCREEN_HEIGHT;
-    gts.cols = SCREEN_WIDTH;
+    gtd.rows = SCREEN_HEIGHT;
+    gtd.cols = SCREEN_WIDTH;
   } else {
-    gts.rows = screen.ws_row;
-    gts.cols = screen.ws_col;
+    gtd.rows = screen.ws_row;
+    gtd.cols = screen.ws_col;
   }
 }
