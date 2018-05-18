@@ -69,9 +69,9 @@ void convert_meta(char *input, char *output) {
 void print_backspace(int sig) {
   if (sig) { /* Just to make a compiler warning shut up */
   }
-  /* Two backspaces for ^C, then overwrite the output with spaces, then
-   * remove said spaces */
-  printf("\b\b  \b\b\n%s%c:", gtd.mud_current_line, gtd.command_char);
+
+  /* Repair line before adding the command char */
+  printf("\n%s%c:", gtd.mud_current_line, gtd.command_char);
   fflush(stdout);
 }
 
