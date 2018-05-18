@@ -26,7 +26,7 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
-#define VERSION "0.07"
+#define VERSION "0.08"
 
 #define FALSE 0
 #define TRUE 1
@@ -99,6 +99,7 @@ struct global_data {
   struct termios saved_terminal;
   char command_char;
   char mud_output_buf[MUD_OUTPUT_MAX];
+  char mud_current_line[MUD_OUTPUT_MAX];
   int mud_output_len;
   int quiet;
   int run_overriden;

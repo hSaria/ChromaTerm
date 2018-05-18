@@ -71,7 +71,7 @@ void print_backspace(int sig) {
   }
   /* Two backspaces for ^C, then overwrite the output with spaces, then
    * remove said spaces */
-  printf("\b\b  \b\b\n%c:", gtd.command_char);
+  printf("\b\b  \b\b\n%s%c:", gtd.mud_current_line, gtd.command_char);
   fflush(stdout);
 }
 
@@ -109,6 +109,8 @@ void read_key(void) {
       command_buffer[strlen(command_buffer) - 1] = 0;
       script_driver(command_buffer);
       memset(&command_buffer, 0, len);
+
+      printline(gtd.mud_current_line, TRUE);
     } else {
       beginning_of_line = c == '\n' ? TRUE : FALSE;
       c = c == '\n' ? '\r' : c;
@@ -135,6 +137,9 @@ void readmud(int wait_for_new_line) {
     if (next_line) {
       *next_line = 0;
       next_line++;
+
+      /* Reset the repair buffer */
+      memset(gtd.mud_current_line, 0, strlen(gtd.mud_current_line));
     } else if (wait_for_new_line || *line == 0) {
       break;
     }
@@ -144,6 +149,9 @@ void readmud(int wait_for_new_line) {
     if (HAS_BIT(gts.flags, SES_FLAG_HIGHLIGHT)) {
       check_all_highlights(linebuf);
     }
+
+    /* Used to repair the output after a CT command */
+    strcat(gtd.mud_current_line, linebuf);
 
     printline(linebuf, next_line == NULL);
   }
