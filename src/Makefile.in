@@ -10,8 +10,7 @@ CFLAGS += -pthread -O2 -Wall -Wextra
 LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
-OFILES = config.o data.o files.o highlight.o io.o main.o misc.o session.o \
-         tables.o utils.o
+OFILES = files.o highlight.o io.o main.o misc.o session.o tables.o utils.o
 
 default: all
 

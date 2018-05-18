@@ -2,8 +2,7 @@
 
 #include "defs.h"
 
-struct session gts;
-struct global_data gtd;
+struct global_data gd;
 
 pthread_t input_thread;
 pthread_t output_thread;
@@ -62,7 +61,7 @@ int main(int argc, char **argv) {
       config_override = TRUE;
     }
   } else {
-    display_printf("%cHELP for more info", gtd.command_char);
+    display_printf("%cHELP for more info", gd.command_char);
   }
 
   if (!config_override) {
@@ -81,12 +80,12 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (run_command && !gtd.run_overriden) {
-    gtd.run_overriden = TRUE;
+  if (run_command && !gd.run_overriden) {
+    gd.run_overriden = TRUE;
     do_run(command);
   }
 
-  if (!gtd.run_overriden) {
+  if (!gd.run_overriden) {
     do_run(NULL);
   }
 
@@ -102,31 +101,27 @@ int main(int argc, char **argv) {
 
 void init_program() {
   struct termios io;
-  int index;
 
-  for (index = 0; index < LIST_MAX; index++) {
-    /* initial size is 8, but is dynamically resized as required */
-    gts.list[index] = init_list(index, 8);
-  }
+  /* initial size is 8, but is dynamically resized as required */
+  gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
+  gd.highlights_size = 8;
 
-  gts.socket = 1;
+  gd.socket = 1;
 
   winch_handler(0);
 
-  gtd.quiet++;
-  do_configure("COMMAND    %%");
-  do_configure("CONVERT    OFF");
-  do_configure("HIGHLIGHT  ON");
-  gtd.quiet--;
+  /* Default configuration values */
+  gd.command_char = '%';
+  SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
 
   /* Save current terminal attributes and reset at exit */
-  if (tcgetattr(STDIN_FILENO, &gtd.saved_terminal)) {
+  if (tcgetattr(STDIN_FILENO, &gd.saved_terminal)) {
     quitmsg("tcgetattr", 1);
   }
 
-  tcgetattr(STDIN_FILENO, &gtd.active_terminal);
+  tcgetattr(STDIN_FILENO, &gd.active_terminal);
 
-  io = gtd.active_terminal;
+  io = gd.active_terminal;
 
   /*  Canonical mode off */
   DEL_BIT(io.c_lflag, ICANON);
@@ -164,17 +159,15 @@ void quit_void(void) {
 }
 
 void quitmsg(char *message, int exit_signal) {
-  int i;
-
   quit_ran = TRUE;
 
   /* Restore original, saved terminal */
-  tcsetattr(STDIN_FILENO, TCSANOW, &gtd.saved_terminal);
+  tcsetattr(STDIN_FILENO, TCSANOW, &gd.saved_terminal);
 
-  if (kill(gts.pid, 0) && gts.socket) {
-    close(gts.socket);
-    if (gts.pid) {
-      kill(gts.pid, SIGKILL);
+  if (kill(gd.pid, 0) && gd.socket) {
+    close(gd.socket);
+    if (gd.pid) {
+      kill(gd.pid, SIGKILL);
     }
   }
 
@@ -186,13 +179,11 @@ void quitmsg(char *message, int exit_signal) {
     pthread_kill(output_thread, 0);
   }
 
-  for (i = 0; i < LIST_MAX; i++) {
-    while (gts.list[i]->used) {
-      delete_index_list(gts.list[i], 0);
-    }
-    free(gts.list[i]->list);
-    free(gts.list[i]);
+  while (gd.highlights[0]) {
+    do_unhighlight(gd.highlights[0]->condition);
   }
+
+  free(gd.highlights);
 
   if (message) {
     printf("\n%s\n", message);
@@ -213,10 +204,10 @@ void winch_handler(int sig) {
   }
 
   if (ioctl(STDIN_FILENO, TIOCGWINSZ, &screen) == -1) {
-    gts.rows = SCREEN_HEIGHT;
-    gts.cols = SCREEN_WIDTH;
+    gd.rows = SCREEN_HEIGHT;
+    gd.cols = SCREEN_WIDTH;
   } else {
-    gts.rows = screen.ws_row;
-    gts.cols = screen.ws_col;
+    gd.rows = screen.ws_row;
+    gd.cols = screen.ws_col;
   }
 }
