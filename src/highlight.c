@@ -411,7 +411,7 @@ void substitute(char *string, char *result) {
                   ((pti[1] == 'g' || pti[1] == 'G') && isdigit((int)pti[2]) &&
                    isdigit((int)pti[3]))) &&
                  pti[4] == '>') {
-        int cnt, grayscale = (pti[1] == 'g' || pti[1] == 'G') ? TRUE : FALSE;
+        int cnt, grayscale = (pti[1] == 'g' || pti[1] == 'G');
         char g = (pti[1] >= 'a' && pti[1] <= 'f') || pti[1] == 'g' ? '3' : '4';
 
         *pto++ = ESCAPE;

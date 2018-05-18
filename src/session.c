@@ -44,7 +44,7 @@ void *poll_output(void *arg) {
                     gd.mud_output_len == 0 ? NULL : &wait);
 
     if (rv == 0) {    /* timed-out while waiting for FD (no more output) */
-      readmud(FALSE); /* Process all that's left */
+      read_output_buffer(FALSE); /* Process all that's left */
       continue;
     } else if (rv < 0) { /* error */
       quit_with_msg("poll_output", 0);
@@ -60,7 +60,7 @@ void *poll_output(void *arg) {
 
     /* Failsafe: if the buffer is full, process all of pending output.
      * Otherwise, process until the line that doesn't end with \n. */
-    readmud(MUD_OUTPUT_MAX - gd.mud_output_len <= 1 ? FALSE : TRUE);
+    read_output_buffer(MUD_OUTPUT_MAX - gd.mud_output_len <= 1 ? FALSE : TRUE);
   }
 }
 

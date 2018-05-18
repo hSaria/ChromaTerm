@@ -109,7 +109,7 @@ void read_key(void) {
 
       printline(gd.mud_current_line, TRUE);
     } else {
-      beginning_of_line = c == '\n' ? TRUE : FALSE;
+      beginning_of_line = c == '\n';
       c = c == '\n' ? '\r' : c;
 
       if (write(gd.socket, &c, 1) < 0) {
@@ -120,7 +120,7 @@ void read_key(void) {
 }
 
 /* Will process only the lines that end of \n */
-void readmud(int wait_for_new_line) {
+void read_output_buffer(int wait_for_new_line) {
   char *line, *next_line;
 
   gd.mud_output_buf[gd.mud_output_len] = 0;

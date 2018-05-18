@@ -140,7 +140,7 @@ void substitute(char *string, char *result);
 void convert_meta(char *input, char *output);
 void sigint_handler_during_read(int sig);
 void read_key(void);
-void readmud(int wait_for_new_line);
+void read_output_buffer(int wait_for_new_line);
 
 #endif
 
