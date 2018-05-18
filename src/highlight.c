@@ -220,9 +220,8 @@ int get_highlight_codes(char *string, char *result) {
   }
 
   while (*string) {
-    int cnt;
-
     if (isalpha((int)*string)) {
+      int cnt;
       for (cnt = 0; *color_table[cnt].name; cnt++) {
         if (is_abbrev(color_table[cnt].name, string)) {
           substitute(color_table[cnt].code, result);
