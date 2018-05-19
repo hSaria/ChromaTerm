@@ -22,7 +22,10 @@ git clone https://github.com/hSaria/ChromaTerm--.git
 cd ChromaTerm--/src/ && ./configure && make install
 ```
 
-> You must have PCRE2 development installed. E.g. `brew install pcre2` or `apt install libpcre2-dev`. For more info, see https://pcre.org
+> You must have [PCRE2](https://pcre.org) development installed. You can install with one of the following (depends on platform):
+> - `brew install pcre2`
+> - `apt install libpcre2-dev`
+> - `yum install pcre2-devel`
 
 > The `install` parameter is optional; it will copy `ct` to /usr/local/bin
 
