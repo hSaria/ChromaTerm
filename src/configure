@@ -2955,7 +2955,7 @@ if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 else
-  as_fn_error $? "pcre2 header check failed, is pcre2 installed and linked? (pcre2, not pcre)" "$LINENO" 5
+  as_fn_error $? "pcre2 header check failed. Is pcre2 development installed and linked? (pcre2, not pcre)" "$LINENO" 5
 fi
 
 
