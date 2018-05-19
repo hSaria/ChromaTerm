@@ -16,15 +16,18 @@ DO_COMMAND(do_highlight) {
   if (*arg1 == 0 || *arg2 == 0) {
     int i;
 
-    for (i = 0; i < gd.highlights_used; i++) {
-      display_printf("%cHIGHLIGHT "
-                     "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
-                     "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
-                     "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
-                     gd.command_char, gd.highlights[i]->condition,
-                     gd.highlights[i]->action, gd.highlights[i]->priority);
+    if (gd.highlights_used == 0) {
+      display_printf("%cHIGHLIGHT: No rules configuration", gd.command_char);
+    } else {
+      for (i = 0; i < gd.highlights_used; i++) {
+        display_printf("%cHIGHLIGHT "
+                       "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                       "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                       "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
+                       gd.command_char, gd.highlights[i]->condition,
+                       gd.highlights[i]->action, gd.highlights[i]->priority);
+      }
     }
-
   } else {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(arg2, temp) == FALSE) {
@@ -32,9 +35,9 @@ DO_COMMAND(do_highlight) {
                      gd.command_char, gd.command_char);
 
     } else {
-      const char *error_pointer;
+      PCRE2_SIZE error_offset;
       struct highlight *highlight;
-      int bot, top, val, error_offset, index = find_highlight_index(arg1);
+      int bot, top, val, error_number, index = find_highlight_index(arg1);
 
       /* Remove if already exists */
       if (index != -1) {
@@ -49,10 +52,14 @@ DO_COMMAND(do_highlight) {
 
       get_highlight_codes(arg2, highlight->processed_action);
 
-      if ((highlight->compiled_regex = pcre_compile(
-               arg1, 0, &error_pointer, &error_offset, NULL)) == NULL) {
+      if ((highlight->compiled_regex =
+               pcre2_compile((PCRE2_SPTR)arg1, PCRE2_ZERO_TERMINATED, 0,
+                             &error_number, &error_offset, NULL)) == NULL) {
         display_printf("%cWARNING: Couldn't compile regex at %i: %s",
-                       gd.command_char, error_offset, error_pointer);
+                       gd.command_char, error_number, error_offset);
+      } else if (pcre2_jit_compile(highlight->compiled_regex, 0) == 0) {
+        /* Accelerate pattern matching if JIT is supported on the platform */
+        pcre2_jit_compile(highlight->compiled_regex, PCRE2_JIT_COMPLETE);
       }
 
       /* Find the insertion index */
@@ -110,7 +117,7 @@ DO_COMMAND(do_unhighlight) {
     struct highlight *highlight = gd.highlights[index];
 
     if (highlight->compiled_regex != NULL) {
-      pcre_free(highlight->compiled_regex);
+      pcre2_code_free(highlight->compiled_regex);
     }
 
     free(highlight);
@@ -252,17 +259,33 @@ int get_highlight_codes(char *string, char *result) {
   return TRUE;
 }
 
-int regex_compare(pcre *compiled_regex, char *str, char *result) {
-  int match[2000];
+int regex_compare(pcre2_code *compiled_regex, char *str, char *result) {
+  PCRE2_SIZE *result_pos;
+  int start, finish;
 
-  if (pcre_exec(compiled_regex, NULL, str, (int)strlen(str), 0, 0, match,
-                2000) <= 0) {
+  pcre2_match_data *match =
+      pcre2_match_data_create_from_pattern(compiled_regex, NULL);
+
+  if (pcre2_match(compiled_regex, (PCRE2_SPTR)str, (int)strlen(str), 0, 0,
+                  match, NULL) <= 0) {
+    pcre2_match_data_free(match);
     return -1;
   }
 
-  sprintf(result, "%.*s", match[1] - match[0], &str[match[0]]);
+  result_pos = pcre2_get_ovector_pointer(match);
 
-  return match[0];
+  start = result_pos[0];
+  finish = result_pos[1];
+
+  pcre2_match_data_free(match);
+
+  if (start > finish) {
+    return -1;
+  }
+
+  sprintf(result, "%.*s", (int)(finish - start), &str[start]);
+
+  return result_pos[0];
 }
 
 int skip_vt102_codes(char *str) {

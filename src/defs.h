@@ -1,7 +1,6 @@
 /* This program is protected under the GNU GPL (See COPYING) */
 
 #include <ctype.h>
-#include <pcre.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -12,6 +11,9 @@
 #include <termios.h>
 #include <unistd.h>
 #include <wordexp.h>
+
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 
 #include "config.h"
 
@@ -85,7 +87,7 @@ struct highlight {
   char action[BUFFER_SIZE];
   char priority[BUFFER_SIZE];
   char processed_action[BUFFER_SIZE];
-  pcre *compiled_regex;
+  pcre2_code *compiled_regex;
 };
 
 /* Typedefs */
@@ -127,7 +129,7 @@ DO_COMMAND(do_unhighlight);
 void check_all_highlights(char *original);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
-int regex_compare(pcre *compiled_regex, char *str, char *result);
+int regex_compare(pcre2_code *compiled_regex, char *str, char *result);
 int skip_vt102_codes(char *str);
 void strip_vt102_codes(char *str, char *buf);
 void substitute(char *string, char *result);

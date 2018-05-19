@@ -62,7 +62,6 @@ char *get_arg(char *string, char *result) {
       /* Stop once we've met the closing backet for the openning we advanced
        * past before this loop */
       if (nest == 0) {
-        pti++;
         break;
       }
     }
@@ -71,6 +70,8 @@ char *get_arg(char *string, char *result) {
 
   if (*pti == 0) {
     display_printf("%cERROR: No closing bracket for argument", gd.command_char);
+  } else {
+    pti++;
   }
   *pto = '\0';
 
