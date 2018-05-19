@@ -18,6 +18,9 @@ int main(int argc, char **argv) {
   pipe.sa_handler = pipe_handler;
   winch.sa_handler = winch_handler;
 
+  trap.sa_flags = pipe.sa_flags = winch.sa_flags = 0;
+  trap.sa_mask = pipe.sa_mask = winch.sa_mask = 0;
+
   sigaction(SIGTERM, &trap, NULL);
   sigaction(SIGSEGV, &trap, NULL);
   sigaction(SIGHUP, &trap, NULL);
@@ -95,6 +98,8 @@ int main(int argc, char **argv) {
 
 void init_program() {
   struct termios io;
+
+  gd.run_overriden = FALSE;
 
   /* initial size is 8, but is dynamically resized as required */
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
