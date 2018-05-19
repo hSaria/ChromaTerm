@@ -299,8 +299,6 @@ DO_COMMAND(do_write) {
   fputs(result, file);
 
   for (i = 0; i < gd.highlights_used; i++) {
-    char result[BUFFER_SIZE];
-
     sprintf(result, "%cHIGHLIGHT  {%s} {%s} {%s}\n", gd.command_char,
             gd.highlights[i]->condition, gd.highlights[i]->action,
             gd.highlights[i]->priority);
