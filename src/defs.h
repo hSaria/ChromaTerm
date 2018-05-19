@@ -90,6 +90,11 @@ struct highlight {
   pcre2_code *compiled_regex;
 };
 
+struct regex_result {
+  int start;
+  char match[BUFFER_SIZE];
+};
+
 /* Typedefs */
 typedef void COMMAND(char *arg);
 
@@ -129,7 +134,7 @@ DO_COMMAND(do_unhighlight);
 void check_all_highlights(char *original);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
-int regex_compare(pcre2_code *compiled_regex, char *str, char *result);
+struct regex_result regex_compare(pcre2_code *compiled_regex, char *str);
 int skip_vt102_codes(char *str);
 void strip_vt102_codes(char *str, char *buf);
 void substitute(char *string, char *result);

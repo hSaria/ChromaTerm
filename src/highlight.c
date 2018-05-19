@@ -132,17 +132,17 @@ DO_COMMAND(do_unhighlight) {
 }
 
 void check_all_highlights(char *original) {
-  char match[BUFFER_SIZE], stripped[BUFFER_SIZE];
+  char stripped[BUFFER_SIZE];
   int i;
 
   strip_vt102_codes(original, stripped);
 
   /* Apply from the bottom since the top ones may overwrite them */
   for (i = gd.highlights_used - 1; i > -1; i--) {
-    int start_position;
+    struct regex_result result =
+        regex_compare(gd.highlights[i]->compiled_regex, stripped);
 
-    if ((start_position = regex_compare(gd.highlights[i]->compiled_regex,
-                                        stripped, match)) != -1) {
+    if (result.start != -1) {
       char *pto, *pts, *ptm;
       char output[BUFFER_SIZE];
 
@@ -152,12 +152,13 @@ void check_all_highlights(char *original) {
       pts = stripped;
 
       do {
-        int count_inc_skipped = 0;        /* Skipped bytes until the match */
-        int to_skip = (int)strlen(match); /* Number of chars to skip in match */
+        int count_inc_skipped = 0; /* Skipped bytes until the match */
+        int to_skip =
+            (int)strlen(result.match); /* Number of chars to skip in match */
         char *ptt;
 
         /* Seek ptm (original with vt102 codes) until beginning of match */
-        while (*ptm && start_position > 0) {
+        while (*ptm && result.start > 0) {
           while (skip_vt102_codes(ptm)) {
             count_inc_skipped += skip_vt102_codes(ptm);
             ptm += skip_vt102_codes(ptm);
@@ -169,7 +170,7 @@ void check_all_highlights(char *original) {
             count_inc_skipped++;
           }
 
-          start_position--;
+          result.start--;
         }
 
         ptt = ptm;
@@ -187,18 +188,19 @@ void check_all_highlights(char *original) {
         }
 
         cat_sprintf(output, "%.*s%s%s\033[0m", count_inc_skipped, pto,
-                    gd.highlights[i]->processed_action, match);
+                    gd.highlights[i]->processed_action, result.match);
 
         /* Move pto to after the match, and skip any vt102 codes, too. */
         pto = ptt;
         ptm = pto; /* Sync: next iteration should simulate a fresh call */
 
         /* Move to the remaining of the stripped string */
-        pts = strstr(pts, match);
-        pts = pts + strlen(match);
+        pts = strstr(pts, result.match);
+        pts = pts + strlen(result.match);
 
-      } while ((start_position = regex_compare(gd.highlights[i]->compiled_regex,
-                                               pts, match)) != -1);
+        result = regex_compare(gd.highlights[i]->compiled_regex, pts);
+
+      } while (result.start != -1);
 
       /* Add the remainder of the string and then copy it to*/
       strcat(output, pto);
@@ -259,9 +261,9 @@ int get_highlight_codes(char *string, char *result) {
   return TRUE;
 }
 
-int regex_compare(pcre2_code *compiled_regex, char *str, char *result) {
+struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
   PCRE2_SIZE *result_pos;
-  int start, finish;
+  struct regex_result result;
 
   pcre2_match_data *match =
       pcre2_match_data_create_from_pattern(compiled_regex, NULL);
@@ -269,23 +271,24 @@ int regex_compare(pcre2_code *compiled_regex, char *str, char *result) {
   if (pcre2_match(compiled_regex, (PCRE2_SPTR)str, (int)strlen(str), 0, 0,
                   match, NULL) <= 0) {
     pcre2_match_data_free(match);
-    return -1;
+    result.start = -1;
+    return result;
   }
 
   result_pos = pcre2_get_ovector_pointer(match);
 
-  start = result_pos[0];
-  finish = result_pos[1];
+  if (result_pos[0] > result_pos[1]) {
+    result.start = -1;
+    return result;
+  }
+
+  sprintf(result.match, "%.*s", (int)(result_pos[1] - result_pos[0]),
+          &str[result_pos[0]]);
+  result.start = result_pos[0];
 
   pcre2_match_data_free(match);
 
-  if (start > finish) {
-    return -1;
-  }
-
-  sprintf(result, "%.*s", (int)(finish - start), &str[start]);
-
-  return start;
+  return result;
 }
 
 int skip_vt102_codes(char *str) {
