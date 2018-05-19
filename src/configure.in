@@ -18,7 +18,7 @@ AC_PROG_MAKE_SET
 
 # Add libraries to LIBS variable if required
 AC_SEARCH_LIBS(forkpty, util)
-AC_SEARCH_LIBS(pcre2_compile_8, pcre2-8, , [AC_MSG_ERROR([pcre2 header check failed, is pcre2 installed and linked? (pcre2, not pcre)])])
+AC_SEARCH_LIBS(pcre2_compile_8, pcre2-8, , [AC_MSG_ERROR([pcre2 header check failed. Is pcre2 development installed and linked? (pcre2, not pcre)])])
 
 # Checks for header files.
 AC_CHECK_HEADERS([pty.h util.h])
