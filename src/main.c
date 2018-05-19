@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
   pthread_join(input_thread, NULL);
 
   quit_with_msg(NULL, 0);
-  return; /* Literally useless, but gotta make a warning shut up. */
+  return 0; /* Literally useless, but gotta make a warning shut up. */
 }
 
 void init_program() {
