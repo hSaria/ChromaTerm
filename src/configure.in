@@ -5,9 +5,7 @@ AC_INIT
 AC_CONFIG_SRCDIR([defs.h])
 AC_CONFIG_HEADERS([config.h])
 
-AC_SUBST(MYLIB)
 AC_SUBST(mybindir)
-
 if [ test $bindir != "\${exec_prefix}/bin" ]
 then
 	mybindir="$bindir"
@@ -15,26 +13,15 @@ else
 	mybindir="."
 fi
 
-if [ test $libdir != "\${exec_prefix}/lib" ]
-then
-	MYLIB="-L$libdir"
-else
-	MYLIB=""
-fi
-
-AC_CHECK_LIB(util, forkpty)
-AC_CHECK_LIB(pcre, pcre_compile,,
-	[AC_MSG_ERROR([pcre runtime library not working, is it AND the corresponding development (header) file installed and linked])])
-
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-# Checks for header files.
-AC_CHECK_HEADERS([ctype.h errno.h pthread.h signal.h stdarg.h stdio.h stdlib.h string.h sys/ioctl.h sys/stat.h sys/time.h unistd.h util.h wordexp.h])
-AC_CHECK_HEADERS([pcre.h],,[AC_MSG_ERROR([pcre header file not found, is the development part present])])
+# Add libraries to LIBS variable if required
+AC_SEARCH_LIBS(forkpty, util)
+AC_SEARCH_LIBS(pcre2_compile_8, pcre2-8, , [AC_MSG_ERROR([pcre2 header check failed, is pcre2 installed and linked? (pcre2, not pcre)])])
 
-# Checks for library functions.
-AC_CHECK_FUNCS([memmove memset select strchr strcasecmp strncasecmp strstr forkpty])
+# Checks for header files.
+AC_CHECK_HEADERS([pty.h util.h])
 
 AC_CHECK_FILES([/dev/ptmx])
 AC_CONFIG_FILES([Makefile])
