@@ -155,7 +155,7 @@ void read_output_buffer(int wait_for_new_line) {
 
   /* If waiting for a new line, copy the last line to the buffer */
   if (wait_for_new_line) {
-    char temp[BUFFER_SIZE];
+    char temp[MUD_OUTPUT_MAX];
 
     strcpy(temp, line);
     strcpy(gd.mud_output_buf, temp);
