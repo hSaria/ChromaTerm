@@ -109,8 +109,8 @@ void read_key(void) {
 
       printline(gd.mud_current_line, TRUE);
     } else {
+      /* Used to detect if next character is possibly the CT command char */
       beginning_of_line = c == '\n';
-      c = c == '\n' ? '\r' : c;
 
       if (write(gd.socket, &c, 1) < 0) {
         quit_with_msg("failed on socket write", 1);
