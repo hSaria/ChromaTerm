@@ -19,7 +19,6 @@ int main(int argc, char **argv) {
   winch.sa_handler = winch_handler;
 
   trap.sa_flags = pipe.sa_flags = winch.sa_flags = 0;
-  trap.sa_mask = pipe.sa_mask = winch.sa_mask = (sigset_t)0;
 
   sigaction(SIGTERM, &trap, NULL);
   sigaction(SIGSEGV, &trap, NULL);

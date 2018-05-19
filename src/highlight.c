@@ -285,7 +285,7 @@ int regex_compare(pcre2_code *compiled_regex, char *str, char *result) {
 
   sprintf(result, "%.*s", (int)(finish - start), &str[start]);
 
-  return result_pos[0];
+  return start;
 }
 
 int skip_vt102_codes(char *str) {
