@@ -17,7 +17,7 @@ DO_COMMAND(do_highlight) {
     int i;
 
     if (gd.highlights_used == 0) {
-      display_printf("%cHIGHLIGHT: No rules configuration", gd.command_char);
+      display_printf("%cHIGHLIGHT: No rules configured", gd.command_char);
     } else {
       for (i = 0; i < gd.highlights_used; i++) {
         display_printf("%cHIGHLIGHT "
@@ -199,7 +199,6 @@ void check_all_highlights(char *original) {
         pts = pts + strlen(result.match);
 
         result = regex_compare(gd.highlights[i]->compiled_regex, pts);
-
       } while (result.start != -1);
 
       /* Add the remainder of the string and then copy it to*/
