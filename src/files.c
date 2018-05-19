@@ -265,7 +265,7 @@ DO_COMMAND(do_read) {
 
 DO_COMMAND(do_write) {
   FILE *file;
-  char filename[BUFFER_SIZE], result[BUFFER_SIZE];
+  char filename[BUFFER_SIZE], result[BUFFER_SIZE * 4];
   int i;
   wordexp_t p;
 
