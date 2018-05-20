@@ -12,9 +12,6 @@
 #include <unistd.h>
 #include <wordexp.h>
 
-#define PCRE2_CODE_UNIT_WIDTH 8
-#include <pcre2.h>
-
 #include "config.h"
 
 #ifdef HAVE_UTIL_H
@@ -22,6 +19,15 @@
 #else
 #ifdef HAVE_PTY_H
 #include <pty.h>
+#endif
+#endif
+
+#ifdef HAVE_PCRE2_H
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+#else
+#ifdef HAVE_PCRE_H
+#include <pcre.h>
 #endif
 #endif
 
@@ -94,7 +100,14 @@ struct highlight {
   char action[BUFFER_SIZE];          /* Processed into compiled_regex */
   char priority[BUFFER_SIZE];        /* Lower value overwrites higher value */
   char compiled_action[BUFFER_SIZE]; /* Compiled once, used multiple times */
-  pcre2_code *compiled_regex;        /* Compiled once, used multiple times */
+
+#ifdef HAVE_PCRE2_H
+  pcre2_code *compiled_regex; /* Compiled once, used multiple times */
+#else
+#ifdef HAVE_PCRE_H
+  pcre *compiled_regex; /* Compiled once, used multiple times */
+#endif
+#endif
 };
 
 struct regex_result {
@@ -141,7 +154,15 @@ DO_COMMAND(do_unhighlight);
 void check_all_highlights(char *original);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
+
+#ifdef HAVE_PCRE2_H
 struct regex_result regex_compare(pcre2_code *compiled_regex, char *str);
+#else
+#ifdef HAVE_PCRE_H
+struct regex_result regex_compare(pcre *compiled_regex, char *str);
+#endif
+#endif
+
 int skip_vt102_codes(char *str);
 void strip_vt102_codes(char *str, char *buf);
 void substitute(char *string, char *result);

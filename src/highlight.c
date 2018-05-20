@@ -35,7 +35,14 @@ DO_COMMAND(do_highlight) {
                      gd.command_char, gd.command_char);
 
     } else {
-      PCRE2_SIZE error_offset;
+#ifdef HAVE_PCRE2_H
+      PCRE2_SIZE error_pointer;
+#else
+#ifdef HAVE_PCRE_H
+      const char *error_pointer;
+#endif
+#endif
+
       struct highlight *highlight;
       int bot, top, val, error_number, index = find_highlight_index(arg1);
 
@@ -52,14 +59,27 @@ DO_COMMAND(do_highlight) {
 
       get_highlight_codes(arg2, highlight->compiled_action);
 
-      if ((highlight->compiled_regex =
-               pcre2_compile((PCRE2_SPTR)arg1, PCRE2_ZERO_TERMINATED, 0,
-                             &error_number, &error_offset, NULL)) == NULL) {
+#ifdef HAVE_PCRE2_H
+      highlight->compiled_regex =
+          pcre2_compile((PCRE2_SPTR)arg1, PCRE2_ZERO_TERMINATED, 0,
+                        &error_number, &error_pointer, NULL);
+#else
+#ifdef HAVE_PCRE_H
+      highlight->compiled_regex =
+          pcre_compile(arg1, 0, &error_pointer, &error_number, NULL);
+#endif
+#endif
+
+      if (highlight->compiled_regex == NULL) {
         display_printf("%cWARNING: Couldn't compile regex at %i: %s",
-                       gd.command_char, error_number, error_offset);
-      } else if (pcre2_jit_compile(highlight->compiled_regex, 0) == 0) {
-        /* Accelerate pattern matching if JIT is supported on the platform */
-        pcre2_jit_compile(highlight->compiled_regex, PCRE2_JIT_COMPLETE);
+                       gd.command_char, error_number, error_pointer);
+      } else {
+#ifdef HAVE_PCRE2_H
+        if (pcre2_jit_compile(highlight->compiled_regex, 0) == 0) {
+          /* Accelerate pattern matching if JIT is supported on the platform */
+          pcre2_jit_compile(highlight->compiled_regex, PCRE2_JIT_COMPLETE);
+        }
+#endif
       }
 
       /* Find the insertion index */
@@ -117,7 +137,13 @@ DO_COMMAND(do_unhighlight) {
     struct highlight *highlight = gd.highlights[index];
 
     if (highlight->compiled_regex != NULL) {
+#ifdef HAVE_PCRE2_H
       pcre2_code_free(highlight->compiled_regex);
+#else
+#ifdef HAVE_PCRE_H
+      pcre_free(highlight->compiled_regex);
+#endif
+#endif
     }
 
     free(highlight);
@@ -261,6 +287,7 @@ int get_highlight_codes(char *string, char *result) {
   return TRUE;
 }
 
+#ifdef HAVE_PCRE2_H
 struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
   PCRE2_SIZE *result_pos;
   struct regex_result result;
@@ -290,6 +317,25 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
 
   return result;
 }
+#else
+#ifdef HAVE_PCRE_H
+struct regex_result regex_compare(pcre *compiled_regex, char *str) {
+  struct regex_result result;
+  int match[2000];
+
+  if (pcre_exec(compiled_regex, NULL, str, (int)strlen(str), 0, 0, match,
+                2000) <= 0) {
+    result.start = -1;
+    return result;
+  }
+
+  sprintf(result.match, "%.*s", (int)(match[1] - match[0]), &str[match[0]]);
+  result.start = (int)match[0];
+
+  return result;
+}
+#endif
+#endif
 
 int skip_vt102_codes(char *str) {
   int skip;
