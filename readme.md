@@ -22,10 +22,12 @@ git clone https://github.com/hSaria/ChromaTerm--.git
 cd ChromaTerm--/src/ && ./configure && make install
 ```
 
-> You must have [PCRE2](https://pcre.org) development installed. You can install with one of the following (depends on platform):
+> You must have [PCRE2 or legacy PCRE](https://pcre.org) development installed. You can install PCRE2 with one of the following (depends on platform):
 > - `brew install pcre2`
 > - `apt install libpcre2-dev`
 > - `yum install pcre2-devel`
+
+> It is recommended that you use PCRE2 as you'll see a 16x to 20x increase in output processing speed. However, PCRE is still very fast, so it's not the end of the world.
 
 > The `install` parameter is optional; it will copy `ct` to /usr/local/bin
 
