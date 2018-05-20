@@ -45,6 +45,13 @@
 
 /* Microseconds to wait before processing a line without \n at the end */
 #define WAIT_FOR_NEW_LINE 10000
+/* Why: CT-- cannot determine if a line has finished printing or if CT--'s
+ * processing speed is just faster than the output of the child process.
+ * Therefore, on lines that do not end with \n, CT-- will wait a fixed interval
+ * prior to printing that line. However, in the case that the line does end with
+ * a \n, process it right away and move on to the next line. The delay will only
+ * affect the last line; if you're outputting thousands of lines back-to-back,
+ * they'll be processed as soon as possible since each line will end with \n */
 
 #define ESCAPE 27
 
@@ -62,7 +69,7 @@
 
 #define DO_COMMAND(command) void command(char *arg)
 
-/* Structures */
+/* Stores the shared data for CT-- */
 struct global_data {
   struct termios active_terminal;
   struct termios saved_terminal;
@@ -83,11 +90,11 @@ struct global_data {
 };
 
 struct highlight {
-  char condition[BUFFER_SIZE];
-  char action[BUFFER_SIZE];
-  char priority[BUFFER_SIZE];
-  char compiled_action[BUFFER_SIZE];
-  pcre2_code *compiled_regex;
+  char condition[BUFFER_SIZE];       /* Processed into compiled_action */
+  char action[BUFFER_SIZE];          /* Processed into compiled_regex */
+  char priority[BUFFER_SIZE];        /* Lower value overwrites higher value */
+  char compiled_action[BUFFER_SIZE]; /* Compiled once, used multiple times */
+  pcre2_code *compiled_regex;        /* Compiled once, used multiple times */
 };
 
 struct regex_result {
@@ -156,9 +163,6 @@ void read_output_buffer(int wait_for_new_line);
 
 extern struct global_data gd;
 
-extern pthread_t input_thread;
-extern pthread_t output_thread;
-
 int main(int argc, char **argv);
 void init_program(void);
 void help_menu(int error, char *proc_name);
@@ -184,6 +188,9 @@ DO_COMMAND(do_showme);
 
 #ifndef __SESSION_H__
 #define __SESSION_H__
+
+extern pthread_t input_thread;
+extern pthread_t output_thread;
 
 void *poll_input(void *);
 void *poll_output(void *);

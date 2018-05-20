@@ -2,6 +2,9 @@
 
 #include "defs.h"
 
+pthread_t input_thread;
+pthread_t output_thread;
+
 void *poll_input(void *arg) {
   fd_set readfds;
 
@@ -43,7 +46,7 @@ void *poll_output(void *arg) {
     int rv = select(gd.socket + 1, &readfds, NULL, NULL,
                     gd.mud_output_len == 0 ? NULL : &wait);
 
-    if (rv == 0) {    /* timed-out while waiting for FD (no more output) */
+    if (rv == 0) { /* timed-out while waiting for FD (no more output) */
       read_output_buffer(FALSE); /* Process all that's left */
       continue;
     } else if (rv < 0) { /* error */

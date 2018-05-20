@@ -4,9 +4,6 @@
 
 struct global_data gd;
 
-pthread_t input_thread;
-pthread_t output_thread;
-
 static int quit_ran = FALSE;
 
 int main(int argc, char **argv) {

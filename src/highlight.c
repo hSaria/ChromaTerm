@@ -243,6 +243,7 @@ int get_highlight_codes(char *string, char *result) {
         return FALSE;
       }
 
+      /* Skip until the next action (maybe there are multiple colors) */
       string += strlen(color_table[cnt].name);
     }
 

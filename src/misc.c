@@ -137,7 +137,7 @@ DO_COMMAND(do_run) {
   strcpy(temp, "exec ");
   if (arg == NULL || *arg == 0) {
     strcat(temp, getenv("SHELL") ? getenv("SHELL") : "");
-    strcat(temp, " -l");
+    strcat(temp, " -l"); /* Emulate a login shell */
   } else {
     strcat(temp, arg);
     memset(arg, 0, strlen(arg));
