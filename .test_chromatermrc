@@ -94,5 +94,5 @@ $CONFIG     {COMMAND CHAR} {%}
 
 
 
-%SHOWME   {RUN} {./some_file}
+%SHOWME   {RUN} {../.test.sh}
 %RUN ../.test.sh
