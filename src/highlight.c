@@ -14,11 +14,10 @@ DO_COMMAND(do_highlight) {
   }
 
   if (*arg1 == 0 || *arg2 == 0) {
-    int i;
-
     if (gd.highlights_used == 0) {
       display_printf("%cHIGHLIGHT: No rules configured", gd.command_char);
     } else {
+      int i;
       for (i = 0; i < gd.highlights_used; i++) {
         display_printf("%cHIGHLIGHT "
                        "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
@@ -236,7 +235,6 @@ void check_all_highlights(char *original) {
 
 int find_highlight_index(char *condition) {
   int i;
-
   for (i = 0; i < gd.highlights_used; i++) {
     if (!strcmp(condition, gd.highlights[i]->condition)) {
       return i;
