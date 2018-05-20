@@ -72,6 +72,7 @@ void sigint_handler_during_read(int sig) {
   fflush(stdout);
 }
 
+/* Handles keyboard input and redirects to CT or socket appropriately */
 void read_key(void) {
   char c = 0;
   while ((int)(c = getc(stdin)) != EOF) {

@@ -50,7 +50,7 @@ DO_COMMAND(do_highlight) {
       strcpy(highlight->action, arg2);
       strcpy(highlight->priority, arg3);
 
-      get_highlight_codes(arg2, highlight->processed_action);
+      get_highlight_codes(arg2, highlight->compiled_action);
 
       if ((highlight->compiled_regex =
                pcre2_compile((PCRE2_SPTR)arg1, PCRE2_ZERO_TERMINATED, 0,
@@ -188,7 +188,7 @@ void check_all_highlights(char *original) {
         }
 
         cat_sprintf(output, "%.*s%s%s\033[0m", count_inc_skipped, pto,
-                    gd.highlights[i]->processed_action, result.match);
+                    gd.highlights[i]->compiled_action, result.match);
 
         /* Move pto to after the match, and skip any vt102 codes, too. */
         pto = ptt;

@@ -86,7 +86,7 @@ struct highlight {
   char condition[BUFFER_SIZE];
   char action[BUFFER_SIZE];
   char priority[BUFFER_SIZE];
-  char processed_action[BUFFER_SIZE];
+  char compiled_action[BUFFER_SIZE];
   pcre2_code *compiled_regex;
 };
 
