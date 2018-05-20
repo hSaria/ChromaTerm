@@ -284,7 +284,7 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
 
   sprintf(result.match, "%.*s", (int)(result_pos[1] - result_pos[0]),
           &str[result_pos[0]]);
-  result.start = result_pos[0];
+  result.start = (int)result_pos[0];
 
   pcre2_match_data_free(match);
 
