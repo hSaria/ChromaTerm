@@ -36,12 +36,6 @@ struct command_type command_table[] = {
     {"SHOWME", do_showme},       {"UNHIGHLIGHT", do_unhighlight},
     {"WRITE", do_write},         {"", NULL}};
 
-struct config_type config_table[] = {
-    {"COMMAND CHAR", "The character used for commands", config_commandchar},
-    {"CONVERT META", "Convert meta and control characters", config_convertmeta},
-    {"HIGHLIGHT", "Highlight according to rules", config_highlight},
-    {"", "", NULL}};
-
 struct help_type help_table[] = {
     {"ALL", ""},
     {"COLORDEMO",
@@ -217,6 +211,3 @@ struct help_type help_table[] = {
               "     Writes the current CT-- configuration to the specified "
               "filename.<088>\n\n"},
     {"", ""}};
-
-struct list_type list_table[LIST_MAX] = {{"CONFIG", ALPHA},
-                                         {"HIGHLIGHT", PRIORITY}};
