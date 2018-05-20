@@ -2,18 +2,6 @@
 
 #include "defs.h"
 
-char *capitalize(char *str) {
-  static char outbuf[BUFFER_SIZE];
-  int cnt;
-
-  for (cnt = 0; str[cnt] != 0; cnt++) {
-    outbuf[cnt] = toupper((int)str[cnt]);
-  }
-  outbuf[cnt] = 0;
-
-  return outbuf;
-}
-
 void cat_sprintf(char *dest, char *fmt, ...) {
   char buf[BUFFER_SIZE * 2];
 
@@ -27,11 +15,11 @@ void cat_sprintf(char *dest, char *fmt, ...) {
 }
 
 void display_printf(char *format, ...) {
-  if (gtd.quiet) {
+  if (gd.quiet) {
     return;
   }
 
-  char buf[BUFFER_SIZE * 2];
+  char buf[BUFFER_SIZE * 4];
   va_list args;
 
   va_start(args, format);
@@ -49,6 +37,7 @@ char *get_arg(char *string, char *result) {
   pti = space_out(string);
   pto = result;
 
+  /*Use a space as the separator if not wrapped with braces */
   if (*pti != DEFAULT_OPEN) {
     while (*pti) {
       if (isspace((int)*pti)) {
@@ -61,7 +50,7 @@ char *get_arg(char *string, char *result) {
     return pti;
   }
 
-  /* Advance past the DEFAULT_OPEN (nest is 1 right now) */
+  /* Advance past the DEFAULT_OPEN (nest is 1 for this reason) */
   pti++;
 
   while (*pti) {
@@ -70,6 +59,8 @@ char *get_arg(char *string, char *result) {
     } else if (*pti == DEFAULT_CLOSE) {
       nest--;
 
+      /* Stop once we've met the closing backet for the openning we advanced
+       * past before this loop */
       if (nest == 0) {
         break;
       }
@@ -78,7 +69,7 @@ char *get_arg(char *string, char *result) {
   }
 
   if (*pti == 0) {
-    display_printf("%cERROR: Unmatched brackets", gtd.command_char);
+    display_printf("%cERROR: No closing bracket for argument", gd.command_char);
   } else {
     pti++;
   }
@@ -87,7 +78,7 @@ char *get_arg(char *string, char *result) {
   return pti;
 }
 
-/* return: TRUE if s1 is an abbrevation of s2 */
+/* TRUE if s1 is an abbrevation of s2 (case-insensitive) */
 int is_abbrev(char *s1, char *s2) {
   if (*s1 == 0) {
     return FALSE;
@@ -96,7 +87,7 @@ int is_abbrev(char *s1, char *s2) {
 }
 
 void printline(char *str, int isaprompt) {
-  if (HAS_BIT(gts.flags, SES_FLAG_CONVERTMETA)) {
+  if (HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA)) {
     char wrapped_str[BUFFER_SIZE * 2];
 
     convert_meta(str, wrapped_str);
@@ -112,7 +103,7 @@ void printline(char *str, int isaprompt) {
   fflush(stdout);
 }
 
-/* advance ptr to next none-space */
+/* advance ptr to the next none-space character */
 char *space_out(char *string) {
   while (isspace((int)*string)) {
     string++;

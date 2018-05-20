@@ -9,7 +9,8 @@ compiler:
   - gcc
 
 install:
-  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install cppcheck; else brew install cppcheck; fi
+  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt install libpcre2-dev; else brew install pcre2; fi
+  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt install cppcheck; else brew install cppcheck; fi
 
 script:
   - cd $TRAVIS_BUILD_DIR/src && ./configure && make && make test
