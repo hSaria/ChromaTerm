@@ -38,8 +38,8 @@ DO_COMMAND(do_configure) {
   } else {
     if (is_abbrev(left, "COMMAND CHAR")) {
       if (*arg == 0) {
-        display_printf("%cSYNTAX: %cCONFIG {COMMAND CHAR} {CHAR}",
-                       gd.command_char, gd.command_char);
+        display_printf("%1$cSYNTAX: %1$cCONFIG {COMMAND CHAR} {CHAR}",
+                       gd.command_char);
       } else if (!ispunct((int)arg[0])) {
         display_printf("%cERROR: Commad character must me a punctuation: "
                        "!@#$%%^&*-+=',.\"\\/:;?_`<>()[]{}|~",
@@ -53,8 +53,8 @@ DO_COMMAND(do_configure) {
       } else if (!strcasecmp(arg, "OFF")) {
         DEL_BIT(gd.flags, SES_FLAG_CONVERTMETA);
       } else {
-        display_printf("%cSYNTAX: %cCONFIG {CONVERT META} {ON|OFF}",
-                       gd.command_char, gd.command_char);
+        display_printf("%1$cSYNTAX: %1$cCONFIG {CONVERT META} {ON|OFF}",
+                       gd.command_char);
       }
     } else if (is_abbrev(left, "HIGHLIGHT")) {
       if (!strcasecmp(arg, "ON")) {
@@ -62,8 +62,8 @@ DO_COMMAND(do_configure) {
       } else if (!strcasecmp(arg, "OFF")) {
         DEL_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
       } else {
-        display_printf("%cSYNTAX: %cCONFIG {HIGHLIGHT} {ON|OFF}",
-                       gd.command_char, gd.command_char);
+        display_printf("%1$cSYNTAX: %1$cCONFIG {HIGHLIGHT} {ON|OFF}",
+                       gd.command_char);
       }
     } else {
       display_printf("%cERROR: {%s} is not a valid option", gd.command_char,

@@ -18,8 +18,7 @@ DO_COMMAND(do_read) {
       strcpy(filename, *p.we_wordv);
       wordfree(&p);
     } else {
-      display_printf("%cSYNTAX: %cREAD {FILE LOCATION}", gd.command_char,
-                     gd.command_char);
+      display_printf("%1$cSYNTAX: %1$cREAD {FILE LOCATION}", gd.command_char);
       wordfree(&p);
       return;
     }
@@ -276,8 +275,7 @@ DO_COMMAND(do_write) {
       strcpy(filename, *p.we_wordv);
       wordfree(&p);
     } else {
-      display_printf("%cSYNTAX: %cWRITE {FILE LOCATION}", gd.command_char,
-                     gd.command_char);
+      display_printf("%1$cSYNTAX: %1$cWRITE {FILE LOCATION}", gd.command_char);
       wordfree(&p);
       return;
     }

@@ -50,7 +50,7 @@ void *poll_output(void *arg) {
       read_output_buffer(FALSE); /* Process all that's left */
       continue;
     } else if (rv < 0) { /* error */
-      quit_with_msg("poll_output", 0);
+      quit_with_msg("failed on socket read", 0);
     }
 
     /* Read what's is in the buffer */
