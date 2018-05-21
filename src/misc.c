@@ -25,6 +25,7 @@ DO_COMMAND(do_configure) {
   char left[BUFFER_SIZE];
 
   arg = get_arg(arg, left);
+  get_arg(arg, arg);
 
   if (*left == 0) {
     display_printf("%-12s = %-3c    [%s]", "COMMAND CHAR", gd.command_char,
