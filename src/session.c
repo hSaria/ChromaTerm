@@ -44,7 +44,7 @@ void *poll_output(void *arg) {
      * read. However, if there's already some output in the buffer, wait a bit
      * to see if there's more out on that line. */
     int rv = select(gd.socket + 1, &readfds, NULL, NULL,
-                    gd.mud_output_len == 0 ? NULL : &wait);
+                    gd.output_length == 0 ? NULL : &wait);
 
     if (rv == 0) { /* timed-out while waiting for FD (no more output) */
       read_output_buffer(FALSE); /* Process all that's left */
@@ -54,16 +54,16 @@ void *poll_output(void *arg) {
     }
 
     /* Read what's is in the buffer */
-    gd.mud_output_len += read(gd.socket, &gd.mud_output_buf[gd.mud_output_len],
-                              MUD_OUTPUT_MAX - gd.mud_output_len - 1);
+    gd.output_length += read(gd.socket, &gd.output_buffer[gd.output_length],
+                             OUTPUT_MAX - gd.output_length - 1);
 
-    if (gd.mud_output_len <= 0) { /* error */
+    if (gd.output_length <= 0) { /* error */
       return 0;
     }
 
     /* Failsafe: if the buffer is full, process all of pending output.
      * Otherwise, process until the line that doesn't end with \n. */
-    read_output_buffer(MUD_OUTPUT_MAX - gd.mud_output_len <= 1 ? FALSE : TRUE);
+    read_output_buffer(OUTPUT_MAX - gd.output_length <= 1 ? FALSE : TRUE);
   }
 }
 
