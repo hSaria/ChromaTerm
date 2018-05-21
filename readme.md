@@ -15,7 +15,7 @@ Some quick examples. CT-- uses Regex to find matches according to your rules.
 
 <p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"/><img width=422px height=425px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png"/><img width=405px height=425px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/ios-show-interface.png"/></p>
 
-
+### <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
 # Installation
 ```
 git clone https://github.com/hSaria/ChromaTerm--.git
@@ -27,7 +27,7 @@ cd ChromaTerm--/src/ && ./configure && make install
 > - `apt install libpcre2-dev`
 > - `yum install pcre2-devel`
 
-> It is recommended that you use PCRE2 as you'll see a 16x to 20x increase in output processing speed. However, PCRE is still very fast, so it's not the end of the world.
+> It is recommended that you use PCRE2 as you'll see a 16x to 20x increase in output processing speed. However, legacy PCRE is still very fast, so it's not the end of the world.
 
 > The `install` parameter is optional; it will copy `ct` to /usr/local/bin
 
