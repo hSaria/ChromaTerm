@@ -129,8 +129,7 @@ DO_COMMAND(do_unhighlight) {
   get_arg(arg, arg);
 
   if (*arg == 0) {
-    display_printf("%cSYNTAX: %cUNHIGHLIGHT {CONDITION}", gd.command_char,
-                   gd.command_char);
+    display_printf("%1$cSYNTAX: %1$cUNHIGHLIGHT {CONDITION}", gd.command_char);
 
   } else if ((index = find_highlight_index(arg)) != -1) {
     struct highlight *highlight = gd.highlights[index];

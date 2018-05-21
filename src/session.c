@@ -16,8 +16,8 @@ void *poll_input(void *arg) {
 
   while (TRUE) {
     /* Blocking operation until FD is ready */
-    if (select(STDIN_FILENO + 1, &readfds, NULL, NULL, NULL) <= 0) {
-      quit_with_msg(NULL, 0);
+    if (select(STDIN_FILENO + 1, &readfds, NULL, NULL, NULL) <= 0) { /* error */
+      return 0;
     }
 
     read_key();
@@ -50,15 +50,15 @@ void *poll_output(void *arg) {
       read_output_buffer(FALSE); /* Process all that's left */
       continue;
     } else if (rv < 0) { /* error */
-      quit_with_msg("poll_output", 0);
+      return 0;
     }
 
     /* Read what's is in the buffer */
     gd.mud_output_len += read(gd.socket, &gd.mud_output_buf[gd.mud_output_len],
                               MUD_OUTPUT_MAX - gd.mud_output_len - 1);
 
-    if (gd.mud_output_len <= 0) {
-      quit_with_msg(NULL, 0);
+    if (gd.mud_output_len <= 0) { /* error */
+      return 0;
     }
 
     /* Failsafe: if the buffer is full, process all of pending output.
