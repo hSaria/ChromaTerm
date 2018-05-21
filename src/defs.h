@@ -34,7 +34,7 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"
 
 #define FALSE 0
 #define TRUE 1
@@ -47,7 +47,7 @@
 
 #define BUFFER_SIZE 20000
 
-#define MUD_OUTPUT_MAX 262144 /* 256 KiB */
+#define OUTPUT_MAX 262144 /* 256 KiB */
 
 /* Microseconds to wait before processing a line without \n at the end */
 #define WAIT_FOR_NEW_LINE 10000
@@ -84,9 +84,9 @@ struct global_data {
   int highlights_used;
   char command_char;
   int flags;
-  char mud_output_buf[MUD_OUTPUT_MAX];
-  char mud_current_line[MUD_OUTPUT_MAX];
-  int mud_output_len;
+  char output_buffer[OUTPUT_MAX];
+  char output_current_line[OUTPUT_MAX];
+  int output_length;
   int cols;
   int rows;
   int pid;

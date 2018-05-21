@@ -68,7 +68,7 @@ void sigint_handler_during_read(int sig) {
   }
 
   /* Repair line before adding the command char */
-  printf("\n%s%c:", gd.mud_current_line, gd.command_char);
+  printf("\n%s%c:", gd.output_current_line, gd.command_char);
   fflush(stdout);
 }
 
@@ -108,7 +108,7 @@ void read_key(void) {
       script_driver(command_buffer);
       memset(&command_buffer, 0, len);
 
-      printline(gd.mud_current_line, TRUE);
+      printline(gd.output_current_line, TRUE);
     } else {
       /* Used to detect if next character is possibly the CT command char */
       beginning_of_line = c == '\n';
@@ -122,10 +122,10 @@ void read_key(void) {
 void read_output_buffer(int wait_for_new_line) {
   char *line, *next_line;
 
-  gd.mud_output_buf[gd.mud_output_len] = 0;
+  gd.output_buffer[gd.output_length] = 0;
 
   /* separate into lines and print away */
-  for (line = gd.mud_output_buf; line && *line; line = next_line) {
+  for (line = gd.output_buffer; line && *line; line = next_line) {
     char linebuf[BUFFER_SIZE];
 
     next_line = strchr(line, '\n');
@@ -135,7 +135,7 @@ void read_output_buffer(int wait_for_new_line) {
       next_line++;
 
       /* Reset the repair buffer */
-      memset(gd.mud_current_line, 0, strlen(gd.mud_current_line));
+      memset(gd.output_current_line, 0, strlen(gd.output_current_line));
     } else if (wait_for_new_line || *line == 0) {
       break;
     }
@@ -147,21 +147,21 @@ void read_output_buffer(int wait_for_new_line) {
     }
 
     /* Used to repair the output after a CT command */
-    strcat(gd.mud_current_line, linebuf);
+    strcat(gd.output_current_line, linebuf);
 
     printline(linebuf, next_line == NULL);
   }
 
   /* If waiting for a new line, copy the last line to the buffer */
   if (wait_for_new_line) {
-    char temp[MUD_OUTPUT_MAX];
+    char temp[OUTPUT_MAX];
 
     strcpy(temp, line);
-    strcpy(gd.mud_output_buf, temp);
+    strcpy(gd.output_buffer, temp);
 
-    gd.mud_output_len = (int)strlen(line);
+    gd.output_length = (int)strlen(line);
     return;
   }
 
-  gd.mud_output_len = 0;
+  gd.output_length = 0;
 }
