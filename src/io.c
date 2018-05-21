@@ -113,9 +113,7 @@ void read_key(void) {
       /* Used to detect if next character is possibly the CT command char */
       beginning_of_line = c == '\n';
 
-      if (write(gd.socket, &c, 1) < 0) {
-        quit_with_msg("failed on socket write", 1);
-      }
+      write(gd.socket, &c, 1);
     }
   }
 }

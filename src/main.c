@@ -4,7 +4,7 @@
 
 struct global_data gd;
 
-static int quit_ran = FALSE;
+int quit_ran = FALSE;
 
 int main(int argc, char **argv) {
   int config_override = FALSE;
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
     quit_with_msg("failed to create input thread", 1);
   }
 
-  pthread_join(input_thread, NULL);
+  waitpid(gd.pid, NULL, 0);
 
   quit_with_msg(NULL, 0);
   return 0; /* Literally useless, but gotta make a warning shut up. */
@@ -148,13 +148,12 @@ void help_menu(int error, char *proc_name) {
 }
 
 /* Unless there's an error, the quitmsg is ran before exitting */
-void quit_void(void) {
-  if (!quit_ran) {
-    quit_with_msg(NULL, 1);
-  }
-}
+void quit_void(void) { quit_with_msg(NULL, 1); }
 
 void quit_with_msg(char *message, int exit_signal) {
+  if (quit_ran) {
+    return;
+  }
   quit_ran = TRUE;
 
   /* Restore original, saved terminal */
