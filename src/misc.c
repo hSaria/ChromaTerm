@@ -115,7 +115,6 @@ DO_COMMAND(do_help) {
 DO_COMMAND(do_run) {
   char temp[BUFFER_SIZE];
   int desc, pid;
-  struct winsize size;
 
   /* Limit to a single process */
   if (process_already_running) {
@@ -144,10 +143,7 @@ DO_COMMAND(do_run) {
     memset(arg, 0, strlen(arg));
   }
 
-  size.ws_row = gd.rows;
-  size.ws_col = gd.cols;
-
-  pid = forkpty(&desc, NULL, &gd.active_terminal, &size);
+  pid = forkpty(&desc, NULL, &gd.active_terminal, NULL);
 
   switch (pid) {
   case -1:

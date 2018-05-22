@@ -13,7 +13,6 @@ int main(int argc, char **argv) {
 
   trap.sa_handler = trap_handler;
   pipe.sa_handler = pipe_handler;
-  winch.sa_handler = winch_handler;
 
   trap.sa_flags = pipe.sa_flags = winch.sa_flags = 0;
 
@@ -101,9 +100,6 @@ void init_program() {
   /* initial size is 8, but is dynamically resized as required */
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
   gd.highlights_size = 8;
-
-  /* Get the screen size */
-  winch_handler(0);
 
   /* Default configuration values */
   gd.command_char = '%';
@@ -194,18 +190,3 @@ void quit_with_msg(char *message, int exit_signal) {
 void pipe_handler(int sig) { display_printf("broken_pipe: %i", sig); }
 
 void trap_handler(int sig) { quit_with_msg("trap_handler", sig); }
-
-void winch_handler(int sig) {
-  struct winsize screen;
-
-  if (sig) { /* Just to make a compiler warning shut up */
-  }
-
-  if (ioctl(STDIN_FILENO, TIOCGWINSZ, &screen) == -1) {
-    gd.rows = SCREEN_HEIGHT;
-    gd.cols = SCREEN_WIDTH;
-  } else {
-    gd.rows = screen.ws_row;
-    gd.cols = screen.ws_col;
-  }
-}

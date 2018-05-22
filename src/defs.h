@@ -41,9 +41,6 @@
 #define FALSE 0
 #define TRUE 1
 
-#define SCREEN_WIDTH 80
-#define SCREEN_HEIGHT 24
-
 #define DEFAULT_OPEN '{'
 #define DEFAULT_CLOSE '}'
 
@@ -89,8 +86,6 @@ struct global_data {
   char output_buffer[OUTPUT_MAX];
   char output_current_line[OUTPUT_MAX];
   int output_length;
-  int cols;
-  int rows;
   int pid;
   int socket;
   int run_overriden;
@@ -193,7 +188,6 @@ void quit_void(void);
 void quit_with_msg(char *message, int exit_signal);
 void pipe_handler(int sig);
 void trap_handler(int sig);
-void winch_handler(int sig);
 
 #endif
 
