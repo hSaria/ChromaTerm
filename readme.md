@@ -16,7 +16,7 @@ Some quick examples. CT-- uses Regex to find matches according to your rules.
 <p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"/><img width=422px height=425px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png"/><img width=405px height=425px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/ios-show-interface.png"/></p>
 
 ### <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-# Installation
+# Installation [![Build Status](https://travis-ci.org/hSaria/ChromaTerm--.svg?branch=master)](https://travis-ci.org/hSaria/ChromaTerm--)
 ```
 git clone https://github.com/hSaria/ChromaTerm--.git
 cd ChromaTerm--/src/ && ./configure && make install
