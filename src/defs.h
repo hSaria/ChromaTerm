@@ -3,6 +3,7 @@
 #include "config.h"
 
 #include <ctype.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -50,6 +51,7 @@
 
 #define SES_FLAG_CONVERTMETA (1 << 0)
 #define SES_FLAG_HIGHLIGHT (1 << 1)
+#define SES_FLAG_INTERACTIVE (1 << 2)
 
 /* Bit operations */
 #define HAS_BIT(bitvector, bit) ((bitvector) & (bit))
@@ -70,7 +72,7 @@ struct global_data {
   int flags;
   int quiet;
 
-  int fd_input;
+  int fd_ct;
   char input_buffer[INPUT_MAX];
   char input_current_line[INPUT_MAX];
   int input_buffer_length;
@@ -155,9 +157,9 @@ void substitute(char *string, char *result);
 #define __IO_H__
 
 void convert_meta(char *input, char *output);
-void sigint_handler_during_read(int sig);
 void process_input(int wait_for_new_line);
 void read_command(void);
+void sigint_handler_during_read(int sig);
 
 #endif
 
@@ -168,7 +170,7 @@ extern struct global_data gd;
 
 int main(int argc, char **argv);
 void init_program(void);
-void help_menu(int error, char *proc_name);
+void help_menu(char *proc_name);
 void quit_with_msg(char *message, int exit_signal);
 
 #endif
@@ -202,7 +204,6 @@ void cat_sprintf(char *dest, char *fmt, ...);
 void display_printf(char *format, ...);
 char *get_arg(char *string, char *result);
 int is_abbrev(char *s1, char *s2);
-void printline(char *str, int isaprompt);
 char *space_out(char *string);
 
 #endif

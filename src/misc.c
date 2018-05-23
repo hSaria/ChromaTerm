@@ -115,7 +115,7 @@ DO_COMMAND(do_showme) {
 
   check_all_highlights(pto);
 
-  printline(pto, FALSE);
+  display_printf(pto);
 }
 
 void script_driver(char *str) {

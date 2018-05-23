@@ -15,22 +15,22 @@ int main(int argc, char **argv) {
 
     optind = 1;
 
-    while ((c = getopt(argc, argv, "h c: t:")) != EOF) {
+    while ((c = getopt(argc, argv, "h i c: t:")) != EOF) {
       switch (c) {
-      case 't':
-        printf("\033]0;%s\007", optarg);
-        break;
       case 'c':
         if (access(optarg, R_OK) == 0) {
           do_read(optarg);
           config_override = TRUE;
         }
         break;
-      case 'h':
-        help_menu(FALSE, argv[0]);
+      case 't':
+        printf("\033]0;%s\007", optarg);
+        break;
+      case 'p':
+        DEL_BIT(gd.flags, SES_FLAG_INTERACTIVE);
         break;
       default:
-        help_menu(TRUE, argv[0]);
+        help_menu(argv[0]);
         break;
       }
     }
@@ -54,18 +54,18 @@ int main(int argc, char **argv) {
   }
 
   FD_ZERO(&readfds); /* Initialise the file descriptor */
-  FD_SET(gd.fd_input, &readfds);
+  FD_SET(STDIN_FILENO, &readfds);
 
   /* MAIN LOGIC OF THE PROGRAM STARTS HERE */
   while ((gd.input_buffer_length +=
-          read(gd.fd_input, &gd.input_buffer[gd.input_buffer_length],
+          read(STDIN_FILENO, &gd.input_buffer[gd.input_buffer_length],
                INPUT_MAX)) > 0) {
     /* Mandatoy wait before assuming no more output on the current line */
     struct timeval wait = {0, WAIT_FOR_NEW_LINE};
 
     /* Block for a small amount to see if there's more to read. If something
      * came up, stop waiting and move on. */
-    int rv = select(gd.fd_input + 1, &readfds, NULL, NULL, &wait);
+    int rv = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &wait);
 
     if (rv > 0) { /* More data came up while waiting */
       /* Failsafe: if the buffer is full, process all of pending output.
@@ -92,19 +92,23 @@ void init_program() {
   gd.command_char = '%';
   strcpy(gd.command_string, "hello:");
   SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
+  SET_BIT(gd.flags, SES_FLAG_INTERACTIVE);
 
-  gd.fd_input = dup(STDIN_FILENO);
+  if ((gd.fd_ct = open("/dev/tty", O_RDWR)) < 0) { /* Used for CT */
+    perror("Couldn't open /dev/tty");
+    quit_with_msg(NULL, 1);
+  }
 }
 
-void help_menu(int error, char *proc_name) {
+void help_menu(char *proc_name) {
   display_printf("ChromaTerm-- v%s", VERSION);
   display_printf("Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf("    -h                    This help section");
   display_printf("    -c {CONFIG_FILE}      Override configuration file");
-  display_printf("    -e [EXECUTABLE]       Run executable");
+  display_printf("    -p                    Passive CT-- (don't allow CT-- "
+                 "commands while running)");
   display_printf("    -t {TITLE}            Set title");
 
-  quit_with_msg(NULL, error);
+  quit_with_msg(NULL, 2);
 }
 
 void quit_with_msg(char *message, int exit_signal) {
