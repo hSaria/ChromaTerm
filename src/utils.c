@@ -2,18 +2,6 @@
 
 #include "defs.h"
 
-void cat_sprintf(char *dest, char *fmt, ...) {
-  char buf[BUFFER_SIZE * 2];
-
-  va_list args;
-
-  va_start(args, fmt);
-  vsprintf(buf, fmt, args);
-  va_end(args);
-
-  strcat(dest, buf);
-}
-
 void display_printf(char *format, ...) {
   if (gd.quiet) {
     return;
@@ -26,7 +14,8 @@ void display_printf(char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  printline(buf, FALSE);
+  write(gd.fd_ct, buf, strlen(buf));
+  write(gd.fd_ct, "\n", 1);
 }
 
 /* The outer-most braces (if any) are stripped; all else left as is */
@@ -84,23 +73,6 @@ int is_abbrev(char *s1, char *s2) {
     return FALSE;
   }
   return !strncasecmp(s2, s1, strlen(s1));
-}
-
-void printline(char *str, int isaprompt) {
-  if (HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA)) {
-    char wrapped_str[BUFFER_SIZE * 2];
-
-    convert_meta(str, wrapped_str);
-    printf("%s", wrapped_str);
-  } else {
-    printf("%s", str);
-  }
-
-  if (!isaprompt) {
-    printf("\n");
-  }
-
-  fflush(stdout);
 }
 
 /* advance ptr to the next none-space character */

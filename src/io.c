@@ -60,15 +60,6 @@ void convert_meta(char *input, char *output) {
   *pto = 0;
 }
 
-/* To remove ^C from the output of read */
-void sigint_handler_during_read(int sig) {
-  (void)sig; /* Just to make a compiler warning shut up */
-
-  /* Repair line before adding the command char */
-  printf("\n%s%s->", gd.input_current_line, gd.command_string);
-  fflush(stdout);
-}
-
 /* Will process only the lines that end of \n */
 void process_input(int wait_for_new_line) {
   char *line, *next_line;
@@ -105,20 +96,34 @@ void process_input(int wait_for_new_line) {
       gd.input_current_line_length = strlen(gd.input_current_line);
     }
 
+    /* Print the output after processing it */
     strcpy(linebuf, line);
 
     if (HAS_BIT(gd.flags, SES_FLAG_HIGHLIGHT)) {
       check_all_highlights(linebuf);
     }
 
-    printline(linebuf, next_line == NULL);
+    if (HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA)) {
+      char wrapped_str[BUFFER_SIZE * 2];
+
+      convert_meta(linebuf, wrapped_str);
+      printf("%s", wrapped_str);
+    } else {
+      printf("%s", linebuf);
+    }
+
+    if (next_line) {
+      printf("\n");
+    }
+
+    fflush(stdout);
   }
 
   /* BUG: Reading a config file will trigger this */
   if (strcmp(&gd.input_current_line[gd.input_current_line_length -
                                     strlen(gd.command_string)],
              gd.command_string) == 0) {
-    read_command();
+    write(gd.fd_ct, "hello, world!", 13);
   }
 
   /* If we reached this point, then there's no more output in the buffer; reset
@@ -139,8 +144,7 @@ void read_command(void) {
   /* Ignore inturrupt signals */
   sigaction(SIGINT, &new, &old);
 
-  freopen("/dev/tty", "r", stdin);
-  len = read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
+  len = read(gd.fd_ct, command_buffer, sizeof(command_buffer));
 
   /* Restore original action */
   sigaction(SIGINT, &old, NULL);
@@ -150,5 +154,14 @@ void read_command(void) {
   script_driver(command_buffer);
   memset(&command_buffer, 0, len);
 
-  printline(gd.input_current_line, TRUE);
+  display_printf(gd.input_current_line);
+}
+
+/* To remove ^C from the output of read */
+void sigint_handler_during_read(int sig) {
+  (void)sig; /* Just to make a compiler warning shut up */
+
+  /* Repair line before adding the command char */
+  printf("\n%s%s->", gd.input_current_line, gd.command_string);
+  fflush(stdout);
 }
