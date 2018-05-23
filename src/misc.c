@@ -86,7 +86,7 @@ DO_COMMAND(do_help) {
 
   if (*left == 0) {
     for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
-      cat_sprintf(add, "%-14s", help_table[cnt].name);
+      sprintf(add, "%s%-14s", add, help_table[cnt].name);
     }
     display_printf(add);
 

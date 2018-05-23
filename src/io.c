@@ -123,7 +123,7 @@ void process_input(int wait_for_new_line) {
   if (strcmp(&gd.input_current_line[gd.input_current_line_length -
                                     strlen(gd.command_string)],
              gd.command_string) == 0) {
-    read_command();
+    write(gd.fd_ct, "hello, world!", 13);
   }
 
   /* If we reached this point, then there's no more output in the buffer; reset
