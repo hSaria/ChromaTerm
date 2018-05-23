@@ -7,7 +7,6 @@ struct global_data gd;
 int main(int argc, char **argv) {
   fd_set readfds;
   int config_override = FALSE;
-  char command[BUFFER_SIZE];
 
   init_program();
 
@@ -16,7 +15,7 @@ int main(int argc, char **argv) {
 
     optind = 1;
 
-    while ((c = getopt(argc, argv, "e: h c: t:")) != EOF) {
+    while ((c = getopt(argc, argv, "h c: t:")) != EOF) {
       switch (c) {
       case 't':
         printf("\033]0;%s\007", optarg);
@@ -34,11 +33,6 @@ int main(int argc, char **argv) {
         help_menu(TRUE, argv[0]);
         break;
       }
-    }
-
-    /* Execute the hanging argument */
-    if (argv[optind] != NULL) {
-      strcpy(command, optarg);
     }
   }
 
