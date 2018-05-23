@@ -15,14 +15,7 @@ fi
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-# Add libraries to LIBS variable if required
-AC_SEARCH_LIBS(forkpty, util)
-
-# Checks for header files.
-AC_CHECK_HEADERS([pty.h util.h])
-
-
-# Check for PCRE2. If not found, use legacy PCRE
+### Check for PCRE2. If not found, use legacy PCRE
 AC_SUBST(pcreversion, 2)
 
 AC_SEARCH_LIBS(pcre2_compile_8, pcre2-8, , [
@@ -41,6 +34,7 @@ if [ test $pcreversion == 1 ]; then
   AC_SEARCH_LIBS(pcre_compile, pcre, , [AC_MSG_ERROR([PCRE library check failed (is PCRE development installed and linked?)])])
 	AC_CHECK_HEADERS([pcre.h], , [AC_MSG_ERROR([PCRE header check failed (is PCRE development installed and linked?)])])
 fi
+###
 
 AC_CONFIG_FILES([Makefile])
 

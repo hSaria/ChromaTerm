@@ -1,28 +1,18 @@
 /* This program is protected under the GNU GPL (See COPYING) */
 
+#include "config.h"
+
 #include <ctype.h>
-#include <pthread.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <termios.h>
+//#include <sys/types.h>
+//#include <sys/wait.h>
 #include <unistd.h>
 #include <wordexp.h>
-
-#include "config.h"
-
-#ifdef HAVE_UTIL_H
-#include <util.h>
-#else
-#ifdef HAVE_PTY_H
-#include <pty.h>
-#endif
-#endif
 
 #ifdef HAVE_PCRE2_H
 #define PCRE2_CODE_UNIT_WIDTH 8
@@ -36,7 +26,7 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
-#define VERSION "0.1.1"
+#define VERSION "0.2.0"
 
 #define FALSE 0
 #define TRUE 1
@@ -46,10 +36,10 @@
 
 #define BUFFER_SIZE 20000
 
-#define OUTPUT_MAX 262144 /* 256 KiB */
+#define INPUT_MAX 262144 /* 256 KiB */
 
 /* Microseconds to wait before processing a line without \n at the end */
-#define WAIT_FOR_NEW_LINE 10000
+#define WAIT_FOR_NEW_LINE 500
 /* Why: CT-- cannot determine if a line has finished printing or if CT--'s
  * processing speed is just faster than the output of the child process.
  * Therefore, on lines that do not end with \n, CT-- will wait a fixed interval
@@ -69,27 +59,24 @@
 #define DEL_BIT(bitvector, bit) ((bitvector) &= (~(bit)))
 #define TOG_BIT(bitvector, bit) ((bitvector) ^= (bit))
 
-/* Generic */
-#define UMAX(a, b) ((a) > (b) ? (a) : (b))
-
 #define DO_COMMAND(command) void command(char *arg)
 
 /* Stores the shared data for CT-- */
 struct global_data {
-  struct termios active_terminal;
-  struct termios saved_terminal;
   struct highlight **highlights;
   int highlights_size;
   int highlights_used;
+
   char command_char;
+  char command_string[BUFFER_SIZE];
   int flags;
-  char output_buffer[OUTPUT_MAX];
-  char output_current_line[OUTPUT_MAX];
-  int output_length;
-  int pid;
-  int socket;
-  int run_overriden;
   int quiet;
+
+  int fd_input;
+  char input_buffer[INPUT_MAX];
+  char input_current_line[INPUT_MAX];
+  int input_buffer_length;
+  int input_current_line_length;
 };
 
 struct highlight {
@@ -171,8 +158,8 @@ void substitute(char *string, char *result);
 
 void convert_meta(char *input, char *output);
 void sigint_handler_during_read(int sig);
-void read_key(void);
-void read_output_buffer(int wait_for_new_line);
+void process_input(int wait_for_new_line);
+void read_command(void);
 
 #endif
 
@@ -184,10 +171,7 @@ extern struct global_data gd;
 int main(int argc, char **argv);
 void init_program(void);
 void help_menu(int error, char *proc_name);
-void quit_void(void);
 void quit_with_msg(char *message, int exit_signal);
-void pipe_handler(int sig);
-void trap_handler(int sig);
 
 #endif
 
@@ -198,19 +182,8 @@ DO_COMMAND(do_commands);
 DO_COMMAND(do_configure);
 DO_COMMAND(do_exit);
 DO_COMMAND(do_help);
-DO_COMMAND(do_run);
 DO_COMMAND(do_showme);
 
-#endif
-
-#ifndef __SESSION_H__
-#define __SESSION_H__
-
-extern pthread_t input_thread;
-extern pthread_t output_thread;
-
-void *poll_input(void *);
-void *poll_output(void *);
 void script_driver(char *str);
 
 #endif

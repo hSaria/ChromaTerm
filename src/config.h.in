@@ -12,9 +12,6 @@
 /* Define to 1 if you have the <pcre.h> header file. */
 #undef HAVE_PCRE_H
 
-/* Define to 1 if you have the <pty.h> header file. */
-#undef HAVE_PTY_H
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -35,9 +32,6 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* Define to 1 if you have the <util.h> header file. */
-#undef HAVE_UTIL_H
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

@@ -28,13 +28,17 @@ struct color_type color_table[] = {
     {"violet", "<bad>"},       {"white", "<878>"},
     {"yellow", "<838>"},       {"", "<088>"}};
 
-struct command_type command_table[] = {
-    {"COMMANDS", do_commands},   {"CONFIG", do_configure},
-    {"EXIT", do_exit},           {"HELP", do_help},
-    {"HIGHLIGHT", do_highlight}, {"QUIT", do_exit},
-    {"READ", do_read},           {"RUN", do_run},
-    {"SHOWME", do_showme},       {"UNHIGHLIGHT", do_unhighlight},
-    {"WRITE", do_write},         {"", NULL}};
+struct command_type command_table[] = {{"COMMANDS", do_commands},
+                                       {"CONFIG", do_configure},
+                                       {"EXIT", do_exit},
+                                       {"HELP", do_help},
+                                       {"HIGHLIGHT", do_highlight},
+                                       {"QUIT", do_exit},
+                                       {"READ", do_read},
+                                       {"SHOWME", do_showme},
+                                       {"UNHIGHLIGHT", do_unhighlight},
+                                       {"WRITE", do_write},
+                                       {"", NULL}};
 
 struct help_type help_table[] = {
     {"ALL", ""},

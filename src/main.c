@@ -4,24 +4,10 @@
 
 struct global_data gd;
 
-int quit_ran = FALSE;
-
 int main(int argc, char **argv) {
+  fd_set readfds;
   int config_override = FALSE;
   char command[BUFFER_SIZE];
-  struct sigaction trap, pipe, winch;
-
-  trap.sa_handler = trap_handler;
-  pipe.sa_handler = pipe_handler;
-
-  trap.sa_flags = pipe.sa_flags = winch.sa_flags = 0;
-
-  sigaction(SIGTERM, &trap, NULL);
-  sigaction(SIGSEGV, &trap, NULL);
-  sigaction(SIGHUP, &trap, NULL);
-  sigaction(SIGABRT, &trap, NULL);
-  sigaction(SIGPIPE, &pipe, NULL);
-  sigaction(SIGWINCH, &winch, NULL);
 
   init_program();
 
@@ -40,9 +26,6 @@ int main(int argc, char **argv) {
           do_read(optarg);
           config_override = TRUE;
         }
-        break;
-      case 'e':
-        strcpy(command, optarg);
         break;
       case 'h':
         help_menu(FALSE, argv[0]);
@@ -76,60 +59,47 @@ int main(int argc, char **argv) {
     }
   }
 
-  /* Only run command if it wasn't overridden by a configuration file */
-  if (!gd.run_overriden) {
-    gd.run_overriden = TRUE;
-    do_run(command);
-  }
+  FD_ZERO(&readfds); /* Initialise the file descriptor */
+  FD_SET(gd.fd_input, &readfds);
 
-  if (pthread_create(&input_thread, NULL, poll_input, NULL) != 0) {
-    quit_with_msg("failed to create input thread", 1);
-  }
+  /* MAIN LOGIC OF THE PROGRAM STARTS HERE */
+  while ((gd.input_buffer_length +=
+          read(gd.fd_input, &gd.input_buffer[gd.input_buffer_length],
+               INPUT_MAX)) > 0) {
+    /* Mandatoy wait before assuming no more output on the current line */
+    struct timeval wait = {0, WAIT_FOR_NEW_LINE};
 
-  waitpid(gd.pid, NULL, 0);
+    /* Block for a small amount to see if there's more to read. If something
+     * came up, stop waiting and move on. */
+    int rv = select(gd.fd_input + 1, &readfds, NULL, NULL, &wait);
+
+    if (rv > 0) { /* More data came up while waiting */
+      /* Failsafe: if the buffer is full, process all of pending output.
+       * Otherwise, process until the line that doesn't end with \n. */
+      process_input(INPUT_MAX - gd.input_buffer_length <= 1 ? FALSE : TRUE);
+    } else if (rv == 0) { /* timed-out while waiting for FD (no more output) */
+      process_input(FALSE); /* Process all that's left */
+    } else if (rv < 0) {    /* error */
+      perror("select returned < 0");
+      quit_with_msg(NULL, 1);
+    }
+  }
 
   quit_with_msg(NULL, 0);
   return 0; /* Literally useless, but gotta make a warning shut up. */
 }
 
 void init_program() {
-  struct termios io;
-
-  gd.run_overriden = FALSE;
-
   /* initial size is 8, but is dynamically resized as required */
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
   gd.highlights_size = 8;
 
   /* Default configuration values */
   gd.command_char = '%';
+  strcpy(gd.command_string, "hello:");
   SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
 
-  /* Save current terminal attributes and reset at exit */
-  if (tcgetattr(STDIN_FILENO, &gd.saved_terminal)) {
-    quit_with_msg("tcgetattr", 1);
-  }
-
-  tcgetattr(STDIN_FILENO, &gd.active_terminal);
-
-  io = gd.active_terminal;
-
-  /*  Canonical mode off */
-  DEL_BIT(io.c_lflag, ICANON);
-
-  io.c_cc[VMIN] = 1;
-  io.c_cc[VTIME] = 0;
-  io.c_cc[VSTART] = 255;
-  io.c_cc[VSTOP] = 255;
-
-  DEL_BIT(io.c_lflag, ECHO | ECHONL | IEXTEN | ISIG);
-  SET_BIT(io.c_cflag, CS8);
-
-  if (tcsetattr(STDIN_FILENO, TCSANOW, &io)) {
-    quit_with_msg("tcsetattr", 1);
-  }
-
-  atexit(quit_void);
+  gd.fd_input = dup(STDIN_FILENO);
 }
 
 void help_menu(int error, char *proc_name) {
@@ -143,33 +113,7 @@ void help_menu(int error, char *proc_name) {
   quit_with_msg(NULL, error);
 }
 
-/* Unless there's an error, the quitmsg is ran before exitting */
-void quit_void(void) { quit_with_msg(NULL, 1); }
-
 void quit_with_msg(char *message, int exit_signal) {
-  if (quit_ran) {
-    return;
-  }
-  quit_ran = TRUE;
-
-  /* Restore original, saved terminal */
-  tcsetattr(STDIN_FILENO, TCSANOW, &gd.saved_terminal);
-
-  if (kill(gd.pid, 0) && gd.socket) {
-    close(gd.socket);
-    if (gd.pid) {
-      /* force kill */
-      kill(gd.pid, SIGKILL);
-    }
-  }
-
-  if (input_thread) {
-    pthread_kill(input_thread, 0);
-  }
-
-  if (output_thread) {
-    pthread_kill(output_thread, 0);
-  }
 
   /* Free memory used by highlights */
   while (gd.highlights[0]) {
@@ -186,7 +130,3 @@ void quit_with_msg(char *message, int exit_signal) {
   fflush(stdout);
   exit(exit_signal);
 }
-
-void pipe_handler(int sig) { display_printf("broken_pipe: %i", sig); }
-
-void trap_handler(int sig) { quit_with_msg("trap_handler", sig); }

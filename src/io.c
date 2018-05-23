@@ -2,8 +2,6 @@
 
 #include "defs.h"
 
-int beginning_of_line = TRUE;
-
 void convert_meta(char *input, char *output) {
   char *pti = input, *pto = output;
 
@@ -64,80 +62,47 @@ void convert_meta(char *input, char *output) {
 
 /* To remove ^C from the output of read */
 void sigint_handler_during_read(int sig) {
-  if (sig) { /* Just to make a compiler warning shut up */
-  }
+  (void)sig; /* Just to make a compiler warning shut up */
 
   /* Repair line before adding the command char */
-  printf("\n%s%c:", gd.output_current_line, gd.command_char);
+  printf("\n%s%s->", gd.input_current_line, gd.command_string);
   fflush(stdout);
 }
 
-/* Handles keyboard input and redirects to CT or socket appropriately */
-void read_key(void) {
-  char c = 0;
-  while ((int)(c = getc(stdin)) != EOF) {
-    if (beginning_of_line && c == gd.command_char) {
-      int len = 0;
-      char command_buffer[BUFFER_SIZE];
-      struct termios temp_attributes;
-      struct sigaction new, old;
-
-      new.sa_handler = sigint_handler_during_read;
-
-      printf("%c:", gd.command_char);
-      fflush(stdout);
-
-      tcgetattr(STDIN_FILENO, &temp_attributes);
-
-      /* Recover original terminal state */
-      tcsetattr(STDIN_FILENO, TCSANOW, &gd.saved_terminal);
-
-      /* Ignore inturrupt signals */
-      sigaction(SIGINT, &new, &old);
-
-      len = (int)read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
-
-      /* Restore original action */
-      sigaction(SIGINT, &old, NULL);
-
-      /* Restore CT terminal state (noncanonical mode) */
-      tcsetattr(STDIN_FILENO, TCSANOW, &temp_attributes);
-
-      /* Remove the trailing \n */
-      command_buffer[strlen(command_buffer) - 1] = 0;
-      script_driver(command_buffer);
-      memset(&command_buffer, 0, len);
-
-      printline(gd.output_current_line, TRUE);
-    } else {
-      /* Used to detect if next character is possibly the CT command char */
-      beginning_of_line = c == '\n';
-
-      write(gd.socket, &c, 1);
-    }
-  }
-}
-
 /* Will process only the lines that end of \n */
-void read_output_buffer(int wait_for_new_line) {
+void process_input(int wait_for_new_line) {
   char *line, *next_line;
 
-  gd.output_buffer[gd.output_length] = 0;
+  gd.input_buffer[gd.input_buffer_length] = 0;
 
   /* separate into lines and print away */
-  for (line = gd.output_buffer; line && *line; line = next_line) {
-    char linebuf[BUFFER_SIZE];
+  for (line = gd.input_buffer; line && *line; line = next_line) {
+    char linebuf[INPUT_MAX];
 
     next_line = strchr(line, '\n');
 
     if (next_line) {
-      *next_line = 0;
-      next_line++;
+      *next_line = 0; /* Replace \n with a null-terminator */
+      next_line++;    /* Move the pointer to just after that \n */
 
-      /* Reset the repair buffer */
-      memset(gd.output_current_line, 0, strlen(gd.output_current_line));
-    } else if (wait_for_new_line || *line == 0) {
-      break;
+      gd.input_current_line_length = 0;
+    } else { /* Reached the last line */
+      if (wait_for_new_line) {
+        char temp[INPUT_MAX];
+
+        strcpy(temp, line);
+        strcpy(gd.input_buffer, temp);
+
+        gd.input_buffer_length = (int)strlen(line);
+
+        /* Leave and wait until called again without having to wait */
+        return;
+      }
+
+      /* Avoid overflow of the null-terminator */
+      strcat(&gd.input_current_line[gd.input_current_line_length], line);
+      gd.input_current_line[gd.input_current_line_length + strlen(line)] = 0;
+      gd.input_current_line_length = strlen(gd.input_current_line);
     }
 
     strcpy(linebuf, line);
@@ -146,22 +111,44 @@ void read_output_buffer(int wait_for_new_line) {
       check_all_highlights(linebuf);
     }
 
-    /* Used to repair the output after a CT command */
-    strcat(gd.output_current_line, linebuf);
-
     printline(linebuf, next_line == NULL);
   }
 
-  /* If waiting for a new line, copy the last line to the buffer */
-  if (wait_for_new_line) {
-    char temp[OUTPUT_MAX];
-
-    strcpy(temp, line);
-    strcpy(gd.output_buffer, temp);
-
-    gd.output_length = (int)strlen(line);
-    return;
+  /* BUG: Reading a config file will trigger this */
+  if (strcmp(&gd.input_current_line[gd.input_current_line_length -
+                                    strlen(gd.command_string)],
+             gd.command_string) == 0) {
+    read_command();
   }
 
-  gd.output_length = 0;
+  /* If we reached this point, then there's no more output in the buffer; reset
+   * the length */
+  gd.input_buffer_length = 0;
+}
+
+/* Read and process a CT-- command */
+void read_command(void) {
+  int len = 0;
+  char command_buffer[BUFFER_SIZE];
+  struct sigaction new, old;
+
+  new.sa_handler = sigint_handler_during_read;
+
+  fflush(stdout);
+
+  /* Ignore inturrupt signals */
+  sigaction(SIGINT, &new, &old);
+
+  freopen("/dev/tty", "r", stdin);
+  len = read(STDIN_FILENO, command_buffer, sizeof(command_buffer));
+
+  /* Restore original action */
+  sigaction(SIGINT, &old, NULL);
+
+  /* Remove the trailing \n */
+  command_buffer[strlen(command_buffer) - 1] = 0;
+  script_driver(command_buffer);
+  memset(&command_buffer, 0, len);
+
+  printline(gd.input_current_line, TRUE);
 }

@@ -103,7 +103,7 @@ DO_COMMAND(do_highlight) {
         val = bot + (top - bot) / 2;
       }
 
-      index = UMAX(0, val);
+      index = 0 > val ? 0 : val;
 
       gd.highlights_used++;
 

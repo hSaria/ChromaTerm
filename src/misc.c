@@ -2,8 +2,6 @@
 
 #include "defs.h"
 
-static int process_already_running = FALSE;
-
 DO_COMMAND(do_commands) {
   char buf[BUFFER_SIZE] = {0}, add[BUFFER_SIZE];
   int cmd;
@@ -112,63 +110,35 @@ DO_COMMAND(do_help) {
   }
 }
 
-DO_COMMAND(do_run) {
-  char temp[BUFFER_SIZE];
-  int desc, pid;
-
-  /* Limit to a single process */
-  if (process_already_running) {
-    display_printf("%cRUN: Process is already running; see %chelp run ",
-                   gd.command_char, gd.command_char);
-    return;
-  } else {
-    process_already_running = TRUE;
-  }
-
-  /* If it's quiet, then that must mean we're reading this run command from a
-   * file; do not launch a terminal after the read finishes */
-  if (gd.quiet) {
-    gd.run_overriden = TRUE;
-  }
-
-  char *argv[4] = {"sh", "-c", "", NULL};
-
-  /* If no process is provided, use the SHELL environment variable */
-  strcpy(temp, "exec ");
-  if (arg == NULL || *arg == 0) {
-    strcat(temp, getenv("SHELL") ? getenv("SHELL") : "");
-    strcat(temp, " -l"); /* Emulate a login shell */
-  } else {
-    strcat(temp, arg);
-    memset(arg, 0, strlen(arg));
-  }
-
-  pid = forkpty(&desc, NULL, &gd.active_terminal, NULL);
-
-  switch (pid) {
-  case -1:
-    perror("forkpty");
-    break;
-  case 0:
-    argv[2] = temp;
-    execv("/bin/sh", argv);
-    break;
-  default:
-    gd.pid = pid;
-    gd.socket = desc;
-
-    if (pthread_create(&output_thread, NULL, poll_output, NULL) != 0) {
-      quit_with_msg("failed to create input thread", 1);
-    }
-
-    break;
-  }
-}
-
 DO_COMMAND(do_showme) {
   char *pto = space_out(arg);
 
   check_all_highlights(pto);
 
   printline(pto, FALSE);
+}
+
+void script_driver(char *str) {
+  /* Skip any unnecessary command chars or spaces before the actual command */
+  while (*str == gd.command_char || isspace((int)*str)) {
+    str++;
+  }
+
+  if (*str != 0) {
+    char *args, line[BUFFER_SIZE];
+    int i;
+
+    /* Command stored in line, the rest in args */
+    args = get_arg(str, line);
+
+    for (i = 0; *command_table[i].name != 0; i++) {
+      if (is_abbrev(line, command_table[i].name)) {
+        (*command_table[i].command)(args);
+        *args = 0;
+        return;
+      }
+    }
+
+    display_printf("%cERROR: Unknown command '%s'", gd.command_char, line);
+  }
 }
