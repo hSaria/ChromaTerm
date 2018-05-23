@@ -211,8 +211,8 @@ void check_all_highlights(char *original) {
           to_skip--;
         }
 
-        sprintf(output, "%s%.*s%s%s\033[0m", output, count_inc_skipped, pto,
-                gd.highlights[i]->compiled_action, result.match);
+        cat_sprintf(output, "%.*s%s%s\033[0m", count_inc_skipped, pto,
+                    gd.highlights[i]->compiled_action, result.match);
 
         /* Move pto to after the match, and skip any vt102 codes, too. */
         pto = ptt;
