@@ -100,8 +100,3 @@ echo ""
 for ((i=0;i<${#no[@]};++i)); do
   echo "X ${no[$i]}"
 done
-
-echo -e "\n./some_file:"
-cat ./some_file
-
-rm -f ./some_file

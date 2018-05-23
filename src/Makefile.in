@@ -43,6 +43,9 @@ clean:
 
 test:
 	../.test.sh | ./ct -c ../.test_chromatermrc
+	
+	cat ./some_file
+	rm -f ./some_file
 
 distclean:
 	rm -f *.o config.status config.log ct Makefile config.h
