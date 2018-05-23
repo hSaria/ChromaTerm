@@ -28,20 +28,16 @@ struct color_type color_table[] = {
     {"violet", "<bad>"},       {"white", "<878>"},
     {"yellow", "<838>"},       {"", "<088>"}};
 
-struct command_type command_table[] = {{"COMMANDS", do_commands},
+struct command_type command_table[] = {{"HIGHLIGHT->ADD", do_highlight},
+                                       {"HIGHLIGHT->REMOVE", do_highlight},
                                        {"CONFIG", do_configure},
-                                       {"EXIT", do_exit},
+                                       {"CONFIG->SAVE", do_read},
+                                       {"CONFIG->LOAD", do_write},
                                        {"HELP", do_help},
-                                       {"HIGHLIGHT", do_highlight},
-                                       {"QUIT", do_exit},
-                                       {"READ", do_read},
-                                       {"SHOWME", do_showme},
-                                       {"UNHIGHLIGHT", do_unhighlight},
-                                       {"WRITE", do_write},
+                                       {"EXIT", do_exit},
                                        {"", NULL}};
 
 struct help_type help_table[] = {
-    {"ALL", ""},
     {"COLORDEMO",
      "<g00> g00<g01> g01<g02> g02<g03> g03<g04> g04<g05> g05<g06> g06<g07> "
      "g07<g08> g08<g09> g09<g10> g10<g11> g11\n<g12> g12<g13> g13<g14> "
@@ -134,27 +130,6 @@ struct help_type help_table[] = {
      "       For example: <<888>FCA><<888>baf>\n\n"
      "     Use <178>%%help colordemo<078> to get a list of available "
      "colors<088>\n\n"},
-    {"CONFIG",
-     "<028>Command<078>: %%config <178> {<078>option<178>}<078> <178> "
-     "{<078>argument<178>}<078>\n\n"
-     "     This allows you to configure various settings of CT--. The settings "
-     "can\n"
-     "       be written to file with the <178>%%write<078> command.\n\n"
-     "     It is recommended to make a configuration file to read on startup "
-     "if you\n"
-     "       do not like the default settings.\n\n"
-     "     CT-- will look for a configuration file called `.chromatermrc` in "
-     "the\n"
-     "       current working directory (`pwd`) then your home directory. It "
-     "will load\n"
-     "       the first one it finds.\n\n"},
-    {"EXIT", "<028>Command<078>: %%exit\n\n"
-             "     Terminates the program and the child process. You can also "
-             "use <178>%%quit<078>\n\n"},
-    {"HELP",
-     "<028>Command<078>: %%help <178>{<078>subject<178>}<078>\n\n"
-     "     Without an argument, %%help will list all available help topics.\n\n"
-     "     Using <178>%%help all<078> will display all help entries.<088>\n\n"},
     {"HIGHLIGHT",
      "<028>Command<078>: %%highlight <178>{<078>regular expression<178>}<078> "
      "<178>{<078>action<178>}<078> <178>{<078>priority<178>}<078>\n\n"
@@ -193,25 +168,24 @@ struct help_type help_table[] = {
      "emulators.\n\n"
      "<078>Comment<078>: You can remove a highlight with the "
      "<178>%%unhighlight<078> command.<088>\n\n"},
-    {"READ", "<028>Command<078>: %%read <178>{<078>filename<178>}<078>\n\n"
-             "     Reads CT-- commands from a file.  The commands in the file "
-             "are merged in\n"
-             "       with the currently loaded commands.\n\n"
-             "     You can add a comment with: /* comment */\n\n"
-             "     When reading a file, the first character that is not a part "
-             "of a comment\n"
-             "       is considered the command character.\n\n"
-             "     The command character must me a punctuation:\n"
-             "       !@#$%%^&*-+=',.\"\\/:;?_`<>()[]{}|~,<088>\n\n"},
-    {"RUN", "<028>Command<078>: %%run <178>{<078>process<178>}<078>\n\n"
-            "     You may add this command to your configuration file to "
-            "overwrite the\n"
-            "       default process (SHELL environment variable).\n\n"
-            "<078>Example<078>: %%run {ssh someone@somewhere.com}<088>\n\n"},
-    {"SHOWME", "<028>Command<078>: %%showme <178>...<078>\n\n"
-               "     Used for printing out a message to the console.\n\n"
-               "<078>Example<078>: %%showme Hello, World!<088>\n\n"},
-    {"WRITE", "<028>Command<078>: %%write <178>{<078>filename<178>}<078>\n\n"
-              "     Writes the current CT-- configuration to the specified "
-              "filename.<088>\n\n"},
+    {"CONFIG",
+     "<028>Command<078>: %%config <178> {<078>option<178>}<078> <178> "
+     "{<078>argument<178>}<078>\n\n"
+     "     This allows you to configure various settings of CT--.\n\n"
+     "     It is recommended to make a configuration file to read on startup "
+     "if you\n"
+     "       do not like the default settings.\n\n"
+     "     CT-- will look for a configuration file called `.chromatermrc` in "
+     "the\n"
+     "       current working directory (`pwd`) then your home directory. It "
+     "will load\n"
+     "       the first one it finds.\n\n"
+     "<028>Command<078>: %%read <178>{<078>filename<178>}<078>\n\n"
+     "     Reads CT-- commands from a file.  The commands in the file are "
+     "merged in\n"
+     "       with the currently loaded commands.\n\n"
+     "     You can add comments with: /* comment */\n\n"
+     "<028>Command<078>: %%write <178>{<078>filename<178>}<078>\n\n"
+     "     Writes the current CT-- configuration to the specified "
+     "filename.<088>\n\n"},
     {"", ""}};

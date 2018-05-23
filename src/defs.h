@@ -13,6 +13,14 @@
 #include <unistd.h>
 #include <wordexp.h>
 
+/* For CT menu */
+#ifdef HAVE_CURSES_H
+#ifdef HAVE_MENU_H
+#include <curses.h>
+#include <menu.h>
+#endif
+#endif
+
 #ifdef HAVE_PCRE2_H
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
@@ -21,9 +29,6 @@
 #include <pcre.h>
 #endif
 #endif
-
-#ifndef __DEFS_H__
-#define __DEFS_H__
 
 #define VERSION "0.2.0"
 
@@ -68,15 +73,12 @@ struct global_data {
   int highlights_used;
 
   char command_char;
-  char command_string[BUFFER_SIZE];
   int flags;
   int quiet;
 
   int fd_ct;
   char input_buffer[INPUT_MAX];
-  char input_current_line[INPUT_MAX];
   int input_buffer_length;
-  int input_current_line_length;
 };
 
 struct highlight {
@@ -118,20 +120,11 @@ struct help_type {
   char *text;
 };
 
-#endif
-
-/* Function declarations */
-#ifndef __FILES_H__
-#define __FILES_H__
-
+/**** files.c ****/
 DO_COMMAND(do_read);
 DO_COMMAND(do_write);
 
-#endif
-
-#ifndef __HIGHLIGHT_H__
-#define __HIGHLIGHT_H__
-
+/**** highlight.c ****/
 DO_COMMAND(do_highlight);
 DO_COMMAND(do_unhighlight);
 
@@ -151,59 +144,37 @@ int skip_vt102_codes(char *str);
 void strip_vt102_codes(char *str, char *buf);
 void substitute(char *string, char *result);
 
-#endif
-
-#ifndef __IO_H__
-#define __IO_H__
-
+/**** io.c ****/
 void convert_meta(char *input, char *output);
 void process_input(int wait_for_new_line);
-void read_command(void);
-void sigint_handler_during_read(int sig);
 
-#endif
-
-#ifndef __MAIN_H__
-#define __MAIN_H__
-
+/**** main.c ****/
 extern struct global_data gd;
 
 int main(int argc, char **argv);
 void init_program(void);
 void help_menu(char *proc_name);
-void quit_with_msg(char *message, int exit_signal);
+void quit_with_msg(int exit_signal);
 
-#endif
-
-#ifndef __MISC_H__
-#define __MISC_H__
-
-DO_COMMAND(do_commands);
+/**** misc.c ****/
 DO_COMMAND(do_configure);
 DO_COMMAND(do_exit);
 DO_COMMAND(do_help);
-DO_COMMAND(do_showme);
-
 void script_driver(char *str);
 
+#ifdef HAVE_CURSES_H
+#ifdef HAVE_MENU_H
+int show_menu(char **item_strings, int count);
+#endif
 #endif
 
-#ifndef __TABLES_H__
-#define __TABLES_H__
-
+/**** tables.c ****/
 extern struct color_type color_table[];
 extern struct command_type command_table[];
 extern struct help_type help_table[];
 
-#endif
-
-#ifndef __UTILS_H__
-#define __UTILS_H__
-
+/**** utils.c ****/
 void cat_sprintf(char *dest, char *fmt, ...);
 void display_printf(char *format, ...);
 char *get_arg(char *string, char *result);
 int is_abbrev(char *s1, char *s2);
-char *space_out(char *string);
-
-#endif

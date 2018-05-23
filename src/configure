@@ -621,10 +621,11 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+pcreversion
 EGREP
 GREP
 CPP
-pcreversion
+menu
 SET_MAKE
 OBJEXT
 EXEEXT
@@ -1462,37 +1463,6 @@ fi
 
 } # ac_fn_c_try_link
 
-# ac_fn_c_check_header_compile LINENO HEADER VAR INCLUDES
-# -------------------------------------------------------
-# Tests whether HEADER exists and can be compiled using the include files in
-# INCLUDES, setting the cache variable VAR accordingly.
-ac_fn_c_check_header_compile ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if eval \${$3+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-#include <$2>
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$3=yes"
-else
-  eval "$3=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_header_compile
-
 # ac_fn_c_try_cpp LINENO
 # ----------------------
 # Try to preprocess conftest.$ac_ext, and return whether this succeeded.
@@ -1658,6 +1628,37 @@ fi
   as_fn_set_status $ac_retval
 
 } # ac_fn_c_try_run
+
+# ac_fn_c_check_header_compile LINENO HEADER VAR INCLUDES
+# -------------------------------------------------------
+# Tests whether HEADER exists and can be compiled using the include files in
+# INCLUDES, setting the cache variable VAR accordingly.
+ac_fn_c_check_header_compile ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+#include <$2>
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_header_compile
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -2842,14 +2843,15 @@ $as_echo "no" >&6; }
 fi
 
 
+
 ### Check for PCRE2. If not found, use legacy PCRE
-pcreversion=2
+menu=1
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing pcre2_compile_8" >&5
-$as_echo_n "checking for library containing pcre2_compile_8... " >&6; }
-if ${ac_cv_search_pcre2_compile_8+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing initscr" >&5
+$as_echo_n "checking for library containing initscr... " >&6; }
+if ${ac_cv_search_initscr+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_func_search_save_LIBS=$LIBS
@@ -2862,16 +2864,16 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char pcre2_compile_8 ();
+char initscr ();
 int
 main ()
 {
-return pcre2_compile_8 ();
+return initscr ();
   ;
   return 0;
 }
 _ACEOF
-for ac_lib in '' pcre2-8; do
+for ac_lib in '' ncurses; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
@@ -2879,63 +2881,38 @@ for ac_lib in '' pcre2-8; do
     LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
   fi
   if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_pcre2_compile_8=$ac_res
+  ac_cv_search_initscr=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext
-  if ${ac_cv_search_pcre2_compile_8+:} false; then :
+  if ${ac_cv_search_initscr+:} false; then :
   break
 fi
 done
-if ${ac_cv_search_pcre2_compile_8+:} false; then :
+if ${ac_cv_search_initscr+:} false; then :
 
 else
-  ac_cv_search_pcre2_compile_8=no
+  ac_cv_search_initscr=no
 fi
 rm conftest.$ac_ext
 LIBS=$ac_func_search_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_pcre2_compile_8" >&5
-$as_echo "$ac_cv_search_pcre2_compile_8" >&6; }
-ac_res=$ac_cv_search_pcre2_compile_8
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_initscr" >&5
+$as_echo "$ac_cv_search_initscr" >&6; }
+ac_res=$ac_cv_search_initscr
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 else
 
-  pcreversion=1;
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: PCRE2 library check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&5
-$as_echo "$as_me: WARNING: PCRE2 library check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&2;}
-
+  menu=0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ncurses library was not found; interactive CT menu will not be available" >&5
+$as_echo "$as_me: WARNING: ncurses library was not found; interactive CT menu will not be available" >&2;}
 fi
 
-
-if  test $pcreversion == 2; then  # Only run this check if the AC_SEARCH_LIBS above didn't fail
-  for ac_header in pcre2.h
-do :
-  ac_fn_c_check_header_compile "$LINENO" "pcre2.h" "ac_cv_header_pcre2_h" "#define PCRE2_CODE_UNIT_WIDTH 8
-"
-if test "x$ac_cv_header_pcre2_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_PCRE2_H 1
-_ACEOF
-
-else
-
-    pcreversion=1
-	  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: PCRE2 header check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&5
-$as_echo "$as_me: WARNING: PCRE2 header check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&2;}
-
-fi
-
-done
-
-fi
-
-if  test $pcreversion == 1 ; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing pcre_compile" >&5
-$as_echo_n "checking for library containing pcre_compile... " >&6; }
-if ${ac_cv_search_pcre_compile+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing post_menu" >&5
+$as_echo_n "checking for library containing post_menu... " >&6; }
+if ${ac_cv_search_post_menu+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_func_search_save_LIBS=$LIBS
@@ -2948,16 +2925,16 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char pcre_compile ();
+char post_menu ();
 int
 main ()
 {
-return pcre_compile ();
+return post_menu ();
   ;
   return 0;
 }
 _ACEOF
-for ac_lib in '' pcre; do
+for ac_lib in '' menu; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
@@ -2965,33 +2942,38 @@ for ac_lib in '' pcre; do
     LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
   fi
   if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_pcre_compile=$ac_res
+  ac_cv_search_post_menu=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext
-  if ${ac_cv_search_pcre_compile+:} false; then :
+  if ${ac_cv_search_post_menu+:} false; then :
   break
 fi
 done
-if ${ac_cv_search_pcre_compile+:} false; then :
+if ${ac_cv_search_post_menu+:} false; then :
 
 else
-  ac_cv_search_pcre_compile=no
+  ac_cv_search_post_menu=no
 fi
 rm conftest.$ac_ext
 LIBS=$ac_func_search_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_pcre_compile" >&5
-$as_echo "$ac_cv_search_pcre_compile" >&6; }
-ac_res=$ac_cv_search_pcre_compile
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_post_menu" >&5
+$as_echo "$ac_cv_search_post_menu" >&6; }
+ac_res=$ac_cv_search_post_menu
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 else
-  as_fn_error $? "PCRE library check failed (is PCRE development installed and linked?)" "$LINENO" 5
+
+  menu=0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: menu library was not found; interactive CT menu will not be available" >&5
+$as_echo "$as_me: WARNING: menu library was not found; interactive CT menu will not be available" >&2;}
 fi
 
-	ac_ext=c
+
+if  test $menu == 1; then
+  ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -3388,7 +3370,173 @@ fi
 done
 
 
-for ac_header in pcre.h
+for ac_header in curses.h menu.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: curses.h and/or menu.h libraries were not found; interactive CT menu will not be available" >&5
+$as_echo "$as_me: WARNING: curses.h and/or menu.h libraries were not found; interactive CT menu will not be available" >&2;}
+fi
+
+done
+
+fi
+###
+
+### Check for PCRE2. If not found, use legacy PCRE
+pcreversion=2
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing pcre2_compile_8" >&5
+$as_echo_n "checking for library containing pcre2_compile_8... " >&6; }
+if ${ac_cv_search_pcre2_compile_8+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pcre2_compile_8 ();
+int
+main ()
+{
+return pcre2_compile_8 ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' pcre2-8; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_pcre2_compile_8=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_pcre2_compile_8+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_pcre2_compile_8+:} false; then :
+
+else
+  ac_cv_search_pcre2_compile_8=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_pcre2_compile_8" >&5
+$as_echo "$ac_cv_search_pcre2_compile_8" >&6; }
+ac_res=$ac_cv_search_pcre2_compile_8
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+
+  pcreversion=1;
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: PCRE2 library check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&5
+$as_echo "$as_me: WARNING: PCRE2 library check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&2;}
+fi
+
+
+if  test $pcreversion == 2; then  # Only run this check if the AC_SEARCH_LIBS above didn't fail
+  for ac_header in pcre2.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "pcre2.h" "ac_cv_header_pcre2_h" "#define PCRE2_CODE_UNIT_WIDTH 8
+"
+if test "x$ac_cv_header_pcre2_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PCRE2_H 1
+_ACEOF
+
+else
+
+    pcreversion=1
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: PCRE2 header check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&5
+$as_echo "$as_me: WARNING: PCRE2 header check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&2;}
+
+fi
+
+done
+
+fi
+
+if  test $pcreversion == 1 ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing pcre_compile" >&5
+$as_echo_n "checking for library containing pcre_compile... " >&6; }
+if ${ac_cv_search_pcre_compile+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pcre_compile ();
+int
+main ()
+{
+return pcre_compile ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' pcre; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_pcre_compile=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_pcre_compile+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_pcre_compile+:} false; then :
+
+else
+  ac_cv_search_pcre_compile=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_pcre_compile" >&5
+$as_echo "$ac_cv_search_pcre_compile" >&6; }
+ac_res=$ac_cv_search_pcre_compile
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+else
+  as_fn_error $? "PCRE library check failed (is PCRE development installed and linked?)" "$LINENO" 5
+fi
+
+	for ac_header in pcre.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "pcre.h" "ac_cv_header_pcre_h" "$ac_includes_default"
 if test "x$ac_cv_header_pcre_h" = xyes; then :

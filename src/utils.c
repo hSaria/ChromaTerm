@@ -27,7 +27,7 @@ void display_printf(char *format, ...) {
   va_end(args);
 
   write(gd.fd_ct, buf, strlen(buf));
-  write(gd.fd_ct, "\n", 1);
+  write(gd.fd_ct, "\r", 1);
 }
 
 /* The outer-most braces (if any) are stripped; all else left as is */
@@ -35,7 +35,12 @@ char *get_arg(char *string, char *result) {
   char *pti, *pto;
   int nest = 1;
 
-  pti = space_out(string);
+  /* advance to the next none-space character */
+  while (isspace((int)*string)) {
+    string++;
+  }
+
+  pti = string;
   pto = result;
 
   /*Use a space as the separator if not wrapped with braces */
@@ -85,12 +90,4 @@ int is_abbrev(char *s1, char *s2) {
     return FALSE;
   }
   return !strncasecmp(s2, s1, strlen(s1));
-}
-
-/* advance ptr to the next none-space character */
-char *space_out(char *string) {
-  while (isspace((int)*string)) {
-    string++;
-  }
-  return string;
 }

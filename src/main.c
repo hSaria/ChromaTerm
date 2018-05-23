@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   }
 
   /* Read configuration if not overridden by the launch arguments */
-  if (!config_override) {
+  if (!config_override && FALSE) { // TEMP
     if (access(".chromatermrc", R_OK) == 0) {
       do_read(".chromatermrc");
     } else {
@@ -52,6 +52,24 @@ int main(int argc, char **argv) {
       }
     }
   }
+
+  char *hello[10];
+  int i = 0, sel = -1;
+  for (i = 0; *command_table[i].name != 0; i++) {
+    hello[i] = command_table[i].name;
+  }
+
+  sel = show_menu(hello, i);
+  if (sel > -1) {
+    printf("%s\n", command_table[sel].name);
+  }
+
+  sel = show_menu(hello, 3);
+  if (sel > -1) {
+    printf("%s\n", command_table[sel].name);
+  }
+
+  quit_with_msg(EXIT_SUCCESS); // DEBUG
 
   FD_ZERO(&readfds); /* Initialise the file descriptor */
   FD_SET(STDIN_FILENO, &readfds);
@@ -75,11 +93,11 @@ int main(int argc, char **argv) {
       process_input(FALSE); /* Process all that's left */
     } else if (rv < 0) {    /* error */
       perror("select returned < 0");
-      quit_with_msg(NULL, EXIT_FAILURE);
+      quit_with_msg(EXIT_FAILURE);
     }
   }
 
-  quit_with_msg(NULL, 0);
+  quit_with_msg(EXIT_SUCCESS);
   return 0; /* Literally useless, but gotta make a warning shut up. */
 }
 
@@ -90,13 +108,21 @@ void init_program() {
 
   /* Default configuration values */
   gd.command_char = '%';
-  strcpy(gd.command_string, "hello:");
   SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
   SET_BIT(gd.flags, SES_FLAG_INTERACTIVE);
 
+#ifdef HAVE_CURSES_H
+#ifdef HAVE_MENU_H
+  initscr();            /* initialise default ncurses screen (stdscr) */
+  cbreak();             /* Disable line buffering */
+  noecho();             /* Don't print input to the CT menu back */
+  keypad(stdscr, TRUE); /* Accept special characters (e.g. arrow keys) */
+#endif
+#endif
+
   if ((gd.fd_ct = open("/dev/tty", O_RDWR)) < 0) { /* Used for CT */
     perror("Couldn't open /dev/tty");
-    quit_with_msg(NULL, EXIT_FAILURE);
+    quit_with_msg(EXIT_FAILURE);
   }
 }
 
@@ -104,14 +130,13 @@ void help_menu(char *proc_name) {
   display_printf("ChromaTerm-- v%s", VERSION);
   display_printf("Usage: %s [OPTION]... [FILE]...", proc_name);
   display_printf("    -c {CONFIG_FILE}      Override configuration file");
-  display_printf("    -p                    Passive CT-- (don't allow CT-- "
-                 "commands while running)");
+  display_printf("    -p                    Passive CT-- (menu disabled)");
   display_printf("    -t {TITLE}            Set title");
 
-  quit_with_msg(NULL, 2);
+  quit_with_msg(2);
 }
 
-void quit_with_msg(char *message, int exit_signal) {
+void quit_with_msg(int exit_signal) {
 
   /* Free memory used by highlights */
   while (gd.highlights[0]) {
@@ -120,10 +145,7 @@ void quit_with_msg(char *message, int exit_signal) {
 
   free(gd.highlights);
 
-  /* Print msg, if any */
-  if (message) {
-    printf("\n%s\n", message);
-  }
+  close(gd.fd_ct);
 
   fflush(stdout);
   exit(exit_signal);

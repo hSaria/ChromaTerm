@@ -2,24 +2,33 @@
 
 #include "defs.h"
 
-DO_COMMAND(do_commands) {
-  char buf[BUFFER_SIZE] = {0}, add[BUFFER_SIZE];
-  int cmd;
-
-  for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
-    if (*arg && !is_abbrev(arg, command_table[cmd].name)) {
-      continue;
-    }
-
-    sprintf(add, "%-14s", command_table[cmd].name);
-    strcat(buf, add);
-  }
-  if (buf[0]) {
-    display_printf(buf);
-  }
-}
-
 DO_COMMAND(do_configure) {
+  int sel = -1;
+  char *config[3] = {"COMMAND CHAR = ", "CONVERT META = ", "HIGHLIGHT    = "};
+
+  strcat(config[0], &gd.command_char);
+  strcat(config[1], HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA) ? "ON" : "OFF");
+  strcat(config[2], HAS_BIT(gd.flags, SES_FLAG_HIGHLIGHT) ? "ON" : "OFF");
+
+  sel = show_menu(config, 3);
+
+  switch (sel) {
+  case 0:
+    break;
+  case 1:
+    TOG_BIT(gd.flags, SES_FLAG_CONVERTMETA);
+    break;
+  case 2: /* Toggle the highlight option */
+    TOG_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
+    break;
+  default:
+    return;
+  }
+
+  do_configure(NULL);
+
+  return;
+
   char left[BUFFER_SIZE];
 
   arg = get_arg(arg, left);
@@ -72,10 +81,8 @@ DO_COMMAND(do_configure) {
 }
 
 DO_COMMAND(do_exit) {
-  if (*arg) {
-    quit_with_msg(arg, 0);
-  }
-  quit_with_msg(NULL, 0);
+  (void)arg; /* To make a warning shut up */
+  quit_with_msg(EXIT_SUCCESS);
 }
 
 DO_COMMAND(do_help) {
@@ -93,7 +100,7 @@ DO_COMMAND(do_help) {
   } else {
     int found = FALSE;
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
-      if (is_abbrev(left, help_table[cnt].name) || is_abbrev(left, "all")) {
+      if (is_abbrev(left, help_table[cnt].name)) {
         char buf[BUFFER_SIZE];
         found = TRUE;
 
@@ -110,13 +117,20 @@ DO_COMMAND(do_help) {
   }
 }
 
-DO_COMMAND(do_showme) {
-  char *pto = space_out(arg);
+/* Read and process a CT-- command */
+#ifdef HAVE_CURSES_H
+#ifdef HAVE_MENU_H
+void read_command(void) { // TEMP
+  int len = 0;
+  char command_buffer[BUFFER_SIZE];
 
-  check_all_highlights(pto);
-
-  display_printf(pto);
+  /* Remove the trailing \n */
+  command_buffer[strlen(command_buffer) - 1] = 0;
+  script_driver(command_buffer);
+  memset(&command_buffer, 0, len);
 }
+#endif
+#endif
 
 void script_driver(char *str) {
   /* Skip any unnecessary command chars or spaces before the actual command */
@@ -142,3 +156,51 @@ void script_driver(char *str) {
     display_printf("%cERROR: Unknown command '%s'", gd.command_char, line);
   }
 }
+
+#ifdef HAVE_CURSES_H
+#ifdef HAVE_MENU_H
+int show_menu(char **item_strings, int count) {
+  int c, i, selection = 0;
+  MENU *menu;
+  ITEM **items = (ITEM **)calloc(count, sizeof(ITEM *));
+
+  for (i = 0; i < count; ++i) {
+    items[i] = new_item(item_strings[i], "");
+  }
+
+  menu = new_menu(items);
+  set_menu_mark(menu, "* ");
+
+  mvprintw(LINES - 2, 0, "Q to close menu");
+
+  post_menu(menu);
+  refresh();
+
+  while ((c = getch())) {
+    if (c == KEY_UP || tolower(c) == 'w') {
+      menu_driver(menu, REQ_UP_ITEM);
+      selection = selection > 0 ? selection - 1 : selection;
+    } else if (c == KEY_DOWN || tolower(c) == 's') {
+      menu_driver(menu, REQ_DOWN_ITEM);
+      selection = selection < count ? selection + 1 : selection;
+    } else if (c == '\n') {
+      break;
+    } else if (tolower(c) == 'q') {
+      selection = -1;
+      break;
+    }
+  }
+
+  unpost_menu(menu);
+
+  for (i = 0; i < count; ++i) {
+    free_item(items[i]);
+  }
+
+  free_menu(menu);
+  endwin();
+
+  return selection;
+}
+#endif
+#endif
