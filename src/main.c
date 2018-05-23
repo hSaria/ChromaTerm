@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 
     optind = 1;
 
-    while ((c = getopt(argc, argv, "h i c: t:")) != EOF) {
+    while ((c = getopt(argc, argv, "h c: t: p")) != EOF) {
       switch (c) {
       case 'c':
         if (access(optarg, R_OK) == 0) {
