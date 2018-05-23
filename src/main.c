@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
       process_input(FALSE); /* Process all that's left */
     } else if (rv < 0) {    /* error */
       perror("select returned < 0");
-      quit_with_msg(NULL, 1);
+      quit_with_msg(NULL, EXIT_FAILURE);
     }
   }
 
@@ -96,7 +96,7 @@ void init_program() {
 
   if ((gd.fd_ct = open("/dev/tty", O_RDWR)) < 0) { /* Used for CT */
     perror("Couldn't open /dev/tty");
-    quit_with_msg(NULL, 1);
+    quit_with_msg(NULL, EXIT_FAILURE);
   }
 }
 
