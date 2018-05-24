@@ -15,10 +15,10 @@ void cat_sprintf(char *dest, char *fmt, ...) {
 }
 
 void display_printf(char *format, ...) {
+#if (defined HAVE_CURSES_H && defined HAVE_MENU_H)
   if (gd.quiet) {
     return;
   }
-
   char buf[BUFFER_SIZE * 4];
   va_list args;
 
@@ -27,7 +27,8 @@ void display_printf(char *format, ...) {
   va_end(args);
 
   write(gd.fd_ct, buf, strlen(buf));
-  write(gd.fd_ct, "\r", 1);
+  write(gd.fd_ct, "\n", 1);
+#endif
 }
 
 /* The outer-most braces (if any) are stripped; all else left as is */
@@ -36,11 +37,12 @@ char *get_arg(char *string, char *result) {
   int nest = 1;
 
   /* advance to the next none-space character */
-  while (isspace((int)*string)) {
-    string++;
+  pti = string;
+
+  while (isspace((int)*pti)) {
+    pti++;
   }
 
-  pti = string;
   pto = result;
 
   /*Use a space as the separator if not wrapped with braces */
@@ -75,7 +77,7 @@ char *get_arg(char *string, char *result) {
   }
 
   if (*pti == 0) {
-    display_printf("%cERROR: No closing bracket for argument", gd.command_char);
+    display_printf("ERROR: No closing bracket for argument");
   } else {
     pti++;
   }

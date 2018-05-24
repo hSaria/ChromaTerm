@@ -3,204 +3,240 @@
 #include "defs.h"
 
 DO_COMMAND(do_configure) {
-  int sel = -1;
-  char *config[3] = {"COMMAND CHAR = ", "CONVERT META = ", "HIGHLIGHT    = "};
+  char left[BUFFER_SIZE], right[BUFFER_SIZE];
 
-  strcat(config[0], &gd.command_char);
-  strcat(config[1], HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA) ? "ON" : "OFF");
-  strcat(config[2], HAS_BIT(gd.flags, SES_FLAG_HIGHLIGHT) ? "ON" : "OFF");
+  strcpy(right, get_arg(arg, left));
 
-  sel = show_menu(config, 3);
+  get_arg(right, right);
 
-  switch (sel) {
-  case 0:
-    break;
-  case 1:
-    TOG_BIT(gd.flags, SES_FLAG_CONVERTMETA);
-    break;
-  case 2: /* Toggle the highlight option */
-    TOG_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
-    break;
-  default:
+  if (*left != 0 && *right != 0) {
+    if (is_abbrev(left, "CONVERT META")) {
+      if (!strcasecmp(right, "ON")) {
+        SET_BIT(gd.flags, SES_FLAG_CONVERTMETA);
+      } else if (!strcasecmp(right, "OFF")) {
+        DEL_BIT(gd.flags, SES_FLAG_CONVERTMETA);
+      }
+    } else if (is_abbrev(left, "HIGHLIGHT")) {
+      if (!strcasecmp(right, "ON")) {
+        SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
+      } else if (!strcasecmp(right, "OFF")) {
+        DEL_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
+      }
+    } else if (is_abbrev(left, "READ")) {
+      do_read(right);
+    } else if (is_abbrev(left, "WRITE")) {
+      do_write(right);
+    }
+  }
+}
+
+DO_COMMAND(do_read) {
+  FILE *fp;
+  struct stat filedata;
+  char *bufi, *bufo, filename[BUFFER_SIZE], *pti, *pto, last = 0;
+  int lvl, com, lnc;
+  wordexp_t p;
+
+  get_arg(arg, filename);
+
+  if (wordexp(filename, &p, 0) == 0) {
+    strcpy(filename, *p.we_wordv);
+    wordfree(&p);
+  } else {
+    display_printf("Failed while performing word expansion on {%s}", filename);
     return;
   }
 
-  do_configure(NULL);
+  if ((fp = fopen(filename, "r")) == NULL) {
+    display_printf("File {%s} not found", filename);
+    return;
+  }
 
-  return;
+  stat(filename, &filedata);
 
-  char left[BUFFER_SIZE];
+  if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
+    display_printf("Failed to allocate i_buffer memory to process file {%s}",
+                   filename);
+    fclose(fp);
+    return;
+  } else if ((bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
+    display_printf("Failed to allocate o_buffer memory to process file {%s}",
+                   filename);
+    free(bufi);
+    fclose(fp);
+    return;
+  }
 
-  arg = get_arg(arg, left);
-  get_arg(arg, arg);
+  if (fread(bufi, 1, filedata.st_size, fp) == 0) {
+    display_printf("File is empty", filename);
+    free(bufi);
+    free(bufo);
+    fclose(fp);
+    return;
+  };
 
-  if (*left == 0) {
-    display_printf("%-12s = %-3c    [%s]", "COMMAND CHAR", gd.command_char,
-                   "The character used for CT-- commands");
-    display_printf("%-12s = %-3s    [%s]", "CONVERT META",
-                   HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA) ? "ON" : "OFF",
-                   "Convert meta and control characters");
-    display_printf("%-12s = %-3s    [%s]", "HIGHLIGHT",
-                   HAS_BIT(gd.flags, SES_FLAG_HIGHLIGHT) ? "ON" : "OFF",
-                   "Highlight according to rules");
+  pti = bufi;
+  pto = bufo;
+
+  lvl = com = lnc = 0;
+
+  while (*pti) {
+    if (com == 0) { /* Not in a comment */
+      switch (*pti) {
+      case DEFAULT_OPEN:
+        *pto++ = *pti++;
+        lvl++;
+        last = DEFAULT_OPEN;
+        break;
+      case DEFAULT_CLOSE:
+        *pto++ = *pti++;
+        lvl--;
+        last = DEFAULT_CLOSE;
+        break;
+      case ' ':
+        *pto++ = *pti++;
+        break;
+      case '/':                          /* Check if comment */
+        if (lvl == 0 && pti[1] == '*') { /* lvl == 0 means not in an argument */
+          pti += 2;
+          com += 1;
+        } else {
+          *pto++ = *pti++;
+        }
+        break;
+      case '\r': /* skip \r (we expect \n) */
+        pti++;
+        break;
+      case '\n':
+        if (lvl) { /* Closing brackets missing; remove command */
+          char *previous_line = strrchr(pto, '\n');
+          if (previous_line) { /* There's a previous line */
+            previous_line--;
+            pto = previous_line;
+          } else { /* Go back to beginning of bufo (no previous line) */
+            pto = bufo;
+          }
+        }
+
+        *pto++ = *pti++;
+        lnc++;
+        break;
+      default:
+        *pto++ = *pti++;
+        last = 0;
+        break;
+      }
+    } else { /* In a comment */
+      switch (*pti) {
+      case '/':
+        if (pti[1] == '*') { /* Comment in a comment */
+          pti += 2;
+          com += 1;
+        } else {
+          pti++;
+        }
+        break;
+      case '*':
+        if (pti[1] == '/') { /* Comment close */
+          pti += 2;
+          com -= 1;
+        } else {
+          pti++;
+        }
+        break;
+      default: /* Advance forward (we're in a comment) */
+        pti++;
+        break;
+      }
+    }
+  }
+
+  *pto++ = '\n';
+  *pto = 0;
+
+  gd.quiet++; /* Stop messages from printing */
+
+  pti = bufo;
+  pto = bufo;
+
+  while (*pti) {
+    if (*pti != '\n') { /* Seek until you reach \n */
+      pti++;
+      continue;
+    }
+    *pti = 0; /* replace \n with null-terminator */
+
+    if (strlen(pto) >= BUFFER_SIZE) {
+      gd.quiet--;
+      /* Only output the first 20 characters of the overflowing command */
+      *(pto + 20) = 0;
+      display_printf("Command too long {%s}", pto);
+
+      fclose(fp);
+      free(bufi);
+      free(bufo);
+      return;
+    }
+
+    if (*pto) {
+      int i;
+      char args[BUFFER_SIZE], command[BUFFER_SIZE];
+
+      strcpy(args, get_arg(pto, command));
+
+      for (i = 0; *command_table[i].name != 0; i++) {
+        if (is_abbrev(command, command_table[i].name)) {
+          (*command_table[i].command)(args);
+          break;
+        }
+      }
+    }
+
+    pti++; /* Move to the position after the null-terminator */
+    pto = pti;
+  }
+
+  gd.quiet--; /* Resume messages */
+
+  free(bufi);
+  free(bufo);
+  fclose(fp);
+}
+
+DO_COMMAND(do_write) {
+  FILE *file;
+  char filename[BUFFER_SIZE], result[BUFFER_SIZE * 4];
+  int i;
+  wordexp_t p;
+
+  get_arg(arg, filename);
+
+  if (wordexp(filename, &p, 0) == 0) {
+    strcpy(filename, *p.we_wordv);
+    wordfree(&p);
   } else {
-    if (is_abbrev(left, "COMMAND CHAR")) {
-      if (*arg == 0) {
-        display_printf("%1$cSYNTAX: %1$cCONFIG {COMMAND CHAR} {CHAR}",
-                       gd.command_char);
-      } else if (!ispunct((int)arg[0])) {
-        display_printf("%cERROR: Commad character must me a punctuation: "
-                       "!@#$%%^&*-+=',.\"\\/:;?_`<>()[]{}|~",
-                       gd.command_char);
-      } else {
-        gd.command_char = arg[0];
-      }
-    } else if (is_abbrev(left, "CONVERT META")) {
-      if (!strcasecmp(arg, "ON")) {
-        SET_BIT(gd.flags, SES_FLAG_CONVERTMETA);
-      } else if (!strcasecmp(arg, "OFF")) {
-        DEL_BIT(gd.flags, SES_FLAG_CONVERTMETA);
-      } else {
-        display_printf("%1$cSYNTAX: %1$cCONFIG {CONVERT META} {ON|OFF}",
-                       gd.command_char);
-      }
-    } else if (is_abbrev(left, "HIGHLIGHT")) {
-      if (!strcasecmp(arg, "ON")) {
-        SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
-      } else if (!strcasecmp(arg, "OFF")) {
-        DEL_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
-      } else {
-        display_printf("%1$cSYNTAX: %1$cCONFIG {HIGHLIGHT} {ON|OFF}",
-                       gd.command_char);
-      }
-    } else {
-      display_printf("%cERROR: {%s} is not a valid option", gd.command_char,
-                     left);
-    }
+    display_printf("Failed while performing word expansion on {%s}", filename);
+    return;
   }
+
+  if ((file = fopen(filename, "w")) == NULL) {
+    display_printf("ERROR: {%s} - Could not open to write", filename);
+    return;
+  }
+
+  sprintf(result,
+          "CONFIG {CONVERT META} {%s}\n"
+          "CONFIG {HIGHLIGHT} {%s}\n\n",
+          HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA) ? "ON" : "OFF",
+          HAS_BIT(gd.flags, SES_FLAG_HIGHLIGHT) ? "ON" : "OFF");
+  fputs(result, file);
+
+  for (i = 0; i < gd.highlights_used; i++) {
+    sprintf(result, "HIGHLIGHT->ADD {%s} {%s} {%s}\n",
+            gd.highlights[i]->condition, gd.highlights[i]->action,
+            gd.highlights[i]->priority);
+    fputs(result, file);
+  }
+
+  fclose(file);
 }
-
-DO_COMMAND(do_exit) {
-  (void)arg; /* To make a warning shut up */
-  quit_with_msg(EXIT_SUCCESS);
-}
-
-DO_COMMAND(do_help) {
-  char left[BUFFER_SIZE], add[BUFFER_SIZE];
-  int cnt;
-
-  get_arg(arg, left);
-
-  if (*left == 0) {
-    for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
-      cat_sprintf(add, "%-14s", help_table[cnt].name);
-    }
-    display_printf(add);
-
-  } else {
-    int found = FALSE;
-    for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
-      if (is_abbrev(left, help_table[cnt].name)) {
-        char buf[BUFFER_SIZE];
-        found = TRUE;
-
-        substitute(help_table[cnt].text, buf);
-
-        display_printf(buf);
-      }
-    }
-
-    if (!found) {
-      display_printf("%cHELP: No help found for topic '%s'", gd.command_char,
-                     left);
-    }
-  }
-}
-
-/* Read and process a CT-- command */
-#ifdef HAVE_CURSES_H
-#ifdef HAVE_MENU_H
-void read_command(void) { // TEMP
-  int len = 0;
-  char command_buffer[BUFFER_SIZE];
-
-  /* Remove the trailing \n */
-  command_buffer[strlen(command_buffer) - 1] = 0;
-  script_driver(command_buffer);
-  memset(&command_buffer, 0, len);
-}
-#endif
-#endif
-
-void script_driver(char *str) {
-  /* Skip any unnecessary command chars or spaces before the actual command */
-  while (*str == gd.command_char || isspace((int)*str)) {
-    str++;
-  }
-
-  if (*str != 0) {
-    char *args, line[BUFFER_SIZE];
-    int i;
-
-    /* Command stored in line, the rest in args */
-    args = get_arg(str, line);
-
-    for (i = 0; *command_table[i].name != 0; i++) {
-      if (is_abbrev(line, command_table[i].name)) {
-        (*command_table[i].command)(args);
-        *args = 0;
-        return;
-      }
-    }
-
-    display_printf("%cERROR: Unknown command '%s'", gd.command_char, line);
-  }
-}
-
-#ifdef HAVE_CURSES_H
-#ifdef HAVE_MENU_H
-int show_menu(char **item_strings, int count) {
-  int c, i, selection = 0;
-  MENU *menu;
-  ITEM **items = (ITEM **)calloc(count, sizeof(ITEM *));
-
-  for (i = 0; i < count; ++i) {
-    items[i] = new_item(item_strings[i], "");
-  }
-
-  menu = new_menu(items);
-  set_menu_mark(menu, "* ");
-
-  mvprintw(LINES - 2, 0, "Q to close menu");
-
-  post_menu(menu);
-  refresh();
-
-  while ((c = getch())) {
-    if (c == KEY_UP || tolower(c) == 'w') {
-      menu_driver(menu, REQ_UP_ITEM);
-      selection = selection > 0 ? selection - 1 : selection;
-    } else if (c == KEY_DOWN || tolower(c) == 's') {
-      menu_driver(menu, REQ_DOWN_ITEM);
-      selection = selection < count ? selection + 1 : selection;
-    } else if (c == '\n') {
-      break;
-    } else if (tolower(c) == 'q') {
-      selection = -1;
-      break;
-    }
-  }
-
-  unpost_menu(menu);
-
-  for (i = 0; i < count; ++i) {
-    free_item(items[i]);
-  }
-
-  free_menu(menu);
-  endwin();
-
-  return selection;
-}
-#endif
-#endif

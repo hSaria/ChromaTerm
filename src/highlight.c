@@ -15,23 +15,22 @@ DO_COMMAND(do_highlight) {
 
   if (*arg1 == 0 || *arg2 == 0) {
     if (gd.highlights_used == 0) {
-      display_printf("%cHIGHLIGHT: No rules configured", gd.command_char);
+      display_printf("HIGHLIGHT: No rules configured");
     } else {
       int i;
       for (i = 0; i < gd.highlights_used; i++) {
-        display_printf("%cHIGHLIGHT "
+        display_printf("HIGHLIGHT "
                        "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
                        "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
                        "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
-                       gd.command_char, gd.highlights[i]->condition,
-                       gd.highlights[i]->action, gd.highlights[i]->priority);
+                       gd.highlights[i]->condition, gd.highlights[i]->action,
+                       gd.highlights[i]->priority);
       }
     }
   } else {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(arg2, temp) == FALSE) {
-      display_printf("%cERROR: Invalid color code; see %chelp color",
-                     gd.command_char, gd.command_char);
+      display_printf("ERROR: Invalid color code; see HELP COLOR SYNTAX");
 
     } else {
 #ifdef HAVE_PCRE2_H
@@ -70,8 +69,8 @@ DO_COMMAND(do_highlight) {
 #endif
 
       if (highlight->compiled_regex == NULL) {
-        display_printf("%cWARNING: Couldn't compile regex at %i: %s",
-                       gd.command_char, error_number, error_pointer);
+        display_printf("WARNING: Couldn't compile regex at %i: %s",
+                       error_number, error_pointer);
       } else {
 #ifdef HAVE_PCRE2_H
         if (pcre2_jit_compile(highlight->compiled_regex, 0) == 0) {
@@ -125,13 +124,11 @@ DO_COMMAND(do_highlight) {
 
 DO_COMMAND(do_unhighlight) {
   int index;
+  char condition[BUFFER_SIZE];
 
-  get_arg(arg, arg);
+  get_arg(arg, condition);
 
-  if (*arg == 0) {
-    display_printf("%1$cSYNTAX: %1$cUNHIGHLIGHT {CONDITION}", gd.command_char);
-
-  } else if ((index = find_highlight_index(arg)) != -1) {
+  if (*condition != 0 && (index = find_highlight_index(condition)) != -1) {
     struct highlight *highlight = gd.highlights[index];
 
     if (highlight->compiled_regex != NULL) {
@@ -150,8 +147,6 @@ DO_COMMAND(do_unhighlight) {
             (gd.highlights_used - index) * sizeof(struct highlight *));
 
     gd.highlights_used--;
-  } else {
-    display_printf("%cUNHIGHLIGHT: Not found", gd.command_char);
   }
 }
 
@@ -298,7 +293,6 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
     result.start = -1;
     return result;
   }
-
   result_pos = pcre2_get_ovector_pointer(match);
 
   if (result_pos[0] > result_pos[1]) {
@@ -308,6 +302,7 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
 
   sprintf(result.match, "%.*s", (int)(result_pos[1] - result_pos[0]),
           &str[result_pos[0]]);
+
   result.start = (int)result_pos[0];
 
   pcre2_match_data_free(match);

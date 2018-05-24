@@ -13,14 +13,6 @@
 #include <unistd.h>
 #include <wordexp.h>
 
-/* For CT menu */
-#ifdef HAVE_CURSES_H
-#ifdef HAVE_MENU_H
-#include <curses.h>
-#include <menu.h>
-#endif
-#endif
-
 #ifdef HAVE_PCRE2_H
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
@@ -72,7 +64,6 @@ struct global_data {
   int highlights_size;
   int highlights_used;
 
-  char command_char;
   int flags;
   int quiet;
 
@@ -120,10 +111,6 @@ struct help_type {
   char *text;
 };
 
-/**** files.c ****/
-DO_COMMAND(do_read);
-DO_COMMAND(do_write);
-
 /**** highlight.c ****/
 DO_COMMAND(do_highlight);
 DO_COMMAND(do_unhighlight);
@@ -154,19 +141,23 @@ extern struct global_data gd;
 int main(int argc, char **argv);
 void init_program(void);
 void help_menu(char *proc_name);
-void quit_with_msg(int exit_signal);
+void quit_with_signal(int exit_signal);
+
+/**** menu.c ****/
+#if (defined HAVE_CURSES_H && defined HAVE_MENU_H)
+#include <curses.h>
+#include <menu.h>
+
+char *ask_for_input(void);
+void main_menu(void);
+int show_menu(char **item_strings, int count);
+void show_msg(char *msg);
+#endif
 
 /**** misc.c ****/
 DO_COMMAND(do_configure);
-DO_COMMAND(do_exit);
-DO_COMMAND(do_help);
-void script_driver(char *str);
-
-#ifdef HAVE_CURSES_H
-#ifdef HAVE_MENU_H
-int show_menu(char **item_strings, int count);
-#endif
-#endif
+DO_COMMAND(do_read);
+DO_COMMAND(do_write);
 
 /**** tables.c ****/
 extern struct color_type color_table[];

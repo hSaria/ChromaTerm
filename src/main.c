@@ -18,9 +18,9 @@ int main(int argc, char **argv) {
     while ((c = getopt(argc, argv, "h c: t: p")) != EOF) {
       switch (c) {
       case 'c':
+        config_override = TRUE;
         if (access(optarg, R_OK) == 0) {
           do_read(optarg);
-          config_override = TRUE;
         }
         break;
       case 't':
@@ -43,7 +43,6 @@ int main(int argc, char **argv) {
     } else {
       if (getenv("HOME") != NULL) {
         char filename[256];
-
         sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
 
         if (access(filename, R_OK) == 0) {
@@ -52,24 +51,6 @@ int main(int argc, char **argv) {
       }
     }
   }
-
-  char *hello[10];
-  int i = 0, sel = -1;
-  for (i = 0; *command_table[i].name != 0; i++) {
-    hello[i] = command_table[i].name;
-  }
-
-  sel = show_menu(hello, i);
-  if (sel > -1) {
-    printf("%s\n", command_table[sel].name);
-  }
-
-  sel = show_menu(hello, 3);
-  if (sel > -1) {
-    printf("%s\n", command_table[sel].name);
-  }
-
-  quit_with_msg(EXIT_SUCCESS); // DEBUG
 
   FD_ZERO(&readfds); /* Initialise the file descriptor */
   FD_SET(STDIN_FILENO, &readfds);
@@ -93,11 +74,11 @@ int main(int argc, char **argv) {
       process_input(FALSE); /* Process all that's left */
     } else if (rv < 0) {    /* error */
       perror("select returned < 0");
-      quit_with_msg(EXIT_FAILURE);
+      quit_with_signal(EXIT_FAILURE);
     }
   }
 
-  quit_with_msg(EXIT_SUCCESS);
+  quit_with_signal(EXIT_SUCCESS);
   return 0; /* Literally useless, but gotta make a warning shut up. */
 }
 
@@ -107,23 +88,23 @@ void init_program() {
   gd.highlights_size = 8;
 
   /* Default configuration values */
-  gd.command_char = '%';
   SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
   SET_BIT(gd.flags, SES_FLAG_INTERACTIVE);
 
-#ifdef HAVE_CURSES_H
-#ifdef HAVE_MENU_H
-  initscr();            /* initialise default ncurses screen (stdscr) */
-  cbreak();             /* Disable line buffering */
-  noecho();             /* Don't print input to the CT menu back */
-  keypad(stdscr, TRUE); /* Accept special characters (e.g. arrow keys) */
-#endif
-#endif
+#if (defined HAVE_CURSES_H && defined HAVE_MENU_H)
+#ifdef IWPGWEPJGpowgpojwegjpowejpog
+  while (TRUE) {
+    main_menu();
+  }
+
+  quit_with_signal(EXIT_SUCCESS);
 
   if ((gd.fd_ct = open("/dev/tty", O_RDWR)) < 0) { /* Used for CT */
     perror("Couldn't open /dev/tty");
-    quit_with_msg(EXIT_FAILURE);
+    quit_with_signal(EXIT_FAILURE);
   }
+#endif
+#endif
 }
 
 void help_menu(char *proc_name) {
@@ -133,10 +114,10 @@ void help_menu(char *proc_name) {
   display_printf("    -p                    Passive CT-- (menu disabled)");
   display_printf("    -t {TITLE}            Set title");
 
-  quit_with_msg(2);
+  quit_with_signal(2);
 }
 
-void quit_with_msg(int exit_signal) {
+void quit_with_signal(int exit_signal) {
 
   /* Free memory used by highlights */
   while (gd.highlights[0]) {
