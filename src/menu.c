@@ -3,7 +3,7 @@
 #include "defs.h"
 
 void MENU_ACTION_CONFIG(void) {
-  int sel = -1;
+  int sel;
   char convert_meta[BUFFER_SIZE], highlight[BUFFER_SIZE], read[BUFFER_SIZE],
       write[BUFFER_SIZE], value[BUFFER_SIZE], *config[4];
 

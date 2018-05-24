@@ -33,7 +33,7 @@ DO_COMMAND(do_configure) {
 DO_COMMAND(do_read) {
   FILE *fp;
   struct stat filedata;
-  char *bufi, *bufo, filename[BUFFER_SIZE], *pti, *pto, last = 0;
+  char *bufi, *bufo, filename[BUFFER_SIZE], *pti, *pto;
   int lvl, com, lnc;
   wordexp_t p;
 
@@ -86,12 +86,10 @@ DO_COMMAND(do_read) {
       case DEFAULT_OPEN:
         *pto++ = *pti++;
         lvl++;
-        last = DEFAULT_OPEN;
         break;
       case DEFAULT_CLOSE:
         *pto++ = *pti++;
         lvl--;
-        last = DEFAULT_CLOSE;
         break;
       case ' ':
         *pto++ = *pti++;
@@ -123,7 +121,6 @@ DO_COMMAND(do_read) {
         break;
       default:
         *pto++ = *pti++;
-        last = 0;
         break;
       }
     } else { /* In a comment */
