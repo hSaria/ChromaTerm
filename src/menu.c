@@ -59,6 +59,10 @@ void MENU_ACTION_HELP(void) {
     cnt++;
   }
 
+  if (cnt < 1) {
+    return;
+  }
+
   char *help_subjects[cnt];
 
   for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
