@@ -3,19 +3,21 @@
 #include "defs.h"
 
 DO_COMMAND(do_commands) {
-  char buf[BUFFER_SIZE], add[BUFFER_SIZE];
+  char add[BUFFER_SIZE], left[BUFFER_SIZE];
   int cmd;
 
-  for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
-    if (*arg && !is_abbrev(arg, command_table[cmd].name)) {
+  get_arg(arg, left);
+
+  for (cmd = add[0] = 0; *command_table[cmd].name != 0; cmd++) {
+    if (*left && !is_abbrev(left, command_table[cmd].name)) {
       continue;
     }
 
-    sprintf(add, "%-14s", command_table[cmd].name);
-    strcat(buf, add);
+    cat_sprintf(add, "%-14s", command_table[cmd].name);
   }
-  if (buf[0]) {
-    display_printf(buf);
+
+  if (add[0]) {
+    display_printf(add);
   }
 }
 
@@ -23,7 +25,6 @@ DO_COMMAND(do_configure) {
   char left[BUFFER_SIZE], right[BUFFER_SIZE];
 
   strcpy(right, get_arg(arg, left));
-
   get_arg(right, right);
 
   if (*left != 0) {
@@ -69,21 +70,34 @@ DO_COMMAND(do_configure) {
     } else {
       display_printf("ERROR: Unknown option '%s'", left);
     }
+  } else {
+    display_printf("%-12s = %-6c [%s]", "COMMAND CHAR", gd.command_char,
+                   "The character used for CT-- commands");
+    display_printf("%-12s = %-6s [%s]", "CONVERT META",
+                   HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA) ? "ON" : "OFF",
+                   "Convert meta and control characters");
+    display_printf("%-12s = %-6s [%s]", "HIGHLIGHT",
+                   HAS_BIT(gd.flags, SES_FLAG_HIGHLIGHT) ? "ON" : "OFF",
+                   "Highlight according to rules");
+    display_printf("%-21s [%s]", "READ", "Read configuration from a file");
+    display_printf("%-21s [%s]", "WRITE", "Write configuration to a file");
   }
 }
 
 DO_COMMAND(do_help) {
-  char left[BUFFER_SIZE], add[BUFFER_SIZE];
+  char left[BUFFER_SIZE];
   int cnt;
 
   get_arg(arg, left);
 
   if (*left == 0) {
+    char add[BUFFER_SIZE];
     for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
       cat_sprintf(add, "%-14s", help_table[cnt].name);
     }
-    display_printf(add);
-
+    if (add[0]) {
+      display_printf(add);
+    }
   } else {
     int found = FALSE;
     for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
@@ -92,13 +106,12 @@ DO_COMMAND(do_help) {
         found = TRUE;
 
         substitute(help_table[cnt].text, buf);
-
         display_printf(buf);
       }
     }
 
     if (!found) {
-      display_printf("HELP: No help found for topic '%s'", left);
+      display_printf("ERROR: No help found for topic '%s'", left);
     }
   }
 }
@@ -227,8 +240,6 @@ DO_COMMAND(do_read) {
   *pto++ = '\n';
   *pto = 0;
 
-  gd.quiet++; /* Stop messages from printing */
-
   pti = bufo;
   pto = bufo;
 
@@ -240,7 +251,6 @@ DO_COMMAND(do_read) {
     *pti = 0; /* replace \n with null-terminator */
 
     if (strlen(pto) >= BUFFER_SIZE) {
-      gd.quiet--;
       /* Only output the first 20 characters of the overflowing command */
       *(pto + 20) = 0;
       display_printf("ERROR: Command too long {%s}", pto);
@@ -259,21 +269,22 @@ DO_COMMAND(do_read) {
     pto = pti;
   }
 
-  gd.quiet--; /* Resume messages */
-
   free(bufi);
   free(bufo);
   fclose(fp);
 }
 
 DO_COMMAND(do_showme) {
-  char *pto = arg;
+  char *pto = arg, buf[BUFFER_SIZE];
+
   while (isspace((int)*pto)) {
     pto++;
   }
 
-  check_all_highlights(pto);
-  display_printf(pto);
+  strcpy(buf, pto);
+
+  check_all_highlights(buf);
+  display_printf(buf);
 }
 
 DO_COMMAND(do_write) {

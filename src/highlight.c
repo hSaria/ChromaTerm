@@ -30,7 +30,7 @@ DO_COMMAND(do_highlight) {
   } else {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(arg2, temp) == FALSE) {
-      display_printf("ERROR: Invalid color code; see HELP COLOR SYNTAX");
+      display_printf("ERROR: Invalid color code; see %%HELP HIGHLIGHT");
     } else {
 #ifdef HAVE_PCRE2_H
       PCRE2_SIZE error_pointer;
@@ -123,11 +123,13 @@ DO_COMMAND(do_highlight) {
 
 DO_COMMAND(do_unhighlight) {
   int index;
-  char condition[BUFFER_SIZE];
 
-  get_arg(arg, condition);
+  get_arg(arg, arg);
 
-  if (*condition != 0 && (index = find_highlight_index(condition)) != -1) {
+  if (*arg == 0) {
+    display_printf("SYNTAX: UNHIGHLIGHT {CONDITION}");
+
+  } else if ((index = find_highlight_index(arg)) != -1) {
     struct highlight *highlight = gd.highlights[index];
 
     if (highlight->compiled_regex != NULL) {
@@ -146,6 +148,8 @@ DO_COMMAND(do_unhighlight) {
             (gd.highlights_used - index) * sizeof(struct highlight *));
 
     gd.highlights_used--;
+  } else {
+    display_printf("ERROR: Highlight rule not found");
   }
 }
 
@@ -292,6 +296,7 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
     result.start = -1;
     return result;
   }
+
   result_pos = pcre2_get_ovector_pointer(match);
 
   if (result_pos[0] > result_pos[1]) {
@@ -301,7 +306,6 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
 
   sprintf(result.match, "%.*s", (int)(result_pos[1] - result_pos[0]),
           &str[result_pos[0]]);
-
   result.start = (int)result_pos[0];
 
   pcre2_match_data_free(match);

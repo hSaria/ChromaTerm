@@ -4,7 +4,6 @@
 
 void cat_sprintf(char *dest, char *fmt, ...) {
   char buf[BUFFER_SIZE * 2];
-
   va_list args;
 
   va_start(args, fmt);
@@ -15,10 +14,6 @@ void cat_sprintf(char *dest, char *fmt, ...) {
 }
 
 void display_printf(char *format, ...) {
-  if (gd.quiet) {
-    return;
-  }
-
   char buf[BUFFER_SIZE * 4];
   va_list args;
 
@@ -32,17 +27,16 @@ void display_printf(char *format, ...) {
 
 /* The outer-most braces (if any) are stripped; all else left as is */
 char *get_arg(char *string, char *result) {
-  char *pti, *pto;
+  char *pti, *pto, output[BUFFER_SIZE];
   int nest = 1;
 
   /* advance to the next none-space character */
   pti = string;
+  pto = output;
 
   while (isspace((int)*pti)) {
     pti++;
   }
-
-  pto = result;
 
   /* Use a space as the separator if not wrapped with braces */
   if (*pti != DEFAULT_OPEN) {
@@ -53,35 +47,35 @@ char *get_arg(char *string, char *result) {
       }
       *pto++ = *pti++;
     }
-    *pto = '\0';
-    return pti;
-  }
-
-  /* Advance past the DEFAULT_OPEN (nest is 1 for this reason) */
-  pti++;
-
-  while (*pti) {
-    if (*pti == DEFAULT_OPEN) {
-      nest++;
-    } else if (*pti == DEFAULT_CLOSE) {
-      nest--;
-
-      /* Stop once we've met the closing backet for the openning we advanced
-       * past before this loop */
-      if (nest == 0) {
-        break;
-      }
-    }
-    *pto++ = *pti++;
-  }
-
-  if (*pti == 0) {
-    display_printf("ERROR: Missing closing bracket");
   } else {
+    /* Advance past the DEFAULT_OPEN (nest is 1 for this reason) */
     pti++;
+
+    while (*pti) {
+      if (*pti == DEFAULT_OPEN) {
+        nest++;
+      } else if (*pti == DEFAULT_CLOSE) {
+        nest--;
+
+        /* Stop once we've met the closing backet for the openning we advanced
+         * past before this loop */
+        if (nest == 0) {
+          break;
+        }
+      }
+      *pto++ = *pti++;
+    }
+
+    if (*pti == 0) {
+      display_printf("ERROR: Missing closing bracket");
+    } else {
+      pti++;
+    }
   }
+
   *pto = '\0';
 
+  strcpy(result, output);
   return pti;
 }
 
@@ -94,16 +88,18 @@ int is_abbrev(char *s1, char *s2) {
 }
 
 void script_driver(char *str) {
+  char *pti = str;
+
   /* Skip any unnecessary command chars or spaces before the actual command */
-  while (*str == gd.command_char || isspace((int)*str)) {
-    str++;
+  while (*pti == gd.command_char || isspace((int)*pti)) {
+    pti++;
   }
 
-  if (*str != 0) {
-    char *args, command[BUFFER_SIZE];
+  if (*pti != 0) {
+    char args[BUFFER_SIZE], command[BUFFER_SIZE];
     int cmd;
 
-    args = get_arg(str, command);
+    strcpy(args, get_arg(pti, command));
 
     for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
       if (is_abbrev(command, command_table[cmd].name)) {

@@ -63,12 +63,11 @@ struct global_data {
   int highlights_size;
   int highlights_used;
 
-  char command_char;
-  int flags;
-  int quiet;
-
   char input_buffer[INPUT_MAX];
   int input_buffer_length;
+
+  char command_char;
+  int flags;
 };
 
 struct highlight {

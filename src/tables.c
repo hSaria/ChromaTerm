@@ -128,22 +128,22 @@ struct help_type help_table[] = {
      "     You can apply multiple actions (e.g. foreground and background "
      "colors).\n"
      "       For example: <<888>FCA><<888>baf>\n\n"
-     "     Use <178>%%help colordemo<078> to get a list of available "
+     "     Use <178>help colordemo<078> to get a list of available "
      "colors<088>\n\n"},
     {"CONFIG",
-     "<028>Command<078>: %%config <178> {<078>option<178>}<078> <178> "
+     "<028>Command<078>: config <178> {<078>option<178>}<078> <178> "
      "{<078>argument<178>}<078>\n\n"
      "     This allows you to configure various settings of CT--. The settings "
      "can\n"
-     "       be read/written from/to file (see <178>%%config read<078> and "
-     "<178>%%config write<078>).\n\n"
+     "       be read/written from/to file (see <178>config read<078> and "
+     "<178>config write<078>).\n\n"
      "     During startup, CT-- will look for a configuration file called "
      "`.chromatermrc`\n"
      "       in the current working directory (`pwd`) then your home "
      "directory.\n"
      "       It will load the first one it finds.\n\n"},
     {"HIGHLIGHT",
-     "<028>Command<078>: %%highlight <178>{<078>regular expression<178>}<078> "
+     "<028>Command<078>: highlight <178>{<078>regular expression<178>}<078> "
      "<178>{<078>action<178>}<078> <178>{<078>priority<178>}<078>\n\n"
      "     The highlight command will create a new regular expression to be "
      "checked\n"
@@ -165,22 +165,22 @@ struct help_type help_table[] = {
      "silver,\n"
      "         light tan, light violet, lime, orange, pink, silver, tan, "
      "violet\n\n"
-     "     More colors are available; use the <178>%%help color<078> for more "
+     "     More colors are available; use the <178>help color<078> for more "
      "info on that.\n\n"
      "     You may specify a priority to give a highlight precedence. Default\n"
      "       priority is 1000. Actions with lower value overwrite any actions "
      "of\n"
      "       higher values.\n\n"
-     "<078>Example<078>: %%high {(?i)^password} {red}\n"
+     "<078>Example<078>: high {(?i)^password} {red}\n"
      "           (case insensitive) if at the start of a line, makes "
      "\"password\" red.\n\n"
-     "<078>Example<078>: %%high {Bubba} {red underscore blink}\n"
+     "<078>Example<078>: high {Bubba} {red underscore blink}\n"
      "           Makes Bubba red, underscored, and blink\n\n"
      "<078>Comment<078>: This command only works with ANSI/VT100 terminals or "
      "emulators.\n\n"
-     "<078>Comment<078>: You can remove a highlight with the "
-     "<178>%%unhighlight<078> command.<088>\n\n"},
-    {"SHOWME", "<028>Command<078>: %%showme <178>...<078>\n\n"
+     "<078>Comment<078>: You can remove a highlight rule with the "
+     "<178>unhighlight<078> command.<088>\n\n"},
+    {"SHOWME", "<028>Command<078>: showme <178>...<078>\n\n"
                "     Used for printing out a message to the console.\n\n"
-               "<078>Example<078>: %%showme Hello, World!<088>\n\n"},
+               "<078>Example<078>: showme Hello, World!<088>\n\n"},
     {"", ""}};
