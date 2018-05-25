@@ -2,6 +2,23 @@
 
 #include "defs.h"
 
+DO_COMMAND(do_commands) {
+  char buf[BUFFER_SIZE], add[BUFFER_SIZE];
+  int cmd;
+
+  for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
+    if (*arg && !is_abbrev(arg, command_table[cmd].name)) {
+      continue;
+    }
+
+    sprintf(add, "%-14s", command_table[cmd].name);
+    strcat(buf, add);
+  }
+  if (buf[0]) {
+    display_printf(buf);
+  }
+}
+
 DO_COMMAND(do_configure) {
   char left[BUFFER_SIZE], right[BUFFER_SIZE];
 
@@ -9,23 +26,79 @@ DO_COMMAND(do_configure) {
 
   get_arg(right, right);
 
-  if (*left != 0 && *right != 0) {
-    if (is_abbrev(left, "CONVERT META")) {
+  if (*left != 0) {
+    if (is_abbrev(left, "COMMAND CHAR")) {
+      if (*right != 0) {
+        if (!ispunct((int)right[0])) {
+          display_printf("ERROR: Commad character must me a punctuation: "
+                         "!@#$%%^&*-+=',.\"\\/:;?_`<>()[]{}|~");
+        } else {
+          gd.command_char = right[0];
+        }
+      } else {
+        display_printf("SYNTAX: CONFIG {COMMAND CHAR} {CHAR}");
+      }
+    } else if (is_abbrev(left, "CONVERT META")) {
       if (!strcasecmp(right, "ON")) {
         SET_BIT(gd.flags, SES_FLAG_CONVERTMETA);
       } else if (!strcasecmp(right, "OFF")) {
         DEL_BIT(gd.flags, SES_FLAG_CONVERTMETA);
+      } else {
+        display_printf("SYNTAX: CONFIG {CONVERT META} {ON|OFF}");
       }
     } else if (is_abbrev(left, "HIGHLIGHT")) {
       if (!strcasecmp(right, "ON")) {
         SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
       } else if (!strcasecmp(right, "OFF")) {
         DEL_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
+      } else {
+        display_printf("SYNTAX: CONFIG {HIGHLIGHT} {ON|OFF}");
       }
     } else if (is_abbrev(left, "READ")) {
-      do_read(right);
+      if (*right != 0) {
+        do_read(right);
+      } else {
+        display_printf("SYNTAX: CONFIG {READ} {PATH/TO/FILE}");
+      }
     } else if (is_abbrev(left, "WRITE")) {
-      do_write(right);
+      if (*right != 0) {
+        do_write(right);
+      } else {
+        display_printf("SYNTAX: CONFIG {WRITE} {PATH/TO/FILE}");
+      }
+    } else {
+      display_printf("ERROR: Unknown option '%s'", left);
+    }
+  }
+}
+
+DO_COMMAND(do_help) {
+  char left[BUFFER_SIZE], add[BUFFER_SIZE];
+  int cnt;
+
+  get_arg(arg, left);
+
+  if (*left == 0) {
+    for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
+      cat_sprintf(add, "%-14s", help_table[cnt].name);
+    }
+    display_printf(add);
+
+  } else {
+    int found = FALSE;
+    for (cnt = 0; *help_table[cnt].name != 0; cnt++) {
+      if (is_abbrev(left, help_table[cnt].name) || is_abbrev(left, "all")) {
+        char buf[BUFFER_SIZE];
+        found = TRUE;
+
+        substitute(help_table[cnt].text, buf);
+
+        display_printf(buf);
+      }
+    }
+
+    if (!found) {
+      display_printf("HELP: No help found for topic '%s'", left);
     }
   }
 }
@@ -43,32 +116,35 @@ DO_COMMAND(do_read) {
     strcpy(filename, *p.we_wordv);
     wordfree(&p);
   } else {
-    display_printf("Failed while performing word expansion on {%s}", filename);
+    display_printf("ERROR: Failed while performing word expansion on {%s}",
+                   filename);
     return;
   }
 
   if ((fp = fopen(filename, "r")) == NULL) {
-    display_printf("File {%s} not found", filename);
+    display_printf("ERROR: File {%s} not found", filename);
     return;
   }
 
   stat(filename, &filedata);
 
   if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf("Failed to allocate i_buffer memory to process file {%s}",
-                   filename);
+    display_printf(
+        "ERROR: Failed to allocate i_buffer memory to process file {%s}",
+        filename);
     fclose(fp);
     return;
   } else if ((bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    display_printf("Failed to allocate o_buffer memory to process file {%s}",
-                   filename);
+    display_printf(
+        "ERROR: Failed to allocate o_buffer memory to process file {%s}",
+        filename);
     free(bufi);
     fclose(fp);
     return;
   }
 
   if (fread(bufi, 1, filedata.st_size, fp) == 0) {
-    display_printf("File is empty", filename);
+    display_printf("ERROR: File is empty", filename);
     free(bufi);
     free(bufo);
     fclose(fp);
@@ -167,7 +243,7 @@ DO_COMMAND(do_read) {
       gd.quiet--;
       /* Only output the first 20 characters of the overflowing command */
       *(pto + 20) = 0;
-      display_printf("Command too long {%s}", pto);
+      display_printf("ERROR: Command too long {%s}", pto);
 
       fclose(fp);
       free(bufi);
@@ -176,17 +252,7 @@ DO_COMMAND(do_read) {
     }
 
     if (*pto) {
-      int i;
-      char args[BUFFER_SIZE], command[BUFFER_SIZE];
-
-      strcpy(args, get_arg(pto, command));
-
-      for (i = 0; *command_table[i].name != 0; i++) {
-        if (is_abbrev(command, command_table[i].name)) {
-          (*command_table[i].command)(args);
-          break;
-        }
-      }
+      script_driver(pto);
     }
 
     pti++; /* Move to the position after the null-terminator */
@@ -198,6 +264,16 @@ DO_COMMAND(do_read) {
   free(bufi);
   free(bufo);
   fclose(fp);
+}
+
+DO_COMMAND(do_showme) {
+  char *pto = arg;
+  while (isspace((int)*pto)) {
+    pto++;
+  }
+
+  check_all_highlights(pto);
+  display_printf(pto);
 }
 
 DO_COMMAND(do_write) {
@@ -212,12 +288,13 @@ DO_COMMAND(do_write) {
     strcpy(filename, *p.we_wordv);
     wordfree(&p);
   } else {
-    display_printf("Failed while performing word expansion on {%s}", filename);
+    display_printf("ERROR: Failed while performing word expansion on {%s}",
+                   filename);
     return;
   }
 
   if ((file = fopen(filename, "w")) == NULL) {
-    display_printf("ERROR: {%s} - Could not open to write", filename);
+    display_printf("ERROR: {%s} - Failed while attempting to write", filename);
     return;
   }
 
@@ -229,9 +306,8 @@ DO_COMMAND(do_write) {
   fputs(result, file);
 
   for (i = 0; i < gd.highlights_used; i++) {
-    sprintf(result, "HIGHLIGHT->ADD {%s} {%s} {%s}\n",
-            gd.highlights[i]->condition, gd.highlights[i]->action,
-            gd.highlights[i]->priority);
+    sprintf(result, "HIGHLIGHT {%s} {%s} {%s}\n", gd.highlights[i]->condition,
+            gd.highlights[i]->action, gd.highlights[i]->priority);
     fputs(result, file);
   }
 

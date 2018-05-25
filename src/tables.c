@@ -28,40 +28,17 @@ struct color_type color_table[] = {
     {"violet", "<bad>"},       {"white", "<878>"},
     {"yellow", "<838>"},       {"", "<088>"}};
 
-struct command_type command_table[] = {{"HIGHLIGHT->ADD", do_highlight},
-                                       {"HIGHLIGHT->REMOVE", do_highlight},
+struct command_type command_table[] = {{"COMMANDS", do_commands},
                                        {"CONFIG", do_configure},
+                                       {"HELP", do_help},
+                                       {"HIGHLIGHT", do_highlight},
+                                       {"SHOWME", do_showme},
+                                       {"UNHIGHLIGHT", do_unhighlight},
                                        {"", NULL}};
 
 struct help_type help_table[] = {
-    {"ACTION SYNTAX",
-     "<078>Syntax<078>:  <<888>xyz>  with x, y, z being parameters\n\n"
-     "     Parameter 'x': VT100 code\n"
-     "       0 - Reset all colors and codes to default\n"
-     "       1 - Bold\n"
-     "       2 - Dim\n"
-     "       4 - Underscore\n"
-     "       5 - Blink\n"
-     "       7 - Reverse\n"
-     "       8 - Skip (use previous code)\n\n"
-     "     Parameter 'y':  Foreground color\n"
-     "     Parameter 'z':  Background color\n"
-     "       0 - Black            5 - Magenta\n"
-     "       1 - Red          6 - Cyan\n"
-     "       2 - Green            7 - White\n"
-     "       3 - Yellow           8 - Skip\n"
-     "       4 - Blue             9 - Default\n\n"
-     "     With xterm 256 colors support, you can use:\n"
-     "       <<888>aaa> to <<888>fff> for RGB foreground\n"
-     "       <<888>AAA> to <<888>FFF> for RGB background\n"
-     "       <<888>g00> to <<888>g23> for grayscale foreground\n"
-     "       <<888>G23> to <<888>G23> for grayscale background\n\n"
-     "     You can apply multiple actions (e.g. foreground and background "
-     "colors).\n"
-     "       For example: <<888>FCA><<888>baf>\n\n"
-     "     Use <178>%%help colordemo<078> to get a list of available "
-     "colors<088>\n\n"},
-    {"COLOR DEMO",
+    {"ALL", ""},
+    {"COLORDEMO",
      "<g00> g00<g01> g01<g02> g02<g03> g03<g04> g04<g05> g05<g06> g06<g07> "
      "g07<g08> g08<g09> g09<g10> g10<g11> g11\n<g12> g12<g13> g13<g14> "
      "g14<g15> g15<g16> g16<g17> g17<g18> g18<g19> g19<g20> g20<g21> g21<g22> "
@@ -126,26 +103,45 @@ struct help_type help_table[] = {
      "FDB<FEB> FEB<FEC> FEC<FED> FED<FEE> FEE<FEF> FEF<FFF> FFF<FFE> FFE<FFD> "
      "FFD<FFC> FFC<FFB> FFB<FFA> FFA<FEA> FEA<FDA> FDA<FCA> FCA<FBA> FBA<088> "
      "\n\n"},
+    {"COLORS",
+     "<078>Syntax<078>:  <<888>xyz>  with x, y, z being parameters\n\n"
+     "     Parameter 'x': VT100 code\n"
+     "       0 - Reset all colors and codes to default\n"
+     "       1 - Bold\n"
+     "       2 - Dim\n"
+     "       4 - Underscore\n"
+     "       5 - Blink\n"
+     "       7 - Reverse\n"
+     "       8 - Skip (use previous code)\n\n"
+     "     Parameter 'y':  Foreground color\n"
+     "     Parameter 'z':  Background color\n"
+     "       0 - Black            5 - Magenta\n"
+     "       1 - Red          6 - Cyan\n"
+     "       2 - Green            7 - White\n"
+     "       3 - Yellow           8 - Skip\n"
+     "       4 - Blue             9 - Default\n\n"
+     "     With xterm 256 colors support, you can use:\n"
+     "       <<888>aaa> to <<888>fff> for RGB foreground\n"
+     "       <<888>AAA> to <<888>FFF> for RGB background\n"
+     "       <<888>g00> to <<888>g23> for grayscale foreground\n"
+     "       <<888>G23> to <<888>G23> for grayscale background\n\n"
+     "     You can apply multiple actions (e.g. foreground and background "
+     "colors).\n"
+     "       For example: <<888>FCA><<888>baf>\n\n"
+     "     Use <178>%%help colordemo<078> to get a list of available "
+     "colors<088>\n\n"},
     {"CONFIG",
      "<028>Command<078>: %%config <178> {<078>option<178>}<078> <178> "
      "{<078>argument<178>}<078>\n\n"
-     "     This allows you to configure various settings of CT--.\n\n"
-     "     It is recommended to make a configuration file to read on startup "
-     "if you\n"
-     "       do not like the default settings.\n\n"
-     "     CT-- will look for a configuration file called `.chromatermrc` in "
-     "the\n"
-     "       current working directory (`pwd`) then your home directory. It "
-     "will load\n"
-     "       the first one it finds.\n\n"
-     "<028>Command<078>: %%read <178>{<078>filename<178>}<078>\n\n"
-     "     Reads CT-- commands from a file.  The commands in the file are "
-     "merged in\n"
-     "       with the currently loaded commands.\n\n"
-     "     You can add comments with: /* comment */\n\n"
-     "<028>Command<078>: %%write <178>{<078>filename<178>}<078>\n\n"
-     "     Writes the current CT-- configuration to the specified "
-     "filename.<088>\n\n"},
+     "     This allows you to configure various settings of CT--. The settings "
+     "can\n"
+     "       be read/written from/to file (see <178>%%config read<078> and "
+     "<178>%%config write<078>).\n\n"
+     "     During startup, CT-- will look for a configuration file called "
+     "`.chromatermrc`\n"
+     "       in the current working directory (`pwd`) then your home "
+     "directory.\n"
+     "       It will load the first one it finds.\n\n"},
     {"HIGHLIGHT",
      "<028>Command<078>: %%highlight <178>{<078>regular expression<178>}<078> "
      "<178>{<078>action<178>}<078> <178>{<078>priority<178>}<078>\n\n"
@@ -184,4 +180,7 @@ struct help_type help_table[] = {
      "emulators.\n\n"
      "<078>Comment<078>: You can remove a highlight with the "
      "<178>%%unhighlight<078> command.<088>\n\n"},
+    {"SHOWME", "<028>Command<078>: %%showme <178>...<078>\n\n"
+               "     Used for printing out a message to the console.\n\n"
+               "<078>Example<078>: %%showme Hello, World!<088>\n\n"},
     {"", ""}};

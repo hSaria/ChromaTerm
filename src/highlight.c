@@ -31,7 +31,6 @@ DO_COMMAND(do_highlight) {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(arg2, temp) == FALSE) {
       display_printf("ERROR: Invalid color code; see HELP COLOR SYNTAX");
-
     } else {
 #ifdef HAVE_PCRE2_H
       PCRE2_SIZE error_pointer;

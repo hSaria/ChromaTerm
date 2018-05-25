@@ -3,7 +3,6 @@
 #include "config.h"
 
 #include <ctype.h>
-#include <fcntl.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -64,6 +63,7 @@ struct global_data {
   int highlights_size;
   int highlights_used;
 
+  char command_char;
   int flags;
   int quiet;
 
@@ -142,20 +142,12 @@ void init_program(void);
 void help_menu(char *proc_name);
 void quit_with_signal(int exit_signal);
 
-/**** menu.c ****/
-#if (defined HAVE_CURSES_H && defined HAVE_MENU_H)
-#include <curses.h>
-#include <menu.h>
-
-char *ask_for_input(void);
-void main_menu(void);
-int show_menu(char **item_strings, int count);
-void show_msg(char *msg);
-#endif
-
 /**** misc.c ****/
+DO_COMMAND(do_commands);
 DO_COMMAND(do_configure);
+DO_COMMAND(do_help);
 DO_COMMAND(do_read);
+DO_COMMAND(do_showme);
 DO_COMMAND(do_write);
 
 /**** tables.c ****/
@@ -168,3 +160,4 @@ void cat_sprintf(char *dest, char *fmt, ...);
 void display_printf(char *format, ...);
 char *get_arg(char *string, char *result);
 int is_abbrev(char *s1, char *s2);
+void script_driver(char *str);

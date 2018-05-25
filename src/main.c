@@ -84,6 +84,7 @@ void init_program() {
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
   gd.highlights_size = 8;
 
+  gd.command_char = '%';
   SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
 }
 
