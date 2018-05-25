@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 
     optind = 1;
 
-    while ((c = getopt(argc, argv, "h c: t: p")) != EOF) {
+    while ((c = getopt(argc, argv, "h c: t:")) != EOF) {
       switch (c) {
       case 'c':
         config_override = TRUE;
@@ -26,9 +26,6 @@ int main(int argc, char **argv) {
       case 't':
         printf("\033]0;%s\007", optarg);
         break;
-      case 'p':
-        DEL_BIT(gd.flags, SES_FLAG_INTERACTIVE);
-        break;
       default:
         help_menu(argv[0]);
         break;
@@ -37,7 +34,7 @@ int main(int argc, char **argv) {
   }
 
   /* Read configuration if not overridden by the launch arguments */
-  if (!config_override && FALSE) { // TEMP
+  if (!config_override) {
     if (access(".chromatermrc", R_OK) == 0) {
       do_read(".chromatermrc");
     } else {
@@ -58,7 +55,7 @@ int main(int argc, char **argv) {
   /* MAIN LOGIC OF THE PROGRAM STARTS HERE */
   while ((gd.input_buffer_length +=
           read(STDIN_FILENO, &gd.input_buffer[gd.input_buffer_length],
-               INPUT_MAX)) > 0) {
+               INPUT_MAX - gd.input_buffer_length - 1)) > 0) {
     /* Mandatoy wait before assuming no more output on the current line */
     struct timeval wait = {0, WAIT_FOR_NEW_LINE};
 
@@ -87,46 +84,25 @@ void init_program() {
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
   gd.highlights_size = 8;
 
-  /* Default configuration values */
   SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
-  SET_BIT(gd.flags, SES_FLAG_INTERACTIVE);
-
-#if (defined HAVE_CURSES_H && defined HAVE_MENU_H)
-#ifdef IWPGWEPJGpowgpojwegjpowejpog
-  while (TRUE) {
-    main_menu();
-  }
-
-  quit_with_signal(EXIT_SUCCESS);
-
-  if ((gd.fd_ct = open("/dev/tty", O_RDWR)) < 0) { /* Used for CT */
-    perror("Couldn't open /dev/tty");
-    quit_with_signal(EXIT_FAILURE);
-  }
-#endif
-#endif
 }
 
 void help_menu(char *proc_name) {
-  display_printf("ChromaTerm-- v%s", VERSION);
-  display_printf("Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf("    -c {CONFIG_FILE}      Override configuration file");
-  display_printf("    -p                    Passive CT-- (menu disabled)");
-  display_printf("    -t {TITLE}            Set title");
+  printf("ChromaTerm-- v%s", VERSION);
+  printf("Usage: %s [OPTION]... [FILE]...", proc_name);
+  printf("    -c {CONFIG_FILE}      Override configuration file");
+  printf("    -t {TITLE}            Set title");
 
   quit_with_signal(2);
 }
 
 void quit_with_signal(int exit_signal) {
-
   /* Free memory used by highlights */
   while (gd.highlights[0]) {
     do_unhighlight(gd.highlights[0]->condition);
   }
 
   free(gd.highlights);
-
-  close(gd.fd_ct);
 
   fflush(stdout);
   exit(exit_signal);

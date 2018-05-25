@@ -15,20 +15,8 @@ void cat_sprintf(char *dest, char *fmt, ...) {
 }
 
 void display_printf(char *format, ...) {
-#if (defined HAVE_CURSES_H && defined HAVE_MENU_H)
-  if (gd.quiet) {
-    return;
-  }
-  char buf[BUFFER_SIZE * 4];
-  va_list args;
-
-  va_start(args, format);
-  vsprintf(buf, format, args);
-  va_end(args);
-
-  write(gd.fd_ct, buf, strlen(buf));
-  write(gd.fd_ct, "\n", 1);
-#endif
+  // TODO:
+  (void)format;
 }
 
 /* The outer-most braces (if any) are stripped; all else left as is */

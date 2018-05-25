@@ -49,7 +49,6 @@
 
 #define SES_FLAG_CONVERTMETA (1 << 0)
 #define SES_FLAG_HIGHLIGHT (1 << 1)
-#define SES_FLAG_INTERACTIVE (1 << 2)
 
 /* Bit operations */
 #define HAS_BIT(bitvector, bit) ((bitvector) & (bit))
@@ -68,7 +67,6 @@ struct global_data {
   int flags;
   int quiet;
 
-  int fd_ct;
   char input_buffer[INPUT_MAX];
   int input_buffer_length;
 };
