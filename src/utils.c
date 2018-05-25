@@ -28,7 +28,6 @@ void display_printf(char *format, ...) {
 /* The outer-most braces (if any) are stripped; all else left as is */
 char *get_arg(char *string, char *result) {
   char *pti, *pto, output[BUFFER_SIZE];
-  int nest = 1;
 
   /* advance to the next none-space character */
   pti = string;
@@ -48,8 +47,9 @@ char *get_arg(char *string, char *result) {
       *pto++ = *pti++;
     }
   } else {
-    /* Advance past the DEFAULT_OPEN (nest is 1 for this reason) */
-    pti++;
+    int nest = 1;
+
+    pti++; /* Advance past the DEFAULT_OPEN (nest is 1 for this reason) */
 
     while (*pti) {
       if (*pti == DEFAULT_OPEN) {
