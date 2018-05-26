@@ -131,7 +131,7 @@ struct help_type help_table[] = {
      "     Use <178>help colordemo<078> to get a list of available "
      "colors<088>\n\n"},
     {"CONFIG",
-     "<028>Command<078>: config <178> {<078>option<178>}<078> <178> "
+     "<028>Command<078>: config <178>{<078>option<178>} "
      "{<078>argument<178>}<078>\n\n"
      "     This allows you to configure various settings of CT--. The settings "
      "can\n"
@@ -143,8 +143,8 @@ struct help_type help_table[] = {
      "directory.\n"
      "       It will load the first one it finds.\n\n"},
     {"HIGHLIGHT",
-     "<028>Command<078>: highlight <178>{<078>regular expression<178>}<078> "
-     "<178>{<078>action<178>}<078> <178>{<078>priority<178>}<078>\n\n"
+     "<028>Command<078>: highlight <178>{<078>condition<178>} "
+     "{<078>action<178>} {<078>priority<178>}<078>\n\n"
      "     The highlight command will create a new regular expression to be "
      "checked\n"
      "       by CT-- when processing the output of a child process. If a part "
