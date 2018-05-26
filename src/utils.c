@@ -79,7 +79,7 @@ void display_printf(char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  buf[strlen(buf)] = '\r';
+  buf[strlen(buf) + 1] = 0;
   buf[strlen(buf)] = '\n';
 
   write(STDERR_FILENO, buf, strlen(buf));
