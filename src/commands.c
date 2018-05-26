@@ -116,6 +116,125 @@ DO_COMMAND(do_help) {
   }
 }
 
+DO_COMMAND(do_highlight) {
+  char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE];
+
+  arg = get_arg(arg, arg1);
+  arg = get_arg(arg, arg2);
+  get_arg(arg, arg3);
+
+  if (*arg3 == 0) {
+    strcpy(arg3, "1000");
+  }
+
+  if (*arg1 == 0 || *arg2 == 0) {
+    if (gd.highlights_used == 0) {
+      display_printf("HIGHLIGHT: No rules configured");
+    } else {
+      int i;
+      for (i = 0; i < gd.highlights_used; i++) {
+        display_printf("HIGHLIGHT "
+                       "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                       "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                       "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
+                       gd.highlights[i]->condition, gd.highlights[i]->action,
+                       gd.highlights[i]->priority);
+      }
+    }
+  } else {
+    char temp[BUFFER_SIZE];
+    if (get_highlight_codes(arg2, temp) == FALSE) {
+      display_printf("ERROR: Invalid color code; see %%HELP HIGHLIGHT");
+    } else {
+#ifdef HAVE_PCRE2_H
+      PCRE2_SIZE error_pointer;
+#else
+#ifdef HAVE_PCRE_H
+      const char *error_pointer;
+#endif
+#endif
+
+      struct highlight *highlight;
+      int bot, top, val, error_number, index = find_highlight_index(arg1);
+
+      /* Remove if already exists */
+      if (index != -1) {
+        do_unhighlight(gd.highlights[index]->condition);
+      }
+
+      highlight = (struct highlight *)calloc(1, sizeof(struct highlight));
+
+      strcpy(highlight->condition, arg1);
+      strcpy(highlight->action, arg2);
+      strcpy(highlight->priority, arg3);
+
+      get_highlight_codes(arg2, highlight->compiled_action);
+
+#ifdef HAVE_PCRE2_H
+      highlight->compiled_regex =
+          pcre2_compile((PCRE2_SPTR)arg1, PCRE2_ZERO_TERMINATED, 0,
+                        &error_number, &error_pointer, NULL);
+#else
+#ifdef HAVE_PCRE_H
+      highlight->compiled_regex =
+          pcre_compile(arg1, 0, &error_pointer, &error_number, NULL);
+#endif
+#endif
+
+      if (highlight->compiled_regex == NULL) {
+        display_printf("WARNING: Couldn't compile regex at %i: %s",
+                       error_number, error_pointer);
+      } else {
+#ifdef HAVE_PCRE2_H
+        if (pcre2_jit_compile(highlight->compiled_regex, 0) == 0) {
+          /* Accelerate pattern matching if JIT is supported on the platform */
+          pcre2_jit_compile(highlight->compiled_regex, PCRE2_JIT_COMPLETE);
+        }
+#endif
+      }
+
+      /* Find the insertion index */
+      bot = 0;
+      top = gd.highlights_used - 1;
+      val = top;
+
+      while (bot <= top) {
+        double srt = atof(arg3) - atof(gd.highlights[val]->priority);
+
+        /* Same priority */
+        if (srt == 0) {
+          break;
+        }
+
+        if (srt < 0) {
+          top = val - 1;
+        } else {
+          bot = val + 1;
+        }
+
+        val = bot + (top - bot) / 2;
+      }
+
+      index = 0 > val ? 0 : val;
+
+      gd.highlights_used++;
+
+      /* Expand if full; make it twice as big */
+      if (gd.highlights_used == gd.highlights_size) {
+        gd.highlights_size *= 2;
+
+        gd.highlights = (struct highlight **)realloc(
+            gd.highlights, gd.highlights_size * sizeof(struct highlight *));
+      }
+
+      memmove(&gd.highlights[index + 1], &gd.highlights[index],
+              (gd.highlights_used - index) * sizeof(struct highlight *));
+
+      gd.highlights[index] = highlight;
+    }
+  }
+}
+
 DO_COMMAND(do_read) {
   FILE *fp;
   struct stat filedata;
@@ -285,6 +404,38 @@ DO_COMMAND(do_showme) {
 
   check_all_highlights(buf);
   display_printf(buf);
+}
+
+DO_COMMAND(do_unhighlight) {
+  int index;
+
+  get_arg(arg, arg);
+
+  if (*arg == 0) {
+    display_printf("SYNTAX: UNHIGHLIGHT {CONDITION}");
+
+  } else if ((index = find_highlight_index(arg)) != -1) {
+    struct highlight *highlight = gd.highlights[index];
+
+    if (highlight->compiled_regex != NULL) {
+#ifdef HAVE_PCRE2_H
+      pcre2_code_free(highlight->compiled_regex);
+#else
+#ifdef HAVE_PCRE_H
+      pcre_free(highlight->compiled_regex);
+#endif
+#endif
+    }
+
+    free(highlight);
+
+    memmove(&gd.highlights[index], &gd.highlights[index + 1],
+            (gd.highlights_used - index) * sizeof(struct highlight *));
+
+    gd.highlights_used--;
+  } else {
+    display_printf("ERROR: Highlight rule not found");
+  }
 }
 
 DO_COMMAND(do_write) {

@@ -109,10 +109,17 @@ struct help_type {
   char *text;
 };
 
-/**** highlight.c ****/
+/**** commands.c ****/
+DO_COMMAND(do_commands);
+DO_COMMAND(do_configure);
+DO_COMMAND(do_help);
 DO_COMMAND(do_highlight);
+DO_COMMAND(do_read);
+DO_COMMAND(do_showme);
 DO_COMMAND(do_unhighlight);
+DO_COMMAND(do_write);
 
+/**** highlight.c ****/
 void check_all_highlights(char *original);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
@@ -129,10 +136,6 @@ int skip_vt102_codes(char *str);
 void strip_vt102_codes(char *str, char *buf);
 void substitute(char *string, char *result);
 
-/**** io.c ****/
-void convert_meta(char *input, char *output);
-void process_input(int wait_for_new_line);
-
 /**** main.c ****/
 extern struct global_data gd;
 
@@ -141,14 +144,6 @@ void init_program(void);
 void help_menu(char *proc_name);
 void quit_with_signal(int exit_signal);
 
-/**** misc.c ****/
-DO_COMMAND(do_commands);
-DO_COMMAND(do_configure);
-DO_COMMAND(do_help);
-DO_COMMAND(do_read);
-DO_COMMAND(do_showme);
-DO_COMMAND(do_write);
-
 /**** tables.c ****/
 extern struct color_type color_table[];
 extern struct command_type command_table[];
@@ -156,7 +151,9 @@ extern struct help_type help_table[];
 
 /**** utils.c ****/
 void cat_sprintf(char *dest, char *fmt, ...);
+void convert_meta(char *input, char *output);
 void display_printf(char *format, ...);
 char *get_arg(char *string, char *result);
 int is_abbrev(char *s1, char *s2);
+void process_input(int wait_for_new_line);
 void script_driver(char *str);

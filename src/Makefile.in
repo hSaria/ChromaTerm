@@ -10,7 +10,7 @@ CFLAGS += -O2 -Wall -Wextra
 LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
-OFILES = highlight.o io.o main.o misc.o tables.o utils.o
+OFILES = commands.o highlight.o main.o tables.o utils.o
 
 default: all
 
