@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
       strcpy(filename, ".chromatermrc");
     } else {
       if (getenv("HOME") != NULL) {
-        char temp[PATH_MAX];
+        char temp[4095];
         sprintf(temp, "%s/%s", getenv("HOME"), ".chromatermrc");
 
         if (access(temp, R_OK) == 0) {
