@@ -86,7 +86,6 @@ void help_menu(char *proc_name) {
   printf("ChromaTerm-- v%s\n", VERSION);
   printf("Usage: [PROCESS] | %s [OPTIONS]\n", proc_name);
   printf("%6s %-18s Override configuration file\n", "-c", "{CONFIG_FILE}");
-  printf("%6s %-18s Passive mode (CT prompt disabled)\n", "-p", "");
   printf("%6s %-18s Set title\n", "-t", "{TITLE}");
 
   quit_with_signal(2);
