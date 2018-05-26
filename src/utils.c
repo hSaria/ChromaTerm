@@ -79,8 +79,10 @@ void display_printf(char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
+  buf[strlen(buf)] = '\r';
+  buf[strlen(buf)] = '\n';
+
   write(STDERR_FILENO, buf, strlen(buf));
-  write(STDERR_FILENO, "\n", 1);
 }
 
 /* The outer-most braces (if any) are stripped; all else left as is */
@@ -167,8 +169,7 @@ void process_input(int wait_for_new_line) {
 
         strcpy(temp, line);
         strcpy(gd.input_buffer, temp);
-
-        gd.input_buffer_length = (int)strlen(line);
+        gd.input_buffer_length = (int)strlen(temp);
 
         /* Leave and wait until called again without having to wait */
         return;

@@ -7,6 +7,7 @@ struct global_data gd;
 int main(int argc, char **argv) {
   fd_set readfds;
   int config_override = FALSE;
+  char filename[PATH_MAX];
 
   init_program();
 
@@ -16,12 +17,10 @@ int main(int argc, char **argv) {
     optind = 1;
 
     while ((c = getopt(argc, argv, "h c: t:")) != EOF) {
-      switch (c) {
+      switch (tolower(c)) {
       case 'c':
         config_override = TRUE;
-        if (access(optarg, R_OK) == 0) {
-          do_read(optarg);
-        }
+        strcpy(filename, optarg);
         break;
       case 't':
         printf("\033]0;%s\007", optarg);
@@ -36,17 +35,21 @@ int main(int argc, char **argv) {
   /* Read configuration if not overridden by the launch arguments */
   if (!config_override) {
     if (access(".chromatermrc", R_OK) == 0) {
-      do_read(".chromatermrc");
+      strcpy(filename, ".chromatermrc");
     } else {
       if (getenv("HOME") != NULL) {
-        char filename[256];
-        sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
+        char temp[PATH_MAX];
+        sprintf(temp, "%s/%s", getenv("HOME"), ".chromatermrc");
 
-        if (access(filename, R_OK) == 0) {
-          do_read(filename);
+        if (access(temp, R_OK) == 0) {
+          strcpy(filename, temp);
         }
       }
     }
+  }
+
+  if (filename[0]) {
+    do_read(filename);
   }
 
   FD_ZERO(&readfds); /* Initialise the file descriptor */
