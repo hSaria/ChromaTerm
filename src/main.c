@@ -79,6 +79,16 @@ int main(int argc, char **argv) {
   return 0; /* Literally useless, but gotta make a warning shut up. */
 }
 
+void help_menu(char *proc_name) {
+  printf("ChromaTerm-- v%s\n", VERSION);
+  printf("Usage: [PROCESS] | %s [OPTIONS]\n", proc_name);
+  printf("%6s %-18s Override configuration file\n", "-c", "{CONFIG_FILE}");
+  printf("%6s %-18s Passive mode (CT prompt disabled)\n", "-p", "");
+  printf("%6s %-18s Set title\n", "-t", "{TITLE}");
+
+  quit_with_signal(2);
+}
+
 void init_program() {
   /* initial size is 8, but is dynamically resized as required */
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
@@ -86,15 +96,6 @@ void init_program() {
 
   gd.command_char = '%';
   SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
-}
-
-void help_menu(char *proc_name) {
-  printf("ChromaTerm-- v%s", VERSION);
-  printf("Usage: %s [OPTION]... [FILE]...", proc_name);
-  printf("    -c {CONFIG_FILE}      Override configuration file");
-  printf("    -t {TITLE}            Set title");
-
-  quit_with_signal(2);
 }
 
 void quit_with_signal(int exit_signal) {

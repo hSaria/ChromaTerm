@@ -138,8 +138,8 @@ void substitute(char *string, char *result);
 extern struct global_data gd;
 
 int main(int argc, char **argv);
-void init_program(void);
 void help_menu(char *proc_name);
+void init_program(void);
 void quit_with_signal(int exit_signal);
 
 /**** tables.c ****/
