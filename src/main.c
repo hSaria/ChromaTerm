@@ -7,7 +7,7 @@ struct global_data gd;
 int main(int argc, char **argv) {
   fd_set readfds;
   int config_override = FALSE;
-  char filename[PATH_MAX];
+  char filename[4095];
 
   init_program();
 
