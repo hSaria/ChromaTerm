@@ -24,8 +24,8 @@ DO_COMMAND(do_commands) {
 DO_COMMAND(do_configure) {
   char left[BUFFER_SIZE], right[BUFFER_SIZE];
 
-  strcpy(right, get_arg(arg, left));
-  get_arg(right, right);
+  arg = get_arg(arg, left);
+  get_arg(arg, right);
 
   if (*left != 0) {
     if (is_abbrev(left, "COMMAND CHAR")) {
@@ -117,17 +117,17 @@ DO_COMMAND(do_help) {
 }
 
 DO_COMMAND(do_highlight) {
-  char arg1[BUFFER_SIZE], arg2[BUFFER_SIZE], arg3[BUFFER_SIZE];
+  char condition[BUFFER_SIZE], action[BUFFER_SIZE], priority[BUFFER_SIZE];
 
-  arg = get_arg(arg, arg1);
-  arg = get_arg(arg, arg2);
-  get_arg(arg, arg3);
+  arg = get_arg(arg, condition);
+  arg = get_arg(arg, action);
+  get_arg(arg, priority);
 
-  if (*arg3 == 0) {
-    strcpy(arg3, "1000");
+  if (*priority == 0) {
+    strcpy(priority, "1000");
   }
 
-  if (*arg1 == 0 || *arg2 == 0) {
+  if (*condition == 0 || *action == 0) {
     if (gd.highlights_used == 0) {
       display_printf("HIGHLIGHT: No rules configured");
     } else {
@@ -143,7 +143,7 @@ DO_COMMAND(do_highlight) {
     }
   } else {
     char temp[BUFFER_SIZE];
-    if (get_highlight_codes(arg2, temp) == FALSE) {
+    if (get_highlight_codes(action, temp) == FALSE) {
       display_printf("ERROR: Invalid color code; see %%HELP HIGHLIGHT");
     } else {
 #ifdef HAVE_PCRE2_H
@@ -155,29 +155,29 @@ DO_COMMAND(do_highlight) {
 #endif
 
       struct highlight *highlight;
-      int bot, top, val, error_number, index = find_highlight_index(arg1);
+      int error_number, index, insert_index;
 
       /* Remove if already exists */
-      if (index != -1) {
+      if ((index = find_highlight_index(condition)) != -1) {
         do_unhighlight(gd.highlights[index]->condition);
       }
 
       highlight = (struct highlight *)calloc(1, sizeof(struct highlight));
 
-      strcpy(highlight->condition, arg1);
-      strcpy(highlight->action, arg2);
-      strcpy(highlight->priority, arg3);
+      strcpy(highlight->condition, condition);
+      strcpy(highlight->action, action);
+      strcpy(highlight->priority, priority);
 
-      get_highlight_codes(arg2, highlight->compiled_action);
+      get_highlight_codes(action, highlight->compiled_action);
 
 #ifdef HAVE_PCRE2_H
       highlight->compiled_regex =
-          pcre2_compile((PCRE2_SPTR)arg1, PCRE2_ZERO_TERMINATED, 0,
+          pcre2_compile((PCRE2_SPTR)condition, PCRE2_ZERO_TERMINATED, 0,
                         &error_number, &error_pointer, NULL);
 #else
 #ifdef HAVE_PCRE_H
       highlight->compiled_regex =
-          pcre_compile(arg1, 0, &error_pointer, &error_number, NULL);
+          pcre_compile(condition, 0, &error_pointer, &error_number, NULL);
 #endif
 #endif
 
@@ -194,28 +194,21 @@ DO_COMMAND(do_highlight) {
       }
 
       /* Find the insertion index */
-      bot = 0;
-      top = gd.highlights_used - 1;
-      val = top;
+      insert_index = gd.highlights_used - 1;
 
-      while (bot <= top) {
-        double srt = atof(arg3) - atof(gd.highlights[val]->priority);
+      /* Highest value priority is at the bottom of the list (highest index) */
+      while (insert_index > -1) {
+        double diff =
+            atof(priority) - atof(gd.highlights[insert_index]->priority);
 
-        /* Same priority */
-        if (srt == 0) {
+        if (diff >= 0) {
+          insert_index++; /* Same priority or higher; insert after */
           break;
         }
-
-        if (srt < 0) {
-          top = val - 1;
-        } else {
-          bot = val + 1;
-        }
-
-        val = bot + (top - bot) / 2;
+        insert_index--; /* Our priority is less than insert_index's priorty */
       }
 
-      index = 0 > val ? 0 : val;
+      index = 0 > insert_index ? 0 : insert_index;
 
       gd.highlights_used++;
 
@@ -283,6 +276,8 @@ DO_COMMAND(do_read) {
     return;
   };
 
+  fclose(fp); /* Done with FILE */
+
   pti = bufi;
   pto = bufo;
 
@@ -317,7 +312,7 @@ DO_COMMAND(do_read) {
         if (lvl) { /* Closing brackets missing; remove command */
           char *previous_line = strrchr(pto, '\n');
           if (previous_line) { /* There's a previous line */
-            previous_line--;
+            previous_line--;   /* Go back one character before \n */
             pto = previous_line;
           } else { /* Go back to beginning of bufo (no previous line) */
             pto = bufo;
@@ -374,7 +369,6 @@ DO_COMMAND(do_read) {
       *(pto + 20) = 0;
       display_printf("ERROR: Command too long {%s}", pto);
 
-      fclose(fp);
       free(bufi);
       free(bufo);
       return;
@@ -390,7 +384,6 @@ DO_COMMAND(do_read) {
 
   free(bufi);
   free(bufo);
-  fclose(fp);
 }
 
 DO_COMMAND(do_showme) {

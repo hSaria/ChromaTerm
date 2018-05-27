@@ -197,10 +197,10 @@ void script_driver(char *str) {
   }
 
   if (*pti != 0) {
-    char args[BUFFER_SIZE], command[BUFFER_SIZE];
+    char *args, command[BUFFER_SIZE];
     int cmd;
 
-    strcpy(args, get_arg(pti, command));
+    args = get_arg(pti, command);
 
     for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
       if (is_abbrev(command, command_table[cmd].name)) {
