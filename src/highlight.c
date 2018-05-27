@@ -158,11 +158,7 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
   result.start = (int)result_pos[0];
 
   pcre2_match_data_free(match);
-
-  return result;
-}
 #else
-#ifdef HAVE_PCRE_H
 struct regex_result regex_compare(pcre *compiled_regex, char *str) {
   struct regex_result result;
   int match[2000];
@@ -175,11 +171,10 @@ struct regex_result regex_compare(pcre *compiled_regex, char *str) {
 
   sprintf(result.match, "%.*s", (int)(match[1] - match[0]), &str[match[0]]);
   result.start = (int)match[0];
+#endif
 
   return result;
 }
-#endif
-#endif
 
 int skip_vt102_codes(char *str) {
   int skip;

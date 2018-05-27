@@ -149,9 +149,7 @@ DO_COMMAND(do_highlight) {
 #ifdef HAVE_PCRE2_H
       PCRE2_SIZE error_pointer;
 #else
-#ifdef HAVE_PCRE_H
       const char *error_pointer;
-#endif
 #endif
 
       struct highlight *highlight;
@@ -175,10 +173,8 @@ DO_COMMAND(do_highlight) {
           pcre2_compile((PCRE2_SPTR)condition, PCRE2_ZERO_TERMINATED, 0,
                         &error_number, &error_pointer, NULL);
 #else
-#ifdef HAVE_PCRE_H
       highlight->compiled_regex =
           pcre_compile(condition, 0, &error_pointer, &error_number, NULL);
-#endif
 #endif
 
       if (highlight->compiled_regex == NULL) {
@@ -414,9 +410,7 @@ DO_COMMAND(do_unhighlight) {
 #ifdef HAVE_PCRE2_H
       pcre2_code_free(highlight->compiled_regex);
 #else
-#ifdef HAVE_PCRE_H
       pcre_free(highlight->compiled_regex);
-#endif
 #endif
     }
 

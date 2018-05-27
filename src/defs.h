@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -15,9 +16,7 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 #else
-#ifdef HAVE_PCRE_H
 #include <pcre.h>
-#endif
 #endif
 
 #define VERSION "0.2.0"
@@ -77,9 +76,7 @@ struct highlight {
 #ifdef HAVE_PCRE2_H
   pcre2_code *compiled_regex; /* Compiled once, used multiple times */
 #else
-#ifdef HAVE_PCRE_H
   pcre *compiled_regex; /* Compiled once, used multiple times */
-#endif
 #endif
 };
 
@@ -125,9 +122,7 @@ int get_highlight_codes(char *string, char *result);
 #ifdef HAVE_PCRE2_H
 struct regex_result regex_compare(pcre2_code *compiled_regex, char *str);
 #else
-#ifdef HAVE_PCRE_H
 struct regex_result regex_compare(pcre *compiled_regex, char *str);
-#endif
 #endif
 
 int skip_vt102_codes(char *str);
