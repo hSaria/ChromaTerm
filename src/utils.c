@@ -68,8 +68,7 @@ void display_printf(char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  buf[strlen(buf) + 1] = 0;
-  buf[strlen(buf)] = '\n';
+  sprintf(strchr(buf, '\0'), "\n");
 
   write(STDERR_FILENO, buf, strlen(buf));
 }
@@ -116,7 +115,7 @@ char *get_arg(char *string, char *result) {
     }
 
     if (*pti == 0) {
-      display_printf("ERROR: Missing closing bracket");
+      display_printf("ERROR: Missing %i closing bracket(s)", nest);
     } else {
       pti++;
     }
@@ -154,11 +153,8 @@ void process_input(int wait_for_new_line) {
       next_line++;    /* Move the pointer to just after that \n */
     } else {          /* Reached the last line */
       if (wait_for_new_line) {
-        char temp[INPUT_MAX];
-
-        strcpy(temp, line);
-        strcpy(gd.input_buffer, temp);
-        gd.input_buffer_length = (int)strlen(temp);
+        strcpy(gd.input_buffer, line);
+        gd.input_buffer_length = (int)strlen(line);
 
         /* Leave and wait until called again without having to wait */
         return;
@@ -188,8 +184,7 @@ void process_input(int wait_for_new_line) {
     fflush(stdout);
   }
 
-  /* If we reached this point, then there's no more output in the buffer; reset
-   * the length */
+  /* If we reached this point, then there's no more output in the buffer */
   gd.input_buffer_length = 0;
 }
 
