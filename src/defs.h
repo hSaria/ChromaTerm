@@ -28,7 +28,7 @@
 #define DEFAULT_OPEN '{'
 #define DEFAULT_CLOSE '}'
 
-#define BUFFER_SIZE 20000
+#define BUFFER_SIZE 16384
 
 #define INPUT_MAX 262144 /* 256 KiB */
 
