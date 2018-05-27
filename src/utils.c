@@ -70,7 +70,7 @@ void display_printf(char *format, ...) {
 
   sprintf(strchr(buf, '\0'), "\n");
 
-  write(STDERR_FILENO, buf, strlen(buf));
+  (void)write(STDERR_FILENO, buf, strlen(buf));
 }
 
 /* The outer-most braces (if any) are stripped; all else left as is */
