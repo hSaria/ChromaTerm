@@ -189,7 +189,7 @@ DO_COMMAND(do_highlight) {
 #endif
       }
 
-      /* Find the insertion index */
+      /* Find the insertion index; start at the bottom of the list */
       insert_index = gd.highlights_used - 1;
 
       /* Highest value priority is at the bottom of the list (highest index) */
@@ -204,11 +204,12 @@ DO_COMMAND(do_highlight) {
         insert_index--; /* Our priority is less than insert_index's priorty */
       }
 
+      /* index must be 0 or higher */
       index = 0 > insert_index ? 0 : insert_index;
 
       gd.highlights_used++;
 
-      /* Expand if full; make it twice as big */
+      /* Resize if full; make it twice as big */
       if (gd.highlights_used == gd.highlights_size) {
         gd.highlights_size *= 2;
 
@@ -280,7 +281,7 @@ DO_COMMAND(do_read) {
   lvl = com = lnc = 0;
 
   while (*pti) {
-    if (com == 0) { /* Not in a comment */
+    if (com == FALSE) { /* Not in a comment */
       switch (*pti) {
       case DEFAULT_OPEN:
         *pto++ = *pti++;
@@ -296,7 +297,7 @@ DO_COMMAND(do_read) {
       case '/':                          /* Check if comment */
         if (lvl == 0 && pti[1] == '*') { /* lvl == 0 means not in an argument */
           pti += 2;
-          com += 1;
+          com = TRUE;
         } else {
           *pto++ = *pti++;
         }
@@ -324,18 +325,10 @@ DO_COMMAND(do_read) {
       }
     } else { /* In a comment */
       switch (*pti) {
-      case '/':
-        if (pti[1] == '*') { /* Comment in a comment */
-          pti += 2;
-          com += 1;
-        } else {
-          pti++;
-        }
-        break;
       case '*':
         if (pti[1] == '/') { /* Comment close */
           pti += 2;
-          com -= 1;
+          com = FALSE;
         } else {
           pti++;
         }
