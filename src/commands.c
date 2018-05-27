@@ -13,7 +13,7 @@ DO_COMMAND(do_commands) {
       continue;
     }
 
-    cat_sprintf(add, "%-14s", command_table[cmd].name);
+    sprintf(strchr(add, '\0'), "%-14s", command_table[cmd].name);
   }
 
   if (add[0]) {
@@ -93,7 +93,7 @@ DO_COMMAND(do_help) {
   if (*left == 0) {
     char add[BUFFER_SIZE];
     for (cnt = add[0] = 0; *help_table[cnt].name != 0; cnt++) {
-      cat_sprintf(add, "%-14s", help_table[cnt].name);
+      sprintf(strchr(add, '\0'), "%-14s", help_table[cnt].name);
     }
     if (add[0]) {
       display_printf(add);

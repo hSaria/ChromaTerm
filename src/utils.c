@@ -2,17 +2,6 @@
 
 #include "defs.h"
 
-void cat_sprintf(char *dest, char *fmt, ...) {
-  char buf[BUFFER_SIZE * 2];
-  va_list args;
-
-  va_start(args, fmt);
-  vsprintf(buf, fmt, args);
-  va_end(args);
-
-  strcat(dest, buf);
-}
-
 void convert_meta(char *input, char *output) {
   char *pti = input, *pto = output;
 

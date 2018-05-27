@@ -148,7 +148,6 @@ extern struct command_type command_table[];
 extern struct help_type help_table[];
 
 /**** utils.c ****/
-void cat_sprintf(char *dest, char *fmt, ...);
 void convert_meta(char *input, char *output);
 void display_printf(char *format, ...);
 char *get_arg(char *string, char *result);
