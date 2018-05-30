@@ -3,6 +3,7 @@
 #include "defs.h"
 
 struct global_data gd;
+int title_set = FALSE;
 
 int main(int argc, char **argv) {
   fd_set readfds;
@@ -13,8 +14,6 @@ int main(int argc, char **argv) {
   if (argc > 1) {
     int c;
 
-    optind = 1;
-
     while ((c = getopt(argc, argv, "h c: t:")) != EOF) {
       switch (tolower(c)) {
       case 'c':
@@ -23,6 +22,7 @@ int main(int argc, char **argv) {
         break;
       case 't':
         printf("\033]0;%s\007", optarg);
+        title_set = TRUE;
         break;
       default:
         help_menu(argv[0]);
@@ -102,6 +102,10 @@ void quit_with_signal(int exit_signal) {
   }
 
   free(gd.highlights);
+
+  if (title_set) {
+    printf("\033]0;\007");
+  }
 
   fflush(stdout);
   exit(exit_signal);
