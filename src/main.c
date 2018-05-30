@@ -7,27 +7,25 @@ int title_set = FALSE;
 
 int main(int argc, char **argv) {
   fd_set readfds;
-  int config_override = FALSE;
+  int c, config_override = FALSE;
 
+  /* Set up default CT state */
   init_program();
 
-  if (argc > 1) {
-    int c;
-
-    while ((c = getopt(argc, argv, "h c: t:")) != EOF) {
-      switch (tolower(c)) {
-      case 'c':
-        config_override = TRUE;
-        do_read(optarg);
-        break;
-      case 't':
-        printf("\033]0;%s\007", optarg);
-        title_set = TRUE;
-        break;
-      default:
-        help_menu(argv[0]);
-        break;
-      }
+  /* Parse the arguments */
+  while ((c = getopt(argc, argv, "h c: t:")) != -1) {
+    switch (tolower(c)) {
+    case 'c':
+      config_override = TRUE;
+      do_read(optarg);
+      break;
+    case 't':
+      printf("\033]0;%s\007", optarg);
+      title_set = TRUE;
+      break;
+    default:
+      help_menu(argv[0]);
+      break;
     }
   }
 
@@ -47,6 +45,7 @@ int main(int argc, char **argv) {
     }
   }
 
+  /* fd_set used for checking if there's more input */
   FD_ZERO(&readfds); /* Initialise the file descriptor */
   FD_SET(STDIN_FILENO, &readfds);
 
