@@ -149,16 +149,13 @@ void process_input(int wait_for_new_line) {
     next_line = strchr(line, '\n');
 
     if (next_line) {
-      *next_line = 0; /* Replace \n with a null-terminator */
-      next_line++;    /* Move the pointer to just after that \n */
-    } else {          /* Reached the last line */
-      if (wait_for_new_line) {
-        strcpy(gd.input_buffer, line);
-        gd.input_buffer_length = (int)strlen(line);
+      *next_line = 0;               /* Replace \n with a null-terminator */
+      next_line++;                  /* Move the pointer to just after that \n */
+    } else if (wait_for_new_line) { /* Reached the last line */
+      strcpy(gd.input_buffer, line);
+      gd.input_buffer_length = (int)strlen(line);
 
-        /* Leave and wait until called again without having to wait */
-        return;
-      }
+      return; /* Leave and wait until called again without having to wait */
     }
 
     /* Print the output after processing it */
