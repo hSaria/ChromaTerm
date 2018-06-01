@@ -31,40 +31,31 @@ void *poll_output(void *arg) {
 
   FD_ZERO(&readfds); /* Initialise the file descriptor */
 
-  if (arg) { /* Making a warning shut up */
-  }
+  (void)arg; /* Making a warning shut up */
 
-  while (TRUE) {
+  while (
+      (gd.output_length += read(gd.socket, &gd.output_buffer[gd.output_length],
+                                OUTPUT_MAX - gd.output_length - 1)) > 0) {
     /* Mandatoy wait before assuming no more output on the current line */
     struct timeval wait = {0, WAIT_FOR_NEW_LINE};
 
     FD_SET(gd.socket, &readfds);
 
-    /* If there's no current output on the mud, block until there's something to
-     * read. However, if there's already some output in the buffer, wait a bit
-     * to see if there's more out on that line. */
-    int rv = select(gd.socket + 1, &readfds, NULL, NULL,
-                    gd.output_length == 0 ? NULL : &wait);
+    /* Block for a small amount to see if there's more to read. If something
+     * came up, stop waiting and move on. */
+    int rv = select(gd.socket + 1, &readfds, NULL, NULL, &wait);
 
-    if (rv == 0) { /* timed-out while waiting for FD (no more output) */
+    if (rv > 0) { /* More data came up while waiting */
+      /* Failsafe: if the buffer is full, process all of pending output.
+       * Otherwise, process until the line that doesn't end with \n. */
+      read_output_buffer(OUTPUT_MAX - gd.output_length <= 1 ? FALSE : TRUE);
+    } else if (rv == 0) { /* timed-out while waiting for FD (no more output) */
       read_output_buffer(FALSE); /* Process all that's left */
-      continue;
-    } else if (rv < 0) { /* error */
-      return 0;
+    } else if (rv < 0) {         /* error */
+      break;
     }
-
-    /* Read what's is in the buffer */
-    gd.output_length += read(gd.socket, &gd.output_buffer[gd.output_length],
-                             OUTPUT_MAX - gd.output_length - 1);
-
-    if (gd.output_length <= 0) { /* error */
-      return 0;
-    }
-
-    /* Failsafe: if the buffer is full, process all of pending output.
-     * Otherwise, process until the line that doesn't end with \n. */
-    read_output_buffer(OUTPUT_MAX - gd.output_length <= 1 ? FALSE : TRUE);
   }
+  return 0;
 }
 
 void script_driver(char *str) {
