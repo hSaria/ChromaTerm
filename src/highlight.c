@@ -182,6 +182,7 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
   result_pos = pcre2_get_ovector_pointer(match);
 
   if (result_pos[0] > result_pos[1]) {
+    pcre2_match_data_free(match);
     result.start = -1;
     return result;
   }
