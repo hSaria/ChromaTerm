@@ -26,10 +26,10 @@ Enable debug: convert the special ANSI terminal codes
 Illustrate the available color codes for custom actions
 .El
 .Sh HIGHLIGHT RULES
-The syntax for a rule is:
+The syntax for a rule is
 .Sy HIGHLIGHT {REGEX} {ACTION} {PRIORITY}
 .br
-Anything between the first set of curly brackets (outer-most) is not part of the argument. Everything inside those brackets makes up the argument.
+The first set of curly brackets (outer-most) is not part of the argument. Everything inside those brackets makes up the argument.
 .Ss REGEX
 This argument is a regular expression that is used to attempt to match against a line. The RegEx engine used is PCRE (www.pcre.org). If supported, PCRE2 is used (much faster).
 .Ss ACTION
@@ -166,5 +166,5 @@ HIGHLIGHT
 .Sh FILES
 .Bl -tag -width -indent
 .It ~/.chromatermrc
-Location of the configuration file that is loaded by default.
+ChromaTerm-- configuration file that is loaded by default.
 .El
