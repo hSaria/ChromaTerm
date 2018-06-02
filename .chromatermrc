@@ -1,6 +1,3 @@
-CONFIG {CONVERT META} {OFF}
-CONFIG {HIGHLIGHT} {ON}
-
 /* IPv4 */
 HIGHLIGHT {(?i)((?P<ip>25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(?P>ip)(/(3[0-2]|[0-2]?\d))?} {cyan} {1000}
 

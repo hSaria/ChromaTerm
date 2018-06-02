@@ -144,7 +144,7 @@ void process_input(int wait_for_new_line) {
 
   /* separate into lines and print away */
   for (line = gd.input_buffer; line && *line; line = next_line) {
-    char linebuf[INPUT_MAX];
+    char linebuf[INPUT_MAX + (INPUT_MAX / 10)];
 
     next_line = strchr(line, '\n');
 
@@ -161,12 +161,10 @@ void process_input(int wait_for_new_line) {
     /* Print the output after processing it */
     strcpy(linebuf, line);
 
-    if (HAS_BIT(gd.flags, SES_FLAG_HIGHLIGHT)) {
-      check_all_highlights(linebuf);
-    }
+    check_all_highlights(linebuf);
 
-    if (HAS_BIT(gd.flags, SES_FLAG_CONVERTMETA)) {
-      char wrapped_str[BUFFER_SIZE * 2];
+    if (gd.debug) {
+      char wrapped_str[INPUT_MAX + (INPUT_MAX / 10)];
 
       convert_meta(linebuf, wrapped_str);
       printf("%s", wrapped_str);
@@ -185,27 +183,173 @@ void process_input(int wait_for_new_line) {
   gd.input_buffer_length = 0;
 }
 
-void script_driver(char *str) {
-  char *pti = str;
+void read_config(char *arg) {
+  FILE *fp;
+  struct stat filedata;
+  char *bufi, *bufo, filename[BUFFER_SIZE], *pti, *pto;
+  int lvl, com, lnc;
+  wordexp_t p;
 
-  /* Skip any unnecessary command chars or spaces before the actual command */
-  while (*pti == gd.command_char || isspace((int)*pti)) {
-    pti++;
+  get_arg(arg, filename);
+
+  if (wordexp(filename, &p, 0) == 0) {
+    strcpy(filename, *p.we_wordv);
+    wordfree(&p);
+  } else {
+    display_printf("ERROR: Failed while performing word expansion on {%s}",
+                   filename);
+    return;
   }
 
-  if (*pti != 0) {
-    char *args, command[BUFFER_SIZE];
-    int cmd;
+  if ((fp = fopen(filename, "r")) == NULL) {
+    display_printf("ERROR: File {%s} not found", filename);
+    return;
+  }
 
-    args = get_arg(pti, command);
+  stat(filename, &filedata);
 
-    for (cmd = 0; *command_table[cmd].name != 0; cmd++) {
-      if (is_abbrev(command, command_table[cmd].name)) {
-        (*command_table[cmd].command)(args);
-        return;
+  if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
+    display_printf(
+        "ERROR: Failed to allocate i_buffer memory to process file {%s}",
+        filename);
+    fclose(fp);
+    return;
+  } else if ((bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
+    display_printf(
+        "ERROR: Failed to allocate o_buffer memory to process file {%s}",
+        filename);
+    free(bufi);
+    fclose(fp);
+    return;
+  }
+
+  if (fread(bufi, 1, filedata.st_size, fp) == 0) {
+    display_printf("ERROR: File {%s} is empty", filename);
+    free(bufi);
+    free(bufo);
+    fclose(fp);
+    return;
+  };
+
+  fclose(fp); /* Done with FILE */
+
+  pti = bufi;
+  pto = bufo;
+
+  lvl = com = lnc = 0;
+
+  while (*pti) {
+    if (com == FALSE) { /* Not in a comment */
+      switch (*pti) {
+      case DEFAULT_OPEN:
+        *pto++ = *pti++;
+        lvl++;
+        break;
+      case DEFAULT_CLOSE:
+        *pto++ = *pti++;
+        lvl--;
+        break;
+      case ' ':
+        *pto++ = *pti++;
+        break;
+      case '/':                          /* Check if comment */
+        if (lvl == 0 && pti[1] == '*') { /* lvl == 0 means not in an argument */
+          pti += 2;
+          com = TRUE;
+        } else {
+          *pto++ = *pti++;
+        }
+        break;
+      case '\r': /* skip \r (we expect \n) */
+        pti++;
+        break;
+      case '\n':
+        if (lvl) { /* Closing brackets missing; remove command */
+          char *previous_line = strrchr(pto, '\n');
+          if (previous_line) { /* There's a previous line */
+            previous_line--;   /* Go back one character before \n */
+            pto = previous_line;
+          } else { /* Go back to beginning of bufo (no previous line) */
+            pto = bufo;
+          }
+        }
+
+        *pto++ = *pti++;
+        lnc++;
+        break;
+      default:
+        *pto++ = *pti++;
+        break;
+      }
+    } else { /* In a comment */
+      switch (*pti) {
+      case '*':
+        if (pti[1] == '/') { /* Comment close */
+          pti += 2;
+          com = FALSE;
+        } else {
+          pti++;
+        }
+        break;
+      default: /* Advance forward (we're in a comment) */
+        pti++;
+        break;
+      }
+    }
+  }
+
+  *pto++ = '\n';
+  *pto = 0;
+
+  pti = bufo;
+  pto = bufo;
+
+  while (*pti) {
+    if (*pti != '\n') { /* Seek until you reach \n */
+      pti++;
+      continue;
+    }
+    *pti = 0; /* replace \n with null-terminator */
+
+    if (strlen(pto) >= BUFFER_SIZE) {
+      /* Only output the first 20 characters of the overflowing command */
+      *(pto + 20) = 0;
+      display_printf("ERROR: Command too long {%s}", pto);
+
+      free(bufi);
+      free(bufo);
+      return;
+    }
+
+    if (*pto) {
+      char *args, command[BUFFER_SIZE];
+
+      args = get_arg(pto, command);
+
+      if (is_abbrev(command, "HIGHLIGHT")) {
+        highlight_add(args);
+      } else if (is_abbrev(command, "SHOWME")) {
+        char *tmp = pto, buf[BUFFER_SIZE];
+
+        while (isspace((int)*tmp)) {
+          tmp++;
+        }
+
+        strcpy(buf, tmp);
+
+        check_all_highlights(buf);
+        display_printf(buf);
+      } else if (is_abbrev(command, "UNHIGHLIGHT")) {
+        highlight_remove(args);
+      } else {
+        display_printf("ERROR: Unknown command {%s}", command);
       }
     }
 
-    display_printf("ERROR: Unknown command '%s'", command);
+    pti++; /* Move to the position after the null-terminator */
+    pto = pti;
   }
+
+  free(bufi);
+  free(bufo);
 }

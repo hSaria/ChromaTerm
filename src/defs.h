@@ -43,17 +43,6 @@
 
 #define ESCAPE 27
 
-#define SES_FLAG_CONVERTMETA (1 << 0)
-#define SES_FLAG_HIGHLIGHT (1 << 1)
-
-/* Bit operations */
-#define HAS_BIT(bitvector, bit) ((bitvector) & (bit))
-#define SET_BIT(bitvector, bit) ((bitvector) |= (bit))
-#define DEL_BIT(bitvector, bit) ((bitvector) &= (~(bit)))
-#define TOG_BIT(bitvector, bit) ((bitvector) ^= (bit))
-
-#define DO_COMMAND(command) void command(char *arg)
-
 /* Stores the shared data for CT-- */
 struct global_data {
   struct highlight **highlights;
@@ -63,8 +52,7 @@ struct global_data {
   char input_buffer[INPUT_MAX];
   int input_buffer_length;
 
-  char command_char;
-  int flags;
+  int debug;
 };
 
 struct highlight {
@@ -82,42 +70,15 @@ struct highlight {
 
 struct regex_result {
   int start;
-  char match[BUFFER_SIZE];
+  int end;
 };
-
-/* Typedefs */
-typedef void COMMAND(char *arg);
-
-/* Structures for tables.c */
-struct color_type {
-  char *name;
-  char *code;
-};
-
-struct command_type {
-  char *name;
-  COMMAND *command;
-};
-
-struct help_type {
-  char *name;
-  char *text;
-};
-
-/**** commands.c ****/
-DO_COMMAND(do_commands);
-DO_COMMAND(do_configure);
-DO_COMMAND(do_help);
-DO_COMMAND(do_highlight);
-DO_COMMAND(do_read);
-DO_COMMAND(do_showme);
-DO_COMMAND(do_unhighlight);
-DO_COMMAND(do_write);
 
 /**** highlight.c ****/
 void check_all_highlights(char *original);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
+void highlight_add(char *arg);
+void highlight_remove(char *arg);
 
 #ifdef HAVE_PCRE2_H
 struct regex_result regex_compare(pcre2_code *compiled_regex, char *str);
@@ -133,14 +94,10 @@ void substitute(char *string, char *result);
 extern struct global_data gd;
 
 int main(int argc, char **argv);
+void colordemo(void);
 void help_menu(char *proc_name);
 void init_program(void);
 void quit_with_signal(int exit_signal);
-
-/**** tables.c ****/
-extern struct color_type color_table[];
-extern struct command_type command_table[];
-extern struct help_type help_table[];
 
 /**** utils.c ****/
 void convert_meta(char *input, char *output);
@@ -148,4 +105,4 @@ void display_printf(char *format, ...);
 char *get_arg(char *string, char *result);
 int is_abbrev(char *s1, char *s2);
 void process_input(int wait_for_new_line);
-void script_driver(char *str);
+void read_config(char *arg);

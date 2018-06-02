@@ -2,8 +2,39 @@
 
 #include "defs.h"
 
+struct color_type {
+  char *name;
+  char *code;
+};
+
+struct color_type color_table[] = {
+    {"bold", "<188>"},         {"dim", "<288>"},
+    {"underscore", "<488>"},   {"blink", "<588>"},
+    {"b azure", "<ABD>"},      {"b black", "<880>"},
+    {"b blue", "<884>"},       {"b cyan", "<886>"},
+    {"b ebony", "<G04>"},      {"b green", "<882>"},
+    {"b jade", "<ADB>"},       {"b lime", "<BDA>"},
+    {"b magenta", "<885>"},    {"b orange", "<DBA>"},
+    {"b pink", "<DAB>"},       {"b red", "<881>"},
+    {"b silver", "<CCC>"},     {"b tan", "<CBA>"},
+    {"b violet", "<BAD>"},     {"b white", "<887>"},
+    {"b yellow", "<883>"},     {"azure", "<abd>"},
+    {"black", "<808>"},        {"blue", "<848>"},
+    {"cyan", "<868>"},         {"ebony", "<g04>"},
+    {"green", "<828>"},        {"jade", "<adb>"},
+    {"light azure", "<acf>"},  {"light ebony", "<bbb>"},
+    {"light jade", "<afc>"},   {"light lime", "<cfa>"},
+    {"light orange", "<fca>"}, {"light pink", "<fac>"},
+    {"light silver", "<eee>"}, {"light tan", "<eda>"},
+    {"light violet", "<caf>"}, {"lime", "<bda>"},
+    {"magenta", "<858>"},      {"orange", "<dba>"},
+    {"pink", "<dab>"},         {"red", "<818>"},
+    {"silver", "<ccc>"},       {"tan", "<cba>"},
+    {"violet", "<bad>"},       {"white", "<878>"},
+    {"yellow", "<838>"},       {"", "<088>"}};
+
 void check_all_highlights(char *original) {
-  char stripped[BUFFER_SIZE];
+  char stripped[INPUT_MAX];
   int i;
 
   strip_vt102_codes(original, stripped);
@@ -15,7 +46,7 @@ void check_all_highlights(char *original) {
 
     if (result.start != -1) {
       char *pto, *pts, *ptm;
-      char output[BUFFER_SIZE];
+      char output[INPUT_MAX * 2];
 
       *output = 0;
 
@@ -24,9 +55,10 @@ void check_all_highlights(char *original) {
 
       do {
         int count_inc_skipped = 0; /* Skipped bytes until the match */
-        int to_skip =
-            (int)strlen(result.match); /* Number of chars to skip in match */
+        int to_skip, match_len;    /* Number of chars to skip in match */
         char *ptt;
+
+        match_len = to_skip = (int)(result.end - result.start);
 
         /* Seek ptm (original with vt102 codes) until beginning of match */
         while (*ptm && result.start > 0) {
@@ -58,16 +90,17 @@ void check_all_highlights(char *original) {
           to_skip--;
         }
 
-        sprintf(strchr(output, '\0'), "%.*s%s%s\033[0m", count_inc_skipped, pto,
-                gd.highlights[i]->compiled_action, result.match);
+        strncat(output, pto, count_inc_skipped);           /* Before Match */
+        strcat(output, gd.highlights[i]->compiled_action); /* Action */
+        strncat(output, pts, match_len);                   /* Match */
+        strcat(output, "\033[0m");                         /* Reset */
 
         /* Move pto to after the match, and skip any vt102 codes, too. */
         pto = ptt;
         ptm = pto; /* Sync: next iteration should simulate a fresh call */
 
-        /* Move to the remaining of the stripped string */
-        pts = strstr(pts, result.match);
-        pts = pts + strlen(result.match);
+        /* Move the stripped string to after the matched string*/
+        pts += match_len;
 
         result = regex_compare(gd.highlights[i]->compiled_regex, pts);
       } while (result.start != -1);
@@ -153,9 +186,8 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
     return result;
   }
 
-  sprintf(result.match, "%.*s", (int)(result_pos[1] - result_pos[0]),
-          &str[result_pos[0]]);
   result.start = (int)result_pos[0];
+  result.end = (int)result_pos[1];
 
   pcre2_match_data_free(match);
 #else
@@ -169,11 +201,151 @@ struct regex_result regex_compare(pcre *compiled_regex, char *str) {
     return result;
   }
 
-  sprintf(result.match, "%.*s", (int)(match[1] - match[0]), &str[match[0]]);
   result.start = (int)match[0];
+  result.end = (int)match[1];
 #endif
 
   return result;
+}
+
+void highlight_add(char *arg) {
+  char condition[BUFFER_SIZE], action[BUFFER_SIZE], priority[BUFFER_SIZE];
+
+  arg = get_arg(arg, condition);
+  arg = get_arg(arg, action);
+  get_arg(arg, priority);
+
+  if (*priority == 0) {
+    strcpy(priority, "1000");
+  }
+
+  if (*condition == 0 || *action == 0) {
+    if (gd.highlights_used == 0) {
+      display_printf("HIGHLIGHT: No rules configured");
+    } else {
+      int i;
+      for (i = 0; i < gd.highlights_used; i++) {
+        display_printf("HIGHLIGHT "
+                       "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                       "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                       "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
+                       gd.highlights[i]->condition, gd.highlights[i]->action,
+                       gd.highlights[i]->priority);
+      }
+    }
+  } else {
+    char temp[BUFFER_SIZE];
+    if (get_highlight_codes(action, temp) == FALSE) {
+      display_printf("ERROR: Invalid color code {%s}; see manual pages",
+                     action);
+    } else {
+#ifdef HAVE_PCRE2_H
+      PCRE2_SIZE error_pointer;
+#else
+      const char *error_pointer;
+#endif
+
+      struct highlight *highlight;
+      int error_number, index, insert_index;
+
+      /* Remove if already exists */
+      if ((index = find_highlight_index(condition)) != -1) {
+        highlight_remove(gd.highlights[index]->condition);
+      }
+
+      highlight = (struct highlight *)calloc(1, sizeof(struct highlight));
+
+      strcpy(highlight->condition, condition);
+      strcpy(highlight->action, action);
+      strcpy(highlight->priority, priority);
+
+      get_highlight_codes(action, highlight->compiled_action);
+
+#ifdef HAVE_PCRE2_H
+      highlight->compiled_regex =
+          pcre2_compile((PCRE2_SPTR)condition, PCRE2_ZERO_TERMINATED, 0,
+                        &error_number, &error_pointer, NULL);
+#else
+      highlight->compiled_regex =
+          pcre_compile(condition, 0, &error_pointer, &error_number, NULL);
+#endif
+
+      if (highlight->compiled_regex == NULL) {
+        display_printf("WARNING: Couldn't compile regex at %i: %s",
+                       error_number, error_pointer);
+      } else {
+#ifdef HAVE_PCRE2_H
+        if (pcre2_jit_compile(highlight->compiled_regex, 0) == 0) {
+          /* Accelerate pattern matching if JIT is supported on the platform */
+          pcre2_jit_compile(highlight->compiled_regex, PCRE2_JIT_COMPLETE);
+        }
+#endif
+      }
+
+      /* Find the insertion index; start at the bottom of the list */
+      insert_index = gd.highlights_used - 1;
+
+      /* Highest value priority is at the bottom of the list (highest index) */
+      while (insert_index > -1) {
+        double diff =
+            atof(priority) - atof(gd.highlights[insert_index]->priority);
+
+        if (diff >= 0) {
+          insert_index++; /* Same priority or higher; insert after */
+          break;
+        }
+        insert_index--; /* Our priority is less than insert_index's priorty */
+      }
+
+      /* index must be 0 or higher */
+      index = 0 > insert_index ? 0 : insert_index;
+
+      gd.highlights_used++;
+
+      /* Resize if full; make it twice as big */
+      if (gd.highlights_used == gd.highlights_size) {
+        gd.highlights_size *= 2;
+
+        gd.highlights = (struct highlight **)realloc(
+            gd.highlights, gd.highlights_size * sizeof(struct highlight *));
+      }
+
+      memmove(&gd.highlights[index + 1], &gd.highlights[index],
+              (gd.highlights_used - index) * sizeof(struct highlight *));
+
+      gd.highlights[index] = highlight;
+    }
+  }
+}
+
+void highlight_remove(char *arg) {
+  int index;
+
+  get_arg(arg, arg);
+
+  if (*arg == 0) {
+    display_printf("SYNTAX: UNHIGHLIGHT {CONDITION}");
+
+  } else if ((index = find_highlight_index(arg)) != -1) {
+    struct highlight *highlight = gd.highlights[index];
+
+    if (highlight->compiled_regex != NULL) {
+#ifdef HAVE_PCRE2_H
+      pcre2_code_free(highlight->compiled_regex);
+#else
+      pcre_free(highlight->compiled_regex);
+#endif
+    }
+
+    free(highlight);
+
+    memmove(&gd.highlights[index], &gd.highlights[index + 1],
+            (gd.highlights_used - index) * sizeof(struct highlight *));
+
+    gd.highlights_used--;
+  } else {
+    display_printf("ERROR: Highlight rule not found");
+  }
 }
 
 int skip_vt102_codes(char *str) {

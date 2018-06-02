@@ -10,7 +10,7 @@ CFLAGS += -O2 -Wall -Wextra
 LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
-OFILES = commands.o highlight.o main.o tables.o utils.o
+OFILES = highlight.o main.o utils.o
 
 default: all
 
@@ -43,9 +43,6 @@ clean:
 
 test:
 	../.test.sh | ./ct -c ../.test_chromatermrc
-
-	cat ./some_file
-	rm -f ./some_file
 
 distclean:
 	rm -f *.o config.status config.log ct Makefile config.h
