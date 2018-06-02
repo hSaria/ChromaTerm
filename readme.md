@@ -33,8 +33,7 @@ cd ChromaTerm--/src/ && ./configure && make install
 
 
 # Usage
-- Create a configuration file at `~/.chromatermrc`
-- Write a highlight rule. As an example, write `HIGHLIGHT {World} {blue}`
+- Create a configuration file at `~/.chromatermrc` and write a highlight rule to it. As an example, write `HIGHLIGHT {World} {blue}`
 - Run `echo Hello, World! | ct` and you should see "World" get highlighted blue.
 
 > If you're new, just run `make ct-config` to copy the included configuration file to your home directory and modify it to your liking
