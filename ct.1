@@ -131,6 +131,38 @@ to
 .El
 .Ss PRIORITY
 (Optional) If a part of the text is matched by two rules, the rule with lower priority value overwrites the action of the higher priority value; lower priority value = higher precedence. Default priority is 1000.
+.Sh CONFIGURATION FILE
+This should contain the highlight rules. You can add a comment by wrapping it in
+.Sy /*  */
+.Pp
+Example:
+.Bl -item -offset indent -compact
+.It
+/* "password" at the start of a line is made red (case insensitive) */
+.It
+HIGHLIGHT {(?i)^password} {red} {1000}
+
+.It
+/* On its own, makes "Bubba" or "bubba" green, but since its priority is
+.It
+   not specified (default 1000), and the next rule matches the same string
+.It
+   with a better (lower) priority, this action is overwritten by that rule */
+.It
+HIGHLIGHT {(B|b)ubba} {green}
+
+.It
+/* Makes "Bubba" red, underscored, and blink */
+.It
+HIGHLIGHT {Bubba} {red underscore blink} {900}
+
+.It
+/* Print the list of highlight rules on program startup.
+.It
+   Useful for viewing the order of highlight rules */
+.It
+HIGHLIGHT
+.El
 .Sh FILES
 .Bl -tag -width -indent
 .It ~/.chromatermrc
