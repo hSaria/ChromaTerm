@@ -38,7 +38,7 @@ cd ChromaTerm--/src/ && ./configure && make install
 
 > If you're new, run `make ct-config` to copy the included configuration file to your home directory. Modify it to your liking
 
-## Highlight rules
+## Highlight Rules
 The syntax for a rule is `HIGHLIGHT {REGEX} {ACTION} {PRIORITY}`
 
 ### REGEX
