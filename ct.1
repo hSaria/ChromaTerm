@@ -14,12 +14,12 @@
 .Sh DESCRIPTION
 ChromaTerm--
 .Pq Ic ct
-reads from standard input and compares each line to a list of user-defined highlight rules. If any part of the line matches a regular expression, it will get highlighted according to the action of that rule. Anything which does not match any of the highlight rules will be printed as is.
+reads from standard input and compares each line to a list of user-defined highlight rules. If any part of the line matches a rule, it will get highlighted according to the action of that rule. Anything which does not match any of the highlight rules will not be changed.
 .Pp
 Available arguments:
 .Bl -tag -width -indent
 .It Fl c Ar file
-Override configuration file. By default, ChromaTerm-- will look for a configuration file called .chromatermrc your home directory, and will load it if it exists.
+Override configuration file. By default, ChromaTerm-- will look for a configuration file called .chromatermrc in the home directory, and will load it if it exists.
 .It Fl d
 Enable debug: convert the special ANSI terminal codes
 .It Fl i
@@ -33,12 +33,11 @@ Anything between the first set of curly brackets (outer-most) is not part of the
 .Ss REGEX
 This argument is a regular expression that is used to attempt to match against a line. The RegEx engine used is PCRE (www.pcre.org). If supported, PCRE2 is used (much faster).
 .Ss ACTION
-Once something matches the regex of a rule, the action of that rule is applied. The action has either a named (predefined) action or a custom one. Multiple actions can make up a single action as long as they are from the same category. For example:
+Once something matches the regex of a rule, the action of that rule is applied. The action can be a named (predefined) action or a custom one. Multiple actions can make up a single action as long as they are from the same category. For example:
 .Sy {bold red}
 or
 .Sy {<fca><BAF>}
-.Bl -item -offset indent -compact
-.It
+.Pp
 The
 .Sy named
 actions are:
@@ -50,13 +49,14 @@ bold, dim, underscore, blink, b black, b blue, b cyan, b green, b magenta, b red
 .Sy xterm-256:
 b azure, b ebony, b jade, b lime, b orange, b pink, b  silver, b tan, b violet, azure, ebony, jade, light azure, light ebony, light jade, light lime, light orange, light pink, light silver, light tan, light violet, lime, orange, pink, silver, tan, and violet.
 .El
-.It
+.Pp
 There are two ways to write a
 .Sy custom
 action:
 .Bl -item -offset indent -compact
 .It
-VT100: These will work on older terminals as well as new ones.
+.Sy VT100:
+These will work on older terminals as well as new ones.
 Syntax is
 .Sy <xyz>
 where:
@@ -92,7 +92,8 @@ are the foreground and background colors, respectively, and they correspond to:
 .El
 .El
 .It
-xterm-256color: More colors if the terminal supports it (most of them do); try
+.Sy xterm-256:
+More colors if the terminal supports it (most of them do); try
 .Sy ct -i
 to see the full range.
 .Bl -item -offset indent -compact
@@ -104,13 +105,11 @@ Foreground: Integer range from
 .Sy <g00>
 to
 .Sy <g23>
-(g is constant)
 .It
 Background: Integer range from
 .Sy <G00>
 to
 .Sy <G23>
-(G is constant)
 .El
 .It
 Near-RGB
@@ -128,9 +127,8 @@ to
 .El
 .El
 .El
-.El
 .Ss PRIORITY
-(Optional) If a part of the text is matched by two rules, the rule with lower priority value overwrites the action of the higher priority value; lower priority value = higher precedence. Default priority is 1000.
+(Optional) If a part of the text is matched by two rules, the rule with the lower priority value overrides the action of the higher priority value; lower priority value = higher precedence. Default priority is 1000.
 .Sh CONFIGURATION FILE
 This should contain the highlight rules. You can add a comment by wrapping it in
 .Sy /*  */
@@ -143,11 +141,13 @@ Example:
 HIGHLIGHT {(?i)^password} {red} {1000}
 
 .It
-/* On its own, makes "Bubba" or "bubba" green, but since its priority is
+/* On its own, makes "Bubba" or "bubba" green, but since its priority
 .It
-   not specified (default 1000), and the next rule matches the same string
+   is not specified (default 1000), and the next rule matches the same
 .It
-   with a better (lower) priority, this action is overwritten by that rule */
+   string with a better (lower) priority, this action is overridden by
+.It
+   the action of that rule */
 .It
 HIGHLIGHT {(B|b)ubba} {green}
 
@@ -159,7 +159,7 @@ HIGHLIGHT {Bubba} {red underscore blink} {900}
 .It
 /* Print the list of highlight rules on program startup.
 .It
-   Useful for viewing the order of highlight rules */
+   Useful for viewing the order of highlight rules. */
 .It
 HIGHLIGHT
 .El
