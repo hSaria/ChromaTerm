@@ -25,7 +25,15 @@ int main(int argc, char **argv) {
       colordemo();
       break;
     default:
-      help_menu(argv[0]);
+      printf("ChromaTerm-- v%s\n", VERSION);
+      printf("Usage: %1$s [-c file] [-d]\n       %1$s [-i]\n", argv[0]);
+      printf("%6s %-18s Override configuration file\n", "-c", "{config file}");
+      printf("%6s %-18s Debug mode: convert ANSI terminal codes\n", "-d", "");
+      printf(
+          "%6s %-18s Illustrate the available color codes for custom actions\n",
+          "-i", "");
+
+      quit_with_signal(2);
       break;
     }
   }
@@ -69,15 +77,6 @@ int main(int argc, char **argv) {
 
   quit_with_signal(EXIT_SUCCESS);
   return 0; /* Literally useless, but gotta make a warning shut up. */
-}
-
-void help_menu(char *proc_name) {
-  printf("ChromaTerm-- v%s\n", VERSION);
-  printf("Usage: [process] | %s [arguments]\n", proc_name);
-  printf("%6s %-18s Override configuration file\n", "-c", "{config file}");
-  printf("%6s %-18s Set title\n", "-t", "{title}");
-
-  quit_with_signal(2);
 }
 
 void colordemo(void) {
