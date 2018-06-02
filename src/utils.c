@@ -187,7 +187,7 @@ void read_config(char *arg) {
   FILE *fp;
   struct stat filedata;
   char *bufi, *bufo, filename[BUFFER_SIZE], *pti, *pto;
-  int lvl, com, lnc;
+  int nest = 0, com = FALSE, line_number = 1;
   wordexp_t p;
 
   get_arg(arg, filename);
@@ -236,24 +236,23 @@ void read_config(char *arg) {
   pti = bufi;
   pto = bufo;
 
-  lvl = com = lnc = 0;
-
   while (*pti) {
     if (com == FALSE) { /* Not in a comment */
       switch (*pti) {
       case DEFAULT_OPEN:
         *pto++ = *pti++;
-        lvl++;
+        nest++;
         break;
       case DEFAULT_CLOSE:
         *pto++ = *pti++;
-        lvl--;
+        nest--;
         break;
       case ' ':
         *pto++ = *pti++;
         break;
-      case '/':                          /* Check if comment */
-        if (lvl == 0 && pti[1] == '*') { /* lvl == 0 means not in an argument */
+      case '/': /* Check if comment */
+        if (nest == 0 &&
+            pti[1] == '*') { /* nest == 0 means not in an argument */
           pti += 2;
           com = TRUE;
         } else {
@@ -264,18 +263,24 @@ void read_config(char *arg) {
         pti++;
         break;
       case '\n':
-        if (lvl) { /* Closing brackets missing; remove command */
-          char *previous_line = strrchr(pto, '\n');
-          if (previous_line) { /* There's a previous line */
-            previous_line--;   /* Go back one character before \n */
-            pto = previous_line;
+        if (nest) { /* Closing brackets missing; remove command */
+          char *previous_line = strrchr(bufo, '\n');
+
+          display_printf("ERROR: Missing %i closing bracket(s) at line %i",
+                         nest, line_number);
+
+          nest = 0; /* Reset the level to 0 (brackets are all matched) */
+
+          if (previous_line) {   /* There's a previous line */
+            pto = previous_line; /* Go back to the last sane line */
           } else { /* Go back to beginning of bufo (no previous line) */
             pto = bufo;
           }
         }
 
+        line_number++;
+
         *pto++ = *pti++;
-        lnc++;
         break;
       default:
         *pto++ = *pti++;
@@ -291,6 +296,10 @@ void read_config(char *arg) {
           pti++;
         }
         break;
+      case '\n':
+        line_number++;
+        pti++;
+        break;
       default: /* Advance forward (we're in a comment) */
         pti++;
         break;
@@ -302,14 +311,22 @@ void read_config(char *arg) {
   *pto = 0;
 
   pti = bufo;
-  pto = bufo;
 
   while (*pti) {
-    if (*pti != '\n') { /* Seek until you reach \n */
+    while (isspace((int)*pti)) {
       pti++;
-      continue;
     }
-    *pti = 0; /* replace \n with null-terminator */
+
+    if (*pti == 0) {
+      break;
+    }
+
+    pto = pti;               /* Start of command */
+    pti = strchr(pti, '\n'); /* End of command; seek until you reach \n */
+
+    if (pti) {
+      *pti = 0; /* replace \n with null-terminator */
+    }
 
     if (strlen(pto) >= BUFFER_SIZE) {
       /* Only output the first 20 characters of the overflowing command */
