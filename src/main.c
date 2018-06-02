@@ -31,18 +31,12 @@ int main(int argc, char **argv) {
   }
 
   /* Read configuration if not overridden by the launch arguments */
-  if (!config_override) {
-    if (access(".chromatermrc", R_OK) == 0) {
-      read_config(".chromatermrc");
-    } else {
-      if (getenv("HOME") != NULL) {
-        char temp[4095];
-        sprintf(temp, "%s/%s", getenv("HOME"), ".chromatermrc");
+  if (!config_override && getenv("HOME") != NULL) {
+    char temp[4095];
+    sprintf(temp, "%s/%s", getenv("HOME"), ".chromatermrc");
 
-        if (access(temp, R_OK) == 0) {
-          read_config(temp);
-        }
-      }
+    if (access(temp, R_OK) == 0) {
+      read_config(temp);
     }
   }
 
