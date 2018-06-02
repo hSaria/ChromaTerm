@@ -27,7 +27,7 @@ cd ChromaTerm--/src/ && ./configure && make install
 > - `apt install libpcre2-dev`
 > - `yum install pcre2-devel`
 
-> It is recommended that you use PCRE2 as you'll see a 16x to 20x increase in output processing speed. However, legacy PCRE is still very fast, so it's not the end of the world.
+> If possible, install PCRE2 as the legacy PCRE is no longer in development. PCRE2 is also much faster.
 
 > You can uninstall ChromaTerm-- by running `make uninstall`
 
@@ -39,7 +39,7 @@ cd ChromaTerm--/src/ && ./configure && make install
 > If you're new, run `make ct-config` to copy the included configuration file to your home directory. Modify it to your liking
 
 ## Highlight rules
-The syntax for a rule is: HIGHLIGHT {REGEX} {ACTION} {PRIORITY}
+The syntax for a rule is `HIGHLIGHT {REGEX} {ACTION} {PRIORITY}`
 
 ### REGEX
 The RegEx engine used is PCRE (www.pcre.org). If supported, PCRE2 is used (much faster).
