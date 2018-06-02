@@ -1,0 +1,138 @@
+.Dd 2/6/18               \" DATE
+.Dt ct 1                 \" Program name and manual section number
+.Os
+.Sh NAME                 \" Section Header - required - don't modify
+.Nm ct                   \" Macro to designate other names for the documented program.
+.Nd colorize your terminal
+.Sh SYNOPSIS
+.Nm
+.Op Fl c Ar "file"
+.Op Fl "d"
+.br
+.Nm
+.Fl "i"
+.Sh DESCRIPTION
+ChromaTerm--
+.Pq Ic ct
+reads from standard input and compares each line to a list of user-defined highlight rules. If any part of the line matches a regular expression, it will get highlighted according to the action of that rule. Anything which does not match any of the highlight rules will be printed as is.
+.Pp
+Available arguments:
+.Bl -tag -width -indent
+.It Fl c Ar file
+Override configuration file. By default, ChromaTerm-- will look for a configuration file called .chromatermrc your home directory, and will load it if it exists.
+.It Fl d
+Enable debug: convert the special ANSI terminal codes
+.It Fl i
+Illustrate the available color codes for custom actions
+.El
+.Sh HIGHLIGHT RULES
+The syntax for a rule is:
+.Sy HIGHLIGHT {REGEX} {ACTION} {PRIORITY}
+.br
+Anything between the first set of curly brackets (outer-most) is not part of the argument. Everything inside those brackets makes up the argument.
+.Ss REGEX
+This argument is a regular expression that is used to attempt to match against a line. The RegEx engine used is PCRE (www.pcre.org). If supported, PCRE2 is used (much faster).
+.Ss ACTION
+Once something matches the regex of a rule, the action of that rule is applied. The action has either a named (predefined) action or a custom one. Multiple actions can make up a single action as long as they are from the same category. For example:
+.Sy {bold red}
+or
+.Sy {<fca><BAF>}
+.Bl -item -offset indent -compact
+.It
+The
+.Sy named
+actions are:
+.Bl -item -offset indent -compact
+.It
+.Sy VT100:
+bold, dim, underscore, blink, b black, b blue, b cyan, b green, b magenta, b red, b white, b yellow, black, blue, cyan, green, magenta, red, white, and yellow.
+.It
+.Sy xterm-256:
+b azure, b ebony, b jade, b lime, b orange, b pink, b  silver, b tan, b violet, azure, ebony, jade, light azure, light ebony, light jade, light lime, light orange, light pink, light silver, light tan, light violet, lime, orange, pink, silver, tan, and violet.
+.El
+.It
+There are two ways to write a
+.Sy custom
+action:
+.Bl -item -offset indent -compact
+.It
+VT100: These will work on older terminals as well as new ones.
+Syntax is
+.Sy <xyz>
+where:
+.br
+.Bl -item -offset indent -compact
+.It
+.Sy x
+is a number that corresponds to:
+.Bl -item -offset indent -compact
+.It
+0 - Reset      4 - Underscore
+.It
+1 - Bold       5 - Blink
+.It
+2 - Dim        7 - Reverse
+.El
+.It
+.Sy y
+and
+.Sy z
+are the foreground and background colors, respectively, and they correspond to:
+.Bl -item -offset indent -compact
+.It
+0 - Black      5 - Magenta
+.It
+1 - Red        6 - Cyan
+.It
+2 - Green      7 - White
+.It
+3 - Yellow     8 - Skip (use previous color)
+.It
+4 - Blue       9 - Default
+.El
+.El
+.It
+xterm-256color: More colors if the terminal supports it (most of them do); try
+.Sy ct -i
+to see the full range.
+.Bl -item -offset indent -compact
+.It
+Grayscale
+.Bl -item -offset indent -compact
+.It
+Foreground: Integer range from
+.Sy <g00>
+to
+.Sy <g23>
+(g is constant)
+.It
+Background: Integer range from
+.Sy <G00>
+to
+.Sy <G23>
+(G is constant)
+.El
+.It
+Near-RGB
+.Bl -item -offset indent -compact
+.It
+Foreground: Hexadecimal range from
+.Sy <aaa>
+to
+.Sy <fff>
+.It
+Background: Hexadecimal range from
+.Sy <AAA>
+to
+.Sy <FFF>
+.El
+.El
+.El
+.El
+.Ss PRIORITY
+(Optional) If a part of the text is matched by two rules, the rule with lower priority value overwrites the action of the higher priority value; lower priority value = higher precedence. Default priority is 1000.
+.Sh FILES
+.Bl -tag -width -indent
+.It ~/.chromatermrc
+Location of the configuration file that is loaded by default.
+.El
