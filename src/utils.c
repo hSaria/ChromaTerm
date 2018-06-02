@@ -68,9 +68,9 @@ void display_printf(char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  sprintf(strchr(buf, '\0'), "\n");
+  strcat(buf, "\n");
 
-  (void)write(STDERR_FILENO, buf, strlen(buf));
+  write(STDERR_FILENO, buf, strlen(buf));
 }
 
 /* The outer-most braces (if any) are stripped; all else left as is */
