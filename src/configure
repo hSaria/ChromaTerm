@@ -633,7 +633,6 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
-mybindir
 target_alias
 host_alias
 build_alias
@@ -2014,13 +2013,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
-
-if  test $bindir != "\${exec_prefix}/bin" ; then
-	mybindir="$bindir"
-else
-	mybindir="."
-fi
-
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -2904,7 +2896,7 @@ if test "$ac_res" != no; then :
 else
 
   pcreversion=1;
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: PCRE2 library check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: PCRE2 library check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&5
 $as_echo "$as_me: WARNING: PCRE2 library check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&2;}
 fi
 
@@ -2922,7 +2914,7 @@ _ACEOF
 else
 
     pcreversion=1
-	  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: PCRE2 header check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: PCRE2 header check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&5
 $as_echo "$as_me: WARNING: PCRE2 header check failed (is PCRE2 development installed and linked?). Trying legacy PCRE (not as fast)" >&2;}
 
 fi
@@ -2990,7 +2982,7 @@ else
   as_fn_error $? "PCRE library check failed (is PCRE development installed and linked?)" "$LINENO" 5
 fi
 
-	ac_ext=c
+  ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'

@@ -5,6 +5,7 @@ MAKE = @MAKE@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
 bindir = @bindir@
 mandir = @mandir@
 CFLAGS += -O2 -Wall -Wextra
