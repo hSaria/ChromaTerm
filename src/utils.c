@@ -2,8 +2,8 @@
 
 #include "defs.h"
 
-void convert_meta(char *input, char *output) {
-  char *pti = input, *pto = output;
+void convert_meta(char *dest, char *src) {
+  char *pti = src, *pto = dest;
 
   while (*pti) {
     switch (*pti) {
@@ -73,19 +73,15 @@ void display_printf(char *format, ...) {
   write(STDERR_FILENO, buf, strlen(buf));
 }
 
-/* The outer-most braces (if any) are stripped; all else left as is */
+/* The outer-most brackets (if any) are stripped; all else left as is */
 char *get_arg(char *string, char *result) {
-  char *pti, *pto, output[BUFFER_SIZE];
+  char *pti = string, *pto = result;
 
-  /* advance to the next none-space character */
-  pti = string;
-  pto = output;
-
-  while (isspace((int)*pti)) {
+  while (isspace((int)*pti)) { /* advance to the next none-space character */
     pti++;
   }
 
-  /* Use a space as the separator if not wrapped with braces */
+  /* Not wrapped in brackets; use space as separator */
   if (*pti != DEFAULT_OPEN) {
     while (*pti) {
       if (isspace((int)*pti)) {
@@ -94,7 +90,7 @@ char *get_arg(char *string, char *result) {
       }
       *pto++ = *pti++;
     }
-  } else {
+  } else { /* Wrapped in brackets; use outer-most as separator */
     int nest = 1;
 
     pti++; /* Advance past the DEFAULT_OPEN (nest is 1 for this reason) */
@@ -105,8 +101,7 @@ char *get_arg(char *string, char *result) {
       } else if (*pti == DEFAULT_CLOSE) {
         nest--;
 
-        /* Stop once we've met the closing backet for the openning we advanced
-         * past before this loop */
+        /* Stop once we've got the close bracket for the first open bracket */
         if (nest == 0) {
           break;
         }
@@ -117,13 +112,11 @@ char *get_arg(char *string, char *result) {
     if (*pti == 0) {
       display_printf("ERROR: Missing %i closing bracket(s)", nest);
     } else {
-      pti++;
+      pti++; /* Move over the closing bracket */
     }
   }
 
   *pto = '\0';
-
-  strcpy(result, output);
   return pti;
 }
 
@@ -144,7 +137,7 @@ void process_input(int wait_for_new_line) {
 
   /* separate into lines and print away */
   for (line = gd.input_buffer; line && *line; line = next_line) {
-    char linebuf[INPUT_MAX + (INPUT_MAX / 10)];
+    char linebuf[INPUT_MAX * 2];
 
     next_line = strchr(line, '\n');
 
@@ -164,9 +157,9 @@ void process_input(int wait_for_new_line) {
     check_all_highlights(linebuf);
 
     if (gd.debug) {
-      char wrapped_str[INPUT_MAX + (INPUT_MAX / 10)];
+      char wrapped_str[INPUT_MAX * 2];
 
-      convert_meta(linebuf, wrapped_str);
+      convert_meta(wrapped_str, linebuf);
       printf("%s", wrapped_str);
     } else {
       printf("%s", linebuf);
@@ -183,21 +176,19 @@ void process_input(int wait_for_new_line) {
   gd.input_buffer_length = 0;
 }
 
-void read_config(char *arg) {
+void read_config(char *file) {
   FILE *fp;
   struct stat filedata;
   char *bufi, *bufo, filename[BUFFER_SIZE], *pti, *pto;
   int nest = 0, com = FALSE, line_number = 1;
   wordexp_t p;
 
-  get_arg(arg, filename);
-
-  if (wordexp(filename, &p, 0) == 0) {
+  if (wordexp(file, &p, 0) == 0) {
     strcpy(filename, *p.we_wordv);
     wordfree(&p);
   } else {
     display_printf("ERROR: Failed while performing word expansion on {%s}",
-                   filename);
+                   file);
     return;
   }
 
@@ -246,9 +237,6 @@ void read_config(char *arg) {
       case DEFAULT_CLOSE:
         *pto++ = *pti++;
         nest--;
-        break;
-      case ' ':
-        *pto++ = *pti++;
         break;
       case '/': /* Check if comment */
         if (nest == 0 &&
@@ -307,12 +295,14 @@ void read_config(char *arg) {
     }
   }
 
-  *pto++ = '\n';
+  *pto++ = '\n'; /* Ensure there's a \n at the end of the last command */
   *pto = 0;
 
   pti = bufo;
 
   while (*pti) {
+    char *args, command[BUFFER_SIZE];
+
     while (isspace((int)*pti)) {
       pti++;
     }
@@ -322,49 +312,34 @@ void read_config(char *arg) {
     }
 
     pto = pti;               /* Start of command */
-    pti = strchr(pti, '\n'); /* End of command; seek until you reach \n */
+    pti = strchr(pti, '\n'); /* End of command */
+    *pti = 0;                /* Replace \n with null */
 
-    if (pti) {
-      *pti = 0; /* replace \n with null-terminator */
-    }
-
-    if (strlen(pto) >= BUFFER_SIZE) {
-      /* Only output the first 20 characters of the overflowing command */
-      *(pto + 20) = 0;
+    if (strlen(pto) > BUFFER_SIZE) {
+      *(pto + 20) = 0; /* Only output the first 20 characters  */
       display_printf("ERROR: Command too long {%s}", pto);
 
-      free(bufi);
-      free(bufo);
-      return;
+      continue;
     }
 
-    if (*pto) {
-      char *args, command[BUFFER_SIZE];
+    args = get_arg(pto, command);
 
-      args = get_arg(pto, command);
+    if (is_abbrev(command, "HIGHLIGHT")) {
+      highlight(args);
+    } else if (is_abbrev(command, "SHOWME")) {
+      char buf[BUFFER_SIZE];
 
-      if (is_abbrev(command, "HIGHLIGHT")) {
-        highlight_add(args);
-      } else if (is_abbrev(command, "SHOWME")) {
-        char *tmp = pto, buf[BUFFER_SIZE];
+      strcpy(buf, pto);
 
-        while (isspace((int)*tmp)) {
-          tmp++;
-        }
-
-        strcpy(buf, tmp);
-
-        check_all_highlights(buf);
-        display_printf(buf);
-      } else if (is_abbrev(command, "UNHIGHLIGHT")) {
-        highlight_remove(args);
-      } else {
-        display_printf("ERROR: Unknown command {%s}", command);
-      }
+      check_all_highlights(buf);
+      display_printf(buf);
+    } else if (is_abbrev(command, "UNHIGHLIGHT")) {
+      unhighlight(args);
+    } else {
+      display_printf("ERROR: Unknown command {%s}", command);
     }
 
     pti++; /* Move to the position after the null-terminator */
-    pto = pti;
   }
 
   free(bufi);

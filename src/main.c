@@ -163,7 +163,7 @@ void init_program() {
 void quit_with_signal(int exit_signal) {
   /* Free memory used by highlights */
   while (gd.highlights[0]) {
-    highlight_remove(gd.highlights[0]->condition);
+    unhighlight(gd.highlights[0]->condition);
   }
 
   free(gd.highlights);

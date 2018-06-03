@@ -123,9 +123,14 @@ int find_highlight_index(char *condition) {
 }
 
 int get_highlight_codes(char *string, char *result) {
+  int match_found = FALSE;
   *result = 0;
 
-  if (*string == '<') {
+  while (isspace((int)*string)) {
+    string++;
+  }
+
+  if (string[0] == '<' && string[4] == '>') {
     substitute(string, result);
     return TRUE;
   }
@@ -137,6 +142,7 @@ int get_highlight_codes(char *string, char *result) {
         if (is_abbrev(color_table[cnt].name, string)) {
           substitute(color_table[cnt].code, result);
 
+          match_found = TRUE;
           result += strlen(result);
           break;
         }
@@ -148,20 +154,20 @@ int get_highlight_codes(char *string, char *result) {
 
       /* Skip until the next action (maybe there are multiple colors) */
       string += strlen(color_table[cnt].name);
+    } else {
+      string++;
     }
 
-    switch (*string) {
-    case ' ':
-    case ',':
+    while (isspace((int)*string) || *string == ',') {
       string++;
-      break;
-    case 0:
-      return TRUE;
-    default:
-      return FALSE;
     }
   }
-  return TRUE;
+
+  if (match_found) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
 }
 
 #ifdef HAVE_PCRE2_H
@@ -209,12 +215,12 @@ struct regex_result regex_compare(pcre *compiled_regex, char *str) {
   return result;
 }
 
-void highlight_add(char *arg) {
+void highlight(char *args) {
   char condition[BUFFER_SIZE], action[BUFFER_SIZE], priority[BUFFER_SIZE];
 
-  arg = get_arg(arg, condition);
-  arg = get_arg(arg, action);
-  get_arg(arg, priority);
+  args = get_arg(args, condition);
+  args = get_arg(args, action);
+  get_arg(args, priority);
 
   if (*priority == 0) {
     strcpy(priority, "1000");
@@ -237,8 +243,7 @@ void highlight_add(char *arg) {
   } else {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(action, temp) == FALSE) {
-      display_printf("ERROR: Invalid color code {%s}; see manual pages",
-                     action);
+      display_printf("ERROR: Invalid color code {%s}; see `man ct`", action);
     } else {
 #ifdef HAVE_PCRE2_H
       PCRE2_SIZE error_pointer;
@@ -251,7 +256,7 @@ void highlight_add(char *arg) {
 
       /* Remove if already exists */
       if ((index = find_highlight_index(condition)) != -1) {
-        highlight_remove(gd.highlights[index]->condition);
+        unhighlight(gd.highlights[index]->condition);
       }
 
       highlight = (struct highlight *)calloc(1, sizeof(struct highlight));
@@ -319,15 +324,16 @@ void highlight_add(char *arg) {
   }
 }
 
-void highlight_remove(char *arg) {
+void unhighlight(char *args) {
+  char condition[BUFFER_SIZE];
   int index;
 
-  get_arg(arg, arg);
+  get_arg(args, condition);
 
-  if (*arg == 0) {
+  if (*condition == 0) {
     display_printf("SYNTAX: UNHIGHLIGHT {CONDITION}");
 
-  } else if ((index = find_highlight_index(arg)) != -1) {
+  } else if ((index = find_highlight_index(condition)) != -1) {
     struct highlight *highlight = gd.highlights[index];
 
     if (highlight->compiled_regex != NULL) {
@@ -436,20 +442,14 @@ void strip_vt102_codes(char *str, char *buf) {
   *pto = 0;
 }
 
-/* copy *string into *result, but substitute the various colors with the
- * values they stand for */
+/* copy *string into *result, but replace colors with terminal codes */
 void substitute(char *string, char *result) {
   char *pti = string, *pto = result;
-  char old[6] = {0};
 
-  while (TRUE) {
-    switch (*pti) {
-    case '\0':
-      *pto = 0;
-      return;
-    case '<':
+  while (*pti) {
+    if (pti[0] == '<' && pti[4] == '>') {
       if (isdigit((int)pti[1]) && isdigit((int)pti[2]) &&
-          isdigit((int)pti[3]) && pti[4] == '>') {
+          isdigit((int)pti[3])) {
         if (pti[1] != '8' || pti[2] != '8' || pti[3] != '8') {
           *pto++ = ESCAPE;
           *pto++ = '[';
@@ -487,14 +487,13 @@ void substitute(char *string, char *result) {
           pto--;
           *pto++ = 'm';
         }
-        pti += sprintf(old, "<%c%c%c>", pti[1], pti[2], pti[3]);
-      } else if (((pti[1] >= 'a' && pti[1] <= 'f' && pti[2] >= 'a' &&
-                   pti[2] <= 'f' && pti[3] >= 'a' && pti[3] <= 'f') ||
-                  (pti[1] >= 'A' && pti[1] <= 'F' && pti[2] >= 'A' &&
-                   pti[2] <= 'F' && pti[3] >= 'A' && pti[3] <= 'F') ||
-                  ((pti[1] == 'g' || pti[1] == 'G') && isdigit((int)pti[2]) &&
-                   isdigit((int)pti[3]))) &&
-                 pti[4] == '>') {
+        pti += 5;
+      } else if ((pti[1] >= 'a' && pti[1] <= 'f' && pti[2] >= 'a' &&
+                  pti[2] <= 'f' && pti[3] >= 'a' && pti[3] <= 'f') ||
+                 (pti[1] >= 'A' && pti[1] <= 'F' && pti[2] >= 'A' &&
+                  pti[2] <= 'F' && pti[3] >= 'A' && pti[3] <= 'F') ||
+                 ((pti[1] == 'g' || pti[1] == 'G') && isdigit((int)pti[2]) &&
+                  isdigit((int)pti[3]))) {
         int cnt, grayscale = (pti[1] == 'g' || pti[1] == 'G');
         char g = (pti[1] >= 'a' && pti[1] <= 'f') || pti[1] == 'g' ? '3' : '4';
 
@@ -518,14 +517,14 @@ void substitute(char *string, char *result) {
         *pto++ = '0' + cnt % 10;
         *pto++ = 'm';
 
-        pti += sprintf(old, "<%c%c%c>", pti[1], pti[2], pti[3]);
+        pti += 5;
       } else {
         *pto++ = *pti++;
       }
-      break;
-    default:
+    } else {
       *pto++ = *pti++;
-      break;
     }
   }
+
+  *pto = 0;
 }

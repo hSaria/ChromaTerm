@@ -77,8 +77,8 @@ struct regex_result {
 void check_all_highlights(char *original);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
-void highlight_add(char *arg);
-void highlight_remove(char *arg);
+void highlight(char *args);
+void unhighlight(char *args);
 
 #ifdef HAVE_PCRE2_H
 struct regex_result regex_compare(pcre2_code *compiled_regex, char *str);
@@ -99,9 +99,9 @@ void init_program(void);
 void quit_with_signal(int exit_signal);
 
 /**** utils.c ****/
-void convert_meta(char *input, char *output);
+void convert_meta(char *dest, char *src);
 void display_printf(char *format, ...);
-char *get_arg(char *string, char *result);
+char *get_arg(char *string, char *argument);
 int is_abbrev(char *s1, char *s2);
 void process_input(int wait_for_new_line);
-void read_config(char *arg);
+void read_config(char *file);
