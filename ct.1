@@ -7,10 +7,9 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl c Ar "file"
-.Op Fl "d"
 .br
 .Nm
-.Fl "i"
+.Fl "d"
 .Sh DESCRIPTION
 ChromaTerm--
 .Pq Ic ct
@@ -21,9 +20,7 @@ Available arguments:
 .It Fl c Ar file
 Override configuration file. By default, ChromaTerm-- will look for a configuration file called .chromatermrc in the home directory, and will load it if it exists.
 .It Fl d
-Enable debug: convert the special ANSI terminal codes
-.It Fl i
-Illustrate the available color codes for custom actions
+Demonstrate the available color-codes for custom actions
 .El
 .Sh HIGHLIGHT RULES
 The syntax for a rule is
@@ -49,7 +46,7 @@ bold, dim, underscore, blink, b black, b blue, b cyan, b green, b magenta, b red
 .Sy xterm-256:
 b azure, b ebony, b jade, b lime, b orange, b pink, b  silver, b tan, b violet, azure, ebony, jade, light azure, light ebony, light jade, light lime, light orange, light pink, light silver, light tan, light violet, lime, orange, pink, silver, tan, and violet.
 .El
-Terminals that support xterm-256 codes will support VT100 codes, as well. 
+Terminals that support xterm-256 codes will support VT100 codes, as well.
 .Pp
 There are two ways to write a
 .Sy custom
@@ -94,9 +91,7 @@ are the foreground and background colors, respectively, and they correspond to:
 .El
 .It
 .Sy xterm-256:
-More colors if the terminal supports it (most of them do); try
-.Sy ct -i
-to see the full range.
+More colors if the terminal supports it (most of them do).
 .Bl -item -offset indent -compact
 .It
 Grayscale
@@ -113,7 +108,9 @@ to
 .Sy <G23>
 .El
 .It
-Near-RGB
+Near-RGB (try
+.Sy ct -d
+to see the full range)
 .Bl -item -offset indent -compact
 .It
 Foreground: Hexadecimal range from

@@ -48,11 +48,8 @@ struct global_data {
   struct highlight **highlights;
   int highlights_size;
   int highlights_used;
-
   char input_buffer[INPUT_MAX];
   int input_buffer_length;
-
-  int debug;
 };
 
 struct highlight {
@@ -99,7 +96,6 @@ void init_program(void);
 void quit_with_signal(int exit_signal);
 
 /**** utils.c ****/
-void convert_meta(char *dest, char *src);
 void display_printf(char *format, ...);
 char *get_arg(char *string, char *argument);
 int is_abbrev(char *s1, char *s2);

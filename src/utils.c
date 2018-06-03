@@ -2,64 +2,6 @@
 
 #include "defs.h"
 
-void convert_meta(char *dest, char *src) {
-  char *pti = src, *pto = dest;
-
-  while (*pti) {
-    switch (*pti) {
-    case ESCAPE:
-      *pto++ = '\\';
-      *pto++ = 'e';
-      pti++;
-      break;
-    case 127:
-      *pto++ = '\\';
-      *pto++ = 'b';
-      pti++;
-      break;
-    case '\a':
-      *pto++ = '\\';
-      *pto++ = 'a';
-      pti++;
-      break;
-    case '\b':
-      *pto++ = '\\';
-      *pto++ = 'b';
-      pti++;
-      break;
-    case '\t':
-      *pto++ = '\\';
-      *pto++ = 't';
-      pti++;
-      break;
-    case '\r':
-      *pto++ = '\\';
-      *pto++ = 'r';
-      pti++;
-      break;
-    case '\n':
-      *pto++ = *pti++;
-      break;
-    default:
-      if (*pti > 0 && *pti < 32) {
-        *pto++ = '\\';
-        *pto++ = 'c';
-        if (*pti <= 26) {
-          *pto++ = 'a' + *pti - 1;
-        } else {
-          *pto++ = 'A' + *pti - 1;
-        }
-        pti++;
-        break;
-      } else {
-        *pto++ = *pti++;
-      }
-      break;
-    }
-  }
-  *pto = 0;
-}
-
 void display_printf(char *format, ...) {
   char buf[BUFFER_SIZE * 4];
   va_list args;
@@ -135,7 +77,7 @@ void process_input(int wait_for_new_line) {
 
   gd.input_buffer[gd.input_buffer_length] = 0;
 
-  /* separate into lines and print away */
+  /* separate into lines and process. Next interation = next line */
   for (line = gd.input_buffer; line && *line; line = next_line) {
     char linebuf[INPUT_MAX * 2];
 
@@ -154,21 +96,13 @@ void process_input(int wait_for_new_line) {
 
     /* Print the output after processing it */
     strcpy(linebuf, line);
-
     check_all_highlights(linebuf);
 
-    if (gd.debug) {
-      char wrapped_str[INPUT_MAX * 2];
-
-      convert_meta(wrapped_str, linebuf);
-      printf("%s", wrapped_str);
-    } else {
-      printf("%s", linebuf);
-    }
-
     if (next_line) {
-      printf("\n");
+      strcat(linebuf, "\n");
     }
+
+    printf("%s", linebuf);
 
     fflush(stdout);
   }
@@ -268,7 +202,6 @@ void read_config(char *file) {
         }
 
         line_number++;
-
         *pto++ = *pti++;
         break;
       default:
@@ -315,11 +248,11 @@ void read_config(char *file) {
     pto = pti;               /* Start of command */
     pti = strchr(pti, '\n'); /* End of command */
     *pti = 0;                /* Replace \n with null */
+    pti++; /* Move to the position after the null-terminator */
 
     if (strlen(pto) > BUFFER_SIZE) {
       *(pto + 20) = 0; /* Only output the first 20 characters  */
       display_printf("ERROR: Command too long {%s}", pto);
-
       continue;
     }
 
@@ -339,8 +272,6 @@ void read_config(char *file) {
     } else {
       display_printf("ERROR: Unknown command {%s}", command);
     }
-
-    pti++; /* Move to the position after the null-terminator */
   }
 
   free(bufi);

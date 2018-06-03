@@ -12,26 +12,22 @@ int main(int argc, char **argv) {
   init_program();
 
   /* Parse the arguments */
-  while ((c = getopt(argc, argv, "c: d h i")) != -1) {
+  while ((c = getopt(argc, argv, "c: d h")) != -1) {
     switch (tolower(c)) {
     case 'c':
       config_override = TRUE;
       read_config(optarg);
       break;
     case 'd':
-      gd.debug = TRUE;
-      break;
-    case 'i':
       colordemo();
       break;
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
       printf("Usage: %1$s [-c file] [-d]\n       %1$s [-i]\n", argv[0]);
       printf("%6s %-18s Override configuration file\n", "-c", "{config file}");
-      printf("%6s %-18s Debug mode: convert ANSI terminal codes\n", "-d", "");
-      printf(
-          "%6s %-18s Illustrate the available color codes for custom actions\n",
-          "-i", "");
+      printf("%6s %-18s Demonstrate the available color codes for custom "
+             "actions\n",
+             "-d", "");
 
       quit_with_signal(2);
       break;
@@ -160,8 +156,6 @@ void init_program() {
   /* initial size is 8, but is dynamically resized as required */
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
   gd.highlights_size = 8;
-
-  gd.debug = FALSE;
 }
 
 void quit_with_signal(int exit_signal) {
