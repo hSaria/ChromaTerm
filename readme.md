@@ -51,7 +51,7 @@ The named actions are:
 - VT100: bold, dim, underscore, blink, b black, b blue, b cyan, b green, b magenta, b red, b white, b yellow, black, blue, cyan, white, and yellow.
 - xterm-256: b azure, b ebony, b jade, b lime, b orange, b pink, b  silver, b tan, b violet, azure, ebony, jade, light azure, light ebony, light jade, light lime, light orange, light pink, light silver, light tan, light violet, lime, orange, pink, silver, tan, and violet.
 
-To use a custom action, `man ct` has more info on that.
+Terminals that support xterm-256 codes will support VT100 codes, as well. To use a custom action, `man ct` has more info on that.
 
 ### PRIORITY
 (Optional) If a part of the text is matched by two rules, the rule with the lower priority value overrides the action of the higher priority value; lower priority value = higher precedence. Default priority is 1000.
