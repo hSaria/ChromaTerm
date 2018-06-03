@@ -50,9 +50,9 @@ int main(int argc, char **argv) {
   FD_SET(STDIN_FILENO, &readfds);
 
   /* MAIN LOGIC OF THE PROGRAM STARTS HERE */
-  while (
-      (bytes_read = read(STDIN_FILENO, &gd.input_buffer[gd.input_buffer_length],
-                         INPUT_MAX - gd.input_buffer_length - 1)) > 0) {
+  while ((bytes_read =
+              (int)read(STDIN_FILENO, &gd.input_buffer[gd.input_buffer_length],
+                        INPUT_MAX - gd.input_buffer_length - 1)) > 0) {
     /* Mandatoy wait before assuming no more output on the current line */
     struct timeval wait = {0, WAIT_FOR_NEW_LINE};
 
