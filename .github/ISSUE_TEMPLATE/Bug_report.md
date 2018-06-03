@@ -12,10 +12,10 @@ A clear and concise description of what the bug is.
  - Version [e.g. 10.13.4]
 
 **Configuration File**
-If you know that a single line is causing the issue, put it here. Otherwise, attach your entire configuration file.
+If you know that a single line is causing the issue, put it here. Otherwise, attach `~/.chromatermrc`.
 ```
 HIGHLIGHT {World} {blue}
 ```
 
 **Additional context**
-If you can recreate the issue, then do so with `2>&1 | tee ct-log.txt` at the end of the command. Attach `ct-log.txt` to the issue.
+If you can recreate the issue, then do so with `2>&1 | tee ct-log.txt` at the end of the command. Attach `ct-log.txt`.
