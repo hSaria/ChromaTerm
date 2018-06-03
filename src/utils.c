@@ -10,9 +10,7 @@ void err_printf(char *format, ...) {
   vsprintf(buf, format, args);
   va_end(args);
 
-  strcat(buf, "\n");
-
-  write(STDERR_FILENO, buf, strlen(buf));
+  fprintf(stderr, "%s\n", buf);
 }
 
 /* The outer-most brackets (if any) are stripped; all else left as is */
