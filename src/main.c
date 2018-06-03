@@ -24,9 +24,9 @@ int main(int argc, char **argv) {
       break;
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
-      printf("Usage: %1$s [-c file]\n       %1$s [-d]\n", argv[0]);
+      printf("Usage: %s [-c file] [-d]\n", argv[0]);
       printf("%6s %-18s Override configuration file\n", "-c", "{config file}");
-      printf("%6s %-18s Demonstrate the available color codes for custom "
+      printf("%6s %-18s Demonstrate the available color-codes for custom "
              "actions\n",
              "-d", "");
 
