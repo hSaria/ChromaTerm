@@ -38,7 +38,7 @@ cd ChromaTerm--/src/ && ./configure && make install
 
 > If you're new, run `make ct-config` to copy the included configuration file to your home directory. Modify it to your liking
 
-Think of ChromaTerm-- like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. 
+Think of ChromaTerm-- like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have this in my .bash_profile `ssh() { /usr/bin/ssh $* | ct; }`.
 
 ## Highlight Rules
 The syntax for a rule is `HIGHLIGHT {REGEX} {ACTION} {PRIORITY}`
