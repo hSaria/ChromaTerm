@@ -43,10 +43,10 @@ Think of ChromaTerm-- like `grep`; just pipe things into it. However, unlike oth
 ## Highlight Rules
 The syntax for a rule is `HIGHLIGHT {REGEX} {ACTION} {PRIORITY}`
 
-### REGEX
+#### REGEX
 The RegEx engine used is [PCRE](https://www.pcre.org). If supported, PCRE2 is used (much faster).
 
-### ACTION
+#### ACTION
 Once something matches the regex of a rule, the action of that rule is applied. The action can be a named (predefined) action or a custom one. Multiple actions can make up a single action as long as they are from the same category. For example: `{bold red}` or `{<fca><BAF>}`
 
 The named actions are:
@@ -55,7 +55,7 @@ The named actions are:
 
 Terminals that support xterm-256 codes will support VT100 codes, as well. To use a custom action, `man ct` has more info on that.
 
-### PRIORITY
+#### PRIORITY
 (Optional) If a part of the text is matched by two rules, the rule with the lower priority value overrides the action of the higher priority value; lower priority value = higher precedence. Default priority is 1000.
 
 # Help
