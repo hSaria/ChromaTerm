@@ -200,10 +200,10 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
 #else
 struct regex_result regex_compare(pcre *compiled_regex, char *str) {
   struct regex_result result;
-  int match[2000];
+  int match[600];
 
   if (pcre_exec(compiled_regex, NULL, str, (int)strlen(str), 0, 0, match,
-                2000) <= 0) {
+                600) <= 0) {
     result.start = -1;
     return result;
   }
