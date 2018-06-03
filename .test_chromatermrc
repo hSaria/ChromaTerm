@@ -38,7 +38,7 @@ HIGHLIGHT  {(?i)(::(ffff(:0{1,4})?:)?((?P<ip>25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}
 HIGHLIGHT  {(?i)((?P<h>[\da-f])(?P>h):){5}(?P>h){2}|((?P>h){4}\.){2}(?P>h){4}} {yellow} {1000}
 
 /* Password or password */
-HIGHLIGHT  {(?i)password} {red} {1000}
+HIGHLIGHT  {(?i)password} {bold red underscore} {1000}
 
 /* Date in MMM DD hh:mm:ss.SSS format (msec optional) */
-HIGHLIGHT  {(?i)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-1]|([0-2]\d)))\s((2[0-3])|[0-1]\d):[0-5]\d:[0-5]\d(\.\d{3})?} {<fca>} {1000}
+HIGHLIGHT  {(?i)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-1]|([0-2]\d)))\s((2[0-3])|[0-1]\d):[0-5]\d:[0-5]\d(\.\d{3})?} {<fca><ABD>} {1000}
