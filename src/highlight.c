@@ -324,37 +324,6 @@ void highlight(char *args) {
   }
 }
 
-void unhighlight(char *args) {
-  char condition[BUFFER_SIZE];
-  int index;
-
-  get_arg(args, condition);
-
-  if (*condition == 0) {
-    display_printf("SYNTAX: UNHIGHLIGHT {CONDITION}");
-
-  } else if ((index = find_highlight_index(condition)) != -1) {
-    struct highlight *highlight = gd.highlights[index];
-
-    if (highlight->compiled_regex != NULL) {
-#ifdef HAVE_PCRE2_H
-      pcre2_code_free(highlight->compiled_regex);
-#else
-      pcre_free(highlight->compiled_regex);
-#endif
-    }
-
-    free(highlight);
-
-    memmove(&gd.highlights[index], &gd.highlights[index + 1],
-            (gd.highlights_used - index) * sizeof(struct highlight *));
-
-    gd.highlights_used--;
-  } else {
-    display_printf("ERROR: Highlight rule not found");
-  }
-}
-
 int skip_vt102_codes(char *str) {
   int skip;
 
@@ -373,7 +342,7 @@ int skip_vt102_codes(char *str) {
   case 26:  /* SUB */
   case 127: /* DEL */
     return 1;
-  case 27: /* ESC */
+  case ESCAPE:
     switch (str[1]) {
     case '\0':
       return 1;
@@ -521,4 +490,35 @@ void substitute(char *string, char *result) {
   }
 
   *pto = 0;
+}
+
+void unhighlight(char *args) {
+  char condition[BUFFER_SIZE];
+  int index;
+
+  get_arg(args, condition);
+
+  if (*condition == 0) {
+    display_printf("SYNTAX: UNHIGHLIGHT {CONDITION}");
+
+  } else if ((index = find_highlight_index(condition)) != -1) {
+    struct highlight *highlight = gd.highlights[index];
+
+    if (highlight->compiled_regex != NULL) {
+#ifdef HAVE_PCRE2_H
+      pcre2_code_free(highlight->compiled_regex);
+#else
+      pcre_free(highlight->compiled_regex);
+#endif
+    }
+
+    free(highlight);
+
+    memmove(&gd.highlights[index], &gd.highlights[index + 1],
+            (gd.highlights_used - index) * sizeof(struct highlight *));
+
+    gd.highlights_used--;
+  } else {
+    display_printf("ERROR: Highlight rule not found");
+  }
 }
