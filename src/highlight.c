@@ -33,11 +33,25 @@ struct color_type color_table[] = {
     {"violet", "<bad>"},       {"white", "<878>"},
     {"yellow", "<838>"},       {"", "<088>"}};
 
-void check_all_highlights(char *original) {
-  char stripped[INPUT_MAX];
+void check_highlights(char *original) {
+  char *pto, *pts, stripped[INPUT_MAX];
   int i;
 
-  strip_vt102_codes(original, stripped);
+  pto = original;
+  pts = stripped;
+
+  while (*pto) {
+    int skip;
+    while ((skip = skip_vt100_codes(pto))) {
+      pto += skip;
+    }
+
+    if (*pto) {
+      *pts++ = *pto++;
+    }
+  }
+
+  *pts = 0;
 
   /* Apply from the bottom since the top ones may overwrite them */
   for (i = gd.highlights_used - 1; i > -1; i--) {
@@ -45,7 +59,7 @@ void check_all_highlights(char *original) {
         regex_compare(gd.highlights[i]->compiled_regex, stripped);
 
     if (result.start != -1) {
-      char *pto, *pts, *ptm;
+      char *ptm;
       char output[INPUT_MAX * 2];
 
       *output = 0;
@@ -62,9 +76,9 @@ void check_all_highlights(char *original) {
 
         /* Seek ptm (original with vt102 codes) until beginning of match */
         while (*ptm && result.start > 0) {
-          while (skip_vt102_codes(ptm)) {
-            count_inc_skipped += skip_vt102_codes(ptm);
-            ptm += skip_vt102_codes(ptm);
+          while (skip_vt100_codes(ptm)) {
+            count_inc_skipped += skip_vt100_codes(ptm);
+            ptm += skip_vt100_codes(ptm);
           }
 
           if (*ptm && *pts) {
@@ -79,8 +93,8 @@ void check_all_highlights(char *original) {
         ptt = ptm;
 
         while (*ptt && to_skip > 0) {
-          while (skip_vt102_codes(ptt)) {
-            ptt += skip_vt102_codes(ptt);
+          while (skip_vt100_codes(ptt)) {
+            ptt += skip_vt100_codes(ptt);
           }
 
           if (*ptt) {
@@ -172,8 +186,8 @@ int get_highlight_codes(char *string, char *result) {
 
 #ifdef HAVE_PCRE2_H
 struct regex_result regex_compare(pcre2_code *compiled_regex, char *str) {
-  PCRE2_SIZE *result_pos;
   struct regex_result result;
+  PCRE2_SIZE *result_pos;
 
   pcre2_match_data *match =
       pcre2_match_data_create_from_pattern(compiled_regex, NULL);
@@ -324,7 +338,7 @@ void highlight(char *args) {
   }
 }
 
-int skip_vt102_codes(char *str) {
+int skip_vt100_codes(char *str) {
   int skip;
 
   switch (str[0]) {
@@ -385,24 +399,6 @@ int skip_vt102_codes(char *str) {
   default:
     return 0;
   }
-}
-
-/* If n is not null, then this function seeks n times, exluding vt102 codes */
-void strip_vt102_codes(char *str, char *buf) {
-  char *pti = str, *pto = buf;
-
-  while (*pti) {
-    int skip;
-    while ((skip = skip_vt102_codes(pti))) {
-      pti += skip;
-    }
-
-    if (*pti) {
-      *pto++ = *pti++;
-    }
-  }
-
-  *pto = 0;
 }
 
 /* copy *string into *result, but replace colors with terminal codes */

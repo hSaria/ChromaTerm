@@ -96,7 +96,7 @@ void process_input(int wait_for_new_line) {
 
     /* Print the output after processing it */
     strcpy(linebuf, line);
-    check_all_highlights(linebuf);
+    check_highlights(linebuf);
 
     if (next_line) {
       strcat(linebuf, "\n");
@@ -265,7 +265,7 @@ void read_config(char *file) {
 
       strcpy(buf, pto);
 
-      check_all_highlights(buf);
+      check_highlights(buf);
       display_printf(buf);
     } else if (is_abbrev(command, "UNHIGHLIGHT")) {
       unhighlight(args);

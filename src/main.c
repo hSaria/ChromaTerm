@@ -9,7 +9,8 @@ int main(int argc, char **argv) {
   int c, config_override = FALSE, bytes_read;
 
   /* Set up default CT state */
-  init_program();
+  gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
+  gd.highlights_size = 8; /* initial size is 8, but is doubled when needed */
 
   /* Parse the arguments */
   while ((c = getopt(argc, argv, "c: d h")) != -1) {
@@ -150,12 +151,6 @@ void colordemo(void) {
   display_printf(buf);
 
   quit_with_signal(2);
-}
-
-void init_program() {
-  /* initial size is 8, but is dynamically resized as required */
-  gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
-  gd.highlights_size = 8;
 }
 
 void quit_with_signal(int exit_signal) {

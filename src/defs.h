@@ -71,7 +71,7 @@ struct regex_result {
 };
 
 /**** highlight.c ****/
-void check_all_highlights(char *original);
+void check_highlights(char *original);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
 void highlight(char *args);
@@ -82,8 +82,7 @@ struct regex_result regex_compare(pcre2_code *compiled_regex, char *str);
 struct regex_result regex_compare(pcre *compiled_regex, char *str);
 #endif
 
-int skip_vt102_codes(char *str);
-void strip_vt102_codes(char *str, char *buf);
+int skip_vt100_codes(char *str);
 void substitute(char *string, char *result);
 void unhighlight(char *args);
 
@@ -92,7 +91,6 @@ extern struct global_data gd;
 
 int main(int argc, char **argv);
 void colordemo(void);
-void init_program(void);
 void quit_with_signal(int exit_signal);
 
 /**** utils.c ****/
