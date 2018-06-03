@@ -70,8 +70,7 @@ int is_abbrev(char *s1, char *s2) {
   return !strncasecmp(s2, s1, strlen(s1));
 }
 
-/* if wait_for_new_line, will process all lines until the one without \n at the
- * end */
+/* if wait_for_new_line, process lines until the one without \n at the end */
 void process_input(int wait_for_new_line) {
   char *line, *next_line;
 
