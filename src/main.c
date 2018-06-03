@@ -6,7 +6,7 @@ struct global_data gd;
 
 int main(int argc, char **argv) {
   fd_set readfds;
-  int c, config_override = FALSE;
+  int c, config_override = FALSE, bytes_read;
 
   /* Set up default CT state */
   init_program();
@@ -53,11 +53,13 @@ int main(int argc, char **argv) {
   FD_SET(STDIN_FILENO, &readfds);
 
   /* MAIN LOGIC OF THE PROGRAM STARTS HERE */
-  while ((gd.input_buffer_length +=
-          read(STDIN_FILENO, &gd.input_buffer[gd.input_buffer_length],
-               INPUT_MAX - gd.input_buffer_length - 1)) > 0) {
+  while (
+      (bytes_read = read(STDIN_FILENO, &gd.input_buffer[gd.input_buffer_length],
+                         INPUT_MAX - gd.input_buffer_length - 1)) > 0) {
     /* Mandatoy wait before assuming no more output on the current line */
     struct timeval wait = {0, WAIT_FOR_NEW_LINE};
+
+    gd.input_buffer_length += bytes_read;
 
     /* Block for a small amount to see if there's more to read. If something
      * came up, stop waiting and move on. */
@@ -74,6 +76,8 @@ int main(int argc, char **argv) {
       quit_with_signal(EXIT_FAILURE);
     }
   }
+
+  process_input(FALSE); /* Process anything that may be left */
 
   quit_with_signal(EXIT_SUCCESS);
   return 0; /* Literally useless, but gotta make a warning shut up. */
@@ -168,6 +172,5 @@ void quit_with_signal(int exit_signal) {
 
   free(gd.highlights);
 
-  fflush(stdout);
   exit(exit_signal);
 }
