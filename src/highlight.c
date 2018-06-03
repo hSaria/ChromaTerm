@@ -178,22 +178,19 @@ void highlight(char *args) {
 
   if (*condition == 0 || *action == 0) {
     if (gd.highlights_used == 0) {
-      err_printf("HIGHLIGHT: No rules configured");
+      fprintf(stderr, "HIGHLIGHT: No rules configured\n");
     } else {
       int i;
       for (i = 0; i < gd.highlights_used; i++) {
-        err_printf("HIGHLIGHT "
-                   "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
-                   "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
-                   "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
-                   gd.highlights[i]->condition, gd.highlights[i]->action,
-                   gd.highlights[i]->priority);
+        fprintf(stderr, "HIGHLIGHT {%s} {%s} {%s}\n",
+                gd.highlights[i]->condition, gd.highlights[i]->action,
+                gd.highlights[i]->priority);
       }
     }
   } else {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(action, temp) == FALSE) {
-      err_printf("ERROR: Invalid color code {%s}; see `man ct`", action);
+      fprintf(stderr, "ERROR: Invalid color code {%s}; see `man ct`\n", action);
     } else {
       PCRE_ERR_P err_p;
       struct highlight *highlight;
@@ -215,7 +212,7 @@ void highlight(char *args) {
       PCRE_COMPILE(highlight->compiled_regex, condition, &err_n, &err_p);
 
       if (highlight->compiled_regex == NULL) {
-        err_printf("WARNING: Couldn't compile regex at %i: %s", err_n, err_p);
+        fprintf(stderr, "WARNING: Couldn't compile regex %s\n", condition);
       }
 
       /* Find the insertion index; start at the bottom of the list */
@@ -343,22 +340,20 @@ void unhighlight(char *args) {
   get_arg(args, condition);
 
   if (*condition == 0) {
-    err_printf("SYNTAX: UNHIGHLIGHT {CONDITION}");
+    fprintf(stderr, "SYNTAX: UNHIGHLIGHT {CONDITION}\n");
 
   } else if ((index = find_highlight_index(condition)) != -1) {
-    struct highlight *highlight = gd.highlights[index];
-
-    if (highlight->compiled_regex != NULL) {
-      PCRE_FREE(highlight->compiled_regex);
+    if (gd.highlights[index]->compiled_regex != NULL) {
+      PCRE_FREE(gd.highlights[index]->compiled_regex);
     }
 
-    free(highlight);
+    free(gd.highlights[index]);
 
     memmove(&gd.highlights[index], &gd.highlights[index + 1],
             (gd.highlights_used - index) * sizeof(struct highlight *));
 
     gd.highlights_used--;
   } else {
-    err_printf("ERROR: Highlight rule not found");
+    fprintf(stderr, "ERROR: Highlight rule not found\n");
   }
 }

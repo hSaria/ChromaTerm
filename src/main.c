@@ -46,7 +46,6 @@ int main(int argc, char **argv) {
   }
 
   /* fd_set used for checking if there's more input */
-  FD_ZERO(&readfds); /* Initialise the file descriptor */
   FD_SET(STDIN_FILENO, &readfds);
 
   /* MAIN LOGIC OF THE PROGRAM STARTS HERE */
@@ -148,7 +147,7 @@ void colordemo(void) {
       "FDB<FEB> FEB<FEC> FEC<FED> FED<FEE> FEE<FEF> FEF<FFF> FFF<FFE> FFE<FFD> "
       "FFD<FFC> FFC<FFB> FFB<FFA> FFA<FEA> FEA<FDA> FDA<FCA> FCA<FBA> FBA<088>",
       buf);
-  err_printf(buf);
+  fprintf(stderr, "%s\n", buf);
 
   quit_with_signal(2);
 }

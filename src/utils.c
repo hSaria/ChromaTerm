@@ -2,17 +2,6 @@
 
 #include "defs.h"
 
-void err_printf(char *format, ...) {
-  char buf[BUFFER_SIZE * 4];
-  va_list args;
-
-  va_start(args, format);
-  vsprintf(buf, format, args);
-  va_end(args);
-
-  fprintf(stderr, "%s\n", buf);
-}
-
 /* The outer-most brackets (if any) are stripped; all else left as is */
 char *get_arg(char *string, char *result) {
   char *pti = string, *pto = result;
@@ -50,7 +39,7 @@ char *get_arg(char *string, char *result) {
     }
 
     if (*pti == 0) {
-      err_printf("ERROR: Missing %i closing bracket(s)", nest);
+      fprintf(stderr, "ERROR: Missing %i closing bracket(s)\n", nest);
     } else {
       pti++; /* Move over the closing bracket */
     }
@@ -119,32 +108,35 @@ void read_config(char *file) {
     strcpy(filename, *p.we_wordv);
     wordfree(&p);
   } else {
-    err_printf("ERROR: Failed while performing word expansion on {%s}", file);
+    fprintf(stderr, "ERROR: Failed while performing word expansion on {%s}\n",
+            file);
     return;
   }
 
   if ((fp = fopen(filename, "r")) == NULL) {
-    err_printf("ERROR: File {%s} not found", filename);
+    fprintf(stderr, "ERROR: File {%s} not found\n", filename);
     return;
   }
 
   stat(filename, &filedata);
 
   if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    err_printf("ERROR: Failed to allocate i_buffer memory to process file {%s}",
-               filename);
+    fprintf(stderr,
+            "ERROR: Failed to allocate i_buffer memory to process file {%s}\n",
+            filename);
     fclose(fp);
     return;
   } else if ((bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
-    err_printf("ERROR: Failed to allocate o_buffer memory to process file {%s}",
-               filename);
+    fprintf(stderr,
+            "ERROR: Failed to allocate o_buffer memory to process file {%s}\n",
+            filename);
     free(bufi);
     fclose(fp);
     return;
   }
 
   if (fread(bufi, 1, filedata.st_size, fp) == 0) {
-    err_printf("ERROR: File {%s} is empty", filename);
+    fprintf(stderr, "ERROR: File {%s} is empty\n", filename);
     free(bufi);
     free(bufo);
     fclose(fp);
@@ -183,8 +175,8 @@ void read_config(char *file) {
         if (nest) { /* Closing brackets missing; remove command */
           char *previous_line = strrchr(bufo, '\n');
 
-          err_printf("ERROR: Missing %i closing bracket(s) at line %i", nest,
-                     line_number);
+          fprintf(stderr, "ERROR: Missing %i closing bracket(s) at line %i\n",
+                  nest, line_number);
 
           nest = 0; /* Reset the level to 0 (brackets are all matched) */
 
@@ -246,7 +238,7 @@ void read_config(char *file) {
 
     if (strlen(pto) > BUFFER_SIZE) {
       *(pto + 20) = 0; /* Only output the first 20 characters  */
-      err_printf("ERROR: Command too long {%s}", pto);
+      fprintf(stderr, "ERROR: Command too long {%s}\n", pto);
       continue;
     }
 
@@ -260,11 +252,11 @@ void read_config(char *file) {
       strcpy(buf, pto);
 
       check_highlights(buf);
-      err_printf(buf);
+      fprintf(stderr, "%s\n", buf);
     } else if (is_abbrev(command, "UNHIGHLIGHT")) {
       unhighlight(args);
     } else {
-      err_printf("ERROR: Unknown command {%s}", command);
+      fprintf(stderr, "ERROR: Unknown command {%s}\n", command);
     }
   }
 
