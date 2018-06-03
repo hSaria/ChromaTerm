@@ -12,11 +12,31 @@
 #include <unistd.h>
 #include <wordexp.h>
 
-#ifdef HAVE_PCRE2_H
+/**** Compatibility interface ****/
+#ifdef HAVE_PCRE2_H /* PCRE2 */
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
-#else
+typedef pcre2_code PCRE_CODE;
+typedef PCRE2_SIZE PCRE_ERR_P;
+#define PCRE_FREE(code)                                                        \
+  { pcre2_code_free(code); }
+#define PCRE_COMPILE(compiled, regex, err_n, err_p)                            \
+  {                                                                            \
+    compiled = pcre2_compile((PCRE2_SPTR)regex, PCRE2_ZERO_TERMINATED, 0,      \
+                             err_n, err_p, NULL);                              \
+    if (pcre2_jit_compile(compiled, 0) == 0) {                                 \
+      /* Accelerate pattern matching if JIT is supported on the platform */    \
+      pcre2_jit_compile(compiled, PCRE2_JIT_COMPLETE);                         \
+    }                                                                          \
+  }
+#else /* Legacy PCRE */
 #include <pcre.h>
+typedef pcre PCRE_CODE;
+typedef const char *PCRE_ERR_P;
+#define PCRE_FREE(code)                                                        \
+  { pcre_free(code); }
+#define PCRE_COMPILE(compiled, regex, err_n, err_p)                            \
+  { compiled = pcre_compile(regex, 0, err_p, err_n, NULL); }
 #endif
 
 #define VERSION "0.2.0"
@@ -43,6 +63,9 @@
 
 #define ESCAPE 27
 
+/* Used to look for the last start of a color that doesn't have a reset */
+#define COLOR_REGEX "\\e\\[(?:(([3-4]\\d;)|([1-9](;|m))))(?:.(?!\\e\\[0m))*$"
+
 /* Stores the shared data for CT-- */
 struct global_data {
   struct highlight **highlights;
@@ -57,32 +80,22 @@ struct highlight {
   char action[BUFFER_SIZE];          /* Processed into compiled_regex */
   char priority[BUFFER_SIZE];        /* Lower value overwrites higher value */
   char compiled_action[BUFFER_SIZE]; /* Compiled once, used multiple times */
-
-#ifdef HAVE_PCRE2_H
-  pcre2_code *compiled_regex; /* Compiled once, used multiple times */
-#else
-  pcre *compiled_regex; /* Compiled once, used multiple times */
-#endif
+  PCRE_CODE *compiled_regex;         /* Compiled once, used multiple times */
 };
 
-struct regex_result {
+struct regex_r {
   int start;
   int end;
 };
 
 /**** highlight.c ****/
-void check_highlights(char *original);
+extern PCRE_CODE *lookback_for_color;
+
+void check_highlights(char *string);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
 void highlight(char *args);
-
-#ifdef HAVE_PCRE2_H
-struct regex_result regex_compare(pcre2_code *compiled_regex, char *str);
-#else
-struct regex_result regex_compare(pcre *compiled_regex, char *str);
-#endif
-
-int skip_vt100_codes(char *str);
+struct regex_r regex_compare(PCRE_CODE *compiled_regex, char *str);
 void substitute(char *string, char *result);
 void unhighlight(char *args);
 
