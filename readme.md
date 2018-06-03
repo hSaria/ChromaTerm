@@ -22,7 +22,7 @@ git clone https://github.com/hSaria/ChromaTerm--.git
 cd ChromaTerm--/src/ && ./configure && make install
 ```
 
-> You must have [PCRE2 or legacy PCRE](https://pcre.org) development installed. You can install PCRE2 with one of the following (depends on platform):
+> You must have [PCRE2 or legacy PCRE](https://www.pcre.org) development installed. You can install PCRE2 with one of the following (depends on platform):
 > - `brew install pcre2`
 > - `apt install libpcre2-dev`
 > - `yum install pcre2-devel`
@@ -42,7 +42,7 @@ cd ChromaTerm--/src/ && ./configure && make install
 The syntax for a rule is `HIGHLIGHT {REGEX} {ACTION} {PRIORITY}`
 
 ### REGEX
-The RegEx engine used is PCRE (www.pcre.org). If supported, PCRE2 is used (much faster).
+The RegEx engine used is [PCRE](https://www.pcre.org). If supported, PCRE2 is used (much faster).
 
 ### ACTION
 Once something matches the regex of a rule, the action of that rule is applied. The action can be a named (predefined) action or a custom one. Multiple actions can make up a single action as long as they are from the same category. For example: `{bold red}` or `{<fca><BAF>}`
