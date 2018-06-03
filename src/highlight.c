@@ -374,59 +374,53 @@ int skip_vt102_codes(char *str) {
   case 127: /* DEL */
     return 1;
   case 27: /* ESC */
-    break;
-  default:
-    return 0;
-  }
+    switch (str[1]) {
+    case '\0':
+      return 1;
+    case '%':
+    case '#':
+    case '(':
+    case ')':
+      return str[2] ? 3 : 2;
+    case ']':
+      switch (str[2]) {
+      case 'P':
+        for (skip = 3; skip < 10; skip++) {
+          if (str[skip] == 0) {
+            break;
+          }
+        }
+        return skip;
+      case 'R':
+        return 3;
+      default:
+        return 2;
+      }
+    case '[':
+      for (skip = 2; str[skip] != 0; skip++) {
+        if (isalpha((int)str[skip])) {
+          return skip + 1;
+        }
 
-  switch (str[1]) {
-  case '\0':
-    return 1;
-  case '%':
-  case '#':
-  case '(':
-  case ')':
-    return str[2] ? 3 : 2;
-  case ']':
-    switch (str[2]) {
-    case 'P':
-      for (skip = 3; skip < 10; skip++) {
-        if (str[skip] == 0) {
-          break;
+        switch (str[skip]) {
+        case '@':
+        case '`':
+        case ']':
+          return skip + 1;
         }
       }
       return skip;
-    case 'R':
-      return 3;
+    default:
+      return 2;
     }
-    return 2;
-  case '[':
-    break;
   default:
-    return 2;
+    return 0;
   }
-
-  for (skip = 2; str[skip] != 0; skip++) {
-    if (isalpha((int)str[skip])) {
-      return skip + 1;
-    }
-
-    switch (str[skip]) {
-    case '@':
-    case '`':
-    case ']':
-      return skip + 1;
-    }
-  }
-  return skip;
 }
 
 /* If n is not null, then this function seeks n times, exluding vt102 codes */
 void strip_vt102_codes(char *str, char *buf) {
-  char *pti, *pto;
-
-  pti = str;
-  pto = buf;
+  char *pti = str, *pto = buf;
 
   while (*pti) {
     int skip;
