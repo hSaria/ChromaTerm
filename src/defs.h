@@ -94,7 +94,7 @@ void colordemo(void);
 void quit_with_signal(int exit_signal);
 
 /**** utils.c ****/
-void display_printf(char *format, ...);
+void err_printf(char *format, ...);
 char *get_arg(char *string, char *argument);
 int is_abbrev(char *s1, char *s2);
 void process_input(int wait_for_new_line);

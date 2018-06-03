@@ -148,7 +148,7 @@ void colordemo(void) {
       "FDB<FEB> FEB<FEC> FEC<FED> FED<FEE> FEE<FEF> FEF<FFF> FFF<FFE> FFE<FFD> "
       "FFD<FFC> FFC<FFB> FFB<FFA> FFA<FEA> FEA<FDA> FDA<FCA> FCA<FBA> FBA<088>",
       buf);
-  display_printf(buf);
+  err_printf(buf);
 
   quit_with_signal(2);
 }

@@ -242,22 +242,22 @@ void highlight(char *args) {
 
   if (*condition == 0 || *action == 0) {
     if (gd.highlights_used == 0) {
-      display_printf("HIGHLIGHT: No rules configured");
+      err_printf("HIGHLIGHT: No rules configured");
     } else {
       int i;
       for (i = 0; i < gd.highlights_used; i++) {
-        display_printf("HIGHLIGHT "
-                       "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
-                       "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
-                       "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
-                       gd.highlights[i]->condition, gd.highlights[i]->action,
-                       gd.highlights[i]->priority);
+        err_printf("HIGHLIGHT "
+                   "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                   "\033[1;31m{\033[0m%s\033[1;31m}\033[1;36m "
+                   "\033[1;31m{\033[0m%s\033[1;31m}\033[0m",
+                   gd.highlights[i]->condition, gd.highlights[i]->action,
+                   gd.highlights[i]->priority);
       }
     }
   } else {
     char temp[BUFFER_SIZE];
     if (get_highlight_codes(action, temp) == FALSE) {
-      display_printf("ERROR: Invalid color code {%s}; see `man ct`", action);
+      err_printf("ERROR: Invalid color code {%s}; see `man ct`", action);
     } else {
 #ifdef HAVE_PCRE2_H
       PCRE2_SIZE error_pointer;
@@ -291,8 +291,8 @@ void highlight(char *args) {
 #endif
 
       if (highlight->compiled_regex == NULL) {
-        display_printf("WARNING: Couldn't compile regex at %i: %s",
-                       error_number, error_pointer);
+        err_printf("WARNING: Couldn't compile regex at %i: %s", error_number,
+                   error_pointer);
       } else {
 #ifdef HAVE_PCRE2_H
         if (pcre2_jit_compile(highlight->compiled_regex, 0) == 0) {
@@ -495,7 +495,7 @@ void unhighlight(char *args) {
   get_arg(args, condition);
 
   if (*condition == 0) {
-    display_printf("SYNTAX: UNHIGHLIGHT {CONDITION}");
+    err_printf("SYNTAX: UNHIGHLIGHT {CONDITION}");
 
   } else if ((index = find_highlight_index(condition)) != -1) {
     struct highlight *highlight = gd.highlights[index];
@@ -515,6 +515,6 @@ void unhighlight(char *args) {
 
     gd.highlights_used--;
   } else {
-    display_printf("ERROR: Highlight rule not found");
+    err_printf("ERROR: Highlight rule not found");
   }
 }
