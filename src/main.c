@@ -23,7 +23,6 @@ int main(int argc, char **argv) {
   while ((c = getopt(argc, argv, "a c: d h")) != -1) {
     switch (tolower(c)) {
     case 'a':
-      fprintf(stderr, "hi");
       gd.colliding_actions = TRUE;
       break;
     case 'c':
