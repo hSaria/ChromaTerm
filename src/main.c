@@ -4,208 +4,176 @@
 
 struct global_data gd;
 
-int quit_ran = FALSE;
-
 int main(int argc, char **argv) {
-  int config_override = FALSE;
-  char command[BUFFER_SIZE];
-  struct sigaction trap, pipe, winch;
+  fd_set readfds;
+  PCRE_ERR_P err_p;
+  int c, config_override = FALSE, bytes_read, err_n;
 
-  trap.sa_handler = trap_handler;
-  pipe.sa_handler = pipe_handler;
-  winch.sa_handler = winch_handler;
+  /* Set up default CT state */
+  gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
+  gd.highlights_size = 8; /* initial size is 8, but is doubled when needed */
+  gd.colliding_actions = FALSE;
 
-  trap.sa_flags = pipe.sa_flags = winch.sa_flags = 0;
+  /* Look for the last start of a color that doesn't have a reset. Used during
+   * matching to check if an action collides with another action */
+  PCRE_COMPILE(lookback_for_color, "\\e\\[[1-9][0-9;]*m(?:.(?!\\e\\[0m))*$",
+               &err_n, &err_p);
 
-  sigaction(SIGTERM, &trap, NULL);
-  sigaction(SIGSEGV, &trap, NULL);
-  sigaction(SIGHUP, &trap, NULL);
-  sigaction(SIGABRT, &trap, NULL);
-  sigaction(SIGPIPE, &pipe, NULL);
-  sigaction(SIGWINCH, &winch, NULL);
+  /* Parse the arguments (h is in there to prevent errors from '-h') */
+  while ((c = getopt(argc, argv, "a c: d h")) != -1) {
+    switch (tolower(c)) {
+    case 'a':
+      fprintf(stderr, "hi");
+      gd.colliding_actions = TRUE;
+      break;
+    case 'c':
+      config_override = TRUE;
+      read_config(optarg);
+      break;
+    case 'd':
+      colordemo();
+      break;
+    default:
+      printf("ChromaTerm-- v%s\n", VERSION);
+      printf("Usage: %s [-a] [-c file] [-d]\n", argv[0]);
+      printf("%6s %-18s Allow colliding actions\n", "-a", "");
+      printf("%6s %-18s Override configuration file\n", "-c", "{config file}");
+      printf("%6s %-18s Demonstrate the available color-codes for custom "
+             "actions\n",
+             "-d", "");
 
-  init_program();
-
-  if (argc > 1) {
-    int c;
-
-    optind = 1;
-
-    while ((c = getopt(argc, argv, "e: h c: t:")) != EOF) {
-      switch (c) {
-      case 't':
-        printf("\033]0;%s\007", optarg);
-        break;
-      case 'c':
-        if (access(optarg, R_OK) == 0) {
-          do_read(optarg);
-          config_override = TRUE;
-        }
-        break;
-      case 'e':
-        strcpy(command, optarg);
-        break;
-      case 'h':
-        help_menu(FALSE, argv[0]);
-        break;
-      default:
-        help_menu(TRUE, argv[0]);
-        break;
-      }
-    }
-
-    /* Execute the hanging argument */
-    if (argv[optind] != NULL) {
-      strcpy(command, optarg);
+      quit_with_signal(2);
+      break;
     }
   }
 
   /* Read configuration if not overridden by the launch arguments */
-  if (!config_override) {
-    if (access(".chromatermrc", R_OK) == 0) {
-      do_read(".chromatermrc");
-    } else {
-      if (getenv("HOME") != NULL) {
-        char filename[256];
+  if (!config_override && getenv("HOME") != NULL) {
+    char temp[4095];
+    sprintf(temp, "%s/%s", getenv("HOME"), ".chromatermrc");
 
-        sprintf(filename, "%s/%s", getenv("HOME"), ".chromatermrc");
-
-        if (access(filename, R_OK) == 0) {
-          do_read(filename);
-        }
-      }
+    if (access(temp, R_OK) == 0) {
+      read_config(temp);
     }
   }
 
-  /* Only run command if it wasn't overridden by a configuration file */
-  if (!gd.run_overriden) {
-    gd.run_overriden = TRUE;
-    do_run(command);
+  /* fd_set used for checking if there's more input */
+  FD_ZERO(&readfds); /* Initialize */
+  FD_SET(STDIN_FILENO, &readfds);
+
+  /* MAIN LOGIC OF THE PROGRAM STARTS HERE */
+  while ((bytes_read =
+              (int)read(STDIN_FILENO, &gd.input_buffer[gd.input_buffer_length],
+                        INPUT_MAX - gd.input_buffer_length - 1)) > 0) {
+    /* Mandatoy wait before assuming no more output on the current line */
+    struct timeval wait = {0, WAIT_FOR_NEW_LINE};
+
+    gd.input_buffer_length += bytes_read;
+
+    /* Block for a small amount to see if there's more to read. If something
+     * came up, stop waiting and move on. */
+    int rv = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &wait);
+
+    if (rv > 0) { /* More data came up while waiting */
+      /* Failsafe: if the buffer is full, process all of pending output.
+       * Otherwise, process until the line that doesn't end with \n. */
+      process_input(INPUT_MAX - gd.input_buffer_length <= 1 ? FALSE : TRUE);
+    } else if (rv == 0) { /* timed-out while waiting for FD (no more output) */
+      process_input(FALSE); /* Process all that's left */
+    } else if (rv < 0) {    /* error */
+      perror("select returned < 0");
+      quit_with_signal(EXIT_FAILURE);
+    }
   }
 
-  if (pthread_create(&input_thread, NULL, poll_input, NULL) != 0) {
-    quit_with_msg("failed to create input thread", 1);
-  }
+  process_input(FALSE); /* Process anything that may be left */
 
-  waitpid(gd.pid, NULL, 0);
-
-  quit_with_msg(NULL, 0);
+  quit_with_signal(EXIT_SUCCESS);
   return 0; /* Literally useless, but gotta make a warning shut up. */
 }
 
-void init_program() {
-  struct termios io;
+void colordemo(void) {
+  char buf[BUFFER_SIZE];
 
-  gd.run_overriden = FALSE;
+  substitute(
+      "<g00> g00<g01> g01<g02> g02<g03> g03<g04> g04<g05> g05<g06> g06<g07> "
+      "g07<g08> g08<g09> g09<g10> g10<g11> g11\n<g12> g12<g13> g13<g14> "
+      "g14<g15> g15<g16> g16<g17> g17<g18> g18<g19> g19<g20> g20<g21> g21<g22> "
+      "g22<g23> g23\n<G00> G00<G01> G01<G02> G02<G03> G03<G04> G04<G05> "
+      "G05<G06> G06<G07> G07<G08> G08<G09> G09<G10> G10<G11> G11<088> \n<G12> "
+      "G12<G13> G13<G14> G14<G15> G15<G16> G16<G17> G17<G18> G18<G19> G19<G20> "
+      "G20<G21> G21<G22> G22<G23> G23<088> \n<aaa> aaa<aab> aab<aac> aac<aad> "
+      "aad<aae> aae<aaf> aaf<abf> abf<abe> abe<abd> abd<abc> abc<abb> abb<acb> "
+      "acb<acc> acc<acd> acd<ace> ace<acf> acf<adf> adf<ade> ade<add> add<adc> "
+      "adc<adb> adb<aeb> aeb<aec> aec<aed> aed<aee> aee<aef> aef<aff> aff<afe> "
+      "afe<afd> afd<afc> afc<afb> afb<afa> afa<aea> aea<ada> ada<aca> aca<aba> "
+      "aba\n<baa> baa<bab> bab<bac> bac<bad> bad<bae> bae<baf> baf<bbf> "
+      "bbf<bbe> bbe<bbd> bbd<bbc> bbc<bbb> bbb<bcb> bcb<bcc> bcc<bcd> bcd<bce> "
+      "bce<bcf> bcf<bdf> bdf<bde> bde<bdd> bdd<bdc> bdc<bdb> bdb<beb> beb<bec> "
+      "bec<bed> bed<bee> bee<bef> bef<bff> bff<bfe> bfe<bfd> bfd<bfc> bfc<bfb> "
+      "bfb<bfa> bfa<bea> bea<bda> bda<bca> bca<bba> bba\n<caa> caa<cab> "
+      "cab<cac> cac<cad> cad<cae> cae<caf> caf<cbf> cbf<cbe> cbe<cbd> cbd<cbc> "
+      "cbc<cbb> cbb<ccb> ccb<ccc> ccc<ccd> ccd<cce> cce<ccf> ccf<cdf> cdf<cde> "
+      "cde<cdd> cdd<cdc> cdc<cdb> cdb<ceb> ceb<cec> cec<ced> ced<cee> cee<cef> "
+      "cef<cff> cff<cfe> cfe<cfd> cfd<cfc> cfc<cfb> cfb<cfa> cfa<cea> cea<cda> "
+      "cda<cca> cca<cba> cba\n<daa> daa<dab> dab<dac> dac<dad> dad<dae> "
+      "dae<daf> daf<dbf> dbf<dbe> dbe<dbd> dbd<dbc> dbc<dbb> dbb<dcb> dcb<dcc> "
+      "dcc<dcd> dcd<dce> dce<dcf> dcf<ddf> ddf<dde> dde<ddd> ddd<ddc> ddc<ddb> "
+      "ddb<deb> deb<dec> dec<ded> ded<dee> dee<def> def<dff> dff<dfe> dfe<dfd> "
+      "dfd<dfc> dfc<dfb> dfb<dfa> dfa<dea> dea<dda> dda<dca> dca<dba> "
+      "dba\n<eaa> eaa<eab> eab<eac> eac<ead> ead<eae> eae<eaf> eaf<ebf> "
+      "ebf<ebe> ebe<ebd> ebd<ebc> ebc<ebb> ebb<ecb> ecb<ecc> ecc<ecd> ecd<ece> "
+      "ece<ecf> ecf<edf> edf<ede> ede<edd> edd<edc> edc<edb> edb<eeb> eeb<eec> "
+      "eec<eed> eed<eee> eee<eef> eef<eff> eff<efe> efe<efd> efd<efc> efc<efb> "
+      "efb<efa> efa<eea> eea<eda> eda<eca> eca<eba> eba\n<faa> faa<fab> "
+      "fab<fac> fac<fad> fad<fae> fae<faf> faf<fbf> fbf<fbe> fbe<fbd> fbd<fbc> "
+      "fbc<fbb> fbb<fcb> fcb<fcc> fcc<fcd> fcd<fce> fce<fcf> fcf<fdf> fdf<fde> "
+      "fde<fdd> fdd<fdc> fdc<fdb> fdb<feb> feb<fec> fec<fed> fed<fee> fee<fef> "
+      "fef<fff> fff<ffe> ffe<ffd> ffd<ffc> ffc<ffb> ffb<ffa> ffa<fea> fea<fda> "
+      "fda<fca> fca<fba> fba<088> \n<aaa><AAA> AAA<AAB> AAB<AAC> AAC<AAD> "
+      "AAD<AAE> AAE<AAF> AAF<ABF> ABF<ABE> ABE<ABD> ABD<ABC> ABC<ABB> ABB<ACB> "
+      "ACB<ACC> ACC<ACD> ACD<ACE> ACE<ACF> ACF<ADF> ADF<ADE> ADE<ADD> ADD<ADC> "
+      "ADC<ADB> ADB<AEB> AEB<AEC> AEC<AED> AED<AEE> AEE<AEF> AEF<AFF> AFF<AFE> "
+      "AFE<AFD> AFD<AFC> AFC<AFB> AFB<AFA> AFA<AEA> AEA<ADA> ADA<ACA> ACA<ABA> "
+      "ABA<088> \n<aaa><BAA> BAA<BAB> BAB<BAC> BAC<BAD> BAD<BAE> BAE<BAF> "
+      "BAF<BBF> BBF<BBE> BBE<BBD> BBD<BBC> BBC<BBB> BBB<BCB> BCB<BCC> BCC<BCD> "
+      "BCD<BCE> BCE<BCF> BCF<BDF> BDF<BDE> BDE<BDD> BDD<BDC> BDC<BDB> BDB<BEB> "
+      "BEB<BEC> BEC<BED> BED<BEE> BEE<BEF> BEF<BFF> BFF<BFE> BFE<BFD> BFD<BFC> "
+      "BFC<BFB> BFB<BFA> BFA<BEA> BEA<BDA> BDA<BCA> BCA<BBA> BBA<088> "
+      "\n<aaa><CAA> CAA<CAB> CAB<CAC> CAC<CAD> CAD<CAE> CAE<CAF> CAF<CBF> "
+      "CBF<CBE> CBE<CBD> CBD<CBC> CBC<CBB> CBB<CCB> CCB<CCC> CCC<CCD> CCD<CCE> "
+      "CCE<CCF> CCF<CDF> CDF<CDE> CDE<CDD> CDD<CDC> CDC<CDB> CDB<CEB> CEB<CEC> "
+      "CEC<CED> CED<CEE> CEE<CEF> CEF<CFF> CFF<CFE> CFE<CFD> CFD<CFC> CFC<CFB> "
+      "CFB<CFA> CFA<CEA> CEA<CDA> CDA<CCA> CCA<CBA> CBA<088> \n<aaa><DAA> "
+      "DAA<DAB> DAB<DAC> DAC<DAD> DAD<DAE> DAE<DAF> DAF<DBF> DBF<DBE> DBE<DBD> "
+      "DBD<DBC> DBC<DBB> DBB<DCB> DCB<DCC> DCC<DCD> DCD<DCE> DCE<DCF> DCF<DDF> "
+      "DDF<DDE> DDE<DDD> DDD<DDC> DDC<DDB> DDB<DEB> DEB<DEC> DEC<DED> DED<DEE> "
+      "DEE<DEF> DEF<DFF> DFF<DFE> DFE<DFD> DFD<DFC> DFC<DFB> DFB<DFA> DFA<DEA> "
+      "DEA<DDA> DDA<DCA> DCA<DBA> DBA<088> \n<aaa><EAA> EAA<EAB> EAB<EAC> "
+      "EAC<EAD> EAD<EAE> EAE<EAF> EAF<EBF> EBF<EBE> EBE<EBD> EBD<EBC> EBC<EBB> "
+      "EBB<ECB> ECB<ECC> ECC<ECD> ECD<ECE> ECE<ECF> ECF<EDF> EDF<EDE> EDE<EDD> "
+      "EDD<EDC> EDC<EDB> EDB<EEB> EEB<EEC> EEC<EED> EED<EEE> EEE<EEF> EEF<EFF> "
+      "EFF<EFE> EFE<EFD> EFD<EFC> EFC<EFB> EFB<EFA> EFA<EEA> EEA<EDA> EDA<ECA> "
+      "ECA<EBA> EBA<088> \n<aaa><FAA> FAA<FAB> FAB<FAC> FAC<FAD> FAD<FAE> "
+      "FAE<FAF> FAF<FBF> FBF<FBE> FBE<FBD> FBD<FBC> FBC<FBB> FBB<FCB> FCB<FCC> "
+      "FCC<FCD> FCD<FCE> FCE<FCF> FCF<FDF> FDF<FDE> FDE<FDD> FDD<FDC> FDC<FDB> "
+      "FDB<FEB> FEB<FEC> FEC<FED> FED<FEE> FEE<FEF> FEF<FFF> FFF<FFE> FFE<FFD> "
+      "FFD<FFC> FFC<FFB> FFB<FFA> FFA<FEA> FEA<FDA> FDA<FCA> FCA<FBA> FBA<088>",
+      buf);
+  fprintf(stderr, "%s\n", buf);
 
-  /* initial size is 8, but is dynamically resized as required */
-  gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
-  gd.highlights_size = 8;
-
-  /* Get the screen size */
-  winch_handler(0);
-
-  /* Default configuration values */
-  gd.command_char = '%';
-  SET_BIT(gd.flags, SES_FLAG_HIGHLIGHT);
-
-  /* Save current terminal attributes and reset at exit */
-  if (tcgetattr(STDIN_FILENO, &gd.saved_terminal)) {
-    quit_with_msg("tcgetattr", 1);
-  }
-
-  tcgetattr(STDIN_FILENO, &gd.active_terminal);
-
-  io = gd.active_terminal;
-
-  /*  Canonical mode off */
-  DEL_BIT(io.c_lflag, ICANON);
-
-  io.c_cc[VMIN] = 1;
-  io.c_cc[VTIME] = 0;
-  io.c_cc[VSTART] = 255;
-  io.c_cc[VSTOP] = 255;
-
-  DEL_BIT(io.c_lflag, ECHO | ECHONL | IEXTEN | ISIG);
-  SET_BIT(io.c_cflag, CS8);
-
-  if (tcsetattr(STDIN_FILENO, TCSANOW, &io)) {
-    quit_with_msg("tcsetattr", 1);
-  }
-
-  atexit(quit_void);
+  quit_with_signal(2);
 }
 
-void help_menu(int error, char *proc_name) {
-  display_printf("ChromaTerm-- v%s", VERSION);
-  display_printf("Usage: %s [OPTION]... [FILE]...", proc_name);
-  display_printf("    -h                    This help section");
-  display_printf("    -c {CONFIG_FILE}      Override configuration file");
-  display_printf("    -e [EXECUTABLE]       Run executable");
-  display_printf("    -t {TITLE}            Set title");
-
-  quit_with_msg(NULL, error);
-}
-
-/* Unless there's an error, the quitmsg is ran before exitting */
-void quit_void(void) { quit_with_msg(NULL, 1); }
-
-void quit_with_msg(char *message, int exit_signal) {
-  if (quit_ran) {
-    return;
-  }
-  quit_ran = TRUE;
-
-  /* Restore original, saved terminal */
-  tcsetattr(STDIN_FILENO, TCSANOW, &gd.saved_terminal);
-
-  if (kill(gd.pid, 0) && gd.socket) {
-    close(gd.socket);
-    if (gd.pid) {
-      /* force kill */
-      kill(gd.pid, SIGKILL);
-    }
-  }
-
-  if (input_thread) {
-    pthread_kill(input_thread, 0);
-  }
-
-  if (output_thread) {
-    pthread_kill(output_thread, 0);
-  }
-
+void quit_with_signal(int exit_signal) {
   /* Free memory used by highlights */
   while (gd.highlights[0]) {
-    do_unhighlight(gd.highlights[0]->condition);
+    unhighlight(gd.highlights[0]->condition);
   }
 
   free(gd.highlights);
 
-  /* Print msg, if any */
-  if (message) {
-    printf("\n%s\n", message);
-  }
+  PCRE_FREE(lookback_for_color);
 
-  fflush(stdout);
   exit(exit_signal);
-}
-
-void pipe_handler(int sig) { display_printf("broken_pipe: %i", sig); }
-
-void trap_handler(int sig) { quit_with_msg("trap_handler", sig); }
-
-void winch_handler(int sig) {
-  struct winsize screen;
-
-  if (sig) { /* Just to make a compiler warning shut up */
-  }
-
-  if (ioctl(STDIN_FILENO, TIOCGWINSZ, &screen) == -1) {
-    gd.rows = SCREEN_HEIGHT;
-    gd.cols = SCREEN_WIDTH;
-  } else {
-    gd.rows = screen.ws_row;
-    gd.cols = screen.ws_col;
-  }
 }

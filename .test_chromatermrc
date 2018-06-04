@@ -1,98 +1,44 @@
-%SHOWME   {CONF} {COMMAND CHAR} {$}
-%CONFIG     {COMMAND CHAR} {$}
+SHOWME   {HIGHLIGHT} {123} {RED} {100}
+HIGHLIGHT  {123} {RED} {100}
 
-%SHOWME   {CONF} {COMMAND CHAR} {%}
-$CONFIG     {COMMAND CHAR} {%}
+SHOWME   {HIGHLIGHT} {321} {<fca><FFF>}
+HIGHLIGHT  {321} {<fca><FFF>}
 
-
-
-%SHOWME   {CONF} {CONVERT META} {ON}
-%CONFIG     {CONVERT META} {ON}
-
-%SHOWME   {CONF} {CONVERT META} {OFF}
-%CONFIG     {CONVERT META} {OFF}
+SHOWME   {HIGHLIGHT} {333} {<QWE><EWQ>} {100}
+HIGHLIGHT  {333} {<QWE><EWQ>} {100}
 
 
 
-%SHOWME   {CONF} {HIGHLIGHT} {OFF}
-%CONFIG     {HIGHLIGHT} {OFF}
+SHOWME   {HIGHLIGHT}
+HIGHLIGHT
 
-%SHOWME   {CONF} {HIGHLIGHT} {ON}
-%CONFIG     {HIGHLIGHT} {ON}
+SHOWME   {UNHIGHLIGHT} {123}
+UNHIGHLIGHT  {123}
 
-
-
-%SHOWME   {COMMANDS}
-%COMMANDS
-
-%SHOWME   {COMMANDS} {c}
-%COMMANDS   c
+SHOWME   {HIGHLIGHT}
+HIGHLIGHT
 
 
 
-%SHOWME   {HELP}
-%HELP
+SHOWME   {UNHIGHLIGHT} {321}
+UNHIGHLIGHT  {321}
 
-%SHOWME   {HELP} {co}
-%HELP       co
-
-%SHOWME   {HELP} {ALL}
-%HELP       ALL
-
-
-
-%SHOWME   {HIGHLIGHT} {123} {RED} {100}
-%HIGHLIGHT  {123} {RED} {100}
-
-%SHOWME   {HIGHLIGHT} {321} {<fca><FFF>}
-%HIGHLIGHT  {321} {<fca><FFF>}
-
-%SHOWME   {HIGHLIGHT} {333} {<QWE><EWQ>} {100}
-%HIGHLIGHT  {333} {<QWE><EWQ>} {100}
-
-
-
-%SHOWME   {WRITE}
-%WRITE
-
-%SHOWME   {WRITE} {./some_file}
-%WRITE      {./some_file}
-
-%SHOWME   {READ}
-%READ
-
-%SHOWME   {READ} {./some_file}
-%READ       {./some_file}
-
-
-
-%SHOWME   {UNHIGHLIGHT} {123}
-%UNHIGHLIGHT  {123}
-
-%SHOWME   {UNHIGHLIGHT} {321}
-%UNHIGHLIGHT  {321}
-
-%SHOWME   {UNHIGHLIGHT} {333}
-%UNHIGHLIGHT  {333}
+SHOWME   {UNHIGHLIGHT} {333}
+UNHIGHLIGHT  {333}
 
 
 
 /* IPv4 */
-%HIGHLIGHT  {(?i)((?P<ip>25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(?P>ip)(/(3[0-2]|[0-2]?\d))?} {cyan} {1000}
+HIGHLIGHT  {(?i)((?P<ip>25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(?P>ip)(/(3[0-2]|[0-2]?\d))?} {cyan} {1000}
 
 /* IPv6 */
-%HIGHLIGHT  {(?i)(::(ffff(:0{1,4})?:)?((?P<ip>25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(?P>ip)|((?P<h>[\da-f]{1,4}):){1,4}:((?P>ip)\.){3}(?P>ip)|((?P>h):){7}(?P>h)|(?P>h):((:(?P>h)){1,6})|((?P>h):){1,2}(:(?P>h)){1,5}|((?P>h):){1,3}(:(?P>h)){1,4}|((?P>h):){1,4}(:(?P>h)){1,3}|((?P>h):){1,5}(:(?P>h)){1,2}|((?P>h):){1,6}:(?P>h)|:((:(?P>h)){1,7}|:)|((?P>h):){1,7}:)(%[\da-z]+)?(/(12[0-8]|1[0-1]\d|\d{1,2}))?} {magenta} {900}
+HIGHLIGHT  {(?i)(::(ffff(:0{1,4})?:)?((?P<ip>25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(?P>ip)|((?P<h>[\da-f]{1,4}):){1,4}:((?P>ip)\.){3}(?P>ip)|((?P>h):){7}(?P>h)|(?P>h):((:(?P>h)){1,6})|((?P>h):){1,2}(:(?P>h)){1,5}|((?P>h):){1,3}(:(?P>h)){1,4}|((?P>h):){1,4}(:(?P>h)){1,3}|((?P>h):){1,5}(:(?P>h)){1,2}|((?P>h):){1,6}:(?P>h)|:((:(?P>h)){1,7}|:)|((?P>h):){1,7}:)(%[\da-z]+)?(/(12[0-8]|1[0-1]\d|\d{1,2}))?} {magenta} {900}
 
 /* MAC */
-%HIGHLIGHT  {(?i)((?P<h>[\da-f])(?P>h):){5}(?P>h){2}|((?P>h){4}\.){2}(?P>h){4}} {yellow} {1000}
+HIGHLIGHT  {(?i)((?P<h>[\da-f])(?P>h):){5}(?P>h){2}|((?P>h){4}\.){2}(?P>h){4}} {yellow} {1000}
 
 /* Password or password */
-%HIGHLIGHT  {(?i)password} {red} {1000}
+HIGHLIGHT  {(?i)password} {bold red underscore} {1000}
 
 /* Date in MMM DD hh:mm:ss.SSS format (msec optional) */
-%HIGHLIGHT  {(?i)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-1]|([0-2]\d)))\s((2[0-3])|[0-1]\d):[0-5]\d:[0-5]\d(\.\d{3})?} {<fca>} {1000}
-
-
-
-%SHOWME   {RUN} {../.test.sh}
-%RUN ../.test.sh
+HIGHLIGHT  {(?i)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-1]|([0-2]\d)))\s((2[0-3])|[0-1]\d):[0-5]\d:[0-5]\d(\.\d{3})?} {<fca><ABD>} {1000}

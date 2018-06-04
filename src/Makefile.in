@@ -5,16 +5,18 @@ MAKE = @MAKE@
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
-bindir = ${DESTDIR}@bindir@
-CFLAGS += -pthread -O2 -Wall -Wextra
+datarootdir = @datarootdir@
+bindir = @bindir@
+mandir = @mandir@
+CFLAGS += -O2 -Wall -Wextra
 LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
-OFILES = files.o highlight.o io.o main.o misc.o session.o tables.o utils.o
+OFILES = highlight.o main.o utils.o
 
 default: all
 
-all:	ct
+all: ct
 
 ct: Makefile $(OFILES) defs.h
 	$(CC) $(CFLAGS) -o $@ $(OFILES) $(LIBS)
@@ -29,10 +31,18 @@ Makefile: Makefile.in
 
 install: ct
 	-mkdir -p $(bindir)
-	cp ct $(bindir)
+	cp ./ct $(bindir)
+	cp ../ct.1 $(mandir)/man1/
 
 uninstall:
 	rm -f $(bindir)/ct
+	rm -f $(mandir)/man1/ct.1
+
+ct-config:
+	cp -i ../.chromatermrc $(HOME)/
+
+test:
+	../.test.sh | ./ct -c ../.test_chromatermrc
 
 # Autocompile all .c files into .o files using this rule:
 .c.o:
@@ -40,9 +50,6 @@ uninstall:
 
 clean:
 	rm -f $(OFILES) config.status config.log
-
-test:
-	./ct -c ../.test_chromatermrc
 
 distclean:
 	rm -f *.o config.status config.log ct Makefile config.h
