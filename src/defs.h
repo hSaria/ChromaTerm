@@ -68,6 +68,7 @@ struct global_data {
   int highlights_used;
   char input_buffer[INPUT_MAX];
   int input_buffer_length;
+  int colliding_actions; /* Allow or disallow colliding actions */
 };
 
 struct highlight {

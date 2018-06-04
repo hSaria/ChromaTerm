@@ -84,11 +84,7 @@ void process_input(int wait_for_new_line) {
     strcpy(linebuf, line);
     check_highlights(linebuf);
 
-    if (next_line) {
-      strcat(linebuf, "\n");
-    }
-
-    printf("%s", linebuf);
+    printf("%s%s", linebuf, next_line ? "\n" : "");
 
     fflush(stdout);
   }
@@ -159,9 +155,8 @@ void read_config(char *file) {
         *pto++ = *pti++;
         nest--;
         break;
-      case '/': /* Check if comment */
-        if (nest == 0 &&
-            pti[1] == '*') { /* nest == 0 means not in an argument */
+      case '/':                           /* Check if comment */
+        if (nest == 0 && pti[1] == '*') { /* Not in an argument */
           pti += 2;
           com = TRUE;
         } else {

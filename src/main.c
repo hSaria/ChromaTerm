@@ -6,15 +6,26 @@ struct global_data gd;
 
 int main(int argc, char **argv) {
   fd_set readfds;
-  int c, config_override = FALSE, bytes_read;
+  PCRE_ERR_P err_p;
+  int c, config_override = FALSE, bytes_read, err_n;
 
   /* Set up default CT state */
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
   gd.highlights_size = 8; /* initial size is 8, but is doubled when needed */
+  gd.colliding_actions = FALSE;
 
-  /* Parse the arguments */
-  while ((c = getopt(argc, argv, "c: d h")) != -1) {
+  /* Look for the last start of a color that doesn't have a reset. Used during
+   * matching to check if an action collides with another action */
+  PCRE_COMPILE(lookback_for_color, "\\e\\[[1-9][0-9;]*m(?:.(?!\\e\\[0m))*$",
+               &err_n, &err_p);
+
+  /* Parse the arguments (h is in there to prevent errors from '-h') */
+  while ((c = getopt(argc, argv, "a c: d h")) != -1) {
     switch (tolower(c)) {
+    case 'a':
+      fprintf(stderr, "hi");
+      gd.colliding_actions = TRUE;
+      break;
     case 'c':
       config_override = TRUE;
       read_config(optarg);
@@ -24,7 +35,8 @@ int main(int argc, char **argv) {
       break;
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
-      printf("Usage: %s [-c file] [-d]\n", argv[0]);
+      printf("Usage: %s [-a] [-c file] [-d]\n", argv[0]);
+      printf("%6s %-18s Allow colliding actions\n", "-a", "");
       printf("%6s %-18s Override configuration file\n", "-c", "{config file}");
       printf("%6s %-18s Demonstrate the available color-codes for custom "
              "actions\n",
@@ -160,6 +172,8 @@ void quit_with_signal(int exit_signal) {
   }
 
   free(gd.highlights);
+
+  PCRE_FREE(lookback_for_color);
 
   exit(exit_signal);
 }

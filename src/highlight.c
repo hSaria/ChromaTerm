@@ -34,6 +34,7 @@ struct color_type color_table[] = {
     {"yellow", "<838>"},       {"", "<088>"}};
 
 /* Used to search for the start of a color */
+PCRE_CODE *lookback_for_color;
 
 void check_highlights(char *string) {
   int i;
@@ -49,8 +50,24 @@ void check_highlights(char *string) {
       *output = 0;
 
       do {
-        strncat(output, pti, res.start);                   /* Before Match */
-        strcat(output, gd.highlights[i]->compiled_action); /* Action */
+        if (!gd.colliding_actions) {
+          char old_char = pti[res.end];
+          struct regex_r lookback_res;
+
+          pti[res.end] = 0; /* Stop at the match */
+          lookback_res = regex_compare(lookback_for_color, pti);
+          pti[res.end] = old_char; /* Restore old char */
+
+          if (lookback_res.start != -1) { /* We're in the middle of an action */
+            strncat(output, pti, res.end);
+            pti += res.end; /* Skip to next match */
+            res = regex_compare(gd.highlights[i]->compiled_regex, pti);
+            continue;
+          }
+        }
+
+        strncat(output, pti, res.start);                        /* Before */
+        strcat(output, gd.highlights[i]->compiled_action);      /* Action */
         strncat(output, pti += res.start, res.end - res.start); /* Match */
         strcat(output, "\033[0m");                              /* Reset */
 
