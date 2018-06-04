@@ -61,9 +61,6 @@ typedef const char *PCRE_ERR_P;
 
 #define ESCAPE 27
 
-/* Used to look for the last start of a color that doesn't have a reset */
-#define COLOR_REGEX "\\e\\[(?:(([3-4]\\d;)|([1-9](;|m))))(?:.(?!\\e\\[0m))*$"
-
 /* Stores the shared data for CT-- */
 struct global_data {
   struct highlight **highlights;
