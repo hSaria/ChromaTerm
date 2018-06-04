@@ -55,7 +55,7 @@ The named actions are:
 
 Terminals that support xterm-256 codes will support VT100 codes, as well.
 
-To use a custom action, `man ct` has more info on that. Run `ct -d` to the full range of colors.
+To use a custom action, `man ct` has more info on that. Run `ct -d` to see the full range of colors.
 
 #### PRIORITY
 (Optional) If a part of the text is matched by two rules, the rule with the lower priority value overrides the action of the higher priority value; lower priority value = higher precedence. Default priority is 1000.
