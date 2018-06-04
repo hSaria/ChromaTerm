@@ -41,8 +41,8 @@ uninstall:
 ct-config:
 	cp -i ../.chromatermrc $(HOME)/
 
-test:
-	../.test.sh | ./ct -c ../.test_chromatermrc
+ct-test:
+	./test/.test.sh | ./ct -c ./test/.test_chromatermrc
 
 # Autocompile all .c files into .o files using this rule:
 .c.o:
