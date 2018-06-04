@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
       break;
     case 'd':
       colordemo();
-      break;
+      quit_with_signal(EXIT_SUCCESS);
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
       printf("Usage: %s [-a] [-c file] [-d]\n", argv[0]);
@@ -42,7 +42,6 @@ int main(int argc, char **argv) {
              "-d", "");
 
       quit_with_signal(2);
-      break;
     }
   }
 
@@ -160,8 +159,6 @@ void colordemo(void) {
       "FFD<FFC> FFC<FFB> FFB<FFA> FFA<FEA> FEA<FDA> FDA<FCA> FCA<FBA> FBA<088>",
       buf);
   fprintf(stderr, "%s\n", buf);
-
-  quit_with_signal(2);
 }
 
 void quit_with_signal(int exit_signal) {

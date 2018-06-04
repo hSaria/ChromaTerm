@@ -258,3 +258,44 @@ void read_config(char *file) {
   free(bufi);
   free(bufo);
 }
+
+struct regex_r regex_compare(PCRE_CODE *compiled_regex, char *str) {
+  struct regex_r res;
+#ifdef HAVE_PCRE2_H
+  PCRE2_SIZE *res_pos;
+  pcre2_match_data *match =
+      pcre2_match_data_create_from_pattern(compiled_regex, NULL);
+
+  if (pcre2_match(compiled_regex, (PCRE2_SPTR)str, (int)strlen(str), 0, 0,
+                  match, NULL) <= 0) {
+    pcre2_match_data_free(match);
+    res.start = -1;
+    return res;
+  }
+
+  res_pos = pcre2_get_ovector_pointer(match);
+
+  res.start = (int)res_pos[0];
+  res.end = (int)res_pos[1];
+
+  pcre2_match_data_free(match);
+#else
+  int res_pos[600];
+
+  if (pcre_exec(compiled_regex, NULL, str, (int)strlen(str), 0, 0, res_pos,
+                600) <= 0) {
+    res.start = -1;
+    return res;
+  }
+
+  res.start = (int)res_pos[0];
+  res.end = (int)res_pos[1];
+#endif
+
+  if (res.start > res.end) {
+    res.start = -1;
+    return res;
+  }
+
+  return res;
+}
