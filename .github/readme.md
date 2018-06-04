@@ -13,7 +13,7 @@ ChromaTerm-- (ct) reads from standard input and highlights it according to user-
 ## Screenshots
 Some quick examples. ChromaTerm-- uses Regex to find matches according to your rules.
 
-<p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-interface-brief.png"/><img width=422px height=425px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/junos-show-route.png"/><img width=405px height=425px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/images/ios-show-interface.png"/></p>
+<p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/junos-show-interface-brief.png"/><img width=422px height=425px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/junos-show-route.png"/><img width=405px height=425px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/ios-show-interface.png"/></p>
 
 ### <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
 # Installation [![Build Status](https://travis-ci.org/hSaria/ChromaTerm--.svg?branch=master)](https://travis-ci.org/hSaria/ChromaTerm--)
@@ -53,7 +53,7 @@ The named actions are:
 - VT100: bold, dim, underscore, blink, b black, b blue, b cyan, b green, b magenta, b red, b white, b yellow, black, blue, cyan, white, and yellow.
 - xterm-256: b azure, b ebony, b jade, b lime, b orange, b pink, b  silver, b tan, b violet, azure, ebony, jade, light azure, light ebony, light jade, light lime, light orange, light pink, light silver, light tan, light violet, lime, orange, pink, silver, tan, and violet.
 
-Terminals that support xterm-256 codes will support VT100 codes, as well. 
+Terminals that support xterm-256 codes will support VT100 codes, as well.
 
 To use a custom action, `man ct` has more info on that. Run `ct -d` to the full range of colors.
 
