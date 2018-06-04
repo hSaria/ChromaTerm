@@ -37,7 +37,7 @@ typedef const char *PCRE_ERR_P;
   { compiled = pcre_compile(regex, 0, err_p, err_n, NULL); }
 #endif
 
-#define VERSION "0.2.0"
+#define VERSION "0.2.1"
 
 #define FALSE 0
 #define TRUE 1
