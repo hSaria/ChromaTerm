@@ -37,7 +37,7 @@ typedef const char *PCRE_ERR_P;
   { compiled = pcre_compile(regex, 0, err_p, err_n, NULL); }
 #endif
 
-#define VERSION "0.2.0"
+#define VERSION "0.2.1"
 
 #define FALSE 0
 #define TRUE 1
@@ -91,7 +91,6 @@ void check_highlights(char *string);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
 void highlight(char *args);
-struct regex_r regex_compare(PCRE_CODE *compiled_regex, char *str);
 void substitute(char *string, char *result);
 void unhighlight(char *args);
 
@@ -107,3 +106,4 @@ char *get_arg(char *string, char *argument);
 int is_abbrev(char *s1, char *s2);
 void process_input(int wait_for_new_line);
 void read_config(char *file);
+struct regex_r regex_compare(PCRE_CODE *compiled_regex, char *str);
