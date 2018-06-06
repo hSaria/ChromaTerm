@@ -41,7 +41,7 @@ void check_highlights(char *string) {
 
   /* Apply from the top since the bottom ones may not match after the action of
    * one of the top ones is applied */
-  for (i = 0; i < gd.highlights_used; i++) {
+  for (i = 0; i < gd.highlights_used && gd.highlights[i]->compiled_regex; i++) {
     char *pti = string;
     struct regex_r res = regex_compare(gd.highlights[i]->compiled_regex, pti);
 
