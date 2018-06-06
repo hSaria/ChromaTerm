@@ -13,5 +13,5 @@ install:
   - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt install cppcheck; else brew install cppcheck; fi
 
 script:
-  - cd $TRAVIS_BUILD_DIR/src && ./configure && make && make test
+  - cd $TRAVIS_BUILD_DIR/src && ./configure && make && make ct-test
   - cppcheck ./ --enable=all -q
