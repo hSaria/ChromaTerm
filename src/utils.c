@@ -240,7 +240,13 @@ void read_config(char *file) {
     args = get_arg(pto, command);
 
     if (is_abbrev(command, "HIGHLIGHT")) {
-      highlight(args);
+      char condition[BUFFER_SIZE], action[BUFFER_SIZE], priority[BUFFER_SIZE];
+
+      args = get_arg(args, condition);
+      args = get_arg(args, action);
+      get_arg(args, priority);
+
+      highlight(condition, action, priority);
     } else if (is_abbrev(command, "SHOWME")) {
       char buf[BUFFER_SIZE];
 

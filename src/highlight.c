@@ -141,13 +141,7 @@ int get_highlight_codes(char *string, char *result) {
   }
 }
 
-void highlight(char *args) {
-  char condition[BUFFER_SIZE], action[BUFFER_SIZE], priority[BUFFER_SIZE];
-
-  args = get_arg(args, condition);
-  args = get_arg(args, action);
-  get_arg(args, priority);
-
+void highlight(char *condition, char *action, char *priority) {
   if (*priority == 0) {
     strcpy(priority, "1000");
   }

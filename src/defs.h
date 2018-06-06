@@ -89,7 +89,7 @@ extern PCRE_CODE *lookback_for_color;
 void check_highlights(char *string);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
-void highlight(char *args);
+void highlight(char *condition, char *action, char *priority);
 void substitute(char *string, char *result);
 void unhighlight(char *condition);
 
