@@ -91,7 +91,7 @@ int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
 void highlight(char *args);
 void substitute(char *string, char *result);
-void unhighlight(char *args);
+void unhighlight(char *condition);
 
 /**** main.c ****/
 extern struct global_data gd;

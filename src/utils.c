@@ -249,6 +249,7 @@ void read_config(char *file) {
       check_highlights(buf);
       fprintf(stderr, "%s\n", buf);
     } else if (is_abbrev(command, "UNHIGHLIGHT")) {
+      get_arg(args, args);
       unhighlight(args);
     } else {
       fprintf(stderr, "ERROR: Unknown command {%s}\n", command);
