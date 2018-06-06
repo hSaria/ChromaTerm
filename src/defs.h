@@ -37,7 +37,7 @@ typedef const char *PCRE_ERR_P;
   { compiled = pcre_compile(regex, 0, err_p, err_n, NULL); }
 #endif
 
-#define VERSION "0.2.1"
+#define VERSION "0.2.2"
 
 #define FALSE 0
 #define TRUE 1
@@ -52,7 +52,7 @@ typedef const char *PCRE_ERR_P;
 /* Microseconds to wait before processing a line without \n at the end */
 #define WAIT_FOR_NEW_LINE 500
 /* Why: CT-- cannot determine if a line has finished printing or if CT--'s
- * processing speed is just faster than the output of the child process.
+ * processing speed is just faster than the output of the piping process.
  * Therefore, on lines that do not end with \n, CT-- will wait a fixed interval
  * prior to printing that line. However, in the case that the line does end with
  * a \n, process it right away and move on to the next line. The delay will only
@@ -61,8 +61,7 @@ typedef const char *PCRE_ERR_P;
 
 #define ESCAPE 27
 
-/* Stores the shared data for CT-- */
-struct global_data {
+struct global_data { /* Stores the shared data for CT-- */
   struct highlight **highlights;
   int highlights_size;
   int highlights_used;
@@ -72,9 +71,9 @@ struct global_data {
 };
 
 struct highlight {
-  char condition[BUFFER_SIZE];       /* Processed into compiled_action */
-  char action[BUFFER_SIZE];          /* Processed into compiled_regex */
-  char priority[BUFFER_SIZE];        /* Lower value overwrites higher value */
+  char condition[BUFFER_SIZE];       /* Processed into compiled_regex */
+  char action[BUFFER_SIZE];          /* Processed into compiled_action */
+  char priority[BUFFER_SIZE];        /* Lower value = better priority */
   char compiled_action[BUFFER_SIZE]; /* Compiled once, used multiple times */
   PCRE_CODE *compiled_regex;         /* Compiled once, used multiple times */
 };
