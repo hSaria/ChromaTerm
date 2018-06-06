@@ -141,13 +141,7 @@ int get_highlight_codes(char *string, char *result) {
   }
 }
 
-void highlight(char *args) {
-  char condition[BUFFER_SIZE], action[BUFFER_SIZE], priority[BUFFER_SIZE];
-
-  args = get_arg(args, condition);
-  args = get_arg(args, action);
-  get_arg(args, priority);
-
+void highlight(char *condition, char *action, char *priority) {
   if (*priority == 0) {
     strcpy(priority, "1000");
   }
@@ -309,15 +303,11 @@ void substitute(char *string, char *result) {
   *pto = 0;
 }
 
-void unhighlight(char *args) {
-  char condition[BUFFER_SIZE];
+void unhighlight(char *condition) {
   int index;
-
-  get_arg(args, condition);
 
   if (*condition == 0) {
     fprintf(stderr, "SYNTAX: UNHIGHLIGHT {CONDITION}\n");
-
   } else if ((index = find_highlight_index(condition)) != -1) {
     if (gd.highlights[index]->compiled_regex != NULL) {
       PCRE_FREE(gd.highlights[index]->compiled_regex);

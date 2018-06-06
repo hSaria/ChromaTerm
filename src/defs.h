@@ -37,7 +37,7 @@ typedef const char *PCRE_ERR_P;
   { compiled = pcre_compile(regex, 0, err_p, err_n, NULL); }
 #endif
 
-#define VERSION "0.2.2"
+#define VERSION "0.2.3"
 
 #define FALSE 0
 #define TRUE 1
@@ -89,9 +89,9 @@ extern PCRE_CODE *lookback_for_color;
 void check_highlights(char *string);
 int find_highlight_index(char *text);
 int get_highlight_codes(char *string, char *result);
-void highlight(char *args);
+void highlight(char *condition, char *action, char *priority);
 void substitute(char *string, char *result);
-void unhighlight(char *args);
+void unhighlight(char *condition);
 
 /**** main.c ****/
 extern struct global_data gd;
