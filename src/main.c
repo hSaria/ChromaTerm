@@ -35,11 +35,9 @@ int main(int argc, char **argv) {
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
       printf("Usage: %s [-a] [-c file] [-d]\n", argv[0]);
-      printf("%6s %-18s Allow colliding actions\n", "-a", "");
-      printf("%6s %-18s Override configuration file\n", "-c", "{config file}");
-      printf("%6s %-18s Demonstrate the available color-codes for custom "
-             "actions\n",
-             "-d", "");
+      printf("%7s %-5s Allow colliding actions\n", "-a", "");
+      printf("%7s %-5s Override configuration file\n", "-c", "file");
+      printf("%7s %-5s Demo the available custom color-codes\n", "-d", "");
 
       quit_with_signal(2);
     }
@@ -54,6 +52,8 @@ int main(int argc, char **argv) {
       read_config(temp);
     }
   }
+
+  signal(SIGINT, SIG_IGN); /* Ignore interrupt */
 
   /* fd_set used for checking if there's more input */
   FD_ZERO(&readfds); /* Initialize */
@@ -162,9 +162,11 @@ void colordemo(void) {
 }
 
 void quit_with_signal(int exit_signal) {
+  int i;
+
   /* Free memory used by highlights */
-  while (gd.highlights[0]) {
-    unhighlight(gd.highlights[0]->condition);
+  for (i = gd.highlights_used - 1; i > -1; i--) {
+    unhighlight(gd.highlights[i]->condition);
   }
 
   free(gd.highlights);
