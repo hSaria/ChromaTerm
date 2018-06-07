@@ -53,6 +53,8 @@ int main(int argc, char **argv) {
     }
   }
 
+  signal(SIGINT, SIG_IGN); /* Ignore interrupt */
+
   /* fd_set used for checking if there's more input */
   FD_ZERO(&readfds); /* Initialize */
   FD_SET(STDIN_FILENO, &readfds);
