@@ -162,9 +162,11 @@ void colordemo(void) {
 }
 
 void quit_with_signal(int exit_signal) {
+  int i;
+
   /* Free memory used by highlights */
-  while (gd.highlights[0]) {
-    unhighlight(gd.highlights[0]->condition);
+  for (i = gd.highlights_used - 1; i > -1; i--) {
+    unhighlight(gd.highlights[i]->condition);
   }
 
   free(gd.highlights);
