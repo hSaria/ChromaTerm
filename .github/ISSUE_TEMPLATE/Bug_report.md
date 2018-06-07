@@ -18,4 +18,4 @@ HIGHLIGHT {World} {blue}
 ```
 
 **Additional context**
-For complex issues and if you can recreate the issue, do so with `2>&1 | tee ct-log.txt` at the end of the command. Attach `ct-log.txt`.
+Any other information that you think could be helpful
