@@ -35,11 +35,9 @@ int main(int argc, char **argv) {
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
       printf("Usage: %s [-a] [-c file] [-d]\n", argv[0]);
-      printf("%6s %-18s Allow colliding actions\n", "-a", "");
-      printf("%6s %-18s Override configuration file\n", "-c", "{config file}");
-      printf("%6s %-18s Demonstrate the available color-codes for custom "
-             "actions\n",
-             "-d", "");
+      printf("%7s %-5s Allow colliding actions\n", "-a", "");
+      printf("%7s %-5s Override configuration file\n", "-c", "file");
+      printf("%7s %-5s Demo the available custom color-codes\n", "-d", "");
 
       quit_with_signal(2);
     }
