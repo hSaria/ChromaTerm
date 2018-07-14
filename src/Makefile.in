@@ -39,7 +39,12 @@ uninstall:
 	rm -f $(mandir)/man1/ct.1
 
 ct-config:
-	cp -i ../.chromatermrc $(HOME)/
+	@if [ -f "$(DEFAULT_FILE_DIR)/.chromatermrc" ]; then\
+	  echo ".chromatermrc already exists in home directory; not copying default config file";\
+	else\
+	  echo ".chromatermrc doesn't exist in home directory; copying default config file";\
+		cp -i ../.chromatermrc $(DEFAULT_FILE_DIR)/;\
+	fi
 
 ct-test:
 	./test/.test.sh | ./ct -c ./test/.test_chromatermrc
