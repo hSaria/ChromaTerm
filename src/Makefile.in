@@ -32,6 +32,7 @@ Makefile: Makefile.in
 install: ct
 	-mkdir -p $(bindir)
 	cp ./ct $(bindir)
+	-mkdir -p $(mandir)/man1/
 	cp ../ct.1 $(mandir)/man1/
 
 uninstall:
