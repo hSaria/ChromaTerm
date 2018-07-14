@@ -43,8 +43,6 @@ By default, ChromaTerm-- reads a file at `~/.chromatermrc` which would have your
 echo "Message from 1.2.3.4 at Jul 14 12:28:19" | ct
 ```
 
-You'll see "error" get highlighted red.
-
 > During installation, the default config file was copied to `~/.chromatermrc`; Modify it to your liking.
 
 Think of ChromaTerm-- like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have this in my .bash_profile `ssh() { /usr/bin/ssh $* | ct; }`.
