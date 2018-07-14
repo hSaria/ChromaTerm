@@ -20,8 +20,7 @@ Some quick examples. ChromaTerm-- uses Regex to find matches according to your r
 
 ### macOS using HomeBrew
 ```
-brew tap hSaria/ChromaTerm--
-brew install chromaterm
+brew install hSaria/tap/chromaterm
 ```
 
 > You can uninstall with `brew uninstall chromaterm`
