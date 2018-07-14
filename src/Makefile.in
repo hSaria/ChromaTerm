@@ -31,21 +31,20 @@ Makefile: Makefile.in
 
 install: ct
 	-mkdir -p $(bindir)
-	cp ./ct $(bindir)
+	cp -f ./ct $(bindir)
 	-mkdir -p $(mandir)/man1/
-	cp ../ct.1 $(mandir)/man1/
+	cp -f ../ct.1 $(mandir)/man1/
 
-uninstall:
-	rm -f $(bindir)/ct
-	rm -f $(mandir)/man1/ct.1
-
-ct-config:
 	@if [ -f "$(DEFAULT_FILE_DIR)/.chromatermrc" ]; then\
 	  echo ".chromatermrc already exists in home directory; not copying default config file";\
 	else\
 	  echo ".chromatermrc doesn't exist in home directory; copying default config file";\
 		cp -i ../.chromatermrc $(DEFAULT_FILE_DIR)/;\
 	fi
+
+uninstall:
+	rm -f $(bindir)/ct
+	rm -f $(mandir)/man1/ct.1
 
 ct-test:
 	./test/.test.sh | ./ct -c ./test/.test_chromatermrc

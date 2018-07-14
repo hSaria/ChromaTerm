@@ -28,7 +28,7 @@ brew install hSaria/tap/chromaterm
 ### Compile from Source
 ```
 git clone https://github.com/hSaria/ChromaTerm--.git
-cd ChromaTerm--/src/ && ./configure && make install && make ct-config
+cd ChromaTerm--/src/ && ./configure && make install
 ```
 
 > You must have [PCRE2 or legacy PCRE](https://www.pcre.org) development installed. PCRE2 is recommended (much faster).
@@ -43,9 +43,9 @@ By default, ChromaTerm-- reads a file at `~/.chromatermrc` which would have your
 echo "Message from 1.2.3.4 at Jul 14 12:28:19" | ct
 ```
 
-> During installation, the default config file was copied to `~/.chromatermrc`; Modify it to your liking.
-
 Think of ChromaTerm-- like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have this in my .bash_profile `ssh() { /usr/bin/ssh $* | ct; }`.
+
+> During installation, the default config file was copied to `~/.chromatermrc`; Modify it to your liking.
 
 ## Highlight Rules
 The syntax for a rule is `HIGHLIGHT {REGEX} {ACTION} {PRIORITY}`
