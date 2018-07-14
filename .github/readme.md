@@ -40,7 +40,7 @@ cd ChromaTerm--/src/ && ./configure && make install
 By default, ChromaTerm-- reads a file at `~/.chromatermrc` which would have your highlight rules. As an example, run the following:
 
 ```
-echo "Message from 1.2.3.4 at Jul 14 12:28:19" | ct
+echo "Jul 14 12:28:19: Message from 1.2.3.4" | ct
 ```
 
 Think of ChromaTerm-- like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have this in my .bash_profile `ssh() { /usr/bin/ssh $* | ct; }`.
