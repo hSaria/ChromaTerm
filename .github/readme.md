@@ -40,7 +40,7 @@ cd ChromaTerm--/src/ && ./configure && make install && make ct-config
 By default, ChromaTerm-- reads a file at `~/.chromatermrc` which would have your highlight rules. As an example, run the following:
 
 ```
-echo "This is an error" | ct
+echo "Message from 1.2.3.4 at Jul 14 12:28:19" | ct
 ```
 
 You'll see "error" get highlighted red.
