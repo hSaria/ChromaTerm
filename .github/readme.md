@@ -29,7 +29,7 @@ brew install chromaterm
 ### Compile from Source
 ```
 git clone https://github.com/hSaria/ChromaTerm--.git
-cd ChromaTerm--/src/ && ./configure && make install
+cd ChromaTerm--/src/ && ./configure && make install && make ct-config
 ```
 
 > You must have [PCRE2 or legacy PCRE](https://www.pcre.org) development installed. PCRE2 is recommended (much faster).
