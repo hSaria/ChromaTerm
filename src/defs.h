@@ -60,8 +60,6 @@ typedef const char *PCRE_ERR_P;
  * affect the last line; if you're outputting thousands of lines back-to-back,
  * they'll be processed as soon as possible since each line will end with \n */
 
-#define ESCAPE 27
-
 struct global_data { /* Stores the shared data for CT-- */
   struct highlight **highlights;
   int highlights_size;

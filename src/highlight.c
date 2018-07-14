@@ -230,7 +230,7 @@ void substitute(char *string, char *result) {
       if (isdigit((int)pti[1]) && isdigit((int)pti[2]) &&
           isdigit((int)pti[3])) {
         if (pti[1] != '8' || pti[2] != '8' || pti[3] != '8') {
-          *pto++ = ESCAPE;
+          *pto++ = '\e';
           *pto++ = '[';
 
           switch (pti[1]) {
@@ -271,7 +271,7 @@ void substitute(char *string, char *result) {
         int cnt, grayscale = (pti[1] == 'g' || pti[1] == 'G');
         char g = (pti[1] >= 'a' && pti[1] <= 'f') || pti[1] == 'g' ? '3' : '4';
 
-        *pto++ = ESCAPE;
+        *pto++ = '\e';
         *pto++ = '[';
         *pto++ = g;
         *pto++ = '8';
