@@ -38,7 +38,7 @@ typedef const char *PCRE_ERR_P;
   { compiled = pcre_compile(regex, 0, err_p, err_n, NULL); }
 #endif
 
-#define VERSION "0.2.4"
+#define VERSION "0.2.5"
 
 #define FALSE 0
 #define TRUE 1
@@ -59,8 +59,6 @@ typedef const char *PCRE_ERR_P;
  * a \n, process it right away and move on to the next line. The delay will only
  * affect the last line; if you're outputting thousands of lines back-to-back,
  * they'll be processed as soon as possible since each line will end with \n */
-
-#define ESCAPE 27
 
 struct global_data { /* Stores the shared data for CT-- */
   struct highlight **highlights;

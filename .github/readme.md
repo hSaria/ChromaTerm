@@ -16,35 +16,36 @@ Some quick examples. ChromaTerm-- uses Regex to find matches according to your r
 <p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/junos-show-interface-brief.png"/><img width=422px height=425px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/junos-show-route.png"/><img width=405px height=425px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/ios-show-interface.png"/></p>
 
 ### <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-# Installation [![Build Status](https://travis-ci.org/hSaria/ChromaTerm--.svg?branch=master)](https://travis-ci.org/hSaria/ChromaTerm--)
+# Installation
+
+### macOS using HomeBrew
+```
+brew install hSaria/tap/chromaterm
+```
+
+> You can uninstall with `brew uninstall chromaterm`
+
+### Compile from Source
 ```
 git clone https://github.com/hSaria/ChromaTerm--.git
 cd ChromaTerm--/src/ && ./configure && make install
 ```
 
-> You must have [PCRE2 or legacy PCRE](https://www.pcre.org) development installed. You can install PCRE2 with one of the following (depends on platform):
-> - `brew install pcre2`
-> - `apt install libpcre2-dev`
-> - `yum install pcre2-devel`
+> You must have [PCRE2 or legacy PCRE](https://www.pcre.org) development installed. PCRE2 is recommended (much faster).
 
-> If possible, install PCRE2 as the legacy PCRE is no longer in development. PCRE2 is also much faster.
-
-> You can uninstall ChromaTerm-- by running `make uninstall`
+> You can uninstall with `make uninstall`
 
 
 # Usage
 By default, ChromaTerm-- reads a file at `~/.chromatermrc` which would have your highlight rules. As an example, run the following:
 
 ```
-echo "HIGHLIGHT {Hi|Hello} {yellow}" >> ~/.chromatermrc
-echo "Hello, World! Hi, World" | ct
+echo "Jul 14 12:28:19: Message from 1.2.3.4" | ct
 ```
 
-You'll see "Hello" and "Hi" get highlighted yellow.
-
-> If you're new, run `make ct-config` to copy the included config file to your home directory. Modify it to your liking.
-
 Think of ChromaTerm-- like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have this in my .bash_profile `ssh() { /usr/bin/ssh $* | ct; }`.
+
+> During installation, the default config file was copied to `~/.chromatermrc`; modify it to your liking.
 
 ## Highlight Rules
 The syntax for a rule is `HIGHLIGHT {REGEX} {ACTION} {PRIORITY}`
