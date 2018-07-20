@@ -10,7 +10,7 @@ A tool for colorizing the output of a terminal.
 # About
 ChromaTerm-- (ct) reads from standard input and highlights it according to user-configurable rules.
 
-A quick example. ChromaTerm-- uses Regex to find matches according to your rules.
+A quick example. ChromaTerm-- uses RegEx to find matches according to your rules.
 
 <p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/junos-show-interface-brief.png"/></p>
 
@@ -52,7 +52,7 @@ The syntax for a rule is `HIGHLIGHT {REGEX} {ACTION} {PRIORITY}`
 The RegEx engine used is [PCRE](https://www.pcre.org). If supported, PCRE2 is used (much faster).
 
 #### ACTION
-Once something matches the regex of a rule, the action of that rule is applied. The action can be a named (predefined) action or a custom one. Multiple actions can make up a single action as long as they are from the same category. For example: `{bold red}` or `{<fca><BAF>}`
+Once something matches the RegEx of a rule, the action of that rule is applied. The action can be a named (predefined) action or a custom one. Multiple actions can make up a single action as long as they are from the same category. For example: `{bold red}` or `{<fca><BAF>}`
 
 The named actions are:
 - VT100: bold, dim, underscore, blink, b black, b blue, b cyan, b green, b magenta, b red, b white, b yellow, black, blue, cyan, white, and yellow.
