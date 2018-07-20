@@ -13,9 +13,8 @@ ChromaTerm-- (ct) reads from standard input and highlights it according to user-
 ## Screenshots
 Some quick examples. ChromaTerm-- uses Regex to find matches according to your rules.
 
-<p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/junos-show-interface-brief.png"/><img width=422px height=425px align=left src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/junos-show-route.png"/><img width=405px height=425px align=right src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/ios-show-interface.png"/></p>
+<p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/junos-show-interface-brief.png"/></p>
 
-### <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p><br/>
 # Installation
 
 ### macOS using HomeBrew
