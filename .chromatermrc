@@ -17,7 +17,7 @@ HIGHLIGHT {(?i)((jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-
 HIGHLIGHT {(?i)(?<=[\W\s]|^)(((fe|ge|xe|gr|ip|lt|vcp)\-\d*/\d*/\d*)|(((b)?me|em|fab|fxp|lo|pp(d|e)?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pimd|pime|tap|vlan|vme|vtep)|((ae|reth)\d*))(\.\d*)?(?=[\W\s]|$)} {<fcc>} {1000}
 
 /* Cisco interfaces */
-HIGHLIGHT {(?i)(?<=[\W\s]|^)(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|(B|N)VI)((\d*/){0,2}\d*)(\.\d*)?(?=[\W\s]|$)} {<fcc>} {1000}
+HIGHLIGHT {(?i)(?<=[\W\s]|^)(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Eth|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|(B|N)VI)((\d*/){0,2}\d*)(\.\d*)?(?=[\W\s]|$)} {<fcc>} {1000}
 
 /* Generics */
 HIGHLIGHT {(?i)(?<=[\W\s]|^)(up|ok(ay)?|permit(ed|s)?|accept(s|ed)?|enable(d)|succe((ss(ful|fully)?)|ed(ed)?)?|connect(ed)?|reachable|valid|forwarding|synchronized)(?=[\W\s]|$)} {green} {1000}
