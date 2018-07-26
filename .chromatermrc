@@ -11,18 +11,36 @@ HIGHLIGHT {(?i)(?<=[\W\s]|^)(((?P<h>[\da-f])(?P>h)?:){5}(?P>h){1,2}|((?P>h){4}\.
 HIGHLIGHT {(?i)password} {red} {1000}
 
 /* Date in MMM DD hh:mm:ss.SSS format (msec optional) */
-HIGHLIGHT {(?i)(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-1]|([0-2]\d)))\s((2[0-3])|[0-1]\d):[0-5]\d:[0-5]\d(\.\d{3})?} {<DBA>} {1000}
+HIGHLIGHT {(?i)((jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s((\s\d)|(3[0-1]|([0-2]\d)))\s)?((2[0-3])|[0-1]\d):[0-5]\d:[0-5]\d(\.\d{3})?} {<DBA>} {1000}
 
 /* Juniper interfaces */
 HIGHLIGHT {(?i)(?<=[\W\s]|^)(((fe|ge|xe|gr|ip|lt|vcp)\-\d*/\d*/\d*)|(((b)?me|em|fab|fxp|lo|pp(d|e)?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pimd|pime|tap|vlan|vme|vtep)|((ae|reth)\d*))(\.\d*)?(?=[\W\s]|$)} {<fcc>} {1000}
 
+/* Cisco interfaces */
+HIGHLIGHT {(?i)(?<=[\W\s]|^)(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|(B|N)VI)((\d*/){0,2}\d*)(\.\d*)?(?=[\W\s]|$)} {<fcc>} {1000}
+
 /* Generics */
-HIGHLIGHT {(?i)(?<=[\W\s]|^)(up|ok(ay)?|permit(ed|s)?|accept(s|ed)?|enable(d)|succe((ss(ful|fully)?)|ed(ed)?)?|connect(ed)?|reachable|valid)(?=[\W\s]|$)} {green} {1000}
-HIGHLIGHT {(?i)(?<=[\W\s]|^)(ye(s|a(h)?|p)?|started|running)(?=[\W\s]|$)} {<aba>} {1000}
+HIGHLIGHT {(?i)(?<=[\W\s]|^)(up|ok(ay)?|permit(ed|s)?|accept(s|ed)?|enable(d)|succe((ss(ful|fully)?)|ed(ed)?)?|connect(ed)?|reachable|valid|forwarding|synchronized)(?=[\W\s]|$)} {green} {1000}
+HIGHLIGHT {(?i)(?<=[\W\s]|^)(ye(s|a(h)?|p)?|started|running|can)(?=[\W\s]|$)} {<aba>} {1000}
 HIGHLIGHT {(?i)(?<=[\W\s]|^)(warning(s)?)(?=[\W\s]|$)} {yellow} {1000}
-HIGHLIGHT {(?i)(?<=[\W\s]|^)(no|stopped)(t|pe)?(?=[\W\s]|$)} {<cba>} {1000}
-HIGHLIGHT {(?i)(?<=[\W\s]|^)(down|err(or(s)?)?|(den(y|ies|ied)?)|drop(ped|s)?|disable(d)?|(time(d)?(\-)?out)|fail(s|ed|iure)?|disconnect(ed)?|unreachable|invalid)(?=[\W\s]|$)} {red} {1000}
+HIGHLIGHT {(?i)(?<=[\W\s]|^)(no(t|pe)?|reset|stopped|never|can(t|not))(?=[\W\s]|$)} {<cba>} {1000}
+HIGHLIGHT {(?i)(?<=[\W\s]|^)(down|err(or(s)?)?|(den(y|ies|ied)?)|drop(ped|s)?|(err\-)?disable(d)?|(time(d)?(\-)?out)|fail(s|ed|iure)?|disconnect(ed)?|unreachable|invalid|bad|notconnect|unusable|block(ing|ed)|blk|inaccessible|wrong|collision(s)?|unsynchronized|mismatch|runts|CRC)(?=[\W\s]|$)} {red} {1000}
 
 /* Half-duplex */
 HIGHLIGHT {(?i)(?<=[\W\s]|^)(half(\-)?duplex)(?=[\W\s]|$)} {red} {1000}
 
+/* Cisco Syslog facilities */
+HIGHLIGHT {(?i)(?<=[\W\s]|^)(%\w*\-[0-3]\-\w*)(?=[\W\s]|$)} {red} {1000}
+HIGHLIGHT {(?i)(?<=[\W\s]|^)(%\w*\-[4-5]\-\w*)(?=[\W\s]|$)} {yellow} {1000}
+HIGHLIGHT {(?i)(?<=[\W\s]|^)(%\w*\-[6-7]\-\w*)(?=[\W\s]|$)} {<bef>} {1000}
+
+/* Cisco spanning tree */
+HIGHLIGHT {(?<=[\W\s]|^)(BKN|(LOOP|ROOT|TYPE|PVID)_Inc)(?=[\W\s]|$)} {red} {1000}
+HIGHLIGHT {(?<=[\W\s]|^)(FWD|Root|Desg)(?=[\W\s]|$)} {green} {1000}
+
+/* OSPF neighbor states (2WAY is normal with more than 3 routers on broadcast domain) */
+HIGHLIGHT {(?<=[\W\s]|^)(ATTEMPT|INIT|EXCHANGE|LOADING)(?=[\W\s]|$)} {yellow}
+HIGHLIGHT {(?<=[\W\s]|^)(2WAY|FULL)(?=[\W\s]|$)} {green}
+
+/* BGP neighbor states */
+HIGHLIGHT {(?<=[\W\s]|^)(Idle|Connect|Active|OpenSent|OpenConfirm)(?=[\W\s]|$)} {yellow}
