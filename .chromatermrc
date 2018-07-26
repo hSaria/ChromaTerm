@@ -39,8 +39,8 @@ HIGHLIGHT {(?<=[\W\s]|^)(BKN|(LOOP|ROOT|TYPE|PVID)_Inc)(?=[\W\s]|$)} {red} {1000
 HIGHLIGHT {(?<=[\W\s]|^)(FWD|Root|Desg)(?=[\W\s]|$)} {green} {1000}
 
 /* OSPF neighbor states (2WAY is normal with more than 3 routers on broadcast domain) */
-HIGHLIGHT {(?<=[\W\s]|^)(ATTEMPT|INIT|EXCHANGE|LOADING)(?=[\W\s]|$)} {yellow}
-HIGHLIGHT {(?<=[\W\s]|^)(2WAY|FULL)(?=[\W\s]|$)} {green}
+HIGHLIGHT {(?<=[\W\s]|^)(ATTEMPT|INIT|EXCHANGE|LOADING)(?=[\W\s]|$)} {yellow} {1000}
+HIGHLIGHT {(?<=[\W\s]|^)(2WAY|FULL)(?=[\W\s]|$)} {green} {1000}
 
 /* BGP neighbor states */
-HIGHLIGHT {(?<=[\W\s]|^)(Idle|Connect|Active|OpenSent|OpenConfirm)(?=[\W\s]|$)} {yellow}
+HIGHLIGHT {(?<=[\W\s]|^)(Idle|Connect|Active|OpenSent|OpenConfirm)(?=[\W\s]|$)} {yellow} {1000}
