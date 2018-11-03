@@ -83,7 +83,7 @@ struct regExRes {
 };
 
 /**** highlight.c ****/
-extern PCRE_CODE *colorLookback;
+extern PCRE_CODE *colorEndLookAhead;
 
 void addHighlight(char *condition, char *action, char *priority);
 void delHighlight(char *condition);

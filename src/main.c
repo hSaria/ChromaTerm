@@ -14,10 +14,9 @@ int main(int argc, char **argv) {
   gd.highlightsSize = 8; /* initial size is 8, but is doubled when needed */
   gd.collidingActions = FALSE;
 
-  /* Look for the last start of a color that doesn't have a reset. Used during
-   * matching to check if an action collides with another action */
-  PCRE_COMPILE(colorLookback, "\\e\\[[1-9][0-9;]*m(?:.(?!\\e\\[0m))*$", &errN,
-               &errP);
+  /* Look ahead for the last start of a color that doesn't have a reset */
+  PCRE_COMPILE(colorEndLookAhead, "^(?:(?!\\e\\[[1-9][0-9;]*m).)*?\\e\\[0m",
+               &errN, &errP);
 
   /* Parse the arguments (h is in there to prevent errors from '-h') */
   while ((c = getopt(argc, argv, "a c: d h")) != -1) {
@@ -167,8 +166,8 @@ void exitWithSignal(int exitSignal) {
     delHighlight(gd.highlights[i]->condition);
   }
 
-  free(gd.highlights);      /* Free highlights */
-  PCRE_FREE(colorLookback); /* Free the colorLookback RegEx*/
+  free(gd.highlights);          /* Free highlights */
+  PCRE_FREE(colorEndLookAhead); /* Free the colorStartLookback RegEx*/
 
   exit(exitSignal);
 }

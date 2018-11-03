@@ -33,8 +33,7 @@ struct color colorTable[] = {
     {"violet", "<bad>"},       {"white", "<878>"},
     {"yellow", "<838>"},       {"", "<088>"}};
 
-/* Used to search for the start of a color */
-PCRE_CODE *colorLookback;
+PCRE_CODE *colorEndLookAhead;  /* Search for the end of a color after */
 
 void addHighlight(char *condition, char *action, char *priority) {
   if (*priority == 0) {
@@ -209,16 +208,17 @@ void highlightString(char *string) {
 
     do {
       if (!gd.collidingActions) { /* Colliding action disallowed */
-        char oldChar = pti[res.end];
-        struct regExRes lookbackRes;
+        struct regExRes lookAheadRes;
 
-        pti[res.end] = 0; /* Stop at the match */
-        lookbackRes = regExCompare(colorLookback, pti);
-        pti[res.end] = oldChar; /* Restore old char */
+        /* Find the FIRST color reset. If there wasn't a color start before it,
+         * then we're in the middle of a color. If there was, then we're okay to
+         * start coloring (the match will fail according to the RegEx) */
+        lookAheadRes = regExCompare(colorEndLookAhead, pti + res.end);
 
-        if (lookbackRes.start != -1) {   /* We're in the middle of an action */
-          strncat(output, pti, res.end); /* Add current match to output */
-          pti += res.end;                /* Seek to end of current match */
+        if (lookAheadRes.start != -1) { /* We're in the middle of an action */
+          strncat(output, pti,
+                  lookAheadRes.end); /* Add until after current color */
+          pti += lookAheadRes.end;   /* Seek to end of current color */
           res = regExCompare(gd.highlights[i]->compiledRegEx, pti);
           continue;
         }
