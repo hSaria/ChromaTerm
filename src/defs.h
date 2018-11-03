@@ -19,10 +19,10 @@ typedef pcre2_code PCRE_CODE;
 typedef PCRE2_SIZE PCRE_ERR_P;
 #define PCRE_FREE(code)                                                        \
   { pcre2_code_free(code); }
-#define PCRE_COMPILE(compiled, regex, err_n, err_p)                            \
+#define PCRE_COMPILE(compiled, regEx, errN, errP)                            \
   {                                                                            \
-    compiled = pcre2_compile((PCRE2_SPTR)regex, PCRE2_ZERO_TERMINATED, 0,      \
-                             err_n, err_p, NULL);                              \
+    compiled = pcre2_compile((PCRE2_SPTR)regEx, PCRE2_ZERO_TERMINATED, 0,      \
+                             errN, errP, NULL);                              \
     if (pcre2_jit_compile(compiled, 0) == 0) {                                 \
       /* Accelerate pattern matching if JIT is supported on the platform */    \
       pcre2_jit_compile(compiled, PCRE2_JIT_COMPLETE);                         \
@@ -34,8 +34,8 @@ typedef pcre PCRE_CODE;
 typedef const char *PCRE_ERR_P;
 #define PCRE_FREE(code)                                                        \
   { pcre_free(code); }
-#define PCRE_COMPILE(compiled, regex, err_n, err_p)                            \
-  { compiled = pcre_compile(regex, 0, err_p, err_n, NULL); }
+#define PCRE_COMPILE(compiled, regEx, errN, errP)                            \
+  { compiled = pcre_compile(regEx, 0, errP, errN, NULL); }
 #endif
 
 #define VERSION "0.2.7"
@@ -60,48 +60,48 @@ typedef const char *PCRE_ERR_P;
  * affect the last line; if you're outputting thousands of lines back-to-back,
  * they'll be processed as soon as possible since each line will end with \n */
 
-struct global_data { /* Stores the shared data for CT-- */
+struct globalData { /* Stores the shared data for CT-- */
   struct highlight **highlights;
-  int highlights_size;
-  int highlights_used;
-  char input_buffer[INPUT_MAX];
-  int input_buffer_length;
-  int colliding_actions; /* Allow or disallow colliding actions */
+  int highlightsSize;
+  int highlightsUsed;
+  char inputBuf[INPUT_MAX];
+  int inputBufLen;
+  int collidingActions; /* Allow or disallow colliding actions */
 };
 
 struct highlight {
-  char condition[BUFFER_SIZE];       /* Processed into compiled_regex */
-  char action[BUFFER_SIZE];          /* Processed into compiled_action */
-  char priority[BUFFER_SIZE];        /* Lower value = better priority */
-  char compiled_action[BUFFER_SIZE]; /* Compiled once, used multiple times */
-  PCRE_CODE *compiled_regex;         /* Compiled once, used multiple times */
+  char condition[BUFFER_SIZE];      /* Processed into compiledRegEx */
+  char action[BUFFER_SIZE];         /* Processed into compiledAction */
+  char priority[BUFFER_SIZE];       /* Lower value = better priority */
+  char compiledAction[BUFFER_SIZE]; /* Compiled once, used multiple times */
+  PCRE_CODE *compiledRegEx;         /* Compiled once, used multiple times */
 };
 
-struct regex_r {
+struct regExRes {
   int start;
   int end;
 };
 
 /**** highlight.c ****/
-extern PCRE_CODE *lookback_for_color;
+extern PCRE_CODE *colorLookback;
 
-void check_highlights(char *string);
-int find_highlight_index(char *text);
-int get_highlight_codes(char *string, char *result);
+void highlightString(char *string);
+int findHighlightIndex(char *text);
+int getHighlightCodes(char *string, char *result);
 void highlight(char *condition, char *action, char *priority);
 void substitute(char *string, char *result);
 void unhighlight(char *condition);
 
 /**** main.c ****/
-extern struct global_data gd;
+extern struct globalData gd;
 
 int main(int argc, char **argv);
-void colordemo(void);
-void quit_with_signal(int exit_signal);
+void colorDemo(void);
+void exitWithSignal(int exitSignal);
 
 /**** utils.c ****/
-char *get_arg(char *string, char *argument);
-int is_abbrev(char *s1, char *s2);
-void process_input(int wait_for_new_line);
-void read_config(char *file);
-struct regex_r regex_compare(PCRE_CODE *compiled_regex, char *str);
+char *getArg(char *string, char *argument);
+int isAbbrev(char *s1, char *s2);
+void processInput(int waitForNewLine);
+void readConfig(char *file);
+struct regExRes regExCompare(PCRE_CODE *compiledRegEx, char *str);

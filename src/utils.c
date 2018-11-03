@@ -3,7 +3,7 @@
 #include "defs.h"
 
 /* The outer-most brackets (if any) are stripped; all else left as is */
-char *get_arg(char *string, char *result) {
+char *getArg(char *string, char *result) {
   char *pti = string, *pto = result;
 
   while (isspace((int)*pti)) { /* advance to the next none-space character */
@@ -50,58 +50,58 @@ char *get_arg(char *string, char *result) {
 }
 
 /* TRUE if s1 is an abbrevation of s2 (case-insensitive) */
-int is_abbrev(char *s1, char *s2) {
+int isAbbrev(char *s1, char *s2) {
   if (*s1 == 0) {
     return FALSE;
   }
   return !strncasecmp(s2, s1, strlen(s1));
 }
 
-/* if wait_for_new_line, process lines until the one without \n at the end */
-void process_input(int wait_for_new_line) {
-  char *line, *next_line;
+/* if waitForNewLine, process lines until the one without \n at the end */
+void processInput(int waitForNewLine) {
+  char *line, *nextLine;
 
-  gd.input_buffer[gd.input_buffer_length] = 0;
+  gd.inputBuf[gd.inputBufLen] = 0;
 
   /* separate into lines and process. Next interation = next line */
-  for (line = gd.input_buffer; line && *line; line = next_line) {
-    char linebuf[INPUT_MAX * 2];
+  for (line = gd.inputBuf; line && *line; line = nextLine) {
+    char lineBuf[INPUT_MAX * 2];
 
-    next_line = strchr(line, '\n');
+    nextLine = strchr(line, '\n');
 
-    if (next_line) {
-      *next_line = 0;               /* Replace \n with a null-terminator */
-      next_line++;                  /* Move the pointer to just after that \n */
-    } else if (wait_for_new_line) { /* Reached the last line */
-      strcpy(linebuf, line);
-      strcpy(gd.input_buffer, linebuf);
-      gd.input_buffer_length = (int)strlen(linebuf);
+    if (nextLine) {
+      *nextLine = 0;             /* Replace \n with a null-terminator */
+      nextLine++;                /* Move the pointer to just after that \n */
+    } else if (waitForNewLine) { /* Reached the last line */
+      strcpy(lineBuf, line);
+      strcpy(gd.inputBuf, lineBuf);
+      gd.inputBufLen = (int)strlen(lineBuf);
 
       return; /* Leave and wait until called again without having to wait */
     }
 
     /* Print the output after processing it */
-    strcpy(linebuf, line);
-    check_highlights(linebuf);
+    strcpy(lineBuf, line);
+    highlightString(lineBuf);
 
-    printf("%s%s", linebuf, next_line ? "\n" : "");
+    printf("%s%s", lineBuf, nextLine ? "\n" : "");
 
     fflush(stdout);
   }
 
   /* If we reached this point, then there's no more output in the buffer */
-  gd.input_buffer_length = 0;
+  gd.inputBufLen = 0;
 }
 
-void read_config(char *file) {
+void readConfig(char *file) {
   FILE *fp;
-  struct stat filedata;
-  char *bufi, *bufo, filename[BUFFER_SIZE], *pti, *pto;
-  int nest = 0, com = FALSE, line_number = 1;
+  struct stat fileData;
+  char *bufi, *bufo, fileName[BUFFER_SIZE], *pti, *pto;
+  int nest = 0, com = FALSE, lineNumber = 1;
   wordexp_t p;
 
   if (wordexp(file, &p, 0) == 0) {
-    strcpy(filename, *p.we_wordv);
+    strcpy(fileName, *p.we_wordv);
     wordfree(&p);
   } else {
     fprintf(stderr, "ERROR: Failed while performing word expansion on {%s}\n",
@@ -109,30 +109,30 @@ void read_config(char *file) {
     return;
   }
 
-  if ((fp = fopen(filename, "r")) == NULL) {
-    fprintf(stderr, "ERROR: File {%s} not found\n", filename);
+  if ((fp = fopen(fileName, "r")) == NULL) {
+    fprintf(stderr, "ERROR: File {%s} not found\n", fileName);
     return;
   }
 
-  stat(filename, &filedata);
+  stat(fileName, &fileData);
 
-  if ((bufi = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
+  if ((bufi = (char *)calloc(1, fileData.st_size + 2)) == NULL) {
     fprintf(stderr,
             "ERROR: Failed to allocate i_buffer memory to process file {%s}\n",
-            filename);
+            fileName);
     fclose(fp);
     return;
-  } else if ((bufo = (char *)calloc(1, filedata.st_size + 2)) == NULL) {
+  } else if ((bufo = (char *)calloc(1, fileData.st_size + 2)) == NULL) {
     fprintf(stderr,
             "ERROR: Failed to allocate o_buffer memory to process file {%s}\n",
-            filename);
+            fileName);
     free(bufi);
     fclose(fp);
     return;
   }
 
-  if (fread(bufi, 1, filedata.st_size, fp) == 0) {
-    fprintf(stderr, "ERROR: File {%s} is empty\n", filename);
+  if (fread(bufi, 1, fileData.st_size, fp) == 0) {
+    fprintf(stderr, "ERROR: File {%s} is empty\n", fileName);
     free(bufi);
     free(bufo);
     fclose(fp);
@@ -168,21 +168,21 @@ void read_config(char *file) {
         break;
       case '\n':
         if (nest) { /* Closing brackets missing; remove command */
-          char *previous_line = strrchr(bufo, '\n');
+          char *previousLine = strrchr(bufo, '\n');
 
           fprintf(stderr, "ERROR: Missing %i closing bracket(s) at line %i\n",
-                  nest, line_number);
+                  nest, lineNumber);
 
           nest = 0; /* Reset the level to 0 (brackets are all matched) */
 
-          if (previous_line) {   /* There's a previous line */
-            pto = previous_line; /* Go back to the last sane line */
+          if (previousLine) {   /* There's a previous line */
+            pto = previousLine; /* Go back to the last sane line */
           } else { /* Go back to beginning of bufo (no previous line) */
             pto = bufo;
           }
         }
 
-        line_number++;
+        lineNumber++;
         *pto++ = *pti++;
         break;
       default:
@@ -200,7 +200,7 @@ void read_config(char *file) {
         }
         break;
       case '\n':
-        line_number++;
+        lineNumber++;
         pti++;
         break;
       default: /* Advance forward (we're in a comment) */
@@ -237,25 +237,25 @@ void read_config(char *file) {
       continue;
     }
 
-    args = get_arg(pto, command);
+    args = getArg(pto, command);
 
-    if (is_abbrev(command, "HIGHLIGHT")) {
+    if (isAbbrev(command, "HIGHLIGHT")) {
       char condition[BUFFER_SIZE], action[BUFFER_SIZE], priority[BUFFER_SIZE];
 
-      args = get_arg(args, condition);
-      args = get_arg(args, action);
-      get_arg(args, priority);
+      args = getArg(args, condition);
+      args = getArg(args, action);
+      getArg(args, priority);
 
       highlight(condition, action, priority);
-    } else if (is_abbrev(command, "SHOWME")) {
+    } else if (isAbbrev(command, "SHOWME")) {
       char buf[BUFFER_SIZE];
 
       strcpy(buf, pto);
 
-      check_highlights(buf);
+      highlightString(buf);
       fprintf(stderr, "%s\n", buf);
-    } else if (is_abbrev(command, "UNHIGHLIGHT")) {
-      get_arg(args, args);
+    } else if (isAbbrev(command, "UNHIGHLIGHT")) {
+      getArg(args, args);
       unhighlight(args);
     } else {
       fprintf(stderr, "ERROR: Unknown command {%s}\n", command);
@@ -266,37 +266,37 @@ void read_config(char *file) {
   free(bufo);
 }
 
-struct regex_r regex_compare(PCRE_CODE *compiled_regex, char *str) {
-  struct regex_r res;
+struct regExRes regExCompare(PCRE_CODE *compiledRegEx, char *str) {
+  struct regExRes res;
 #ifdef HAVE_PCRE2_H
-  PCRE2_SIZE *res_pos;
+  PCRE2_SIZE *resPos;
   pcre2_match_data *match =
-      pcre2_match_data_create_from_pattern(compiled_regex, NULL);
+      pcre2_match_data_create_from_pattern(compiledRegEx, NULL);
 
-  if (pcre2_match(compiled_regex, (PCRE2_SPTR)str, (int)strlen(str), 0, 0,
-                  match, NULL) <= 0) {
+  if (pcre2_match(compiledRegEx, (PCRE2_SPTR)str, (int)strlen(str), 0, 0, match,
+                  NULL) <= 0) {
     pcre2_match_data_free(match);
     res.start = -1;
     return res;
   }
 
-  res_pos = pcre2_get_ovector_pointer(match);
+  resPos = pcre2_get_ovector_pointer(match);
 
-  res.start = (int)res_pos[0];
-  res.end = (int)res_pos[1];
+  res.start = (int)resPos[0];
+  res.end = (int)resPos[1];
 
   pcre2_match_data_free(match);
 #else
-  int res_pos[600];
+  int resPos[600];
 
-  if (pcre_exec(compiled_regex, NULL, str, (int)strlen(str), 0, 0, res_pos,
+  if (pcre_exec(compiledRegEx, NULL, str, (int)strlen(str), 0, 0, resPos,
                 600) <= 0) {
     res.start = -1;
     return res;
   }
 
-  res.start = (int)res_pos[0];
-  res.end = (int)res_pos[1];
+  res.start = (int)resPos[0];
+  res.end = (int)resPos[1];
 #endif
 
   if (res.start > res.end) {
