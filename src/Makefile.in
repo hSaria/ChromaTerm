@@ -47,7 +47,7 @@ uninstall:
 	rm -f $(mandir)/man1/ct.1
 
 ct-test:
-	./test/.test.sh | ./ct -c ./test/.test_chromatermrc
+	./test/.test.sh | ./ct -c ../.chromatermrc
 
 # Autocompile all .c files into .o files using this rule:
 .c.o:
