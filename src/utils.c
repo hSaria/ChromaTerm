@@ -246,7 +246,7 @@ void readConfig(char *file) {
       args = getArg(args, action);
       getArg(args, priority);
 
-      highlight(condition, action, priority);
+      addHighlight(condition, action, priority);
     } else if (isAbbrev(command, "SHOWME")) {
       char buf[BUFFER_SIZE];
 
@@ -256,7 +256,7 @@ void readConfig(char *file) {
       fprintf(stderr, "%s\n", buf);
     } else if (isAbbrev(command, "UNHIGHLIGHT")) {
       getArg(args, args);
-      unhighlight(args);
+      delHighlight(args);
     } else {
       fprintf(stderr, "ERROR: Unknown command {%s}\n", command);
     }

@@ -164,7 +164,7 @@ void exitWithSignal(int exitSignal) {
   int i;
 
   for (i = gd.highlightsUsed - 1; i > -1; i--) { /* Cleanup each highlight */
-    unhighlight(gd.highlights[i]->condition);
+    delHighlight(gd.highlights[i]->condition);
   }
 
   free(gd.highlights);      /* Free highlights */

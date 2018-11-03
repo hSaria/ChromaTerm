@@ -85,12 +85,12 @@ struct regExRes {
 /**** highlight.c ****/
 extern PCRE_CODE *colorLookback;
 
-void highlightString(char *string);
+void addHighlight(char *condition, char *action, char *priority);
+void delHighlight(char *condition);
 int findHighlightIndex(char *text);
 int getHighlightCodes(char *string, char *result);
-void highlight(char *condition, char *action, char *priority);
+void highlightString(char *string);
 void substitute(char *string, char *result);
-void unhighlight(char *condition);
 
 /**** main.c ****/
 extern struct globalData gd;

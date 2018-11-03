@@ -36,52 +36,104 @@ struct color colorTable[] = {
 /* Used to search for the start of a color */
 PCRE_CODE *colorLookback;
 
-void highlightString(char *string) {
-  int i;
+void addHighlight(char *condition, char *action, char *priority) {
+  if (*priority == 0) {
+    strcpy(priority, "1000");
+  }
 
-  /* Apply from the top since the bottom ones may not match after the action of
-   * one of the top ones is applied */
-  for (i = 0; i < gd.highlightsUsed && gd.highlights[i]->compiledRegEx; i++) {
-    char *pti = string;
-    struct regExRes res = regExCompare(gd.highlights[i]->compiledRegEx, pti);
-
-    if (res.start == -1) { /* No match */
-      continue;            /* Move to the next RegEx */
+  if (*condition == 0 || *action == 0) {
+    if (gd.highlightsUsed == 0) {
+      fprintf(stderr, "HIGHLIGHT: No rules configured\n");
+    } else {
+      int i;
+      for (i = 0; i < gd.highlightsUsed; i++) {
+        fprintf(stderr, "HIGHLIGHT {%s} {%s} {%s}\n",
+                gd.highlights[i]->condition, gd.highlights[i]->action,
+                gd.highlights[i]->priority);
+      }
     }
+  } else {
+    char temp[BUFFER_SIZE];
+    if (getHighlightCodes(action, temp) == FALSE) {
+      fprintf(stderr, "ERROR: Invalid color code {%s}; see `man ct`\n", action);
+    } else {
+      PCRE_ERR_P errP;
+      struct highlight *highlight;
+      int errN, index, insertIndex;
 
-    char output[INPUT_MAX * 2];
-    *output = 0;
-
-    do {
-      if (!gd.collidingActions) { /* Colliding action disabled */
-        char oldChar = pti[res.end];
-        struct regExRes lookbackRes;
-
-        pti[res.end] = 0; /* Stop at the match */
-        lookbackRes = regExCompare(colorLookback, pti);
-        pti[res.end] = oldChar; /* Restore old char */
-
-        if (lookbackRes.start != -1) {   /* We're in the middle of an action */
-          strncat(output, pti, res.end); /* Add current match to output */
-          pti += res.end;                /* Seek to end of current match */
-          res = regExCompare(gd.highlights[i]->compiledRegEx, pti);
-          continue;
-        }
+      /* Remove if already exists */
+      if ((index = findHighlightIndex(condition)) != -1) {
+        delHighlight(gd.highlights[index]->condition);
       }
 
-      strncat(output, pti, res.start);                        /* Before */
-      strcat(output, gd.highlights[i]->compiledAction);       /* Action */
-      strncat(output, pti += res.start, res.end - res.start); /* Match */
-      strcat(output, "\033[0m");                              /* Reset */
+      highlight = (struct highlight *)calloc(1, sizeof(struct highlight));
 
-      pti += res.end - res.start; /* Move pto to after the match */
+      strcpy(highlight->condition, condition);
+      strcpy(highlight->action, action);
+      strcpy(highlight->priority, priority);
 
-      res = regExCompare(gd.highlights[i]->compiledRegEx, pti);
-    } while (res.start != -1);
+      getHighlightCodes(action, highlight->compiledAction);
 
-    /* Add the remainder of the string and then copy it to*/
-    strcat(output, pti);
-    strcpy(string, output);
+      PCRE_COMPILE(highlight->compiledRegEx, condition, &errN, &errP);
+
+      if (highlight->compiledRegEx == NULL) {
+        fprintf(stderr, "WARNING: Couldn't compile RegEx %s\n", condition);
+      }
+
+      /* Find the insertion index; start at the bottom of the list */
+      insertIndex = gd.highlightsUsed - 1;
+
+      /* Highest value priority is at the bottom of the list (highest index) */
+      while (insertIndex > -1) {
+        double diff =
+            atof(priority) - atof(gd.highlights[insertIndex]->priority);
+
+        if (diff >= 0) {
+          insertIndex++; /* Same priority or higher; insert after */
+          break;
+        }
+        insertIndex--; /* Our priority is less than insertIndex's priorty */
+      }
+
+      /* index must be 0 or higher */
+      index = 0 > insertIndex ? 0 : insertIndex;
+
+      gd.highlightsUsed++;
+
+      /* Resize if full; make it twice as big */
+      if (gd.highlightsUsed == gd.highlightsSize) {
+        gd.highlightsSize *= 2;
+
+        gd.highlights = (struct highlight **)realloc(
+            gd.highlights, gd.highlightsSize * sizeof(struct highlight *));
+      }
+
+      memmove(&gd.highlights[index + 1], &gd.highlights[index],
+              (gd.highlightsUsed - index) * sizeof(struct highlight *));
+
+      gd.highlights[index] = highlight;
+    }
+  }
+}
+
+void delHighlight(char *condition) {
+  int index;
+
+  if (*condition == 0) {
+    fprintf(stderr, "SYNTAX: UNHIGHLIGHT {CONDITION}\n");
+  } else if ((index = findHighlightIndex(condition)) != -1) {
+    if (gd.highlights[index]->compiledRegEx != NULL) {
+      PCRE_FREE(gd.highlights[index]->compiledRegEx);
+    }
+
+    free(gd.highlights[index]);
+
+    memmove(&gd.highlights[index], &gd.highlights[index + 1],
+            (gd.highlightsUsed - index) * sizeof(struct highlight *));
+
+    gd.highlightsUsed--;
+  } else {
+    fprintf(stderr, "ERROR: Highlight rule not found\n");
   }
 }
 
@@ -139,83 +191,52 @@ int getHighlightCodes(char *string, char *result) {
   return matched;
 }
 
-void highlight(char *condition, char *action, char *priority) {
-  if (*priority == 0) {
-    strcpy(priority, "1000");
-  }
+void highlightString(char *string) {
+  int i;
 
-  if (*condition == 0 || *action == 0) {
-    if (gd.highlightsUsed == 0) {
-      fprintf(stderr, "HIGHLIGHT: No rules configured\n");
-    } else {
-      int i;
-      for (i = 0; i < gd.highlightsUsed; i++) {
-        fprintf(stderr, "HIGHLIGHT {%s} {%s} {%s}\n",
-                gd.highlights[i]->condition, gd.highlights[i]->action,
-                gd.highlights[i]->priority);
-      }
+  /* Apply from the top since the bottom ones may not match after the action of
+   * one of the top ones is applied */
+  for (i = 0; i < gd.highlightsUsed && gd.highlights[i]->compiledRegEx; i++) {
+    char *pti = string;
+    struct regExRes res = regExCompare(gd.highlights[i]->compiledRegEx, pti);
+
+    if (res.start == -1) { /* No match */
+      continue;            /* Move to the next RegEx */
     }
-  } else {
-    char temp[BUFFER_SIZE];
-    if (getHighlightCodes(action, temp) == FALSE) {
-      fprintf(stderr, "ERROR: Invalid color code {%s}; see `man ct`\n", action);
-    } else {
-      PCRE_ERR_P errP;
-      struct highlight *highlight;
-      int errN, index, insertIndex;
 
-      /* Remove if already exists */
-      if ((index = findHighlightIndex(condition)) != -1) {
-        unhighlight(gd.highlights[index]->condition);
-      }
+    char output[INPUT_MAX * 2];
+    *output = 0;
 
-      highlight = (struct highlight *)calloc(1, sizeof(struct highlight));
+    do {
+      if (!gd.collidingActions) { /* Colliding action disabled */
+        char oldChar = pti[res.end];
+        struct regExRes lookbackRes;
 
-      strcpy(highlight->condition, condition);
-      strcpy(highlight->action, action);
-      strcpy(highlight->priority, priority);
+        pti[res.end] = 0; /* Stop at the match */
+        lookbackRes = regExCompare(colorLookback, pti);
+        pti[res.end] = oldChar; /* Restore old char */
 
-      getHighlightCodes(action, highlight->compiledAction);
-
-      PCRE_COMPILE(highlight->compiledRegEx, condition, &errN, &errP);
-
-      if (highlight->compiledRegEx == NULL) {
-        fprintf(stderr, "WARNING: Couldn't compile RegEx %s\n", condition);
-      }
-
-      /* Find the insertion index; start at the bottom of the list */
-      insertIndex = gd.highlightsUsed - 1;
-
-      /* Highest value priority is at the bottom of the list (highest index) */
-      while (insertIndex > -1) {
-        double diff =
-            atof(priority) - atof(gd.highlights[insertIndex]->priority);
-
-        if (diff >= 0) {
-          insertIndex++; /* Same priority or higher; insert after */
-          break;
+        if (lookbackRes.start != -1) {   /* We're in the middle of an action */
+          strncat(output, pti, res.end); /* Add current match to output */
+          pti += res.end;                /* Seek to end of current match */
+          res = regExCompare(gd.highlights[i]->compiledRegEx, pti);
+          continue;
         }
-        insertIndex--; /* Our priority is less than insertIndex's priorty */
       }
 
-      /* index must be 0 or higher */
-      index = 0 > insertIndex ? 0 : insertIndex;
+      strncat(output, pti, res.start);                        /* Before */
+      strcat(output, gd.highlights[i]->compiledAction);       /* Action */
+      strncat(output, pti += res.start, res.end - res.start); /* Match */
+      strcat(output, "\033[0m");                              /* Reset */
 
-      gd.highlightsUsed++;
+      pti += res.end - res.start; /* Move pto to after the match */
 
-      /* Resize if full; make it twice as big */
-      if (gd.highlightsUsed == gd.highlightsSize) {
-        gd.highlightsSize *= 2;
+      res = regExCompare(gd.highlights[i]->compiledRegEx, pti);
+    } while (res.start != -1);
 
-        gd.highlights = (struct highlight **)realloc(
-            gd.highlights, gd.highlightsSize * sizeof(struct highlight *));
-      }
-
-      memmove(&gd.highlights[index + 1], &gd.highlights[index],
-              (gd.highlightsUsed - index) * sizeof(struct highlight *));
-
-      gd.highlights[index] = highlight;
-    }
+    /* Add the remainder of the string and then copy it to*/
+    strcat(output, pti);
+    strcpy(string, output);
   }
 }
 
@@ -299,25 +320,4 @@ void substitute(char *string, char *result) {
   }
 
   *pto = 0;
-}
-
-void unhighlight(char *condition) {
-  int index;
-
-  if (*condition == 0) {
-    fprintf(stderr, "SYNTAX: UNHIGHLIGHT {CONDITION}\n");
-  } else if ((index = findHighlightIndex(condition)) != -1) {
-    if (gd.highlights[index]->compiledRegEx != NULL) {
-      PCRE_FREE(gd.highlights[index]->compiledRegEx);
-    }
-
-    free(gd.highlights[index]);
-
-    memmove(&gd.highlights[index], &gd.highlights[index + 1],
-            (gd.highlightsUsed - index) * sizeof(struct highlight *));
-
-    gd.highlightsUsed--;
-  } else {
-    fprintf(stderr, "ERROR: Highlight rule not found\n");
-  }
 }
