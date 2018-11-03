@@ -13,4 +13,4 @@ install:
 
 script:
   - cd $TRAVIS_BUILD_DIR/src && ./configure && make && make ct-test
-  - cppcheck ./ --enable=all -q
+  - if [ $TRAVIS_OS_NAME = osx ]; then cppcheck ./ --enable=all -q; fi
