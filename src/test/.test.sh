@@ -82,6 +82,7 @@ no+=("HEY 30 12:33:56 0A:23:4A5:67:89:AB 192.1618.0.1/24 fe80:x:0:1:A:B/ a:b:c:d
 ### Colliding actions ###
 
 no+=("Time in MAC address 00:00:00:01:00:00")
+no+=("Starts with separator .192.168.1.1")
 no+=("Too long 192.168.1.1.1")
 no+=("Too long 00:11:22:33:44:55:66")
 
