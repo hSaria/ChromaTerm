@@ -2,36 +2,35 @@
 
 #include "defs.h"
 
-struct global_data gd;
+struct globalData gd;
 
 int main(int argc, char **argv) {
   fd_set readfds;
-  PCRE_ERR_P err_p;
-  int c, config_override = FALSE, bytes_read, err_n;
+  PCRE_ERR_P errP;
+  int c, configOverride = FALSE, bytesRead, errN;
 
   /* Set up default CT state */
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
-  gd.highlights_size = 8; /* initial size is 8, but is doubled when needed */
-  gd.colliding_actions = FALSE;
+  gd.highlightsSize = 8; /* initial size is 8, but is doubled when needed */
+  gd.collidingActions = FALSE;
 
-  /* Look for the last start of a color that doesn't have a reset. Used during
-   * matching to check if an action collides with another action */
-  PCRE_COMPILE(lookback_for_color, "\\e\\[[1-9][0-9;]*m(?:.(?!\\e\\[0m))*$",
-               &err_n, &err_p);
+  /* Look ahead for the last start of a color that doesn't have a reset */
+  PCRE_COMPILE(colorEndLookAhead, "^(?:(?!\\e\\[[1-9][0-9;]*m).)*?\\e\\[0m",
+               &errN, &errP);
 
   /* Parse the arguments (h is in there to prevent errors from '-h') */
   while ((c = getopt(argc, argv, "a c: d h")) != -1) {
     switch (tolower(c)) {
     case 'a':
-      gd.colliding_actions = TRUE;
+      gd.collidingActions = TRUE; /* Allow colliding actions */
       break;
     case 'c':
-      config_override = TRUE;
-      read_config(optarg);
+      configOverride = TRUE; /* Don't read default config file*/
+      readConfig(optarg);
       break;
     case 'd':
-      colordemo();
-      quit_with_signal(EXIT_SUCCESS);
+      colorDemo(); /* Print the available xterm256 colors */
+      exitWithSignal(EXIT_SUCCESS);
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
       printf("Usage: %s [-a] [-c file] [-d]\n", argv[0]);
@@ -39,17 +38,17 @@ int main(int argc, char **argv) {
       printf("%7s %-5s Override configuration file\n", "-c", "file");
       printf("%7s %-5s Demo the available custom color-codes\n", "-d", "");
 
-      quit_with_signal(2);
+      exitWithSignal(2);
     }
   }
 
   /* Read configuration if not overridden by the launch arguments */
-  if (!config_override && getenv("HOME") != NULL) {
+  if (!configOverride && getenv("HOME") != NULL) {
     char temp[4095];
     sprintf(temp, "%s/%s", getenv("HOME"), ".chromatermrc");
 
     if (access(temp, R_OK) == 0) {
-      read_config(temp);
+      readConfig(temp);
     }
   }
 
@@ -60,37 +59,36 @@ int main(int argc, char **argv) {
   FD_SET(STDIN_FILENO, &readfds);
 
   /* MAIN LOGIC OF THE PROGRAM STARTS HERE */
-  while ((bytes_read =
-              (int)read(STDIN_FILENO, &gd.input_buffer[gd.input_buffer_length],
-                        INPUT_MAX - gd.input_buffer_length - 1)) > 0) {
+  while ((bytesRead = (int)read(STDIN_FILENO, &gd.inputBuf[gd.inputBufLen],
+                                INPUT_MAX - gd.inputBufLen - 1)) > 0) {
     /* Mandatoy wait before assuming no more output on the current line */
     struct timeval wait = {0, WAIT_FOR_NEW_LINE};
 
-    gd.input_buffer_length += bytes_read;
+    gd.inputBufLen += bytesRead;
 
     /* Block for a small amount to see if there's more to read. If something
-     * came up, stop waiting and move on. */
+     * came up, stop waiting and start processing. */
     int rv = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &wait);
 
     if (rv > 0) { /* More data came up while waiting */
       /* Failsafe: if the buffer is full, process all of pending output.
        * Otherwise, process until the line that doesn't end with \n. */
-      process_input(INPUT_MAX - gd.input_buffer_length <= 1 ? FALSE : TRUE);
-    } else if (rv == 0) { /* timed-out while waiting for FD (no more output) */
-      process_input(FALSE); /* Process all that's left */
-    } else if (rv < 0) {    /* error */
+      processInput(INPUT_MAX - gd.inputBufLen <= 1 ? FALSE : TRUE);
+    } else if (rv == 0) {  /* timed-out while waiting for FD (no more output) */
+      processInput(FALSE); /* Process all that's left */
+    } else if (rv < 0) {   /* error */
       perror("select returned < 0");
-      quit_with_signal(EXIT_FAILURE);
+      exitWithSignal(EXIT_FAILURE);
     }
   }
 
-  process_input(FALSE); /* Process anything that may be left */
+  processInput(FALSE); /* Process anything that may be left in the buffer */
 
-  quit_with_signal(EXIT_SUCCESS);
-  return 0; /* Literally useless, but gotta make a warning shut up. */
+  exitWithSignal(EXIT_SUCCESS);
+  return 0; /* Literally useless, but gotta make a warning shut up */
 }
 
-void colordemo(void) {
+void colorDemo(void) {
   char buf[BUFFER_SIZE];
 
   substitute(
@@ -161,17 +159,15 @@ void colordemo(void) {
   fprintf(stderr, "%s\n", buf);
 }
 
-void quit_with_signal(int exit_signal) {
+void exitWithSignal(int exitSignal) {
   int i;
 
-  /* Free memory used by highlights */
-  for (i = gd.highlights_used - 1; i > -1; i--) {
-    unhighlight(gd.highlights[i]->condition);
+  for (i = gd.highlightsUsed - 1; i > -1; i--) { /* Cleanup each highlight */
+    delHighlight(gd.highlights[i]->condition);
   }
 
-  free(gd.highlights);
+  free(gd.highlights);          /* Free highlights */
+  PCRE_FREE(colorEndLookAhead); /* Free the colorStartLookback RegEx*/
 
-  PCRE_FREE(lookback_for_color);
-
-  exit(exit_signal);
+  exit(exitSignal);
 }
