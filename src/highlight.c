@@ -208,7 +208,7 @@ void highlightString(char *string) {
     *output = 0;
 
     do {
-      if (!gd.collidingActions) { /* Colliding action disabled */
+      if (!gd.collidingActions) { /* Colliding action disallowed */
         char oldChar = pti[res.end];
         struct regExRes lookbackRes;
 

@@ -23,14 +23,14 @@ int main(int argc, char **argv) {
   while ((c = getopt(argc, argv, "a c: d h")) != -1) {
     switch (tolower(c)) {
     case 'a':
-      gd.collidingActions = TRUE;
+      gd.collidingActions = TRUE; /* Allow colliding actions */
       break;
     case 'c':
-      configOverride = TRUE;
+      configOverride = TRUE; /* Don't read default config file*/
       readConfig(optarg);
       break;
     case 'd':
-      colorDemo();
+      colorDemo(); /* Print the available xterm256 colors */
       exitWithSignal(EXIT_SUCCESS);
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
