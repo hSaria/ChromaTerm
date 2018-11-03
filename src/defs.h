@@ -19,10 +19,10 @@ typedef pcre2_code PCRE_CODE;
 typedef PCRE2_SIZE PCRE_ERR_P;
 #define PCRE_FREE(code)                                                        \
   { pcre2_code_free(code); }
-#define PCRE_COMPILE(compiled, regEx, errN, errP)                            \
+#define PCRE_COMPILE(compiled, regEx, errN, errP)                              \
   {                                                                            \
     compiled = pcre2_compile((PCRE2_SPTR)regEx, PCRE2_ZERO_TERMINATED, 0,      \
-                             errN, errP, NULL);                              \
+                             errN, errP, NULL);                                \
     if (pcre2_jit_compile(compiled, 0) == 0) {                                 \
       /* Accelerate pattern matching if JIT is supported on the platform */    \
       pcre2_jit_compile(compiled, PCRE2_JIT_COMPLETE);                         \
@@ -34,7 +34,7 @@ typedef pcre PCRE_CODE;
 typedef const char *PCRE_ERR_P;
 #define PCRE_FREE(code)                                                        \
   { pcre_free(code); }
-#define PCRE_COMPILE(compiled, regEx, errN, errP)                            \
+#define PCRE_COMPILE(compiled, regEx, errN, errP)                              \
   { compiled = pcre_compile(regEx, 0, errP, errN, NULL); }
 #endif
 
