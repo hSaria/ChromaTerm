@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     gd.inputBufLen += bytesRead;
 
     /* Block for a small amount to see if there's more to read. If something
-     * came up, stop waiting and move on. */
+     * came up, stop waiting and start processing. */
     int rv = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &wait);
 
     if (rv > 0) { /* More data came up while waiting */
@@ -83,10 +83,10 @@ int main(int argc, char **argv) {
     }
   }
 
-  processInput(FALSE); /* Process anything that may be left */
+  processInput(FALSE); /* Process anything that may be left in the buffer */
 
   exitWithSignal(EXIT_SUCCESS);
-  return 0; /* Literally useless, but gotta make a warning shut up. */
+  return 0; /* Literally useless, but gotta make a warning shut up */
 }
 
 void colorDemo(void) {
