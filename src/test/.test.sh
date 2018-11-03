@@ -1,20 +1,15 @@
 #!/bin/bash
 
-# Stores the correct ones
-yes=()
-# Stores the incorrect ones
-no=()
-
-
+yes=() # Stores the correct ones
+no=() # Stores the incorrect ones
 
 ### IPv4 ###
 
 yes+=("1.2.3.4/32")
 yes+=("255.255.255.255")
+yes+=("1.2.3.4/33") # in case this is the port number
 no+=("1.2.3")
-no+=("1.2.3.4/33")
 no+=("255.256.255.255")
-
 
 ### IPv6 ###
 
@@ -58,7 +53,6 @@ yes+=("fe80::1%tun")
 no+=("fe80:1%tun")
 no+=(":::")
 
-
 ### MAC Addresses ###
 
 yes+=("0A:23:45:67:89:AB")
@@ -66,12 +60,10 @@ yes+=("0A23.4567.89AB")
 no+=("0A:23:45:67:89")
 no+=("0A23.4567.89.AB")
 
-
 ### Password ###
 
 yes+=("Password")
 no+=("Pass1word")
-
 
 ### Syslog date ###
 
@@ -80,13 +72,18 @@ yes+=("jan 03 12:34:56")
 no+=("Dec 03 12:334:56")
 no+=("abc 03 12:34:56")
 
-
 ### Compound tests ###
 
 yes+=("::255.255.255.255 1.1.1.1")
 yes+=("Dec 03 12:34:56 0A:23:45:67:89:AB 192.168.0.1/24 fe80::0:1:A:B/64 a:b:c:de:f::0A")
 yes+=("a:b:c:de:f::0A 192.168.0.1/24 0A:23:45:67:89:AB fe80::0:1:A:B/64 Dec 03 12:34:56")
 no+=("HEY 30 12:33:56 0A:23:4A5:67:89:AB 192.1618.0.1/24 fe80:x:0:1:A:B/ a:b:c:de000:f::0A")
+
+### Colliding actions ###
+
+no+=("Time in MAC address 00:00:00:01:00:00")
+no+=("Too long 192.168.1.1.1")
+no+=("Too long 00:11:22:33:44:55:66")
 
 
 ### Print all yes then all no
