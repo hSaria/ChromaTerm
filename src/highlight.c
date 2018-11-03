@@ -50,7 +50,7 @@ void check_highlights(char *string) {
       *output = 0;
 
       do {
-        if (!gd.colliding_actions) {
+        if (!gd.colliding_actions) { /* Colliding action disabled */
           char old_char = pti[res.end];
           struct regex_r lookback_res;
 
@@ -59,8 +59,8 @@ void check_highlights(char *string) {
           pti[res.end] = old_char; /* Restore old char */
 
           if (lookback_res.start != -1) { /* We're in the middle of an action */
-            strncat(output, pti, res.end);
-            pti += res.end; /* Skip to next match */
+            strncat(output, pti, res.end); /* Add current match to output */
+            pti += res.end;                /* Seek to end of current match */
             res = regex_compare(gd.highlights[i]->compiled_regex, pti);
             continue;
           }
