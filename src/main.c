@@ -14,9 +14,11 @@ int main(int argc, char **argv) {
   gd.highlightsSize = 8; /* initial size is 8, but is doubled when needed */
   gd.collidingActions = FALSE;
 
-  /* Look ahead for the last start of a color that doesn't have a reset */
+  /* Look ahead for the end of a color without a started before it. Also, look
+   * for character-movement codes; those need to be skipped, too */
   PCRE_COMPILE(colorEndLookAhead, "^(?:(?!\\e\\[[1-9][0-9;]*m).)*?\\e\\[0m",
                &errN, &errP);
+  PCRE_COMPILE(charMovement, "\\e\\[[0-9]*[A-D]", &errN, &errP);
 
   /* Parse the arguments (h is in there to prevent errors from '-h') */
   while ((c = getopt(argc, argv, "a c: d h")) != -1) {
@@ -167,7 +169,8 @@ void exitWithSignal(int exitSignal) {
   }
 
   free(gd.highlights);          /* Free highlights */
-  PCRE_FREE(colorEndLookAhead); /* Free the colorStartLookback RegEx*/
+  PCRE_FREE(colorEndLookAhead); /* Free the RegEx */
+  PCRE_FREE(charMovement);      /* Free the RegEx */
 
   exit(exitSignal);
 }

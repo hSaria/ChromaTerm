@@ -38,7 +38,7 @@ typedef const char *PCRE_ERR_P;
   { compiled = pcre_compile(regEx, 0, errP, errN, NULL); }
 #endif
 
-#define VERSION "0.2.7"
+#define VERSION "0.2.8"
 
 #define FALSE 0
 #define TRUE 1
@@ -84,6 +84,7 @@ struct regExRes {
 
 /**** highlight.c ****/
 extern PCRE_CODE *colorEndLookAhead;
+extern PCRE_CODE *charMovement;
 
 void addHighlight(char *condition, char *action, char *priority);
 void delHighlight(char *condition);

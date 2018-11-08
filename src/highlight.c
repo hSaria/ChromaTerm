@@ -33,7 +33,8 @@ struct color colorTable[] = {
     {"violet", "<bad>"},       {"white", "<878>"},
     {"yellow", "<838>"},       {"", "<088>"}};
 
-PCRE_CODE *colorEndLookAhead;  /* Search for the end of a color after */
+PCRE_CODE *colorEndLookAhead; /* Search for the end of a color after */
+PCRE_CODE *charMovement;      /* Search for character-movement VT100 codes */
 
 void addHighlight(char *condition, char *action, char *priority) {
   if (*priority == 0) {
@@ -208,7 +209,8 @@ void highlightString(char *string) {
 
     do {
       if (!gd.collidingActions) { /* Colliding action disallowed */
-        struct regExRes lookAheadRes;
+        char oldEnd = pti[res.end];
+        struct regExRes lookAheadRes, charMovementRes;
 
         /* Find the FIRST color reset. If there wasn't a color start before it,
          * then we're in the middle of a color. If there was, then we're okay to
@@ -219,6 +221,21 @@ void highlightString(char *string) {
           strncat(output, pti,
                   lookAheadRes.end); /* Add until after current color */
           pti += lookAheadRes.end;   /* Seek to end of current color */
+          res = regExCompare(gd.highlights[i]->compiledRegEx, pti);
+          continue;
+        }
+
+        /* Find a character-movement between the beginning of the string and the
+         * end of the result. If found, skip until after the character movement,
+         * then continue with the remainder of the string left  */
+        pti[res.end] = 0;
+        charMovementRes = regExCompare(charMovement, pti);
+        pti[res.end] = oldEnd;
+
+        if (charMovementRes.start != -1) { /* Char-movement is part of match */
+          strncat(output, pti,
+                  charMovementRes.end); /* Add until after char-movement */
+          pti += charMovementRes.end;   /* Seek to end of char-movement */
           res = regExCompare(gd.highlights[i]->compiledRegEx, pti);
           continue;
         }
