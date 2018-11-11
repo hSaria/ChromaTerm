@@ -7,9 +7,10 @@ struct globalData gd;
 int main(int argc, char **argv) {
   fd_set readfds;
   PCRE_ERR_P errP;
-  int c, configOverride = FALSE, bytesRead, errN;
+  int c, bytesRead, errN;
 
   /* Set up default CT state */
+  sprintf(gd.configFile, "%s/%s", getenv("HOME"), ".chromatermrc");
   gd.highlights = (struct highlight **)calloc(8, sizeof(struct highlight *));
   gd.highlightsSize = 8; /* initial size is 8, but is doubled when needed */
   gd.collidingActions = FALSE;
@@ -21,40 +22,38 @@ int main(int argc, char **argv) {
   PCRE_COMPILE(charMovement, "\\e\\[[0-9]*[A-D]", &errN, &errP);
 
   /* Parse the arguments (h is in there to prevent errors from '-h') */
-  while ((c = getopt(argc, argv, "a c: d h")) != -1) {
+  while ((c = getopt(argc, argv, "a c: d r h")) != -1) {
     switch (tolower(c)) {
     case 'a':
       gd.collidingActions = TRUE; /* Allow colliding actions */
       break;
     case 'c':
-      configOverride = TRUE; /* Don't read default config file*/
-      readConfig(optarg);
+      strncpy(gd.configFile, optarg, BUFFER_SIZE);
       break;
     case 'd':
       colorDemo(); /* Print the available xterm256 colors */
       exitWithSignal(EXIT_SUCCESS);
+    case 'r':
+      system("pkill -SIGUSR1 '^ct$'"); /* Sent SIGUSR1 to all CT instances */
+      exitWithSignal(EXIT_SUCCESS);
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
-      printf("Usage: %s [-a] [-c file] [-d]\n", argv[0]);
+      printf("Usage: %s [-adr] [-c file]\n", argv[0]);
       printf("%7s %-5s Allow colliding actions\n", "-a", "");
       printf("%7s %-5s Override configuration file\n", "-c", "file");
       printf("%7s %-5s Demo the available custom color-codes\n", "-d", "");
+      printf("%7s %-5s Reload the config file for all CT instances\n", "-r",
+             "");
 
       exitWithSignal(2);
     }
   }
 
-  /* Read configuration if not overridden by the launch arguments */
-  if (!configOverride && getenv("HOME") != NULL) {
-    char temp[4095];
-    sprintf(temp, "%s/%s", getenv("HOME"), ".chromatermrc");
+  /* Read configuration */
+  readConfig(gd.configFile);
 
-    if (access(temp, R_OK) == 0) {
-      readConfig(temp);
-    }
-  }
-
-  signal(SIGINT, SIG_IGN); /* Ignore interrupt */
+  signal(SIGINT, SIG_IGN);        /* Ignore interrupt */
+  signal(SIGUSR1, reloadHandler); /* Config reloader */
 
   /* fd_set used for checking if there's more input */
   FD_ZERO(&readfds); /* Initialize */
@@ -162,15 +161,17 @@ void colorDemo(void) {
 }
 
 void exitWithSignal(int exitSignal) {
-  int i;
-
-  for (i = gd.highlightsUsed - 1; i > -1; i--) { /* Cleanup each highlight */
-    delHighlight(gd.highlights[i]->condition);
-  }
-
+  clearHighlights();            /* Delete all highlight rules */
   free(gd.highlights);          /* Free highlights */
   PCRE_FREE(colorEndLookAhead); /* Free the RegEx */
   PCRE_FREE(charMovement);      /* Free the RegEx */
 
   exit(exitSignal);
+}
+
+void reloadHandler(int signum) {
+  if (signum == SIGUSR1) {
+    clearHighlights();         /* Delete all highlight rules */
+    readConfig(gd.configFile); /* Reload configuration file */
+  }
 }

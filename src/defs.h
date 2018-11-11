@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -38,7 +39,7 @@ typedef const char *PCRE_ERR_P;
   { compiled = pcre_compile(regEx, 0, errP, errN, NULL); }
 #endif
 
-#define VERSION "0.2.8"
+#define VERSION "0.3.0"
 
 #define FALSE 0
 #define TRUE 1
@@ -60,13 +61,14 @@ typedef const char *PCRE_ERR_P;
  * affect the last line; if you're outputting thousands of lines back-to-back,
  * they'll be processed as soon as possible since each line will end with \n */
 
-struct globalData { /* Stores the shared data for CT-- */
+struct globalData {     /* Stores the shared data for CT-- */
+  int collidingActions; /* Allow or disallow colliding actions */
+  char configFile[BUFFER_SIZE];
   struct highlight **highlights;
   int highlightsSize;
   int highlightsUsed;
   char inputBuf[INPUT_MAX];
   int inputBufLen;
-  int collidingActions; /* Allow or disallow colliding actions */
 };
 
 struct highlight {
@@ -87,6 +89,7 @@ extern PCRE_CODE *colorEndLookAhead;
 extern PCRE_CODE *charMovement;
 
 void addHighlight(char *condition, char *action, char *priority);
+void clearHighlights();
 void delHighlight(char *condition);
 int findHighlightIndex(char *text);
 int getHighlightCodes(char *string, char *result);
@@ -99,6 +102,7 @@ extern struct globalData gd;
 int main(int argc, char **argv);
 void colorDemo(void);
 void exitWithSignal(int exitSignal);
+void reloadHandler(int signum);
 
 /**** utils.c ****/
 char *getArg(char *string, char *argument);

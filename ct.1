@@ -6,9 +6,8 @@
 .Nd colorize your terminal
 .Sh SYNOPSIS
 .Nm
-.Op Fl "a"
+.Op Fl "adr"
 .Op Fl c Ar "file"
-.Op Fl "d"
 .Sh DESCRIPTION
 ChromaTerm--
 .Pq Ic ct
@@ -19,9 +18,11 @@ Available arguments:
 .It Fl a
 Allow colliding actions: apply an action even if it is in the middle of another action. By default, colliding actions are not allowed.
 .It Fl c Ar file
-Override configuration file. By default, ChromaTerm-- will look for a configuration file called .chromatermrc in the home directory, and will load it if it exists. You can read multiple files by adding this argument for each file.
+Override configuration file. By default, ChromaTerm-- will look for a configuration file called .chromatermrc in the home directory, and will load it if it exists.
 .It Fl d
 Demonstrate the available color-codes for custom actions.
+.It Fl r
+Reload the configuration file for all ChromaTerm-- instances.
 .El
 .Sh HIGHLIGHT RULES
 The syntax for a rule is

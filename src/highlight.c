@@ -116,6 +116,13 @@ void addHighlight(char *condition, char *action, char *priority) {
   }
 }
 
+void clearHighlights() {
+  int i;
+  for (i = gd.highlightsUsed - 1; i > -1; i--) { /* Cleanup each highlight */
+    delHighlight(gd.highlights[i]->condition);
+  }
+}
+
 void delHighlight(char *condition) {
   int index;
 
