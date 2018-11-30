@@ -22,7 +22,9 @@ Override configuration file. By default, ChromaTerm-- will look for a configurat
 .It Fl d
 Demonstrate the available color-codes for custom actions.
 .It Fl r
-Reload the configuration file for all ChromaTerm-- instances.
+Reload the configuration file for all ChromaTerm-- instances. This will send SIGUSR1 to all processes called
+.Ic ct
+to trigger the reload.
 .El
 .Sh HIGHLIGHT RULES
 The syntax for a rule is
