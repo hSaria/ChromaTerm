@@ -132,13 +132,13 @@ to
 .Ss PRIORITY
 (Optional) If a part of the text is matched by two rules, the rule with the lower priority value overrides the action of the higher priority value; lower priority value = higher precedence. Default priority is 1000.
 .Sh CONFIGURATION FILE
-This should contain the highlight rules. You can add a comment by wrapping it in
+Contains the highlight rules. You can add a comment by wrapping it in
 .Sy /*  */
 .Pp
 Example:
 .Bl -item -offset indent -compact
 .It
-/* "password" at the start of a line is made red (case insensitive) */
+/* "password" at the start of a line is made red (case insensitive). */
 .It
 HIGHLIGHT {(?i)^password} {red} {1000}
 
@@ -147,9 +147,13 @@ HIGHLIGHT {(?i)^password} {red} {1000}
 .It
    is not specified (default 1000), and the next rule matches the same
 .It
-   string with a better (lower) priority, this action is overridden by
+   string with a better (lower) priority, this rule is superseded by
 .It
-   the action of that rule */
+   the rule with the better priority that matches the same string.
+.It
+   However, "bubba" won't match the better-priority rule, and thus,
+.It
+   will be highlighted green according to this rule. */
 .It
 HIGHLIGHT {(B|b)ubba} {green}
 
