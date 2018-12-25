@@ -8,7 +8,7 @@ A tool for colorizing the output of a terminal.
 
 
 # About
-ChromaTerm-- (`ct`) reads from standard input and highlights it according to user-configurable rules. Here's a quick example:
+ChromaTerm-- (`ct`) reads from standard input and highlights it according to user-configurable rules. Here's an example using the rules in the included configuration file:
 <p><img src="https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.github/junos-show-interface.png"/></p>
 
 # Installation
