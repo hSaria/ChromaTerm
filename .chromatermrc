@@ -14,7 +14,7 @@ HIGHLIGHT {(?i)password} {red} {1000}
 HIGHLIGHT {(?i)(?:(?:\d{4}\-(?:(?:0)?[1-9]|1[0-2])\-(?:3[0-1]|(?:[1-2]\d)|(?:0)?[1-9])|(?P<MMM>jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s(?:\d{4}|\s\d|(?:3[0-1]|(?:[0-2]\d)))|(?:\d|(?:3[0-1]|(?:[0-2]\d)))\s(?P>MMM)(?:\s\d{4})?)[\WT_])?(?:(?:2[0-3])|[0-1]\d):[0-5]\d(?::[0-5]\d)?(?:\.\d{3,6})?} {<DBA>} {1000}
 
 /* Juniper interfaces */
-HIGHLIGHT {(?i)(?<=[\W]|^)(?:(?:(?:fe|ge|xe|gr|ip|lt|lsq|mt|sp|vcp)\-\d*/\d*/\d*)|(?:(?:(?:b)?me|em|fab|fxp|fti|lo|pp(?:d|e)?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pimd|pime|tap|vlan|vme|vtep)|(?:(?:ae|reth)\d*))(?:\.\d*)?(?=[\W]|$)} {<fcc>} {1000}
+HIGHLIGHT {(?i)(?<=[\W]|^)(?:(?:(?:fe|ge|xe|et|gr|ip|lt|lsq|mt|sp|vcp)\-\d*/\d*/\d*)|(?:(?:(?:b)?me|em|fab|fxp|fti|lo|pp(?:d|e)?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pimd|pime|tap|vlan|vme|vtep)|(?:(?:ae|reth)\d*))(?:\.\d*)?(?=[\W]|$)} {<fcc>} {1000}
 
 /* Cisco interfaces */
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:(?:(?:Hu(?:ndredGigabit)?|Fo(?:rtyGigabit)?|Te(?:nGigabit)?|Gi(?:gabit)?|Fa(?:st)?)(?:Ethernet)?)|Eth|Se(?:rial)?|Lo(?:opback)?|Tu(?:nnel)?|VL(?:AN)?|Po(?:rt-channel)?|Vi(?:rtual\-(?:Template|Access))?|Mu(?:ltilink)?|Di(?:aler)?|(?:B|N)VI)(?:(?:\d*/){0,2}\d*)(?:\.\d*)?(?=[\W]|$)} {<fcc>} {1000}
