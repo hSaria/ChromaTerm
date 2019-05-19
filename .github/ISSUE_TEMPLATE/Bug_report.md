@@ -8,14 +8,11 @@ about: Create a report to help improve ChromaTerm--
 A clear and concise description of what the bug is.
 
 **Environment**
- - OS: [e.g. Mac OS X]
- - Version [e.g. 10.13.4]
+ - OS: [e.g. macOS 10.14.5]
+ - ChromaTerm Version: [e.g. v0.3.0]
 
 **Configuration File**
 If you know that a single line is causing the issue, put it here. Otherwise, attach `~/.chromatermrc`.
 ```
 HIGHLIGHT {World} {blue}
 ```
-
-**Additional context**
-Any other information that you think could be helpful
