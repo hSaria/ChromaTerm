@@ -8,7 +8,7 @@ exec_prefix = @exec_prefix@
 datarootdir = @datarootdir@
 bindir = @bindir@
 mandir = @mandir@
-CFLAGS += -O2 -Wall -Wextra
+CFLAGS += -O2 -Wall -Wextra -fmodules
 LIBS = @LIBS@
 DEFAULT_FILE_DIR = $(HOME)
 
