@@ -11,7 +11,7 @@ HIGHLIGHT {(?i)(?<=[\W]|^)(?<!:)(?:(?:(?P<h>[\da-f])(?P>h)?:){5}(?P>h){1,2}|(?:(
 HIGHLIGHT {(?i)password} {red} {1000}
 
 /* Date in (YYYY-MM-DD|MMM (YYYY|DD)|DD MMM (YYYY)?)[\WT_]hh:mm:ss.SSSSSS format (date, sec, msec, and nsec optional) */
-HIGHLIGHT {(?i)(?:(?:\d{4}\-(?:(?:0)?[1-9]|1[0-2])\-(?:3[0-1]|(?:[1-2]\d)|(?:0)?[1-9])|(?P<MMM>jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s(?:\d{4}|\s\d|(?:3[0-1]|(?:[0-2]\d)))|(?:\d|(?:3[0-1]|(?:[0-2]\d)))\s(?P>MMM)(?:\s\d{4})?)[\WT_])?(?:(?:2[0-3])|[0-1]\d):[0-5]\d(?::[0-5]\d)?(?:\.\d{3,6})?} {<DBA>} {1000}
+HIGHLIGHT {(?i)(?<=[\W]|^)(?:(?:\d{2,4}\-(?:(?:0)?[1-9]|1[0-2])\-(?:3[0-1]|(?:[1-2]\d)|(?:0)?[1-9])|(?P<MMM>jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s(?:\d{4}|\s\d|(?:3[0-1]|(?:[0-2]\d)))|(?:\d|(?:3[0-1]|(?:[0-2]\d)))\s(?P>MMM)(?:\s\d{4})?)[\WT_])?(?:(?:2[0-3])|[0-1]\d):[0-5]\d(?::[0-5]\d)?(?:(?:\.|,)\d{3,6})?(?=[\W]|$)} {<DBA>} {1000}
 
 /* Juniper interfaces */
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:(?:(?:fe|ge|xe|et|gr|ip|lt|lsq|mt|sp|vcp)\-\d*/\d*/\d*)|(?:(?:(?:b)?me|em|fab|fxp|fti|lo|pp(?:d|e)?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pimd|pime|tap|vlan|vme|vtep)|(?:(?:ae|reth)\d*))(?:\.\d*)?(?=[\W]|$)} {<fcc>} {1000}
@@ -23,7 +23,7 @@ HIGHLIGHT {(?i)(?<=[\W]|^)(?:(?:(?:Hu(?:ndredGigabit)?|Fo(?:rtyGigabit)?|Te(?:nG
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:up|ok(?:ay)?|permit(?:ed|s)?|accept(?:s|ed)?|enable(?:d)?|online|succe(?:(?:ss(?:ful|fully)?)|ed(?:ed)?)?|connect(?:ed)?|reachable|valid|forwarding|synchronized)(?=[\W]|$)} {green} {1000}
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:ye(?:s|a(?:h)?|p)?|started|running|can)(?=[\W]|$)} {<aba>} {1000}
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:warning(?:s)?)(?=[\W]|$)} {yellow} {1000}
-HIGHLIGHT {(?i)(?<=[\W]|^)(?:no(?:t|pe)?|exit(ed)?|reset|filter(?:ed)?|stop(?:p(?:ed|ing))?|never|can(?:(?:')?t|not))(?=[\W]|$)} {<cba>} {900}
+HIGHLIGHT {(?i)(?<=[\W]|^)(?:no(?:t|pe)?|exit(?:ed)?|reset|filter(?:ed)?|stop(?:p(?:ed|ing))?|never|can(?:(?:')?t|not))(?=[\W]|$)} {<cba>} {900}
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:abnormal(?:ly)?|down|los(?:t|s|ing)|err(?:or(?:s)?)?|(?:den(?:y|ies|ied)?)|reject(?:ing|ed)?|drop(?:ped|s)?|(?:err\-)?disable(?:d)?|(?:time(?:d)?(?:\-)?out)|fail(?:s|ed|iure)?|disconnect(?:ed)?|unreachable|invalid|bad|notconnect|unusable|block(?:ing|ed)?|blk|inaccessible|wrong|collision(?:s)?|unsynchronized|mismatch|runts|CRC)(?=[\W]|$)} {red} {1000}
 
 /* Half-duplex */
