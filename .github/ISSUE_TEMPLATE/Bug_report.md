@@ -8,8 +8,8 @@ A clear and concise description of what the bug is.
 
 **Environment**
 
--   OS: [e.g. macOS 10.14.5]
--   ChromaTerm-- version: [e.g. v0.3.0]
+-   OS (`sw_vers -productVersion`): [e.g. macOS 10.14.5]
+-   ChromaTerm-- version (`ct -h`): [e.g. v0.3.0]
 
 **Configuration File**
 If you know that a single line is causing the issue, put it here. Otherwise, attach `~/.chromatermrc`.
