@@ -11,7 +11,7 @@ A tool for colorizing the output of a terminal.
 
 ChromaTerm-- (`ct`) reads from standard input and highlights it according to user-configurable rules. Here's an example using the rules in the included configuration file:
 
-![alt text](tree/master/.github/junos-show-interface.png "Example output")
+![alt text](junos-show-interface.png "Example output")
 
 # Installation
 
