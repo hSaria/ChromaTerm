@@ -39,7 +39,7 @@ install: ct
 	  echo ".chromatermrc already exists in home directory; not copying default config file";\
 	else\
 	  echo ".chromatermrc doesn't exist in home directory; copying default config file";\
-		cp -i ../.chromatermrc $(DEFAULT_FILE_DIR)/;\
+		cp ../.chromatermrc $(DEFAULT_FILE_DIR)/;\
 	fi
 
 uninstall:
