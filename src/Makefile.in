@@ -33,7 +33,7 @@ install: ct
 	cp -f ./ct $(bindir)
 	-mkdir -p $(mandir)/man1/
 	cp -f ../ct.1 $(mandir)/man1/
-	cp -n ../.chromatermrc ~
+	cp -n ../.chromatermrc $(HOME)/
 
 uninstall:
 	rm -f $(bindir)/ct
