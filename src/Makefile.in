@@ -10,7 +10,6 @@ bindir = @bindir@
 mandir = @mandir@
 CFLAGS += -O2 -Wall -Wextra
 LIBS = @LIBS@
-DEFAULT_FILE_DIR = $(HOME)
 
 OFILES = highlight.o main.o utils.o
 
@@ -35,11 +34,11 @@ install: ct
 	-mkdir -p $(mandir)/man1/
 	cp -f ../ct.1 $(mandir)/man1/
 
-	@if [ -f "$(DEFAULT_FILE_DIR)/.chromatermrc" ]; then\
+	@if [ -f "~/.chromatermrc" ]; then\
 	  echo ".chromatermrc already exists in home directory; not copying default config file";\
 	else\
 	  echo ".chromatermrc doesn't exist in home directory; copying default config file";\
-		cp ../.chromatermrc $(DEFAULT_FILE_DIR)/;\
+		cp ../.chromatermrc ~/;\
 	fi
 
 uninstall:
