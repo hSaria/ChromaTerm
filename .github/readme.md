@@ -18,6 +18,7 @@ ChromaTerm-- (`ct`) reads from standard input and highlights it according to use
 ### macOS using HomeBrew
 
     brew install hSaria/tap/chromaterm
+    curl https://raw.githubusercontent.com/hSaria/ChromaTerm--/master/.chromatermrc > ~/.chromatermrc
 
 > You can uninstall with `brew uninstall chromaterm`
 
