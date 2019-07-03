@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
       colorDemo(); /* Print the available xterm256 colors */
       exitWithSignal(EXIT_SUCCESS);
     case 'r':
-      system("pkill -SIGUSR1 '^ct$'"); /* Sent SIGUSR1 to all CT instances */
+      system("pkill -SIGUSR1 '^ct$'"); /* Send SIGUSR1 to all CT instances */
       exitWithSignal(EXIT_SUCCESS);
     default:
       printf("ChromaTerm-- v%s\n", VERSION);
