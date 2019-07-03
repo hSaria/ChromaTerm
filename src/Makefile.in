@@ -33,13 +33,7 @@ install: ct
 	cp -f ./ct $(bindir)
 	-mkdir -p $(mandir)/man1/
 	cp -f ../ct.1 $(mandir)/man1/
-
-	@if [ -f "~/.chromatermrc" ]; then\
-	  echo ".chromatermrc already exists in home directory; not copying default config file";\
-	else\
-	  echo ".chromatermrc doesn't exist in home directory; copying default config file";\
-		cp ../.chromatermrc ~/;\
-	fi
+	cp -n ../.chromatermrc ~
 
 uninstall:
 	rm -f $(bindir)/ct
