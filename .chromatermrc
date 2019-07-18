@@ -23,7 +23,7 @@ HIGHLIGHT {(?i)(?<=[\W]|^)(?:(?:(?:Hu(?:ndredGigabit)?|Fo(?:rtyGigabit)?|Te(?:nG
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:up|ok(?:ay)?|permit(?:ed|s)?|accept(?:s|ed)?|enable(?:d)?|online|succe(?:(?:ss(?:ful|fully)?)|ed(?:ed)?)?|connect(?:ed)?|reachable|valid|forwarding|synchronized)(?=[\W]|$)} {green} {1000}
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:ye(?:s|a(?:h)?|p)?|started|running|can)(?=[\W]|$)} {<aba>} {1000}
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:warning(?:s)?)(?=[\W]|$)} {yellow} {1000}
-HIGHLIGHT {(?i)(?<=[\W]|^)(?:no(?:t|pe)?|exit(?:ed)?|reset|filter(?:ed)?|stop(?:p(?:ed|ing))?|never|can(?:(?:')?t|not))(?=[\W]|$)} {<cba>} {900}
+HIGHLIGHT {(?i)(?<=[\W]|^)(?:no(?:t|pe)?|exit(?:ed)?|reset(?:(?:t)?ing)?|discard(?:ed|ing)?|filter(?:ed)?|stop(?:p(?:ed|ing))?|never|can(?:(?:')?t|not))(?=[\W]|$)} {<cba>} {900}
 HIGHLIGHT {(?i)(?<=[\W]|^)(?:abnormal(?:ly)?|down|los(?:t|s|ing)|err(?:or(?:s)?)?|(?:den(?:y|ies|ied)?)|reject(?:ing|ed)?|drop(?:ped|s)?|(?:err\-)?disable(?:d)?|(?:time(?:d)?(?:\-)?out)|fail(?:s|ed|iure)?|disconnect(?:ed)?|unreachable|invalid|bad|notconnect|unusable|block(?:ing|ed)?|blk|inaccessible|wrong|collision(?:s)?|unsynchronized|mismatch|runts|CRC)(?=[\W]|$)} {red} {1000}
 
 /* Half-duplex */
