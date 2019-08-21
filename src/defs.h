@@ -108,5 +108,8 @@ void reloadHandler(int signum);
 char *getArg(char *string, char *argument);
 int isAbbrev(char *s1, char *s2);
 void processInput(int waitForNewLine);
-void readConfig(char *file);
 struct regExRes regExCompare(PCRE_CODE *compiledRegEx, char *str);
+
+/**** legacy.c ****/
+/* TODO: delete for version 1.0 */
+void l_readConfig(char *file);

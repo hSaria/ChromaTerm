@@ -11,7 +11,7 @@ mandir = @mandir@
 CFLAGS += -O2 -Wall -Wextra
 LIBS = @LIBS@
 
-OFILES = highlight.o main.o utils.o
+OFILES = highlight.o legacy.o main.o utils.o
 
 default: all
 

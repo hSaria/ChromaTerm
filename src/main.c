@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
   }
 
   /* Read configuration */
-  readConfig(gd.configFile);
+  l_readConfig(gd.configFile);
 
   signal(SIGINT, SIG_IGN);        /* Ignore interrupt */
   signal(SIGUSR1, reloadHandler); /* Config reloader */
@@ -172,6 +172,6 @@ void exitWithSignal(int exitSignal) {
 void reloadHandler(int signum) {
   if (signum == SIGUSR1) {
     clearHighlights();         /* Delete all highlight rules */
-    readConfig(gd.configFile); /* Reload configuration file */
+    l_readConfig(gd.configFile); /* Reload configuration file */
   }
 }
