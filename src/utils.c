@@ -2,53 +2,6 @@
 
 #include "defs.h"
 
-/* The outer-most brackets (if any) are stripped; all else left as is */
-char *getArg(char *string, char *result) {
-  char *pti = string, *pto = result;
-
-  while (isspace((int)*pti)) { /* advance to the next none-space character */
-    pti++;
-  }
-
-  /* Not wrapped in brackets; use space as separator */
-  if (*pti != DEFAULT_OPEN) {
-    while (*pti) {
-      if (isspace((int)*pti)) {
-        pti++;
-        break;
-      }
-      *pto++ = *pti++;
-    }
-  } else { /* Wrapped in brackets; use outer-most as separator */
-    int nest = 1;
-
-    pti++; /* Advance past the DEFAULT_OPEN (nest is 1 for this reason) */
-
-    while (*pti) {
-      if (*pti == DEFAULT_OPEN) {
-        nest++;
-      } else if (*pti == DEFAULT_CLOSE) {
-        nest--;
-
-        /* Stop once we've got the close bracket for the first open bracket */
-        if (nest == 0) {
-          break;
-        }
-      }
-      *pto++ = *pti++;
-    }
-
-    if (*pti == 0) {
-      fprintf(stderr, "ERROR: Missing %i closing bracket(s)\n", nest);
-    } else {
-      pti++; /* Move over the closing bracket */
-    }
-  }
-
-  *pto = '\0';
-  return pti;
-}
-
 /* TRUE if s1 is an abbrevation of s2 (case-insensitive) */
 int isAbbrev(char *s1, char *s2) {
   if (*s1 == 0) {

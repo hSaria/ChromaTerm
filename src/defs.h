@@ -105,11 +105,11 @@ void exitWithSignal(int exitSignal);
 void reloadHandler(int signum);
 
 /**** utils.c ****/
-char *getArg(char *string, char *argument);
 int isAbbrev(char *s1, char *s2);
 void processInput(int waitForNewLine);
 struct regExRes regExCompare(PCRE_CODE *compiledRegEx, char *str);
 
 /**** legacy.c ****/
 /* TODO: delete for version 1.0 */
+char *l_getArg(char *string, char *argument);
 void l_readConfig(char *file);
