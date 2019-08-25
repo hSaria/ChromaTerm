@@ -1,3 +1,4 @@
-src/Makefile
-src/config.h
-src/ct
+*.pyc
+build/
+chromaterm.egg-info/
+dist/

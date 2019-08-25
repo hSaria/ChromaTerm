@@ -1,16 +1,11 @@
-language: c
+language: python
 
 os:
   - linux
   - osx
 
-compiler:
-  - clang
-  - gcc
-
 install:
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew install cppcheck pcre2; fi
+  - pip3 install chromaterm
 
 script:
-  - cd $TRAVIS_BUILD_DIR/src && ./configure && make && make ct-test
-  - if [ $TRAVIS_OS_NAME = osx ]; then cppcheck ./ --enable=all -q; fi
+  - echo hi | ct
