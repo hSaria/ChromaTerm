@@ -6,6 +6,7 @@ import os
 import select
 import sys
 
+import chromaterm.colors as colors
 import regex as re
 import yaml
 
@@ -36,28 +37,13 @@ def args_init():
     return parser.parse_args()
 
 
-def color_demo():
-    """Print the 256-color demo."""
-    # TODO
-    print('Demo')
-
-
 def eprint(*args, **kwargs):
     """Error print."""
     print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
 
 
-def get_color_code(color):
-    """Return the ANSI code to be used when highlighting for the `color`."""
-    code = '\033[33m'
-
-    return code
-
-
-def get_highlight_repl_func(config, color):
-    """Return the replace function for a `color` to be used in `re.sub`."""
-    color_code = get_color_code(color)
-
+def get_highlight_repl_func(config, color_code):
+    """Return the replace function for a `color_code` to be used in `re.sub`."""
     def func(match):
         return color_code + match.group(0) + config['reset_string']
 
@@ -123,10 +109,14 @@ def parse_rule(rule, config):
             if not isinstance(color[sub_action], str):
                 return 'sub-action {} value not string '.format(sub_action)
 
+    color_code = colors.get_code(color)
+    if not color_code:
+        return 'invalid color code'
+
     return {
         'regex': regex_str,
         'color': color,
-        'repl_func': get_highlight_repl_func(config, color),
+        'repl_func': get_highlight_repl_func(config, color_code),
     }
 
 
@@ -166,7 +156,7 @@ def main():
     buffer = ''
 
     if args.demo:
-        return color_demo()
+        return colors.demo()
 
     with open(args.config, 'r') as file:
         config = parse_config(file)
