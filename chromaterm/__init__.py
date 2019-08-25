@@ -9,7 +9,7 @@ import sys
 import regex as re
 import yaml
 
-import chromaterm.colors as colors
+import chromaterm.colors
 
 # Maximum chuck size per read
 READ_SIZE = 65536  # 64 KiB
@@ -30,7 +30,7 @@ def args_init():
                         metavar='FILE',
                         type=str,
                         help='location of config file (default: %(default)s)',
-                        default='.chromatermrc')  # TODO: '$HOME/.chromatermrc')
+                        default='.chromatermrc')  # TODO:'$HOME/.chromatermrc')
     parser.add_argument('--demo',
                         action='store_true',
                         help='demo the available custom color-codes')
@@ -43,12 +43,40 @@ def eprint(*args, **kwargs):
     print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
 
 
-def get_highlight_repl_func(config, color_code):
-    """Return the replace function for a `color_code` to be used in `re.sub`."""
-    def func(match):
-        return color_code + match.group(0) + config['reset_string']
+def get_highlight_repl_func(config, regex, color):
+    """Returns a dict containing the regex and replace function to be used in
+    `re.sub`. Returns an error string if there's a problem."""
+    if isinstance(color, str):  # Simple action
+        color_code = chromaterm.colors.get_code(color)
+        if not color_code:
+            return 'invalid color code'
 
-    return func
+        def func(match):
+            return color_code + match.group(0) + config['reset_string']
+    else:  # Complex action
+        # Compile the regex to determine the number of groups
+        group_count = re.compile(regex).groups
+        actions = {}
+
+        for group in [x for x in color if x <= group_count]:
+            color_code = chromaterm.colors.get_code(color[group])
+            if not color_code:
+                return 'invalid color code'
+
+            actions[group] = color_code
+
+        def func(match):
+            if not actions:
+                return match.group(0)
+
+            out = ''
+
+            for action in actions:
+                pass
+
+            return out
+
+    return {'regex': regex, 'repl_func': func}
 
 
 def highlight(rules, line):
@@ -84,15 +112,15 @@ def parse_config(data):
 
 
 def parse_rule(rule, config):
-    """Return a dict of the parsed `rule` if parsed successfully. If not, a
-    string with the error message is returned."""
+    """Return a dict from `get_highlight_repl_func` if parsed successfully. If
+    not, a string with the error message is returned."""
     # pylint: disable=too-many-return-statements
 
-    regex_str = rule.get('regex')
-    if not regex_str:
+    regex = rule.get('regex')
+    if not regex:
         return 'regex not found'
 
-    if not isinstance(regex_str, str) and not isinstance(regex_str, int):
+    if not isinstance(regex, str) and not isinstance(regex, int):
         return 'regex not string or integer'
 
     color = rule.get('color')
@@ -110,15 +138,7 @@ def parse_rule(rule, config):
             if not isinstance(color[sub_action], str):
                 return 'sub-action {} value not string '.format(sub_action)
 
-    color_code = colors.get_code(color)
-    if not color_code:
-        return 'invalid color code'
-
-    return {
-        'regex': regex_str,
-        'color': color,
-        'repl_func': get_highlight_repl_func(config, color_code),
-    }
+    return get_highlight_repl_func(config, regex, color)
 
 
 def process_buffer(config, buffer, more):
@@ -157,7 +177,7 @@ def main():
     buffer = ''
 
     if args.demo:
-        return colors.demo()
+        return chromaterm.colors.demo()
 
     with open(args.config, 'r') as file:
         config = parse_config(file)
