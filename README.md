@@ -46,7 +46,7 @@ Think of ChromaTerm like `grep`; just pipe things into it. However, unlike other
 
 # Highlight Rules
 
-All of the highlight rules are placed under the `highlights` array in the configuration file.
+All of the highlight rules are placed under the `rules` array in the configuration file.
 
 ## Types
 
