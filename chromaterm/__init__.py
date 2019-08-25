@@ -6,9 +6,10 @@ import os
 import select
 import sys
 
-import chromaterm.colors as colors
 import regex as re
 import yaml
+
+import chromaterm.colors as colors
 
 # Maximum chuck size per read
 READ_SIZE = 65536  # 64 KiB
@@ -29,7 +30,7 @@ def args_init():
                         metavar='FILE',
                         type=str,
                         help='location of config file (default: %(default)s)',
-                        default='.testrc')  # TODO: '$HOME/.chromatermrc')
+                        default='.chromatermrc')  # TODO: '$HOME/.chromatermrc')
     parser.add_argument('--demo',
                         action='store_true',
                         help='demo the available custom color-codes')
