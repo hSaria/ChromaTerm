@@ -32,6 +32,7 @@ ChromaTerm (`ct`) reads from standard input and highlights according to user-con
 >
 >     # If installed from source
 >     git clone -b legacy git@github.com:hSaria/ChromaTerm.git
+>     cd ChromaTerm--/src/ && ./configure && make uninstall
 
 # Usage
 
