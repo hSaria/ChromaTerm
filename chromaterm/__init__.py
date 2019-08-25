@@ -69,12 +69,7 @@ def get_highlight_repl_func(config, regex, color):
             if not actions:
                 return match.group(0)
 
-            out = ''
-
-            for action in actions:
-                pass
-
-            return out
+            return match.group(0)
 
     return {'regex': regex, 'repl_func': func}
 
