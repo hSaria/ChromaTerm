@@ -6,8 +6,6 @@ import os
 import select
 import sys
 
-# Need to backward-support legacy config and want support for variable-length
-# lookbehinds.
 import regex as re
 import yaml
 
@@ -30,7 +28,7 @@ def args_init():
                         metavar='FILE',
                         type=str,
                         help='location of config file (default: %(default)s)',
-                        default='.testrc')  # TODO: '~/.chromatermrc')
+                        default='.testrc')  # TODO: '$HOME/.chromatermrc')
     parser.add_argument('--demo',
                         action='store_true',
                         help='demo the available custom color-codes')
