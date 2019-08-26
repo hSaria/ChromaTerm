@@ -6,13 +6,10 @@ A tool for colorizing the output of a terminal.
 -   [Installation](#installation)
 -   [Usage](#usage)
 -   [Highlight Rules](#highlight-rules)
-    -   [Types](#types)
-        -   [Simple](#simple)
-        -   [Complex](#complex)
-    -   [Syntax](#syntax)
-        -   [Description](#description)
-        -   [RegEx](#regex)
-        -   [Color](#color)
+    -   [Description](#description)
+    -   [RegEx](#regex)
+    -   [Color](#color)
+    -   [Group](#group)
 -   [Help](#help)
 
 # About
@@ -46,59 +43,37 @@ Think of ChromaTerm like `grep`; just pipe things into it. However, unlike other
 
 # Highlight Rules
 
-All of the highlight rules are placed under the `rules` array in the configuration file.
-
-## Types
-
-### Simple
-
-A simple rule matches using `regex` and highlights the match according to `color`. For example:
+All of the highlight rules are placed under the `rules` array in the configuration file. Here's an example config file:
 
 ```yaml
-- description: My first rule
+rules:
+- description: My first rule colors the foreground
   regex: hello.+world
-  color: red
+  color: f#ff0000
+- description: Background this time, but for a specific match group
+  regex: Hey (there)
+  color: b#ff0000
+  group: 1
 ```
 
-### Complex
-
-A complex rule can color sub-groups differently. For example:
-
-```yaml
-- description: My first rule
-  regex: hey (there)
-  color:
-    0: green
-    1: blue
-```
-
-## Syntax
-
-### Description
+## Description
 
 Optional. It's purely for your sake.
 
-### RegEx
+## RegEx
 
 The RegEx engine used is [Python RegEx](https://pypi.org/project/regex/), not to be confused with the native Python `re`. It was chosen because it has support for variable-length look-behinds.
 
-### Color
+## Color
 
-Once something matches the RegEx of a rule, the color is applied to the match. For complex rules, each group's color is applied to the respective group.
+The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and `f` for foreground (e.g. `f#abcdef`).
 
-The color can be a named (predefined) action or a custom one. Multiple colors can be used, like `bold red` or `<fca><BAF>`. The named actions are:
+You can have the foreground and background colored by seperating them with a space, like `b#123456 f#abcdef`.
 
--   VT100: bold, dim, underscore, blink, b black, b blue, b cyan, b green, b magenta, b red, b white, b yellow, black, blue, cyan, white, and yellow.
--   xterm-256: b azure, b ebony, b jade, b lime, b orange, b pink, b  silver, b tan, b violet, azure, ebony, jade, light azure, light ebony, light jade, light lime, light orange, light pink, light silver, light tan, light violet, lime, orange, pink, silver, tan, and violet.
+## Group
 
-> Terminals that support xterm-256 codes will support VT100 codes.
-
-To use a custom action, `man ct` has more info on that. Run `ct --demo` to see the full range of colors.
+Optional.  By default, the entire match is colored. If you want to be more specific, you can change that to a specific group.
 
 # Help
-
-ChromaTerm includes a manual; check out `man ct`.
-
-## Questions, Suggestions, or Bugs
 
 Please open up an issue (always appreciated).
