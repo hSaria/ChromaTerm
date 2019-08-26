@@ -40,11 +40,27 @@ def eprint(*args, **kwargs):
     print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
 
 
+def get_color_code(color):
+    """Return the ANSI code to be used when highlighting with `color` or None if
+    the `color` is invalid. The `color` is a string in the format of #abcdef for
+    background or #ABCDEF for foreground (can more than one)."""
+    if not re.match(r'^(#([a-f]{6}|[A-F]{6})(\s)?)+$', color):
+        return None
+
+    code = ''
+
+    for match in re.findall(r'([a-f]{6}|[A-F]{6})', color):
+        target = '\033[38;5;' if match.islower() else '\033[48;5;'
+        color_id = rgb_to_8bit(*(int(match[i:i + 2], 16) for i in [0, 2, 4]))
+        code += target + str(color_id) + 'm'
+    return code
+
+
 def get_highlight_repl_func(config, regex, color):
     """Returns a dict containing the regex and replace function to be used in
     `re.sub`. Returns an error string if there's a problem."""
     if isinstance(color, str):  # Simple action
-        color_code = chromaterm.colors.get_code(color)
+        color_code = chromaterm.colors.get_color_code(color)
         if not color_code:
             return 'invalid color code'
 
@@ -56,7 +72,7 @@ def get_highlight_repl_func(config, regex, color):
         actions = {}
 
         for group in [x for x in color if x <= group_count]:
-            color_code = chromaterm.colors.get_code(color[group])
+            color_code = chromaterm.colors.get_color_code(color[group])
             if not color_code:
                 return 'invalid color code'
 
@@ -161,6 +177,14 @@ def read_ready(timeout=None):
     specified, the function will return False if expired or True as soon as the
     condition is met."""
     return sys.stdin in select.select([sys.stdin], [], [], timeout)[0]
+
+
+def rgb_to_8bit(_r, _g, _b):
+    """Downscale from 24-bit RGB to 8-bit ANSI."""
+    def downscale(value):
+        return int(value / 256 * 6)
+
+    return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
 
 
 def main():
