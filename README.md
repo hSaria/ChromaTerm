@@ -50,6 +50,7 @@ rules:
 - description: My first rule colors the foreground
   regex: hello.+world
   color: f#ff0000
+
 - description: Background this time, but just for "there"
   regex: Hey (there), buddy
   color: b#ff0000
