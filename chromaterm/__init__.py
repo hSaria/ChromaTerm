@@ -9,8 +9,6 @@ import sys
 import regex as re
 import yaml
 
-import chromaterm.colors
-
 # Maximum chuck size per read
 READ_SIZE = 65536  # 64 KiB
 
@@ -42,25 +40,28 @@ def eprint(*args, **kwargs):
 
 def get_color_code(color):
     """Return the ANSI code to be used when highlighting with `color` or None if
-    the `color` is invalid. The `color` is a string in the format of #abcdef for
-    background or #ABCDEF for foreground (can more than one)."""
-    if not re.match(r'^(#([a-f]{6}|[A-F]{6})(\s)?)+$', color):
+    the `color` is invalid. The `color` is a string in the format of b#abcdef
+    for background or f#abcdef for foreground. Can be multiple colors if
+    seperated by a space."""
+    if not re.match(r'^((b|f)#([0-9a-fA-F]{6})(\s|$))+$', color):
         return None
 
     code = ''
 
-    for match in re.findall(r'([a-f]{6}|[A-F]{6})', color):
-        target = '\033[38;5;' if match.islower() else '\033[48;5;'
-        color_id = rgb_to_8bit(*(int(match[i:i + 2], 16) for i in [0, 2, 4]))
+    for match in re.findall(r'(b|f)#([0-9a-fA-F]{6})', color):
+        target = '\033[38;5;' if match[0] == 'f' else '\033[48;5;'
+        rgb = (int(match[1][i:i + 2], 16) for i in [0, 2, 4])
+        color_id = rgb_to_8bit(*rgb)
         code += target + str(color_id) + 'm'
-    return code
+
+    return code or None
 
 
 def get_highlight_repl_func(config, regex, color):
     """Returns a dict containing the regex and replace function to be used in
     `re.sub`. Returns an error string if there's a problem."""
     if isinstance(color, str):  # Simple action
-        color_code = chromaterm.colors.get_color_code(color)
+        color_code = get_color_code(color)
         if not color_code:
             return 'invalid color code'
 
@@ -72,7 +73,7 @@ def get_highlight_repl_func(config, regex, color):
         actions = {}
 
         for group in [x for x in color if x <= group_count]:
-            color_code = chromaterm.colors.get_color_code(color[group])
+            color_code = get_color_code(color[group])
             if not color_code:
                 return 'invalid color code'
 
