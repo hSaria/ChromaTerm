@@ -68,11 +68,11 @@ The RegEx engine used is [Python RegEx](https://pypi.org/project/regex/), not to
 
 The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and `f` for foreground (e.g. `f#abcdef`).
 
-You can have the foreground and background colored by seperating them with a space, like `b#123456 f#abcdef`.
+You can have the foreground and background colored by separating them with a space, like `b#123456 f#abcdef`.
 
 ## Group
 
-Optional.  By default, the entire match is colored. If you want to be more specific, you can change that to a specific group.
+Optional. By default, the entire match is colored. That can changed to a specific group in the `regex`.
 
 # Help
 
