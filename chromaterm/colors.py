@@ -95,12 +95,6 @@ def decode_color_code(color):
     return code
 
 
-def demo():
-    """Print the xterm-256 demo."""
-    # TODO
-    print('Demo')
-
-
 def get_code(color):
     """Return the ANSI code to be used when highlighting with `color` or None if
     the `color` is invalid."""

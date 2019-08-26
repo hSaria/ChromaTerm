@@ -31,9 +31,6 @@ def args_init():
                         type=str,
                         help='location of config file (default: %(default)s)',
                         default='.chromatermrc')  # TODO:'$HOME/.chromatermrc')
-    parser.add_argument('--demo',
-                        action='store_true',
-                        help='demo the available custom color-codes')
 
     return parser.parse_args()
 
