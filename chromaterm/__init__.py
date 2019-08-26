@@ -168,9 +168,6 @@ def main():
     args = args_init()
     buffer = ''
 
-    if args.demo:
-        return chromaterm.colors.demo()
-
     with open(args.config, 'r') as file:
         config = parse_config(file)
 
