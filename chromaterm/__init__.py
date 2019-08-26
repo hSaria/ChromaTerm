@@ -42,7 +42,7 @@ def get_color_code(color):
     """Return the ANSI code to be used when highlighting with `color` or None if
     the `color` is invalid. The `color` is a string in the format of b#abcdef
     for background or f#abcdef for foreground. Can be multiple colors if
-    seperated by a space."""
+    separated by a space."""
     if not re.match(r'^((b|f)#([0-9a-fA-F]{6})(\s|$))+$', color):
         return None
 
