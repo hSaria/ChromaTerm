@@ -57,37 +57,6 @@ def get_color_code(color):
     return code or None
 
 
-def get_highlight_repl_func(config, regex, color):
-    """Returns a dict containing the regex and replace function to be used in
-    `re.sub`. Returns an error string if there's a problem."""
-    if isinstance(color, str):  # Simple action
-        color_code = get_color_code(color)
-        if not color_code:
-            return 'invalid color code'
-
-        def func(match):
-            return color_code + match.group(0) + config['reset_string']
-    else:  # Complex action
-        # Compile the regex to determine the number of groups
-        group_count = re.compile(regex).groups
-        actions = {}
-
-        for group in [x for x in color if x <= group_count]:
-            color_code = get_color_code(color[group])
-            if not color_code:
-                return 'invalid color code'
-
-            actions[group] = color_code
-
-        def func(match):
-            if not actions:
-                return match.group(0)
-
-            return match.group(0)
-
-    return {'regex': regex, 'repl_func': func}
-
-
 def highlight(rules, line):
     """According to the `rules`, return a highlighted 'line'."""
     for rule in rules:
@@ -126,28 +95,38 @@ def parse_rule(rule, config):
     # pylint: disable=too-many-return-statements
 
     regex = rule.get('regex')
-    if not regex:
+    if regex is None:
         return 'regex not found'
 
     if not isinstance(regex, str) and not isinstance(regex, int):
-        return 'regex not string or integer'
+        return 'regex not a string or integer'
 
     color = rule.get('color')
-    if not color:
+    if color is None:
         return 'color not found'
 
-    if not isinstance(color, str) and not isinstance(color, dict):
-        return 'color not string or dictionary'
+    if not isinstance(color, str):
+        return 'color not a string'
 
-    if isinstance(color, dict):  # Complex action
-        for sub_action in color:
-            if not isinstance(sub_action, int):
-                return 'sub-action {} not integer'.format(sub_action)
+    color_code = get_color_code(color)
+    if not color_code:
+        return 'color not in the correct format'
 
-            if not isinstance(color[sub_action], str):
-                return 'sub-action {} value not string '.format(sub_action)
+    group = rule.get('group', 0)
+    if group is None:
+        return 'group not found'
 
-    return get_highlight_repl_func(config, regex, color)
+    if not isinstance(group, int):
+        return 'group not an integer'
+
+    group_count = re.compile(regex).groups
+    if group > group_count:
+        return 'group ID over the number of groups in the regex'
+
+    def func(match):
+        return color_code + match.group(group) + config['reset_string']
+
+    return {'regex': regex, 'repl_func': func}
 
 
 def process_buffer(config, buffer, more):
