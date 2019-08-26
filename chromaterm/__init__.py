@@ -119,8 +119,12 @@ def parse_rule(rule, config):
     if not isinstance(group, int):
         return 'group not an integer'
 
-    group_count = re.compile(regex).groups
-    if group > group_count:
+    try:
+        regex_compiled = re.compile(regex)
+    except re.error as exception:
+        return 're.error: ' + str(exception)
+
+    if group > regex_compiled.groups:
         return 'group ID over the number of groups in the regex'
 
     def func(match):
