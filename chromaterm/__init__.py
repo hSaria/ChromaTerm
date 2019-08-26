@@ -124,9 +124,9 @@ def parse_rule(rule, config):
         return 'group ID over the number of groups in the regex'
 
     def func(match):
-        prefix = match[0][match.start(0):match.start(group)]
+        prefix = match.string[match.start(0):match.start(group)]
         repl = color_code + match.group(group) + config['reset_string']
-        postfix = match[0][match.end(group):match.end(0)]
+        postfix = match.string[match.end(group):match.end(0)]
 
         return prefix + repl + postfix
 
