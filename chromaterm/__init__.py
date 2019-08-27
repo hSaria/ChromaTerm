@@ -189,13 +189,14 @@ def rgb_to_8bit(_r, _g, _b):
     return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
 
 
-def main(args):
+def main(args, max_wait=None):
     """Main entry point that uses `args` (return from args_init) to setup the
-    environment and begin processing stdin."""
+    environment and begin processing stdin. `max_wait` is only used for testing;
+    keep it as None."""
     buffer = ''
     config = parse_config(read_file(args.config) or '')
 
-    while read_ready():
+    while read_ready(max_wait):
         data = os.read(sys.stdin.fileno(), READ_SIZE)
         buffer += data.decode()
 

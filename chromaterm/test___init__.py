@@ -359,7 +359,7 @@ def test_main(capsys, monkeypatch):
     try:
         # Will auto-shutdown once "stdin" is closed
         args = chromaterm.args_init([])
-        main_thread = threading.Thread(target=chromaterm.main, args=(args, ))
+        main_thread = threading.Thread(target=chromaterm.main, args=(args, 10))
 
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s_sock.bind(FILE_FAKE)
@@ -390,5 +390,4 @@ def test_main(capsys, monkeypatch):
         c_sock.close()
         s_sock.close()
         os.remove(FILE_FAKE)
-        if main_thread.is_alive():
-            main_thread.join()
+        main_thread.join()
