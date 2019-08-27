@@ -63,7 +63,7 @@ Optional. It's purely for your sake.
 
 ## RegEx
 
-The RegEx engine used is [Python RegEx](https://pypi.org/project/regex/), not to be confused with the native Python `re`. It was chosen because it has support for variable-length look-behinds.
+The RegEx engine used is Python's [re](https://docs.python.org/3/library/re.html#regular-expression-syntax).
 
 ## Color
 

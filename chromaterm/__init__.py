@@ -3,10 +3,10 @@
 
 import argparse
 import os
+import re
 import select
 import sys
 
-import regex as re
 import yaml
 
 # Maximum chuck size per read

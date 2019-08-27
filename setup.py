@@ -1,6 +1,6 @@
 from setuptools import setup
 
-REQUIRES = ['regex', 'PyYAML']
+REQUIRES = ['PyYAML']
 REQUIRES_PYTHON = '>=3.6.0'
 
 with open('README.md', 'r') as f:
