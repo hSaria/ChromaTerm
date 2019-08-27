@@ -11,7 +11,7 @@ os:
   - osx
 
 install:
-  - pip3 install pylint pytest
+  - pip3 install pylint pytest PyYAML
   - python3 setup.py install
 
 script:
