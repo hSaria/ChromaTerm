@@ -149,8 +149,8 @@ def process_buffer(config, buffer, more):
     for line in lines[:-1]:  # Process all lines except for the last
         print(highlight(config['rules'], line), end='')
 
-    # More data to come; hold off on printing the last line
-    if read_ready(WAIT_FOR_NEW_LINE) and more:
+    # Indicated more data to possibly come and stdin confirmed it
+    if more and read_ready(WAIT_FOR_NEW_LINE):
         return lines[-1]  # Return last line as the left-over data
 
     # No more data; print last line and flush as it doesn't have a new line
