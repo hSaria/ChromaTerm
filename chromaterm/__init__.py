@@ -28,7 +28,7 @@ def args_init():
                         metavar='FILE',
                         type=str,
                         help='location of config file (default: %(default)s)',
-                        default='.chromatermrc')  # TODO:'$HOME/.chromatermrc')
+                        default='$HOME/.chromatermrc')
 
     return parser.parse_args()
 
