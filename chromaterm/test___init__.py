@@ -266,7 +266,7 @@ def test_read_ready_input(monkeypatch):
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s_sock.bind(FILE_FAKE)
-        s_sock.listen()
+        s_sock.listen(2)
         c_sock.connect(FILE_FAKE)
         s_conn, _ = s_sock.accept()
 
@@ -286,7 +286,7 @@ def test_read_ready_timeout_empty(monkeypatch):
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s_sock.bind(FILE_FAKE)
-        s_sock.listen()
+        s_sock.listen(2)
         c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         c_sock.connect(FILE_FAKE)
         s_conn, _ = s_sock.accept()
@@ -310,7 +310,7 @@ def test_read_ready_timeout_input(monkeypatch):
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s_sock.bind(FILE_FAKE)
-        s_sock.listen()
+        s_sock.listen(2)
         c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         c_sock.connect(FILE_FAKE)
         s_conn, _ = s_sock.accept()
@@ -359,7 +359,7 @@ def test_main(capsys, monkeypatch):
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s_sock.bind(FILE_FAKE)
-        s_sock.listen()
+        s_sock.listen(2)
         c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         c_sock.connect(FILE_FAKE)
         s_conn, _ = s_sock.accept()
