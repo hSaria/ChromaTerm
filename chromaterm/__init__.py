@@ -95,14 +95,14 @@ def parse_rule(rule, config):
     # pylint: disable=too-many-return-statements
 
     regex = rule.get('regex')
-    if regex is None:
+    if not regex:
         return 'regex not found'
 
     if not isinstance(regex, str) and not isinstance(regex, int):
         return 'regex not a string or integer'
 
     color = rule.get('color')
-    if color is None:
+    if not color:
         return 'color not found'
 
     if not isinstance(color, str):
@@ -113,9 +113,6 @@ def parse_rule(rule, config):
         return 'color not in the correct format'
 
     group = rule.get('group', 0)
-    if group is None:
-        return 'group not found'
-
     if not isinstance(group, int):
         return 'group not an integer'
 
