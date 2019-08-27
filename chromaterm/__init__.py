@@ -19,7 +19,7 @@ READ_SIZE = 65536  # 64 KiB
 WAIT_FOR_NEW_LINE = 0.0005
 
 
-def args_init():
+def args_init(args=None):
     """Initialzes arguments and returns the output of `parse_args`."""
     parser = argparse.ArgumentParser(description='Colorize your output using'
                                      'RegEx.')
@@ -30,7 +30,7 @@ def args_init():
                         help='location of config file (default: %(default)s)',
                         default='$HOME/.chromatermrc')
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def eprint(*args, **kwargs):
