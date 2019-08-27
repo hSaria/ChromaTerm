@@ -65,26 +65,15 @@ def highlight(rules, line):
     return line
 
 
-def parse_config(location):
+def parse_config(data):
     """Parse `data` (a YAML string), returning a dictionary of the config."""
     config = {'rules': [], 'reset_string': '\033[0m'}
 
-    location = os.path.expandvars(location)
-
-    if not os.access(location, os.F_OK):
-        eprint('configuration file', location, 'not found')
+    try:  # Load the YAML configuration file
+        load = yaml.safe_load(data) or {}
+    except yaml.YAMLError as exception:
+        eprint('Parse error:', exception)
         return config
-
-    if not os.access(location, os.R_OK):
-        eprint('cannot read configuration file', location, '(permission)')
-        return config
-
-    with open(location, 'r') as file:
-        try:  # Load the YAML configuration file
-            load = yaml.safe_load(file)
-        except yaml.YAMLError as exception:
-            eprint('Parse error:', exception)
-            return config
 
     # Parse the rules
     rules = load.get('rules', [])
@@ -170,6 +159,23 @@ def process_buffer(config, buffer, more):
     return ''  # All of the buffer was processed; return an empty buffer
 
 
+def read_file(location):
+    """Read a file at `location`, returning its contents, or None if there's a
+    problem."""
+    location = os.path.expandvars(location)
+
+    if not os.access(location, os.F_OK):
+        eprint('configuration file', location, 'not found')
+        return None
+
+    if not os.access(location, os.R_OK):
+        eprint('cannot read configuration file', location, '(permission)')
+        return None
+
+    with open(location, 'r') as file:
+        return file.read()
+
+
 def read_ready(timeout=None):
     """Return True if sys.stdin has data or is closed. If `timeout` is None,
     this function will block until the True condition is met. If `timeout` is
@@ -190,7 +196,7 @@ def main():
     """Main entry point. Reads the config file and begins processing stdin."""
     args = args_init()
     buffer = ''
-    config = parse_config(args.config)
+    config = parse_config(read_file(args.config) or '')
 
     while read_ready():
         data = os.read(sys.stdin.fileno(), READ_SIZE)
