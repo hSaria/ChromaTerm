@@ -389,3 +389,4 @@ def test_main(capsys, monkeypatch):
         c_sock.close()
         s_sock.close()
         os.remove(FILE_FAKE)
+        main_thread.join()
