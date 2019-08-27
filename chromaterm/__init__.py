@@ -204,7 +204,3 @@ def main():
 
         # Process the buffer, updating it with any left-over data
         buffer = process_buffer(config, buffer, bool(data))
-
-
-if __name__ == '__main__':
-    sys.exit(main())
