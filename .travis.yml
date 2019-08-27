@@ -12,8 +12,9 @@ os:
 
 install:
   - pip3 install pylint pytest
+  - python3 setup.py install
 
 script:
-  - echo hi | ./ct
+  - echo hi | ct
   - pylint chromaterm/
   - pytest chromaterm/
