@@ -65,15 +65,26 @@ def highlight(rules, line):
     return line
 
 
-def parse_config(data):
+def parse_config(location):
     """Parse `data` (a YAML string), returning a dictionary of the config."""
     config = {'rules': [], 'reset_string': '\033[0m'}
 
-    try:  # Load the YAML configuration file
-        load = yaml.safe_load(data)
-    except yaml.YAMLError as exception:
-        eprint('Parse error:', exception)
+    location = os.path.expandvars(location)
+
+    if not os.access(location, os.F_OK):
+        eprint('configuration file', location, 'not found')
         return config
+
+    if not os.access(location, os.R_OK):
+        eprint('cannot read configuration file', location, '(permission)')
+        return config
+
+    with open(location, 'r') as file:
+        try:  # Load the YAML configuration file
+            load = yaml.safe_load(file)
+        except yaml.YAMLError as exception:
+            eprint('Parse error:', exception)
+            return config
 
     # Parse the rules
     rules = load.get('rules', [])
@@ -179,9 +190,7 @@ def main():
     """Main entry point."""
     args = args_init()
     buffer = ''
-
-    with open(args.config, 'r') as file:
-        config = parse_config(file)
+    config = parse_config(args.config)
 
     while read_ready():
         data = os.read(sys.stdin.fileno(), READ_SIZE)
