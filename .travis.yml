@@ -11,7 +11,9 @@ os:
   - osx
 
 install:
-  - pip3 install chromaterm
+  - pip3 install pylint pytest
 
 script:
-  - echo hi | ct
+  - echo hi | ./ct
+  - pylint chromaterm/
+  - pytest chromaterm/
