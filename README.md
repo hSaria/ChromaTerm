@@ -37,7 +37,7 @@ By default, ChromaTerm reads a YAML file at `~/.chromatermrc` which would have y
 
     echo "Jul 14 12:28:19: Message from 1.2.3.4" | ct
 
-Think of ChromaTerm like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have this in my .bash_profile `ssh() { /usr/bin/ssh $* | ct; }`.
+Think of ChromaTerm like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have `ssh() { /usr/bin/ssh $* | ct; }` in my `.bash_profile` so that my sessions are colored.
 
 > During installation, the default config file was copied to `~/.chromatermrc`; modify it to your liking.
 
@@ -69,12 +69,12 @@ The RegEx engine used is Python's [re](https://docs.python.org/3/library/re.html
 
 The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and `f` for foreground (e.g. `f#abcdef`).
 
-You can have the foreground and background colored by separating them with a space, like `b#123456 f#abcdef`.
+You can color the foreground and background by separating them with a space, like `b#123456 f#abcdef`.
 
 ## Group
 
-Optional. By default, the entire match is colored. That can changed to a specific group in the `regex`.
+Optional. By default, the entire match is colored. That can be changed to a specific group in the `regex`.
 
 # Help
 
-Please open up an issue (always appreciated).
+If you've got any questions or suggestions, please open up an issue (always appreciated).
