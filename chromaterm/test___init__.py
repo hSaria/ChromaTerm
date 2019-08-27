@@ -357,6 +357,10 @@ def test_rgb_to_8bit():
 def test_main(capsys, monkeypatch):
     """Test stdin processing"""
     try:
+        # Will auto-shutdown once "stdin" is closed
+        args = chromaterm.args_init([])
+        main_thread = threading.Thread(target=chromaterm.main, args=(args, ))
+
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s_sock.bind(FILE_FAKE)
         s_sock.listen(2)
@@ -366,9 +370,6 @@ def test_main(capsys, monkeypatch):
 
         monkeypatch.setattr('sys.stdin', c_sock)
 
-        # Will auto-shutdown once "stdin" is closed
-        args = chromaterm.args_init([])
-        main_thread = threading.Thread(target=chromaterm.main, args=(args, ))
         main_thread.start()
         time.sleep(0.5)  # Any start-up delay
         assert main_thread.is_alive()
@@ -389,4 +390,5 @@ def test_main(capsys, monkeypatch):
         c_sock.close()
         s_sock.close()
         os.remove(FILE_FAKE)
-        main_thread.join()
+        if main_thread.is_alive():
+            main_thread.join()
