@@ -189,9 +189,9 @@ def rgb_to_8bit(_r, _g, _b):
     return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
 
 
-def main():
-    """Main entry point. Reads the config file and begins processing stdin."""
-    args = args_init()
+def main(args):
+    """Main entry point that uses `args` (return from args_init) to setup the
+    environment and begin processing stdin."""
     buffer = ''
     config = parse_config(read_file(args.config) or '')
 

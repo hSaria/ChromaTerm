@@ -6,4 +6,4 @@ import sys
 import chromaterm
 
 if __name__ == '__main__':
-    sys.exit(chromaterm.main())
+    sys.exit(chromaterm.main(chromaterm.args_init))
