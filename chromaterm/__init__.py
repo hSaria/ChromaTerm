@@ -187,7 +187,7 @@ def rgb_to_8bit(_r, _g, _b):
 
 
 def main():
-    """Main entry point."""
+    """Main entry point. Reads the config file and begins processing stdin."""
     args = args_init()
     buffer = ''
     config = parse_config(args.config)
