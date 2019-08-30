@@ -29,7 +29,7 @@ CONFIG_RULE_MULTIPLE_COLORS = '''rules:
 CONFIG_RULE_ERROR = '''rules:
 - description: simple'''
 
-FILE_FAKE = '.test_chromatermrc'
+FILE_FAKE = '.test_chromaterm.yml'
 
 
 def test_args_init():
@@ -251,7 +251,7 @@ def test_process_buffer_rule_multiple_colors(capsys):
 
 def test_read_file():
     """Read the default configuration."""
-    assert chromaterm.read_file('.chromatermrc') is not None
+    assert chromaterm.read_file('.chromaterm.yml') is not None
 
 
 def test_read_file_non_existent(capsys):

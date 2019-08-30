@@ -14,7 +14,11 @@ A tool for colorizing the output of a terminal.
 
 # About
 
-ChromaTerm (`ct`) reads from standard input and highlights according to user-configurable rules. Here's an example using the rules in the included configuration file:
+ChromaTerm (`ct`) reads from standard input and colors it according to user-configurable rules.
+
+Think of ChromaTerm like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have `ssh() { /usr/bin/ssh $* | ct; }` in my `.bash_profile` to give my sessions color.
+
+Here's an example using the rules in the default configuration file:
 
 ![alt text](https://github.com/hSaria/ChromaTerm/raw/master/.github/junos-show-interface.png "Example output")
 
@@ -33,13 +37,11 @@ ChromaTerm (`ct`) reads from standard input and highlights according to user-con
 
 # Usage
 
-By default, ChromaTerm reads a YAML file at `~/.chromatermrc` which would have your highlight rules. As an example, run the following:
+By default, ChromaTerm reads `.chromaterm.yml` in your home directory. As an example, run the following:
 
     echo "Jul 14 12:28:19: Message from 1.2.3.4" | ct
 
-Think of ChromaTerm like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have `ssh() { /usr/bin/ssh $* | ct; }` in my `.bash_profile` so that my sessions are colored.
-
-> During installation, the default config file was copied to `~/.chromatermrc`; modify it to your liking.
+> During installation, the default config file was copied to home directory.
 
 # Highlight Rules
 

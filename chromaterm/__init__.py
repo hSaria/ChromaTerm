@@ -28,7 +28,7 @@ def args_init(args=None):
                         metavar='FILE',
                         type=str,
                         help='location of config file (default: %(default)s)',
-                        default='$HOME/.chromatermrc')
+                        default='$HOME/.chromaterm.yml')
 
     return parser.parse_args(args)
 
