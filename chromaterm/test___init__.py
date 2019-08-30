@@ -45,7 +45,7 @@ def test_eprint(capsys):
     assert msg in capsys.readouterr().err
 
 
-def test_get_color_code():
+def test_get_color_code_color():
     """20 random known-good color codes."""
     assert chromaterm.get_color_code('b#0973d8') == '\033[48;5;33m'
     assert chromaterm.get_color_code('b#8b6dd3') == '\033[48;5;140m'
@@ -67,6 +67,26 @@ def test_get_color_code():
     assert chromaterm.get_color_code('f#d7e764') == '\033[38;5;228m'
     assert chromaterm.get_color_code('f#e002d7') == '\033[38;5;201m'
     assert chromaterm.get_color_code('f#f56726') == '\033[38;5;208m'
+
+
+def test_get_color_code_grayscale():
+    """16 random known-good grayscale codes."""
+    assert chromaterm.get_color_code('b#000000') == '\x1b[48;5;232m'
+    assert chromaterm.get_color_code('b#5d5d5d') == '\x1b[48;5;240m'
+    assert chromaterm.get_color_code('b#373737') == '\x1b[48;5;237m'
+    assert chromaterm.get_color_code('b#c8c8c8') == '\x1b[48;5;250m'
+    assert chromaterm.get_color_code('b#cecece') == '\x1b[48;5;251m'
+    assert chromaterm.get_color_code('b#d7d7d7') == '\x1b[48;5;252m'
+    assert chromaterm.get_color_code('b#d8d8d8') == '\x1b[48;5;252m'
+    assert chromaterm.get_color_code('b#fcfcfc') == '\x1b[48;5;255m'
+    assert chromaterm.get_color_code('f#0b0b0b') == '\x1b[38;5;233m'
+    assert chromaterm.get_color_code('f#000000') == '\x1b[38;5;232m'
+    assert chromaterm.get_color_code('f#2b2b2b') == '\x1b[38;5;236m'
+    assert chromaterm.get_color_code('f#2f2f2f') == '\x1b[38;5;236m'
+    assert chromaterm.get_color_code('f#4c4c4c') == '\x1b[38;5;239m'
+    assert chromaterm.get_color_code('f#4d4d4d') == '\x1b[38;5;239m'
+    assert chromaterm.get_color_code('f#9d9d9d') == '\x1b[38;5;246m'
+    assert chromaterm.get_color_code('f#808080') == '\x1b[38;5;244m'
 
 
 def test_parse_config_simple():
