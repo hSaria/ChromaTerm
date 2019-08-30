@@ -13,7 +13,7 @@ rules:
 #   color: f#ff00ff
 #
 - description: MAC
-  regex: (?i)((?<=\W)|^)(?<!:)(([0-9a-f]{1,2}:){5}[0-9a-f]{1,2}|([0-9a-f]{4}\.){2}[0-9a-f]{4})(?!:)((?=\W)|$)
+  regex: (?i)((?<=\W)|^)((?<!:)([0-9a-f]{1,2}:){5}[0-9a-f]{1,2}(?!:)|(?<!\.)([0-9a-f]{4}\.){2}[0-9a-f]{4}(?!\.))((?=\W)|$)
   color: f#5f61ad
 
 - description: Date in (YYYY-MM-DD|MMM (YYYY|DD)|DD MMM (YYYY)?)[\WT_]hh:mm:ss.SSSSSS format (date, sec, msec, and nsec optional)
