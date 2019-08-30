@@ -45,48 +45,41 @@ def test_eprint(capsys):
     assert msg in capsys.readouterr().err
 
 
-def test_get_color_code_color():
-    """20 random known-good color codes."""
-    assert chromaterm.get_color_code('b#0973d8') == '\033[48;5;33m'
-    assert chromaterm.get_color_code('b#8b6dd3') == '\033[48;5;140m'
-    assert chromaterm.get_color_code('b#2867c7') == '\033[48;5;32m'
-    assert chromaterm.get_color_code('b#18923a') == '\033[48;5;35m'
-    assert chromaterm.get_color_code('b#636836') == '\033[48;5;101m'
-    assert chromaterm.get_color_code('b#a0da5e') == '\033[48;5;156m'
-    assert chromaterm.get_color_code('b#b99153') == '\033[48;5;179m'
-    assert chromaterm.get_color_code('b#fafb19') == '\033[48;5;226m'
-    assert chromaterm.get_color_code('f#6cb0d7') == '\033[38;5;117m'
-    assert chromaterm.get_color_code('f#6f5e3a') == '\033[38;5;101m'
-    assert chromaterm.get_color_code('f#7d6256') == '\033[38;5;102m'
-    assert chromaterm.get_color_code('f#15c93d') == '\033[38;5;41m'
-    assert chromaterm.get_color_code('f#45f2d7') == '\033[38;5;87m'
-    assert chromaterm.get_color_code('f#50a910') == '\033[38;5;70m'
-    assert chromaterm.get_color_code('f#1589b3') == '\033[38;5;38m'
-    assert chromaterm.get_color_code('f#b8df23') == '\033[38;5;190m'
-    assert chromaterm.get_color_code('f#d5a3bf') == '\033[38;5;182m'
-    assert chromaterm.get_color_code('f#d7e764') == '\033[38;5;228m'
-    assert chromaterm.get_color_code('f#e002d7') == '\033[38;5;201m'
-    assert chromaterm.get_color_code('f#f56726') == '\033[38;5;208m'
+def test_get_color_code():
+    """Random known-good color codes."""
+    colors = [
+        'b#0973d8', 'b#8b6dd3', 'b#2867c7', 'b#18923a', 'b#636836', 'b#a0da5e',
+        'b#b99153', 'b#fafb19', 'f#6cb0d7', 'f#6f5e3a', 'f#7d6256', 'f#15c93d',
+        'f#45f2d7', 'f#50a910', 'f#1589b3', 'f#b8df23', 'f#d5a3bf', 'f#d7e764',
+        'f#e002d7', 'f#f56726'
+    ]
+    codes = [
+        '48;5;33m', '48;5;140m', '48;5;32m', '48;5;35m', '48;5;101m',
+        '48;5;156m', '48;5;179m', '48;5;226m', '38;5;117m', '38;5;101m',
+        '38;5;102m', '38;5;41m', '38;5;87m', '38;5;70m', '38;5;38m',
+        '38;5;190m', '38;5;182m', '38;5;228m', '38;5;201m', '38;5;208m'
+    ]
+
+    for color, code in zip(colors, codes):
+        assert chromaterm.get_color_code(color) == '\033[' + code
 
 
 def test_get_color_code_grayscale():
-    """16 random known-good grayscale codes."""
-    assert chromaterm.get_color_code('b#000000') == '\x1b[48;5;232m'
-    assert chromaterm.get_color_code('b#5d5d5d') == '\x1b[48;5;240m'
-    assert chromaterm.get_color_code('b#373737') == '\x1b[48;5;237m'
-    assert chromaterm.get_color_code('b#c8c8c8') == '\x1b[48;5;250m'
-    assert chromaterm.get_color_code('b#cecece') == '\x1b[48;5;251m'
-    assert chromaterm.get_color_code('b#d7d7d7') == '\x1b[48;5;252m'
-    assert chromaterm.get_color_code('b#d8d8d8') == '\x1b[48;5;252m'
-    assert chromaterm.get_color_code('b#fcfcfc') == '\x1b[48;5;255m'
-    assert chromaterm.get_color_code('f#0b0b0b') == '\x1b[38;5;233m'
-    assert chromaterm.get_color_code('f#000000') == '\x1b[38;5;232m'
-    assert chromaterm.get_color_code('f#2b2b2b') == '\x1b[38;5;236m'
-    assert chromaterm.get_color_code('f#2f2f2f') == '\x1b[38;5;236m'
-    assert chromaterm.get_color_code('f#4c4c4c') == '\x1b[38;5;239m'
-    assert chromaterm.get_color_code('f#4d4d4d') == '\x1b[38;5;239m'
-    assert chromaterm.get_color_code('f#9d9d9d') == '\x1b[38;5;246m'
-    assert chromaterm.get_color_code('f#808080') == '\x1b[38;5;244m'
+    """Random known-good grayscale codes."""
+    colors = [
+        'b#000000', 'b#5d5d5d', 'b#373737', 'b#c8c8c8', 'b#cecece', 'b#d7d7d7',
+        'b#d8d8d8', 'b#fcfcfc', 'f#0b0b0b', 'f#000000', 'f#2b2b2b', 'f#2f2f2f',
+        'f#4c4c4c', 'f#4d4d4d', 'f#9d9d9d', 'f#808080'
+    ]
+    codes = [
+        '48;5;232m', '48;5;240m', '48;5;237m', '48;5;250m', '48;5;251m',
+        '48;5;252m', '48;5;252m', '48;5;255m', '38;5;233m', '38;5;232m',
+        '38;5;236m', '38;5;236m', '38;5;239m', '38;5;239m', '38;5;246m',
+        '38;5;244m'
+    ]
+
+    for color, code in zip(colors, codes):
+        assert chromaterm.get_color_code(color) == '\033[' + code
 
 
 def test_parse_config_simple():
