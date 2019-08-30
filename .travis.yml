@@ -10,7 +10,7 @@ os:
 
 install:
   - pip3 install pylint pytest
-  - python3 install setup.py
+  - python3 setup.py install
 
 script:
   - echo hi | ct
