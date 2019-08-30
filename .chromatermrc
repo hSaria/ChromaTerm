@@ -17,8 +17,8 @@ rules:
 #   color: f#5f61ad
 
 - description: Date in (YYYY-MM-DD|MMM (YYYY|DD)|DD MMM (YYYY)?)[\WT_]hh:mm:ss.SSSSSS format (date, sec, msec, and nsec optional)
-  regex: (?i)(?:(?<=\W)|^)(?:(?:\d{2,4}\-(?:(?:0)?[1-9]|1[0-2])\-(?:3[0-1]|(?:[1-2]\d)|(?:0)?[1-9])|(?P<MMM>jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s(?:\d{4}|\s\d|(?:3[0-1]|(?:[0-2]\d)))|(?:\d|(?:3[0-1]|(?:[0-2]\d)))\s(?P=MMM)(?:\s\d{4})?)[\WT_])?(?:(?:2[0-3])|[0-1]\d):[0-5]\d(?::[0-5]\d)?(?:(?:\.|,)\d{3,6})?(?:(?=\W)|$)
-  color: b#ad5f16
+  regex: (?i)(?:(?<=\W)|^)(?<!:)(?:(?:\d{2,4}\-(?:(?:0)?[1-9]|1[0-2])\-(?:3[0-1]|(?:[1-2]\d)|(?:0)?[1-9])|(?P<MMM>jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s(?:\d{4}|\s\d|(?:3[0-1]|(?:[0-2]\d)))|(?:\d|(?:3[0-1]|(?:[0-2]\d)))\s(?P=MMM)(?:\s\d{4})?)[\WT_])?(?:(?:2[0-3])|[0-1]\d):[0-5]\d(?::[0-5]\d)?(?:(?:\.|,)\d{3,6})?(?!:)(?:(?=\W)|$)
+  color: b#af5f00
 
 - description: Juniper interfaces
   regex: (?i)(?:(?<=\W)|^)(?:(?:(?:fe|ge|xe|et|gr|ip|lt|lsq|mt|sp|vcp)\-\d*/\d*/\d*)|(?:(?:(?:b)?me|em|fab|fxp|fti|lo|pp(?:d|e)?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pimd|pime|tap|vlan|vme|vtep)|(?:(?:ae|reth)\d*))(?:\.\d*)?(?:(?=\W)|$)
