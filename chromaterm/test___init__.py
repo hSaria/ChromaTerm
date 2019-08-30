@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the complete program. No sure if that'll last, but I'll do my best."""
+"""Tests for the main program."""
 
 import os
 import re
