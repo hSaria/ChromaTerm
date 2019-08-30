@@ -9,7 +9,8 @@ os:
   - linux
 
 install:
-  - pip3 install pylint pytest PyYAML
+  - pip3 install pylint pytest
+  - python3 install setup.py
 
 script:
   - echo hi | ./ct
