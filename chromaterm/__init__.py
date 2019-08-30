@@ -186,7 +186,7 @@ def rgb_to_8bit(_r, _g, _b):
     def downscale(value, base=6):
         return int(value / 256 * base)
 
-    if _r == _g == _b: # Use the 24 shades of the grayscale.
+    if _r == _g == _b:  # Use the 24 shades of the grayscale.
         return 232 + downscale(_r, base=24)
 
     return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
