@@ -13,6 +13,6 @@ install:
   - python3 install setup.py
 
 script:
-  - echo hi | ./ct
+  - echo hi | ct
   - pylint chromaterm/
   - pytest chromaterm/
