@@ -204,7 +204,7 @@ def main(args, max_wait=None):
         buffer += data.decode()
 
         if not buffer:  # Entire buffer was processed empty and fd is closed
-            break
+            break  # pragma: no cover
 
         # Process the buffer, updating it with any left-over data
         buffer = process_buffer(config, buffer, bool(data))
