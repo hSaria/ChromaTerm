@@ -162,11 +162,11 @@ def read_file(location):
     location = os.path.expandvars(location)
 
     if not os.access(location, os.F_OK):
-        eprint('configuration file', location, 'not found')
+        eprint('Configuration file', location, 'not found')
         return None
 
     if not os.access(location, os.R_OK):
-        eprint('cannot read configuration file', location, '(permission)')
+        eprint('Cannot read configuration file', location, '(permission)')
         return None
 
     with open(location, 'r') as file:
