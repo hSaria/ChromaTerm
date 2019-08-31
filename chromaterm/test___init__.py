@@ -256,7 +256,7 @@ def test_read_file():
 
 def test_read_file_non_existent(capsys):
     """Read a non-existent file."""
-    msg = 'configuration file ' + FILE_FAKE + ' not found\n'
+    msg = 'Configuration file ' + FILE_FAKE + ' not found\n'
     chromaterm.read_file(FILE_FAKE)
     assert msg in capsys.readouterr().err
 
@@ -264,7 +264,7 @@ def test_read_file_non_existent(capsys):
 def test_read_file_no_permission(capsys):
     """Create a file with no permissions and attempt to read it. Delete the file
     once done with it."""
-    msg = 'cannot read configuration file ' + FILE_FAKE + ' (permission)\n'
+    msg = 'Cannot read configuration file ' + FILE_FAKE + ' (permission)\n'
 
     os.close(os.open(FILE_FAKE, os.O_CREAT | os.O_WRONLY, 0o0000))
     chromaterm.read_file(FILE_FAKE)
