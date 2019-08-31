@@ -17,7 +17,7 @@ def test_write_default_config():
 
 
 def test_write_default_config_no_directory():
-    """Write config file with no directory (e.g. no home)."""
+    """No directory for default config (e.g. no home)."""
     assert chromaterm.misc.write_default_config(None) is False
 
 
