@@ -41,7 +41,7 @@ By default, ChromaTerm reads `.chromaterm.yml` in your home directory. As an exa
 
     echo "Jul 14 12:28:19: Message from 1.2.3.4" | ct
 
-> During installation, the default config file was copied to home directory.
+> The default config file is copied to home directory if it's not there.
 
 # Highlight Rules
 
