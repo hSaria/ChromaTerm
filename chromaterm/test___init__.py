@@ -251,7 +251,7 @@ def test_process_buffer_rule_multiple_colors(capsys):
 
 def test_read_file():
     """Read the default configuration."""
-    assert chromaterm.read_file('.chromaterm.yml') is not None
+    assert chromaterm.read_file('$HOME/.chromaterm.yml') is not None
 
 
 def test_read_file_non_existent(capsys):
