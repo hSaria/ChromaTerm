@@ -90,12 +90,12 @@ DEFAULT_CONFIG = r"""rules:
 """
 
 
-def write_default_config(directory=os.getenv('HOME'), file='.chromaterm.yml'):
+def write_default_config(directory=os.getenv('HOME'), name='.chromaterm.yml'):
     """Write the default configuration file if it doesn't exist."""
-    if not directory or not file:
+    if not directory or not name:
         return False
 
-    location = os.path.join(directory, file)
+    location = os.path.join(directory, name)
 
     if os.access(location, os.F_OK):  # Already exists
         return False
