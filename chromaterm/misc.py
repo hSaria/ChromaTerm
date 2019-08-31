@@ -1,4 +1,9 @@
-rules:
+#!/usr/bin/env python3
+"""Miscellaneous functions unrelated to primary functions of ChromaTerm."""
+
+import os
+
+DEFAULT_CONFIG = r"""rules:
 - description: Password
   regex: (?i)password
   color: f#ff0000
@@ -82,3 +87,23 @@ rules:
 - description: BGP - Transitional states
   regex: ((?<=\W)|^)(Idle|Connect|Active|OpenSent|OpenConfirm)((?=\W)|$)
   color: f#ffff00
+"""
+
+
+def write_default_config(directory=os.getenv('HOME'), file='.chromaterm.yml'):
+    """Write the default configuration file if it doesn't exist."""
+    if not directory or not file:
+        return False
+
+    location = os.path.join(directory, file)
+
+    if os.access(location, os.F_OK):  # Already exists
+        return False
+
+    if not os.access(directory, os.W_OK):  # No write permission in directory
+        return False
+
+    with open(location, 'w') as file:
+        file.write(DEFAULT_CONFIG)
+
+    return True
