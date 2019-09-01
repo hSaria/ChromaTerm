@@ -53,15 +53,15 @@ DEFAULT_CONFIG = r"""rules:
   color: f#ff0000
 
 - description: Cisco Syslog facilities - Emergency to error
-  regex: \b(%\w*\-[0-3]\-\w*)\b
+  regex: \b(%\w+\-[0-3]\-\w+)\b
   color: f#ff0000
 
 - description: Cisco Syslog facilities - Warning to notice
-  regex: \b(%\w*\-[4-5]\-\w*)\b
+  regex: \b(%\w+\-[4-5]\-\w+)\b
   color: f#ffff00
 
 - description: Cisco Syslog facilities - Info to debug
-  regex: \b(%\w*\-[6-7]\-\w*)\b
+  regex: \b(%\w+\-[6-7]\-\w+)\b
   color: f#65d7fd
 
 - description: Spanning tree - Problematic states
