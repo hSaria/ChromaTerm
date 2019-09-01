@@ -16,8 +16,12 @@ DEFAULT_CONFIG = r"""rules:
   regex: (?i)\b((?<!:)([\da-f]{1,2}:){5}[\da-f]{1,2}(?!:)|(?<!\.)([\da-f]{4}\.){2}[\da-f]{4}(?!\.))\b
   color: f#5f61ad
 
-- description: Date in (YYYY-MM-DD|MMM (YYYY|DD)|DD MMM (YYYY)?)[\WT_]hh:mm:ss.SSSSSS format (date, sec, msec, and nsec optional)
-  regex: (?i)\b((\d{2,4}\-((0)?[1-9]|1[0-2])\-(3[0-1]|([1-2]\d)|(0)?[1-9])|(?P<MMM>jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s(\d{4}|\s\d|(3[0-1]|([0-2]\d)))|(\d|(3[0-1]|([0-2]\d)))\s(?P=MMM)(\s\d{4})?)[\WT_])?((?<!:)((2[0-3])|[0-1]\d):[0-5]\d(:[0-5]\d)?((\.|,)\d{3,6})?(?!:))(?!:)\b
+- description: Date in YYYY-MM-DD, MMM (YYYY|DD), or DD MMM (YYYY)? formats
+  regex: (?i)((?<=[\W])|^)(\d{2,4}\-((0)?[1-9]|1[0-2])\-(3[0-1]|([1-2]\d)|(0)?[1-9])|(?P<MMM>jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s(\d{4}|\s\d|(3[0-1]|([0-2]\d)))|(\d|(3[0-1]|([0-2]\d)))\s(?P=MMM)(\s\d{4})?)((?=[\WT_])|$)
+  color: b#af5f00
+
+- description: Time in hh:mm:ss.SSSSSS format (sec, msec, and nsec optional)
+  regex: \b((?<!:)((2[0-3])|[0-1]\d):[0-5]\d(:[0-5]\d)?((\.|,)\d{3,6})?(?!:))\b
   color: b#af5f00
 
 - description: Juniper interfaces
