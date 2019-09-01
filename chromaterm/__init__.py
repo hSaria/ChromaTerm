@@ -60,7 +60,7 @@ def get_color_code(color):
 def highlight(rules, line):
     """According to the `rules`, return a highlighted 'line'."""
     for rule in rules:
-        line = re.sub(rule['regex'], rule['repl_func'], line)
+        line = rule['regex'].sub(rule['repl_func'], line)
 
     return line
 
@@ -131,7 +131,7 @@ def parse_rule(rule, config):
 
         return prefix + repl + postfix
 
-    return {'regex': regex, 'repl_func': func}
+    return {'regex': regex_compiled, 'repl_func': func}
 
 
 def process_buffer(config, buffer, more):
