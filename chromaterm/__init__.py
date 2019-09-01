@@ -57,12 +57,12 @@ def get_color_code(color):
     return code or None
 
 
-def highlight(rules, line):
-    """According to the `rules`, return a highlighted 'line'."""
+def highlight(rules, data):
+    """According to the `rules`, return the highlighted 'data'."""
     for rule in rules:
-        line = rule['regex'].sub(rule['repl_func'], line)
+        data = rule['regex'].sub(rule['repl_func'], data)
 
-    return line
+    return data
 
 
 def parse_config(data):
