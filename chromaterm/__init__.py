@@ -76,7 +76,7 @@ def parse_config(data):
         return config
 
     # Parse the rules
-    rules = load.get('rules', [])
+    rules = load.get('rules', []) if isinstance(load, dict) else None
     rules = rules if isinstance(rules, list) else []
 
     for rule in rules:
