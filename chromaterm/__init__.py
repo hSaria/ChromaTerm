@@ -94,6 +94,8 @@ def parse_rule(rule, config):
     not, a string with the error message is returned."""
     # pylint: disable=too-many-return-statements
 
+    description = rule.get('description', '')
+
     regex = rule.get('regex')
     if not regex:
         return 'regex not found'
@@ -131,7 +133,11 @@ def parse_rule(rule, config):
 
         return prefix + repl + postfix
 
-    return {'regex': regex_compiled, 'repl_func': func}
+    return {
+        'description': description,
+        'regex': regex_compiled,
+        'repl_func': func
+    }
 
 
 def process_buffer(config, buffer, more):
