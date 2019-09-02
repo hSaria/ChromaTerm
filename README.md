@@ -43,7 +43,7 @@ By default, ChromaTerm reads `.chromaterm.yml` in your home directory. As an exa
 
     echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
 
-> The default config file is copied to home directory if it's not there.
+> The default config file is copied to your home directory if it's not there.
 
 # Highlight Rules
 
@@ -73,7 +73,7 @@ The RegEx engine used is Python's [re](https://docs.python.org/3/library/re.html
 
 The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and `f` for foreground (e.g. `f#abcdef`).
 
-You can color the foreground and background by separating them with a space, like `b#123456 f#abcdef`.
+You can color the foreground and background simultaneously by separating them with a space, like `b#123456 f#abcdef`.
 
 ## Group
 
@@ -81,4 +81,4 @@ Optional. By default, the entire match is colored. That can be changed to a spec
 
 # Help
 
-If you've got any questions or suggestions, please open up an issue (always appreciated).
+If you've got any questions or suggestions, please open up an [issue](https://github.com/hSaria/ChromaTerm/issues/new/choose) (always appreciated).
