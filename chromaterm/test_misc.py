@@ -15,7 +15,7 @@ def assert_highlight(positives, negatives, rule, permutate=True):
     """Assert that all positives are highlighted while negatives are not."""
     assert rule
 
-    config = {'rules': [rule], 'reset_string': '\033[0m'}
+    config = {'rules': [rule], 'reset_code': '\033[m'}
 
     for entry in permutate_data(positives) if permutate else positives:
         assert chromaterm.highlight(config, entry) != entry

@@ -9,11 +9,10 @@ import sys
 
 import yaml
 
+COLOR_RE = re.compile(r'\033\[[0-9;]*m')
+
 # Maximum chuck size per read
 READ_SIZE = 65536  # 64 KiB
-
-# Color reset
-RESET = '\033[0m'
 
 # CT cannot determine if it is processing input faster than the piping process
 # is outputting or if the input has finished. To work around this, CT will wait
@@ -78,15 +77,18 @@ def get_rule_inserts(rule, data):
 def highlight(config, data):
     """According to the `rules`, return the highlighted 'data'."""
     inserts = []
+    existing = []
 
     # Find existing colors
+    for match in COLOR_RE.finditer(data):
+        existing.append({'position': match.start(0), 'code': match.group(0)})
 
     # Get all inserts from the rules
     for rule in config['rules']:
         inserts += get_rule_inserts(rule, data)
 
     # Process all of the inserts, returning the final list.
-    inserts = process_inserts(inserts)
+    inserts = process_inserts(inserts, existing, config['reset_code'])
 
     # Sort the inserts according to the position, from end to beginning
     inserts = sorted(inserts, key=lambda x: x['position'], reverse=True)
@@ -96,12 +98,18 @@ def highlight(config, data):
         index = insert['position']
         data = data[:index] + insert['code'] + data[index:]
 
+    # Use the last code as the reset for any next colors. The last reset is
+    # whatever the color originally was.
+    if inserts + existing:
+        last_code = sorted(inserts + existing, key=lambda x: x['position'])[-1]
+        config['reset_code'] = last_code['code']
+
     return data
 
 
 def parse_config(data):
     """Parse `data` (a YAML string), returning a dictionary of the config."""
-    config = {'rules': [], 'reset_string': RESET}
+    config = {'rules': [], 'reset_code': '\033[m'}
 
     try:  # Load the YAML configuration file
         load = yaml.safe_load(data) or {}
@@ -190,9 +198,10 @@ def process_buffer(config, buffer, more):
     return ''  # All of the buffer was processed; return an empty buffer
 
 
-def process_inserts(inserts):
+def process_inserts(inserts, existing, reset_code):
     """Process a list of rule inserts, removing any unnecessary colors, and
-    returning a list of colors (dict containing position and code)."""
+    returning a list of colors (dict containing position and code). The list of
+    existing colors is used for recovery of colliding colors."""
     def get_last_color(colors, position):
         """Return the last color before the requested position, or None if no
         previous color."""
@@ -214,7 +223,7 @@ def process_inserts(inserts):
             continue
 
         # Get the last color prior to adding this insert into the final list
-        last_color = get_last_color(final_inserts, insert['end'])
+        last_color = get_last_color(final_inserts + existing, insert['end'])
 
         final_inserts.append({
             'position': insert['start'],
@@ -226,13 +235,13 @@ def process_inserts(inserts):
             continue
 
         if not last_color:  # No last color; default reset
-            code = RESET
+            code = reset_code
         else:
             code = last_color['code']
 
-            # Last color in the middle of current color and is a reset; delete it
+            # Last color is a reset and in the middle of current color; update it
             if last_color['position'] > insert['start'] and last_color[
-                    'code'] == RESET:
+                    'code'] == reset_code:
                 last_color['code'] = insert['color']
 
         final_inserts.append({'position': insert['end'], 'code': code})

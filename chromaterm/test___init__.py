@@ -78,7 +78,7 @@ def test_highlight_enscapsulated():
     data = 'Hello there, World'
     expected = [
         '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'there',
-        '\033[38;5;153m', ', World', '\033[0m'
+        '\033[38;5;153m', ', World', '\033[m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -102,7 +102,7 @@ def test_highlight_partial_overlap():
     data = 'Hello there, World'
     expected = [
         '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'there',
-        '\033[48;5;229m', ', World', '\033[0m'
+        '\033[48;5;229m', ', World', '\033[m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -124,7 +124,7 @@ def test_highlight_full_overlap():
     config = chromaterm.parse_config(config)
 
     data = 'Hello there, World'
-    expected = ['\033[38;5;153m', 'Hello there, World', '\033[0m']
+    expected = ['\033[38;5;153m', 'Hello there, World', '\033[m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
@@ -146,7 +146,7 @@ def test_highlight_start_overlap():
     data = 'Hello there, World'
     expected = [
         '\033[48;5;229m', '\033[38;5;153m', 'Hello there', '\033[48;5;229m',
-        ', World', '\033[0m'
+        ', World', '\033[m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -171,7 +171,7 @@ def test_highlight_end_overlap():
 
     data = 'Hello there, World'
     expected = [
-        '\033[48;5;229m', 'Hello there, ', '\033[38;5;153m', 'World', '\033[0m'
+        '\033[48;5;229m', 'Hello there, ', '\033[38;5;153m', 'World', '\033[m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -293,26 +293,26 @@ def test_parse_rule_group_out_of_bounds():
 
 def test_process_buffer_empty(capsys):
     """Output processing of empty input."""
-    config = {'rules': [], 'reset_string': '\033[0m'}
+    config = {'rules': [], 'reset_code': '\033[m'}
     chromaterm.process_buffer(config, '', False)
     assert capsys.readouterr().out == ''
 
 
 def test_process_buffer_more(capsys):
     """Output processing of empty input."""
-    config = {'rules': [], 'reset_string': '\033[0m'}
+    config = {'rules': [], 'reset_code': '\033[m'}
     chromaterm.process_buffer(config, '', False)
     assert capsys.readouterr().out == ''
 
 
 def test_process_buffer_multiple_lines(capsys):
     """Output processing with multiple lines of input."""
-    config = {'rules': [], 'reset_string': '\033[0m'}
+    config = {'rules': [], 'reset_code': '\033[m'}
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test\n'
-    success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[0m test$'
+    success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[m test$'
 
     chromaterm.process_buffer(config, data * 2, False)
     captured = capsys.readouterr()
@@ -323,12 +323,12 @@ def test_process_buffer_multiple_lines(capsys):
 
 def test_process_buffer_rule_simple(capsys):
     """Output processing with a simple rule."""
-    config = {'rules': [], 'reset_string': '\033[0m'}
+    config = {'rules': [], 'reset_code': '\033[m'}
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
-    success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[0m test$'
+    success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -338,12 +338,12 @@ def test_process_buffer_rule_simple(capsys):
 
 def test_process_buffer_rule_group(capsys):
     """Output processing with a group-specific rule."""
-    config = {'rules': [], 'reset_string': '\033[0m'}
+    config = {'rules': [], 'reset_code': '\033[m'}
     rule = {'regex': 'hello (world)', 'color': 'b#fffaaa', 'group': 1}
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
-    success = r'^test hello \033\[[34]8;5;[0-9]{1,3}mworld\033\[0m test$'
+    success = r'^test hello \033\[[34]8;5;[0-9]{1,3}mworld\033\[m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -353,12 +353,12 @@ def test_process_buffer_rule_group(capsys):
 
 def test_process_buffer_rule_multiple_colors(capsys):
     """Output processing with a multi-color rule."""
-    config = {'rules': [], 'reset_string': '\033[0m'}
+    config = {'rules': [], 'reset_code': '\033[m'}
     rule = {'regex': 'hello world', 'color': 'b#fffaaa f#aaafff'}
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
-    success = r'^test (\033\[[34]8;5;[0-9]{1,3}m){2}hello world\033\[0m test$'
+    success = r'^test (\033\[[34]8;5;[0-9]{1,3}m){2}hello world\033\[m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
