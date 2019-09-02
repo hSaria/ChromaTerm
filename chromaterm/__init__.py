@@ -57,12 +57,47 @@ def get_color_code(color):
     return code or None
 
 
-def highlight(rules, data):
+def highlight(config, data):
     """According to the `rules`, return the highlighted 'data'."""
-    for rule in rules:
-        data = rule['regex'].sub(rule['repl_func'], data)
+    insertions = []
+
+    # Find existing colors
+
+    # Get all insertions from the rules
+    for rule in config['rules']:
+        insertions += get_rule_insertions(rule, data)
+
+    # Reverse them; need to add from end to beginning
+    insertions = sorted(insertions, key=lambda x: x['position'], reverse=True)
+
+    # Insert the colors into the data
+    for insertion in insertions:
+        index = insertion['position']
+        color = insertion['color'] or '\033[0m'
+        data = data[:index] + color + data[index:]
 
     return data
+
+
+def get_rule_insertions(rule, data):
+    """Return a list of dicts, with each dict containing the position and color
+    of the insertion. A color of None indicates the end of a color."""
+    insertions = []
+
+    for match in rule['regex'].finditer(data):
+        # Color start
+        insertions.append({
+            'position': match.start(rule['group']),
+            'color': rule['color']
+        })
+
+        # Color end
+        insertions.append({
+            'position': match.end(rule['group']),
+            'color': None
+        })
+
+    return insertions
 
 
 def parse_config(data):
@@ -80,7 +115,7 @@ def parse_config(data):
     rules = rules if isinstance(rules, list) else []
 
     for rule in rules:
-        parsed_rule = parse_rule(rule, config)
+        parsed_rule = parse_rule(rule)
         if isinstance(parsed_rule, dict):
             config['rules'].append(parsed_rule)
         else:
@@ -89,9 +124,9 @@ def parse_config(data):
     return config
 
 
-def parse_rule(rule, config):
-    """Return a dict from `get_highlight_repl_func` if parsed successfully. If
-    not, a string with the error message is returned."""
+def parse_rule(rule):
+    """Return a dict containing the description, regex (compiled), color (code),
+    and group."""
     # pylint: disable=too-many-return-statements
 
     description = rule.get('description', '')
@@ -126,17 +161,11 @@ def parse_rule(rule, config):
     if group > regex_compiled.groups:
         return 'group ID over the number of groups in the regex'
 
-    def func(match):
-        prefix = match.string[match.start(0):match.start(group)]
-        repl = color_code + match.group(group) + config['reset_string']
-        postfix = match.string[match.end(group):match.end(0)]
-
-        return prefix + repl + postfix
-
     return {
         'description': description,
         'regex': regex_compiled,
-        'repl_func': func
+        'color': color_code,
+        'group': group
     }
 
 
@@ -150,14 +179,14 @@ def process_buffer(config, buffer, more):
         return ''
 
     for line in lines[:-1]:  # Process all lines except for the last
-        print(highlight(config['rules'], line), end='')
+        print(highlight(config, line), end='')
 
     # Indicated more data to possibly come and stdin confirmed it
     if more and read_ready(WAIT_FOR_NEW_LINE):
         return lines[-1]  # Return last line as the left-over data
 
     # No more data; print last line and flush as it doesn't have a new line
-    print(highlight(config['rules'], lines[-1]), end='', flush=True)
+    print(highlight(config, lines[-1]), end='', flush=True)
 
     return ''  # All of the buffer was processed; return an empty buffer
 
