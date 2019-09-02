@@ -17,7 +17,7 @@ READ_SIZE = 65536  # 64 KiB
 # CT cannot determine if it is processing input faster than the piping process
 # is outputting or if the input has finished. To work around this, CT will wait
 # a bit prior to assuming there's no more data in the buffer. There's no impact
-# on performace as the wait returns if stdin becomes ready to be read from.
+# on performace as the wait is cancelled if stdin becomes ready to be read from.
 WAIT_FOR_NEW_LINE = 0.0005
 
 
