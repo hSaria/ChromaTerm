@@ -86,6 +86,30 @@ def test_highlight_enscapsulated():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
+def test_highlight_partial_overlap():
+    """Two rules with one overlapping the other. Also tested in reverse order.
+    x: ------
+    y:   ------"""
+    config = '''rules:
+    - description: first
+      regex: Hello there
+      color: f#aaafff
+    - description: second
+      regex: there, World
+      color: b#fffaaa'''
+    config = chromaterm.parse_config(config)
+
+    data = 'Hello there, World'
+    expected = [
+        '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'there',
+        '\033[48;5;229m', ', World', '\033[0m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
 def test_highlight_full_overlap():
     """Two rules fully overlapping each other. The first match is applied.
     x: --------------

@@ -12,6 +12,9 @@ import yaml
 # Maximum chuck size per read
 READ_SIZE = 65536  # 64 KiB
 
+# Color reset
+RESET = '\033[0m'
+
 # CT cannot determine if it is processing input faster than the piping process
 # is outputting or if the input has finished. To work around this, CT will wait
 # a bit prior to assuming there's no more data in the buffer. There's no impact
@@ -98,7 +101,7 @@ def highlight(config, data):
 
 def parse_config(data):
     """Parse `data` (a YAML string), returning a dictionary of the config."""
-    config = {'rules': [], 'reset_string': '\033[0m'}
+    config = {'rules': [], 'reset_string': RESET}
 
     try:  # Load the YAML configuration file
         load = yaml.safe_load(data) or {}
@@ -223,14 +226,13 @@ def process_inserts(inserts):
             continue
 
         if not last_color:  # No last color; default reset
-            code = '\033[0m'
+            code = RESET
         else:
             code = last_color['code']
 
-            # Last color in the middle of current color and is a reset; change
-            # the last color to current color
+            # Last color in the middle of current color and is a reset; delete it
             if last_color['position'] > insert['start'] and last_color[
-                    'code'] == '\033[0m':
+                    'code'] == RESET:
                 last_color['code'] = insert['color']
 
         final_inserts.append({'position': insert['end'], 'code': code})
