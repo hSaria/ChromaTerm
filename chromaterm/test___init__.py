@@ -66,14 +66,14 @@ def test_highlight_enscapsulated():
     """Two rules with one encapsulating the other. Also tested in reverse order.
     x: --------------
     y:    ------"""
-    config = '''rules:
+    config_data = '''rules:
     - description: first
       regex: Hello there, World
       color: f#aaafff
     - description: second
       regex: there
       color: b#fffaaa'''
-    config = chromaterm.parse_config(config)
+    config = chromaterm.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -90,14 +90,14 @@ def test_highlight_partial_overlap():
     """Two rules with one overlapping the other. Also tested in reverse order.
     x: ------
     y:   ------"""
-    config = '''rules:
+    config_data = '''rules:
     - description: first
       regex: Hello there
       color: f#aaafff
     - description: second
       regex: there, World
       color: b#fffaaa'''
-    config = chromaterm.parse_config(config)
+    config = chromaterm.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -114,14 +114,14 @@ def test_highlight_full_overlap():
     """Two rules fully overlapping each other. The first match is applied.
     x: --------------
     y: --------------"""
-    config = '''rules:
+    config_data = '''rules:
     - description: first
       regex: Hello there, World
       color: f#aaafff
     - description: second
       regex: Hello there, World
       color: b#fffaaa'''
-    config = chromaterm.parse_config(config)
+    config = chromaterm.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = ['\033[38;5;153m', 'Hello there, World', '\033[m']
@@ -134,14 +134,14 @@ def test_highlight_start_overlap():
     reverse order. The first match's color is applied closest to the match.
     x: -------
     y: --------------"""
-    config = '''rules:
+    config_data = '''rules:
     - description: first
       regex: Hello there
       color: f#aaafff
     - description: second
       regex: Hello there, World
       color: b#fffaaa'''
-    config = chromaterm.parse_config(config)
+    config = chromaterm.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -160,14 +160,14 @@ def test_highlight_end_overlap():
     reverse order. Only the first match's end color is applied.
     x:        -------
     y: --------------"""
-    config = '''rules:
+    config_data = '''rules:
     - description: first
       regex: World
       color: f#aaafff
     - description: second
       regex: Hello there, World
       color: b#fffaaa'''
-    config = chromaterm.parse_config(config)
+    config = chromaterm.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -181,41 +181,41 @@ def test_highlight_end_overlap():
 
 def test_parse_config_simple():
     """Parse a config file with a simple rule."""
-    config = '''rules:
+    config_data = '''rules:
     - description: simple
       regex: hello world
       color: f#fffaaa'''
 
-    assert chromaterm.parse_config(config)['rules']
+    assert chromaterm.parse_config(config_data)['rules']
 
 
 def test_parse_config_group():
     """Parse a config file with a group-specific rule."""
-    config = '''rules:
+    config_data = '''rules:
     - description: group
       regex: hello (world)
       color: b#fffaaa
       group: 1'''
 
-    assert chromaterm.parse_config(config)['rules']
+    assert chromaterm.parse_config(config_data)['rules']
 
 
 def test_parse_config_multiple_colors():
     """Parse a config file with a multi-color rule."""
-    config = '''rules:
+    config_data = '''rules:
     - description: group
       regex: hello (world)
       color: b#fffaaa
       group: 1'''
 
-    assert chromaterm.parse_config(config)['rules']
+    assert chromaterm.parse_config(config_data)['rules']
 
 
 def test_parse_config_rule_format_error(capsys):
     """Parse a config file with a syntax problem."""
-    config = '''rules:
+    config_data = '''rules:
     - description: simple'''
-    chromaterm.parse_config(config)
+    chromaterm.parse_config(config_data)
 
     assert 'Rule error on' in capsys.readouterr().err
 
@@ -305,7 +305,7 @@ def test_process_buffer_more(capsys):
     assert capsys.readouterr().out == ''
 
 
-def test_process_buffer_multiple_lines(capsys):
+def test_process_buffer_multiline(capsys):
     """Output processing with multiple lines of input."""
     config = {'rules': [], 'reset_code': '\033[m'}
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
