@@ -9,26 +9,6 @@ import time
 
 import chromaterm
 
-CONFIG_RULE_SIMPLE = '''rules:
-- description: simple
-  regex: hello world
-  color: f#fffaaa'''
-
-CONFIG_RULE_GROUP = '''rules:
-- description: group
-  regex: hello (world)
-  color: b#fffaaa
-  group: 1'''
-
-CONFIG_RULE_MULTIPLE_COLORS = '''rules:
-- description: group
-  regex: hello (world)
-  color: b#fffaaa
-  group: 1'''
-
-CONFIG_RULE_ERROR = '''rules:
-- description: simple'''
-
 FILE_FAKE = '.test_chromaterm.yml'
 
 
@@ -84,22 +64,42 @@ def test_get_color_code_grayscale():
 
 def test_parse_config_simple():
     """Parse a config file with a simple rule."""
-    assert chromaterm.parse_config(CONFIG_RULE_SIMPLE)['rules']
+    config = '''rules:
+    - description: simple
+      regex: hello world
+      color: f#fffaaa'''
+
+    assert chromaterm.parse_config(config)['rules']
 
 
 def test_parse_config_group():
     """Parse a config file with a group-specific rule."""
-    assert chromaterm.parse_config(CONFIG_RULE_GROUP)['rules']
+    config = '''rules:
+    - description: group
+      regex: hello (world)
+      color: b#fffaaa
+      group: 1'''
+
+    assert chromaterm.parse_config(config)['rules']
 
 
 def test_parse_config_multiple_colors():
     """Parse a config file with a multi-color rule."""
-    assert chromaterm.parse_config(CONFIG_RULE_MULTIPLE_COLORS)['rules']
+    config = '''rules:
+    - description: group
+      regex: hello (world)
+      color: b#fffaaa
+      group: 1'''
+
+    assert chromaterm.parse_config(config)['rules']
 
 
 def test_parse_config_rule_format_error(capsys):
     """Parse a config file with a syntax problem."""
-    chromaterm.parse_config(CONFIG_RULE_ERROR)
+    config = '''rules:
+    - description: simple'''
+    chromaterm.parse_config(config)
+
     assert 'Rule error on' in capsys.readouterr().err
 
 
