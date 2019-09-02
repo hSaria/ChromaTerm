@@ -31,6 +31,11 @@ def args_init(args=None):
                         type=str,
                         help='location of config file (default: %(default)s)',
                         default='$HOME/.chromaterm.yml')
+    parser.add_argument(
+        '--rgb',
+        action='store_true',
+        help=
+        'Use RGB colors (default: attempt detection, fall-back to xterm-256)')
 
     return parser.parse_args(args)
 
@@ -40,7 +45,7 @@ def eprint(*args, **kwargs):
     print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
 
 
-def get_color_code(color):
+def get_color_code(color, rgb=False):
     """Return the ANSI code to be used when highlighting with `color` or None if
     the `color` is invalid. The `color` is a string in the format of b#abcdef
     for background or f#abcdef for foreground. Can be multiple colors if
@@ -51,9 +56,16 @@ def get_color_code(color):
     code = ''
 
     for match in re.findall(r'(b|f)#([0-9a-fA-F]{6})', color):
-        target = '\033[38;5;' if match[0] == 'f' else '\033[48;5;'
-        rgb = (int(match[1][i:i + 2], 16) for i in [0, 2, 4])
-        color_id = rgb_to_8bit(*rgb)
+        target = '\033[38;' if match[0] == 'f' else '\033[48;'
+        rgb_int = [int(match[1][i:i + 2], 16) for i in [0, 2, 4]]
+
+        if rgb:
+            target += '2;'
+            color_id = ';'.join([str(x) for x in rgb_int])
+        else:
+            target += '5;'
+            color_id = rgb_to_8bit(*rgb_int)
+
         code += target + str(color_id) + 'm'
 
     return code or None
@@ -107,7 +119,7 @@ def highlight(config, data):
     return data
 
 
-def parse_config(data):
+def parse_config(data, rgb=False):
     """Parse `data` (a YAML string), returning a dictionary of the config."""
     config = {'rules': [], 'reset_code': '\033[m'}
 
@@ -122,7 +134,7 @@ def parse_config(data):
     rules = rules if isinstance(rules, list) else []
 
     for rule in rules:
-        parsed_rule = parse_rule(rule)
+        parsed_rule = parse_rule(rule, rgb=rgb)
         if isinstance(parsed_rule, dict):
             config['rules'].append(parsed_rule)
         else:
@@ -131,7 +143,7 @@ def parse_config(data):
     return config
 
 
-def parse_rule(rule):
+def parse_rule(rule, rgb=False):
     """Return a dict containing the description, regex (compiled), color (code),
     and group."""
     # pylint: disable=too-many-return-statements
@@ -152,7 +164,7 @@ def parse_rule(rule):
     if not isinstance(color, str):
         return 'color not a string'
 
-    color_code = get_color_code(color)
+    color_code = get_color_code(color, rgb=rgb)
     if not color_code:
         return 'color not in the correct format'
 
@@ -289,8 +301,11 @@ def main(args, max_wait=None):
     """Main entry point that uses `args` (return from args_init) to setup the
     environment and begin processing stdin. `max_wait` is only used for testing;
     keep it as None."""
+    # Attempt RGB support detection
+    rgb = os.getenv('COLORTERM') == 'truecolor' or args.rgb
+
     buffer = ''
-    config = parse_config(read_file(args.config) or '')
+    config = parse_config(read_file(args.config) or '', rgb=rgb)
 
     while read_ready(max_wait):
         data = os.read(sys.stdin.fileno(), READ_SIZE)

@@ -62,6 +62,15 @@ def test_get_color_code_grayscale():
         assert chromaterm.get_color_code(color) == '\033[' + code
 
 
+def test_get_color_code_rgb():
+    """RGB color-codes."""
+    colors = ['b#010101', 'f#020202']
+    codes = ['48;2;1;1;1m', '38;2;2;2;2m']
+
+    for color, code in zip(colors, codes):
+        assert chromaterm.get_color_code(color, rgb=True) == '\033[' + code
+
+
 def test_highlight_enscapsulated():
     """Two rules with one encapsulating the other. Also tested in reverse order.
     x: --------------
