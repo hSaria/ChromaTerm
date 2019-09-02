@@ -57,45 +57,41 @@ def get_color_code(color):
     return code or None
 
 
-def get_rule_insertions(rule, data):
-    """Return a list of dicts, with each dict containing the position and color
-    of the insertion. A color of None indicates the end of a color."""
-    insertions = []
+def get_rule_inserts(rule, data):
+    """Return a list of dicts, with each dict containing a start position, end
+    position, and color of a match."""
+    inserts = []
 
     for match in rule['regex'].finditer(data):
-        # Color start
-        insertions.append({
-            'position': match.start(rule['group']),
+        inserts.append({
+            'start': match.start(rule['group']),
+            'end': match.end(rule['group']),
             'color': rule['color']
         })
 
-        # Color end
-        insertions.append({
-            'position': match.end(rule['group']),
-            'color': None
-        })
-
-    return insertions
+    return inserts
 
 
 def highlight(config, data):
     """According to the `rules`, return the highlighted 'data'."""
-    insertions = []
+    inserts = []
 
     # Find existing colors
 
-    # Get all insertions from the rules
+    # Get all inserts from the rules
     for rule in config['rules']:
-        insertions += get_rule_insertions(rule, data)
+        inserts += get_rule_inserts(rule, data)
 
-    # Reverse them; need to add from end to beginning
-    insertions = sorted(insertions, key=lambda x: x['position'], reverse=True)
+    # Process all of the inserts, returning the final list.
+    inserts = process_inserts(inserts)
+
+    # Sort the inserts according to the position, from end to beginning
+    inserts = sorted(inserts, key=lambda x: x['position'], reverse=True)
 
     # Insert the colors into the data
-    for insertion in insertions:
-        index = insertion['position']
-        color = insertion['color'] or '\033[0m'
-        data = data[:index] + color + data[index:]
+    for insert in inserts:
+        index = insert['position']
+        data = data[:index] + insert['code'] + data[index:]
 
     return data
 
@@ -189,6 +185,57 @@ def process_buffer(config, buffer, more):
     print(highlight(config, lines[-1]), end='', flush=True)
 
     return ''  # All of the buffer was processed; return an empty buffer
+
+
+def process_inserts(inserts):
+    """Process a list of rule inserts, removing any unnecessary colors, and
+    returning a list of colors (dict containing position and code)."""
+    def get_last_color(colors, position):
+        """Return the last color before the requested position, or None if no
+        previous color."""
+        for color in sorted(colors, key=lambda x: x['position'], reverse=True):
+            if color['position'] < position:
+                return color
+        return None
+
+    final_inserts = []
+
+    # Remove any resets in the middle of another color
+    for insert in inserts:
+        current_positions = [x['position'] for x in final_inserts]
+        overlapping_start = insert['start'] in current_positions
+        overlapping_end = insert['end'] in current_positions
+
+        # Already matched by a different rule; don't bother adding the insert
+        if overlapping_start and overlapping_end:
+            continue
+
+        # Get the last color prior to adding this insert into the final list
+        last_color = get_last_color(final_inserts, insert['end'])
+
+        final_inserts.append({
+            'position': insert['start'],
+            'code': insert['color']
+        })
+
+        # There's already a color at the end position
+        if overlapping_end:
+            continue
+
+        if not last_color:  # No last color; default reset
+            code = '\033[0m'
+        else:
+            code = last_color['code']
+
+            # Last color in the middle of current color and is a reset; change
+            # the last color to current color
+            if last_color['position'] > insert['start'] and last_color[
+                    'code'] == '\033[0m':
+                last_color['code'] = insert['color']
+
+        final_inserts.append({'position': insert['end'], 'code': code})
+
+    return final_inserts
 
 
 def read_file(location):

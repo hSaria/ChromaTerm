@@ -62,6 +62,99 @@ def test_get_color_code_grayscale():
         assert chromaterm.get_color_code(color) == '\033[' + code
 
 
+def test_highlight_enscapsulated():
+    """Two rules with one encapsulating the other. Also tested in reverse order.
+    x: --------------
+    y:    ------"""
+    config = '''rules:
+    - description: first
+      regex: Hello there, World
+      color: f#aaafff
+    - description: second
+      regex: there
+      color: b#fffaaa'''
+    config = chromaterm.parse_config(config)
+
+    data = 'Hello there, World'
+    expected = [
+        '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'there',
+        '\033[38;5;153m', ', World', '\033[0m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_full_overlap():
+    """Two rules fully overlapping each other. The first match is applied.
+    x: --------------
+    y: --------------"""
+    config = '''rules:
+    - description: first
+      regex: Hello there, World
+      color: f#aaafff
+    - description: second
+      regex: Hello there, World
+      color: b#fffaaa'''
+    config = chromaterm.parse_config(config)
+
+    data = 'Hello there, World'
+    expected = ['\033[38;5;153m', 'Hello there, World', '\033[0m']
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_start_overlap():
+    """Two rules overlapping at the start. Both are applied. Also tested in
+    reverse order. The first match's color is applied closest to the match.
+    x: -------
+    y: --------------"""
+    config = '''rules:
+    - description: first
+      regex: Hello there
+      color: f#aaafff
+    - description: second
+      regex: Hello there, World
+      color: b#fffaaa'''
+    config = chromaterm.parse_config(config)
+
+    data = 'Hello there, World'
+    expected = [
+        '\033[48;5;229m', '\033[38;5;153m', 'Hello there', '\033[48;5;229m',
+        ', World', '\033[0m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    expected[0], expected[1] = expected[1], expected[0]  # Flip start mark
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_end_overlap():
+    """Two rules overlapping at the end. Both are applied. Also tested in
+    reverse order. Only the first match's end color is applied.
+    x:        -------
+    y: --------------"""
+    config = '''rules:
+    - description: first
+      regex: World
+      color: f#aaafff
+    - description: second
+      regex: Hello there, World
+      color: b#fffaaa'''
+    config = chromaterm.parse_config(config)
+
+    data = 'Hello there, World'
+    expected = [
+        '\033[48;5;229m', 'Hello there, ', '\033[38;5;153m', 'World', '\033[0m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
 def test_parse_config_simple():
     """Parse a config file with a simple rule."""
     config = '''rules:
