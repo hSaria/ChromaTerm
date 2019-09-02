@@ -26,22 +26,28 @@ Here's an example using the rules in the default configuration file:
 
 # Installation
 
-    pip3 install chromaterm
+```shell
+pip3 install chromaterm
+```
 
 > If you have the legacy version of ChromaTerm, be sure to uninstall it first.
 >
->     # If installed using HomeBrew
->     brew uninstall chromaterm
+> ```shell
+> # If installed using HomeBrew
+> brew uninstall chromaterm
 >
->     # If installed from source
->     git clone -b legacy git@github.com:hSaria/ChromaTerm.git
->     cd ChromaTerm--/src/ && ./configure && make uninstall
+> # If installed from source
+> git clone -b legacy git@github.com:hSaria/ChromaTerm.git
+> cd ChromaTerm--/src/ && ./configure && make uninstall
+> ```
 
 # Usage
 
 By default, ChromaTerm reads `.chromaterm.yml` in your home directory. As an example, run the following:
 
-    echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
+```shell
+echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
+```
 
 > The default config file is copied to your home directory if it's not there.
 
