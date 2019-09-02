@@ -49,7 +49,7 @@ DEFAULT_CONFIG = r"""rules:
   color: f#085e0b
 
 - description: Generics - Good
-  regex: (?i)\b(up|ok(ay)?|permit(ed|s)?|accept(s|ed)?|enable(d)?|online|succe((ss(ful|fully)?)|ed(ed)?)?|connect(ed)?|reachable|valid|forwarding|synchronized)\b}
+  regex: (?i)\b(up|ok(ay)?|permit(ed|s)?|accept(s|ed)?|enable(d)?|online|succe((ss(ful|fully)?)|ed(ed)?)?|connect(ed)?|reachable|valid|forwarding|synchronized)\b
   color: f#00ff00
 
 - description: Half-duplex
