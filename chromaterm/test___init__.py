@@ -179,6 +179,76 @@ def test_highlight_end_overlap():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
+def test_highlight_existing():
+    """Highlight with an existing color in the data."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello World
+      color: f#aaafff'''
+    config = chromaterm.parse_config(config_data)
+
+    data = '\033[33mHello World'
+    expected = ['\033[33m', '\033[38;5;153m', 'Hello World', '\033[33m']
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_existing_multiline():
+    """Highlight with an existing color in the multi-line data."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello World
+      color: f#aaafff'''
+    config = chromaterm.parse_config(config_data)
+
+    data = ['\033[33mHi there', 'Hello World']
+    expected = [['\033[33m', 'Hi there'],
+                ['\033[38;5;153m', 'Hello World', '\033[33m']]
+
+    for line_data, line_expected in zip(data, expected):
+        assert repr(chromaterm.highlight(config, line_data)) == repr(
+            ''.join(line_expected))
+
+
+def test_highlight_partial_overlap_existing_multiline():
+    """Three partially-overlapping rules with an existing color over multiple
+    lines. Also tested in reverse order.
+    x: ------
+    y:   ------
+    z:     ------"""
+    config_data = '''rules:
+    - description: first
+      regex: Hello World
+      color: f#aaafff
+    - description: second
+      regex: World! It's
+      color: b#fffaaa
+    - description: third
+      regex: It's me
+      color: b#0973d8'''
+    config = chromaterm.parse_config(config_data)
+
+    data = ['\033[33mHello World', 'Hello World! It\'s me']
+    expected = [['\033[33m', '\033[38;5;153m', 'Hello World', '\033[33m'],
+                [
+                    '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'World',
+                    '\033[48;5;229m', '! ', '\033[48;5;33m', 'It\'s',
+                    '\033[48;5;33m', ' me', '\033[33m'
+                ]]
+
+    for line_data, line_expected in zip(data, expected):
+        assert repr(chromaterm.highlight(config, line_data)) == repr(
+            ''.join(line_expected))
+
+    # Reset color tracking and reverse the rule order
+    config = chromaterm.parse_config(config_data)
+    config['rules'] = list(reversed(config['rules']))
+
+    for line_data, line_expected in zip(data, expected):
+        assert repr(chromaterm.highlight(config, line_data)) == repr(
+            ''.join(line_expected))
+
+
 def test_parse_config_simple():
     """Parse a config file with a simple rule."""
     config_data = '''rules:
