@@ -564,7 +564,7 @@ def test_rgb_to_8bit():
 
 
 def test_main(capsys, monkeypatch):
-    """Test stdin processing"""
+    """Test stdin processing."""
     try:
         # Will auto-shutdown once "stdin" is closed
         args = chromaterm.args_init([])
