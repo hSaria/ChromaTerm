@@ -57,6 +57,27 @@ def get_color_code(color):
     return code or None
 
 
+def get_rule_insertions(rule, data):
+    """Return a list of dicts, with each dict containing the position and color
+    of the insertion. A color of None indicates the end of a color."""
+    insertions = []
+
+    for match in rule['regex'].finditer(data):
+        # Color start
+        insertions.append({
+            'position': match.start(rule['group']),
+            'color': rule['color']
+        })
+
+        # Color end
+        insertions.append({
+            'position': match.end(rule['group']),
+            'color': None
+        })
+
+    return insertions
+
+
 def highlight(config, data):
     """According to the `rules`, return the highlighted 'data'."""
     insertions = []
@@ -77,27 +98,6 @@ def highlight(config, data):
         data = data[:index] + color + data[index:]
 
     return data
-
-
-def get_rule_insertions(rule, data):
-    """Return a list of dicts, with each dict containing the position and color
-    of the insertion. A color of None indicates the end of a color."""
-    insertions = []
-
-    for match in rule['regex'].finditer(data):
-        # Color start
-        insertions.append({
-            'position': match.start(rule['group']),
-            'color': rule['color']
-        })
-
-        # Color end
-        insertions.append({
-            'position': match.end(rule['group']),
-            'color': None
-        })
-
-    return insertions
 
 
 def parse_config(data):
