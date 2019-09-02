@@ -1,5 +1,7 @@
 # ChromaTerm
 
+[![PyPI version](https://badge.fury.io/py/chromaterm.svg)](https://badge.fury.io/py/chromaterm) [![Build Status](https://travis-ci.org/hSaria/ChromaTerm.svg?branch=master)](https://travis-ci.org/hSaria/ChromaTerm) [![Coverage Status](https://coveralls.io/repos/github/hSaria/ChromaTerm/badge.svg)](https://coveralls.io/github/hSaria/ChromaTerm)
+
 A tool for colorizing the output of a terminal.
 
 -   [About](#about)
