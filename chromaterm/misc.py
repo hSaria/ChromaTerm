@@ -20,8 +20,8 @@ DEFAULT_CONFIG = r"""rules:
   regex: (?i)((?<=[\W])|^)((\d{2}|\d{4})\-((0)?[1-9]|1[0-2])\-(3[0-1]|([1-2]\d)|(0)?[1-9])|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s(\d{4}|\s\d|(3[0-1]|([0-2]\d)))|((\d|(3[0-1]|([0-2]\d)))\s(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(\s\d{4})?))((?=[\WT_])|$)
   color: b#af5f00
 
-- description: Time in hh:mm:ss.S+ format (sec optional, arbitrary sub-sec decimal places)
-  regex: \b((?<!:)((2[0-3])|[0-1]\d):[0-5]\d(:[0-5]\d)?((\.|,)\d+)?(?!:))\b
+- description: Time in hh:mm:ss.SSSSSS format (sec, msec, and nsec optional)
+  regex: \b((?<!:)((2[0-3])|[0-1]\d):[0-5]\d(:[0-5]\d)?((\.|,)\d{3,6})?(?!:))\b
   color: b#af5f00
 
 - description: Juniper interfaces
