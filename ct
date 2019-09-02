@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+"""Colorize your output using RegEx"""
+
+import sys
+
+import chromaterm
+import chromaterm.misc
+
+if __name__ == '__main__':
+    chromaterm.misc.write_default_config()  # Write default config if not there
+    sys.exit(chromaterm.main(chromaterm.args_init()))
