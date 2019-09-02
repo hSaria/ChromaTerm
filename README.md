@@ -67,7 +67,7 @@ Optional. It's purely for your sake.
 
 ## RegEx
 
-The RegEx engine used is Python's [re](https://docs.python.org/3/library/re.html#regular-expression-syntax).
+The RegEx engine used is Python's [re](https://docs.python.org/3/library/re.html).
 
 ## Color
 
