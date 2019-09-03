@@ -194,20 +194,10 @@ def process_buffer(config, buffer, more):
     """Process the `buffer` using the `config`, returning any left-over data.
     If there's `more` data coming up, only process up to the last movement
     split. Otherwise, process all of the buffer."""
-    # They're called "lines," but in actuality, this is split based on movement
-    # characters.
-    lines = MOVEMENT_RE.split(buffer)
+    lines = split_buffer(buffer)
 
-    if lines == ['']:
+    if not lines:
         return ''
-
-    # Every two entries will become [data, separator]. If no splits or did not
-    # end with a separator, a fake (empty) seperator needs to be added.
-    if len(lines) == 1 or lines[-1] != '':
-        lines.append('')
-
-    # Group all lines into format of [data, separator]
-    lines = [[x, y] for x, y in zip(lines[0::2], lines[1::2])]
 
     for line in lines[:-1]:  # Process all lines except for the last
         print(highlight(config, line[0]) + line[1], end='')
@@ -308,6 +298,25 @@ def rgb_to_8bit(_r, _g, _b):
         return 232 + downscale(_r, base=24)
 
     return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
+
+
+def split_buffer(buffer):
+    """Split the buffer based on movement sequences, returning an array with
+    objects in the format of [data, separator]. `data` is the part that should
+    be highlighted while the sperator remains untouched."""
+    lines = MOVEMENT_RE.split(buffer)
+
+    if lines == ['']:
+        return ''
+
+    # If no splits or did not end with a separator, append a empty seperator
+    if len(lines) == 1 or lines[-1] != '':
+        lines.append('')
+
+    # Group all lines into format of [data, separator]
+    lines = [[x, y] for x, y in zip(lines[0::2], lines[1::2])]
+
+    return lines
 
 
 def main(args, max_wait=None):
