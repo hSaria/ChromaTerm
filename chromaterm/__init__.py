@@ -33,11 +33,10 @@ def args_init(args=None):
                         type=str,
                         help='location of config file (default: %(default)s)',
                         default='$HOME/.chromaterm.yml')
-    parser.add_argument(
-        '--rgb',
-        action='store_true',
-        help=
-        'Use RGB colors (default: attempt detection, fall-back to xterm-256)')
+    parser.add_argument('--rgb',
+                        action='store_true',
+                        help='Use RGB colors (default: attempt detection, '
+                        'fall-back to xterm-256)')
 
     return parser.parse_args(args)
 
