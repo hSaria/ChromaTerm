@@ -51,7 +51,7 @@ def get_color_code(color, rgb=False):
     the `color` is invalid. The `color` is a string in the format of b#abcdef
     for background or f#abcdef for foreground. Can be multiple colors if
     separated by a space."""
-    if not re.match(r'^((b|f)#([0-9a-fA-F]{6})(\s|$))+$', color):
+    if not re.match(r'^((b|f)#([0-9a-fA-F]{6})(\s+|$)){1,2}$', color.strip()):
         return None
 
     code = ''
@@ -59,6 +59,9 @@ def get_color_code(color, rgb=False):
     for match in re.findall(r'(b|f)#([0-9a-fA-F]{6})', color):
         target = '\033[38;' if match[0] == 'f' else '\033[48;'
         rgb_int = [int(match[1][i:i + 2], 16) for i in [0, 2, 4]]
+
+        if target in code:  # Duplicate targets
+            return None
 
         if rgb:
             target += '2;'
