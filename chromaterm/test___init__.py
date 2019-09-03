@@ -269,8 +269,8 @@ def test_highlight_partial_overlap_existing_multiline():
       color: b#0973d8'''
     config = chromaterm.parse_config(config_data)
 
-    data = ['\033[33mHello World', 'Hello World! It\'s me']
-    expected = [['\033[33m', '\033[38;5;153m', 'Hello World', '\033[33m'],
+    data = ['\033[33mSup', 'Hello World! It\'s me']
+    expected = [['\033[33m', 'Sup'],
                 [
                     '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'World',
                     '\033[48;5;229m', '! ', '\033[48;5;33m', 'It\'s',
