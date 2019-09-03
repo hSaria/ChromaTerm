@@ -79,7 +79,7 @@ def test_get_color_code_excessive_colors():
 
 
 def test_get_color_code_duplicate_target():
-    """Two colors in the foreground/background."""
+    """Duplicate targets (e.g. two foreground colors)."""
     colors = 'f#020202 f#030303'
 
     assert chromaterm.get_color_code(colors) is None
