@@ -90,9 +90,6 @@ def get_rule_inserts(rule, data):
 
 def highlight(config, data):
     """According to the rules in the `config`, return the highlighted 'data'."""
-    if not data:
-        return data
-
     inserts = []
     existing = []
 
