@@ -390,7 +390,7 @@ def test_process_buffer_multiline(capsys):
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
 
     config['rules'].append(chromaterm.parse_rule(rule))
-    data = 'test hello world test\n'
+    data = '\ntest hello world test\n'  # Empty line at the start
     success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[m test$'
 
     chromaterm.process_buffer(config, data * 2, False)
