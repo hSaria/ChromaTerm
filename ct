@@ -8,8 +8,6 @@ import chromaterm
 import chromaterm.misc
 
 if __name__ == '__main__':
-    # Ignore SIGINT
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-
+    signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
     chromaterm.misc.write_default_config()  # Write default config if not there
     sys.exit(chromaterm.main(chromaterm.args_init()))
