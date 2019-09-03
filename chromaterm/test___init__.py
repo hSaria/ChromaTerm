@@ -445,7 +445,7 @@ def test_process_buffer_rule_multiple_colors(capsys):
     assert re.search(success, captured.out)
 
 
-def test_process_buffer_movement_sequence(capsys):
+def test_process_buffer_movement_sequences(capsys):
     """Input data includes a movement sequence; the data must be split on it,
     thus not matching the rule's regex."""
     config_data = '''rules:
@@ -454,11 +454,10 @@ def test_process_buffer_movement_sequence(capsys):
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data_fmt = 'Hello{} World'
+    data_fmt = 'Hello\033[{} World'
     movements = [
-        '\033[A', '\033[1A', '\033[123A', '\033[B', '\033[C', '\033[D',
-        '\033[E', '\033[F', '\033[G', '\033[J', '\033[K', '\033[S', '\033[T',
-        '\033[H', '\033[1;H', '\033[;1H', '\033[1;1H', '\033[f'
+        'A', '1A', '123A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'S', 'T',
+        'H', '1;H', ';1H', '1;1H', 'f', '?1049h', '?1049l'
     ]
 
     for movement in movements:
