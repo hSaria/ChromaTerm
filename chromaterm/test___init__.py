@@ -454,16 +454,18 @@ def test_process_buffer_movement_sequences(capsys):
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data_fmt = 'Hello\033[{} World'
+    data_fmt = 'Hello{} World'
     movements = [
         'A', '1A', '123A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'S', 'T',
         'H', '1;H', ';1H', '1;1H', 'f', '?1049h', '?1049l'
     ]
+    splits = ['\r', '\n', '\r\n', '\v', '\f']
 
-    for movement in movements:
-        data = data_fmt.format(movement)
-        chromaterm.process_buffer(config, data, False)
-        assert repr(data) == repr(capsys.readouterr().out)
+    for prefix, items in zip(['\033[', ''], [movements, splits]):
+        for item in items:
+            data = data_fmt.format(prefix + item)
+            chromaterm.process_buffer(config, data, False)
+            assert repr(data) == repr(capsys.readouterr().out)
 
 
 def test_read_file():
