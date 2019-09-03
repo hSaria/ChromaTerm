@@ -446,7 +446,7 @@ def test_process_buffer_rule_multiple_colors(capsys):
 
 
 def test_process_buffer_movement_sequences(capsys):
-    """Input data includes a movement sequence; the data must be split on it,
+    """Input data includes movement sequences; the data must be split on it,
     thus not matching the rule's regex."""
     config_data = '''rules:
     - description: first
@@ -466,6 +466,29 @@ def test_process_buffer_movement_sequences(capsys):
             data = data_fmt.format(prefix + item)
             chromaterm.process_buffer(config, data, False)
             assert repr(data) == repr(capsys.readouterr().out)
+
+
+def test_process_buffer_false_movement_sequences(capsys):
+    """Input data includes sequences that appear to be movements, but are not;
+    the data must not be split and thus the rule's regex is matched."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello.+World
+      color: f#aaafff'''
+    config = chromaterm.parse_config(config_data)
+
+    data_fmt = 'Hello{} World'
+    movements = [
+        'A', '1A', '123A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'S', 'T',
+        'H', '1;H', ';1H', '1;1H', 'f', '?1049h', '?1049l'
+    ]
+    splits = ['r', 'n', 'rn', 'v', 'f']
+
+    for prefix, items in zip(['[', ''], [movements, splits]):
+        for item in items:
+            data = data_fmt.format(prefix + item)
+            chromaterm.process_buffer(config, data, False)
+            assert repr(data) != repr(capsys.readouterr().out)
 
 
 def test_read_file():
