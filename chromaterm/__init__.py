@@ -10,6 +10,8 @@ import sys
 import yaml
 
 COLOR_RE = re.compile(r'\033\[[0-9;]*m')
+MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|'
+                         r'\r|\r\n|\n)')
 
 # Maximum chuck size per read
 READ_SIZE = 65536  # 64 KiB
@@ -88,6 +90,9 @@ def get_rule_inserts(rule, data):
 
 def highlight(config, data):
     """According to the rules in the `config`, return the highlighted 'data'."""
+    if not data:
+        return data
+
     inserts = []
     existing = []
 
@@ -190,22 +195,33 @@ def parse_rule(rule, rgb=False):
 
 def process_buffer(config, buffer, more):
     """Process the `buffer` using the `config`, returning any left-over data.
-    If there's `more` data coming up, only process full lines (ending with new
-    line). Otherwise, process all of the buffer."""
-    lines = buffer.splitlines(True)  # Keep line-splits
+    If there's `more` data coming up, only process up to the last movement
+    split. Otherwise, process all of the buffer."""
+    # They're called "lines," but in actuality, this is split based on movement
+    # characters.
+    lines = MOVEMENT_RE.split(buffer)
 
-    if not lines:
+    if lines == ['']:
         return ''
 
+    # Every two entries will become [data, separator]. If no splits or did not
+    # end with a separator, a fake (empty) seperator needs to be added.
+    if len(lines) == 1 or lines[-1] != '':
+        lines.append('')
+
+    # Group all lines into format of [data, separator]
+    lines = [[x, y] for x, y in zip(lines[0::2], lines[1::2])]
+
     for line in lines[:-1]:  # Process all lines except for the last
-        print(highlight(config, line), end='')
+        print(highlight(config, line[0]) + line[1], end='')
 
     # Indicated more data to possibly come and stdin confirmed it
     if more and read_ready(WAIT_FOR_NEW_LINE):
-        return lines[-1]  # Return last line as the left-over data
+        # Return last line as the left-over data
+        return lines[-1][0] + lines[-1][1]
 
     # No more data; print last line and flush as it doesn't have a new line
-    print(highlight(config, lines[-1]), end='', flush=True)
+    print(highlight(config, lines[-1][0]) + lines[-1][1], end='', flush=True)
 
     return ''  # All of the buffer was processed; return an empty buffer
 
