@@ -81,7 +81,7 @@ The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and `
 
 You can color the foreground and background simultaneously by separating them with a space, like `b#123456 f#abcdef`.
 
-For more advanced use cases, you can apply a color per regex group (see the 2nd example rule in the code snippet above).
+A color can be applied per regex group (see the 2nd example rule).
 
 # Help
 
