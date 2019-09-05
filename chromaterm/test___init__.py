@@ -777,7 +777,7 @@ def test_main_reload_config(capsys, monkeypatch):
 
 def test_main_reload_processes():
     """Reload all other CT processes"""
-    for i in range(3):  # Spawn processes
+    for _ in range(3):  # Spawn processes
         subprocess.Popen("sleep 1 | ./ct", shell=True)
 
     result = subprocess.run(['./ct', '--reload'], stderr=subprocess.PIPE)
