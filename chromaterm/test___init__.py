@@ -794,9 +794,18 @@ def test_main_reload_config(capsys, monkeypatch):
 
 
 def test_main_reload_processes():
-    """Reload all other CT processes"""
+    """Reload all other CT processes."""
     for _ in range(3):  # Spawn processes
         subprocess.Popen("sleep 1 | ./ct", shell=True)
 
     result = subprocess.run(['./ct', '--reload'], stderr=subprocess.PIPE)
     assert result.stderr == b'Processes reloaded: 3\n'
+
+
+def test_main_buffer_close_time():
+    """Confirm that the program exists as soon as stdin closes."""
+    before = time.time()
+    subprocess.run("echo hi | ./ct", shell=True)
+    after = time.time()
+
+    assert after - before < 1
