@@ -11,7 +11,6 @@ A tool for colorizing the output of a terminal.
     -   [Description](#description)
     -   [RegEx](#regex)
     -   [Color](#color)
-    -   [Group](#group)
 -   [Help](#help)
 
 # About
@@ -61,10 +60,11 @@ rules:
   regex: hello.+world
   color: f#ff0000
 
-- description: Background this time, but just for "there"
-  regex: Hey (there), buddy
-  color: b#ff0000
-  group: 1
+- description: Background "there" and foreground "buddy" with different colors.
+  regex: Hey (there), (buddy)
+  color:
+    1: b#ff0000
+    2: b#123123
 ```
 
 ## Description
@@ -81,9 +81,7 @@ The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and `
 
 You can color the foreground and background simultaneously by separating them with a space, like `b#123456 f#abcdef`.
 
-## Group
-
-Optional. By default, the entire match is colored. That can be changed to a specific group in the `regex`.
+For more advanced use cases, you can apply a color per regex group (see the 2nd example rule in the code snippet above).
 
 # Help
 
