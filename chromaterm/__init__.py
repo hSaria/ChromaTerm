@@ -98,7 +98,7 @@ def get_color_code(color, rgb=False):
     words = '|'.join([x for x in STYLES])
     color_re = r'(?i)^(((b|f)#([0-9a-fA-F]{6})|' + words + r')(\s+|$))+$'
 
-    if not re.match(color_re, color):
+    if not re.search(color_re, color):
         return None
 
     code = ''
