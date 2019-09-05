@@ -11,6 +11,9 @@ A tool for colorizing the output of a terminal.
     -   [Description](#description)
     -   [RegEx](#regex)
     -   [Color](#color)
+        -   [Background and Foreground](#background-and-foreground)
+        -   [Style](#style)
+        -   [Group-Specific](#group-specific)
 -   [Help](#help)
 
 # About
@@ -60,11 +63,11 @@ rules:
   regex: hello.+world
   color: f#ff0000
 
-- description: Background "there" and foreground "buddy" with different colors.
+- description: Color the foreground and background for "there" and make it bold. Paint "buddy" red.
   regex: Hey (there), (buddy)
   color:
-    1: b#ff0000
-    2: b#123123
+    1: b#abcabc f#123123 bold
+    2: b#ff0000
 ```
 
 ## Description
@@ -77,11 +80,25 @@ The RegEx engine used is Python's [re](https://docs.python.org/3/library/re.html
 
 ## Color
 
+### Background and Foreground
+
 The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and `f` for foreground (e.g. `f#abcdef`).
 
 You can color the foreground and background simultaneously by separating them with a space, like `b#123456 f#abcdef`.
 
-A color can be applied per regex group (see the 2nd example rule).
+### Style
+
+In addition to the foreground and background, the following styles are supported, though some terminals ignore them:
+
+-   Blink
+-   Bold
+-   Italic
+-   Striked
+-   Underline
+
+### Group-Specific
+
+A color can be applied per RegEx group (see the 2nd example rule). You can apply as many groups as long as its in the RegEx.
 
 # Help
 
