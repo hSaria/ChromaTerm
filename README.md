@@ -2,25 +2,19 @@
 
 [![PyPI version](https://badge.fury.io/py/chromaterm.svg)](https://badge.fury.io/py/chromaterm) [![Build Status](https://travis-ci.org/hSaria/ChromaTerm.svg?branch=master)](https://travis-ci.org/hSaria/ChromaTerm) [![Coverage Status](https://coveralls.io/repos/github/hSaria/ChromaTerm/badge.svg)](https://coveralls.io/github/hSaria/ChromaTerm)
 
-A tool for colorizing the output of a terminal.
+A tool for colorizing the output of programs.
 
 -   [About](#about)
 -   [Installation](#installation)
 -   [Usage](#usage)
 -   [Highlight Rules](#highlight-rules)
-    -   [Description](#description)
-    -   [RegEx](#regex)
-    -   [Color](#color)
-        -   [Background and Foreground](#background-and-foreground)
-        -   [Style](#style)
-        -   [Group-Specific](#group-specific)
 -   [Help](#help)
 
 # About
 
 ChromaTerm (`ct`) reads from standard input and colors it according to user-configurable rules.
 
-Think of ChromaTerm like `grep`; just pipe things into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have `ssh() { /usr/bin/ssh $* | ct; }` in my `.bash_profile` to give my sessions color.
+Think of ChromaTerm like `grep`; just pipe data into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have `ssh() { /usr/bin/ssh $* | ct; }` in my `.bash_profile` to give my sessions color.
 
 Here's an example using the rules in the default configuration file:
 
@@ -98,7 +92,7 @@ In addition to the foreground and background, the following styles are supported
 
 ### Group-Specific
 
-A color can be applied per RegEx group (see the 2nd example rule). You can apply as many groups as long as it's in the RegEx.
+A color can be applied per RegEx group (see the 2nd example rule). Any group can be referenced as long as it's in the RegEx.
 
 # Help
 
