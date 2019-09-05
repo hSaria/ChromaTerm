@@ -81,7 +81,7 @@ def config_init(args=None):
 
     # Ignore SIGINT, reload config with SIGUSR1
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-    if platform.system() != 'Windows'
+    if platform.system() != 'Windows':
         signal.signal(signal.SIGUSR1, update_config_handler)
 
     return config
