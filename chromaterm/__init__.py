@@ -5,6 +5,7 @@ import argparse
 import os
 import re
 import select
+import signal
 import sys
 
 import yaml
@@ -41,6 +42,8 @@ def args_init(args=None):
                         action='store_true',
                         help='Use RGB colors (default: attempt detection, '
                         'fall-back to xterm-256)')
+
+    signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
 
     return parser.parse_args(args)
 
