@@ -290,6 +290,24 @@ def test_highlight_partial_overlap_existing_multiline():
             ''.join(line_expected))
 
 
+def test_highlight_optional_multi_group():
+    """Multiple group-specific colors."""
+    config_data = '''rules:
+    - regex: Hello (World)! It's (me)
+      color:
+        1: f#f7e08b
+        2: f#aaafff'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello World! It\'s me'
+    expected = [
+        'Hello ', '\033[38;5;229m', 'World', '\033[m', '! It\'s ',
+        '\033[38;5;153m', 'me', '\033[m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
 def test_highlight_optional_group_not_matched():
     """RegEx matched but the group specified is optional and did not match."""
     config_data = '''rules:
@@ -317,8 +335,18 @@ def test_parse_config_simple():
 def test_parse_config_group():
     """Parse a config file with a group-specific rule."""
     config_data = '''rules:
-    - description: group
-      regex: hello (world)
+    - regex: hello (world)! It's (me).
+      color:
+        1: b#fffaaa
+        2: f#123123'''
+
+    assert chromaterm.parse_config(config_data)['rules']
+
+
+def test_parse_config_group_legacy():
+    """Parse a config file with a legacy group-specific rule."""
+    config_data = '''rules:
+    - regex: hello (world)
       color: b#fffaaa
       group: 1'''
 
@@ -380,40 +408,40 @@ def test_parse_rule_color_missing():
 
 def test_parse_rule_color_type_error():
     """Parse a rule with an incorrect `color` value type."""
-    msg = 'color not a string'
+    msg = 'color not a string or dictionary'
     rule = {'regex': 'x(y)z', 'color': ['hi']}
     assert chromaterm.parse_rule(rule) == msg
 
 
 def test_parse_rule_color_format_error():
     """Parse a rule with an incorrect `color` format."""
-    msg = 'color not in the correct format'
+    msg_re = 'color ".+" not in the correct format'
 
     rule = {'regex': 'x(y)z', 'color': 'b#xyzxyz'}
-    assert chromaterm.parse_rule(rule) == msg
+    assert re.search(msg_re, chromaterm.parse_rule(rule))
 
     rule = {'regex': 'x(y)z', 'color': 'x#fffaaa'}
-    assert chromaterm.parse_rule(rule) == msg
+    assert re.search(msg_re, chromaterm.parse_rule(rule))
 
     rule = {'regex': 'x(y)z', 'color': 'b@fffaaa'}
-    assert chromaterm.parse_rule(rule) == msg
+    assert re.search(msg_re, chromaterm.parse_rule(rule))
 
     rule = {'regex': 'x(y)z', 'color': 'b#fffaaa-f#fffaaa'}
-    assert chromaterm.parse_rule(rule) == msg
+    assert re.search(msg_re, chromaterm.parse_rule(rule))
 
 
 def test_parse_rule_group_type_error():
     """Parse a rule with an incorrect `group` value type."""
-    msg = 'group not an integer'
+    msg_re = 'group .+ not an integer'
     rule = {'regex': 'x(y)z', 'color': 'b#fffaaa', 'group': 'hi'}
-    assert chromaterm.parse_rule(rule) == msg
+    assert re.search(msg_re, chromaterm.parse_rule(rule))
 
 
 def test_parse_rule_group_out_of_bounds():
     """Parse a rule with `group` number not in the regex."""
-    msg = 'group ID over the number of groups in the regex'
+    msg_re = 'group .+ not in the regex'
     rule = {'regex': 'x(y)z', 'color': 'b#fffaaa', 'group': 2}
-    assert chromaterm.parse_rule(rule) == msg
+    assert re.search(msg_re, chromaterm.parse_rule(rule))
 
 
 def test_process_buffer_empty(capsys):

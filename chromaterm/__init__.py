@@ -81,14 +81,15 @@ def get_rule_inserts(rule, data):
     inserts = []
 
     for match in rule['regex'].finditer(data):
-        if match.group(rule['group']) is None:  # Group not part of the match
-            continue
+        for group in rule['color']:
+            if match.group(group) is None:  # Group not part of the match
+                continue
 
-        inserts.append({
-            'start': match.start(rule['group']),
-            'end': match.end(rule['group']),
-            'color': rule['color']
-        })
+            inserts.append({
+                'start': match.start(group),
+                'end': match.end(group),
+                'color': rule['color'][group]
+            })
 
     return inserts
 
@@ -167,33 +168,39 @@ def parse_rule(rule, rgb=False):
     if not isinstance(regex, str) and not isinstance(regex, int):
         return 'regex not a string or integer'
 
-    color = rule.get('color')
-    if not color:
-        return 'color not found'
-
-    if not isinstance(color, str):
-        return 'color not a string'
-
-    color_code = get_color_code(color, rgb=rgb)
-    if not color_code:
-        return 'color not in the correct format'
-
-    group = rule.get('group', 0)
-    if not isinstance(group, int):
-        return 'group not an integer'
-
     try:
         regex_compiled = re.compile(regex)
     except re.error as exception:
         return 're.error: ' + str(exception)
 
-    if group > regex_compiled.groups:
-        return 'group ID over the number of groups in the regex'
+    color = rule.get('color')
+    if not color:
+        return 'color not found'
+
+    if isinstance(color, str):
+        group = rule.get('group', 0)
+        color = {group: color}
+    elif not isinstance(color, dict):
+        return 'color not a string or dictionary'
+
+    for group in color:
+        if not isinstance(group, int):
+            return 'group "{}" not an integer'.format(group)
+
+        if group > regex_compiled.groups:
+            return 'group {} not in the regex'.format(group)
+
+        color_code = get_color_code(color[group], rgb=rgb)
+
+        if not color_code:
+            return 'color "{}" not in the correct format'.format(color)
+
+        color[group] = color_code
 
     return {
         'description': description,
         'regex': regex_compiled,
-        'color': color_code,
+        'color': color,
         'group': group
     }
 
