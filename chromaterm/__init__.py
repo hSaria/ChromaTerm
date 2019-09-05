@@ -17,6 +17,14 @@ MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
 # Maximum chuck size per read
 READ_SIZE = 65536  # 64 KiB
 
+STYLES = {
+    'blink': '\033[5m',
+    'bold': '\033[1m',
+    'italic': '\033[3m',
+    'striked': '\033[9m',
+    'underline': '\033[4m',
+}
+
 # CT cannot determine if it is processing input faster than the piping process
 # is outputting or if the input has finished. To work around this, CT will wait
 # a bit prior to assuming there's no more data in the buffer. There's no impact
@@ -86,11 +94,16 @@ def get_color_code(color, rgb=False):
     the `color` is invalid. The `color` is a string in the format of b#abcdef
     for background or f#abcdef for foreground. Can be multiple colors if
     separated by a space."""
-    if not re.match(r'^((b|f)#([0-9a-fA-F]{6})(\s+|$)){1,2}$', color.strip()):
+    color = color.lower().strip()
+    words = '|'.join([x for x in STYLES])
+    color_re = r'(?i)^(((b|f)#([0-9a-fA-F]{6})|' + words + r')(\s+|$))+$'
+
+    if not re.match(color_re, color):
         return None
 
     code = ''
 
+    # Colors
     for match in re.findall(r'(b|f)#([0-9a-fA-F]{6})', color):
         target = '\033[38;' if match[0] == 'f' else '\033[48;'
         rgb_int = [int(match[1][i:i + 2], 16) for i in [0, 2, 4]]
@@ -106,6 +119,10 @@ def get_color_code(color, rgb=False):
             color_id = rgb_to_8bit(*rgb_int)
 
         code += target + str(color_id) + 'm'
+
+    # Styles
+    for match in re.findall(words, color.lower().strip()):
+        code += STYLES[match]
 
     return code or None
 

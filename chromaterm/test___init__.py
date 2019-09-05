@@ -68,6 +68,24 @@ def test_get_color_code_rgb():
         assert chromaterm.get_color_code(color, rgb=True) == '\033[' + code
 
 
+def test_get_color_code_style():
+    """Terminal styles."""
+    colors = ['blink', 'BOLD', 'iTaLiC', 'striked', 'underline']
+    codes = ['5m', '1m', '3m', '9m', '4m']
+
+    for color, code in zip(colors, codes):
+        assert chromaterm.get_color_code(color) == '\033[' + code
+
+
+def test_get_color_code_compound():
+    """All sorts of color codes."""
+    color = 'bold b#0973d8 italic f#45f2d7'
+    # Styles are always added last
+    code = '\033[48;5;33m\033[38;5;87m\033[1m\033[3m'
+
+    assert chromaterm.get_color_code(color) == code
+
+
 def test_get_color_code_excessive_colors():
     """Too many colors (more than 2)."""
     colors = 'b#010101 f#020202 f#020202'
