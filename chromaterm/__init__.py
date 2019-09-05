@@ -81,6 +81,9 @@ def get_rule_inserts(rule, data):
     inserts = []
 
     for match in rule['regex'].finditer(data):
+        if match.group(rule['group']) is None:  # Group not part of the match
+            continue
+
         inserts.append({
             'start': match.start(rule['group']),
             'end': match.end(rule['group']),

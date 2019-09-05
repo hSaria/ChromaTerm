@@ -290,6 +290,20 @@ def test_highlight_partial_overlap_existing_multiline():
             ''.join(line_expected))
 
 
+def test_highlight_optional_group_not_matched():
+    """RegEx matched but the group specified is optional and did not match."""
+    config_data = '''rules:
+    - regex: Hello (World)?
+      color: f#f7e08b
+      group: 1'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello Hello World'
+    expected = ['Hello Hello ', '\033[38;5;229m', 'World', '\033[m']
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
 def test_parse_config_simple():
     """Parse a config file with a simple rule."""
     config_data = '''rules:
