@@ -44,14 +44,19 @@ def config_init(args=None):
                         'fall-back to xterm-256)')
 
     args = parser.parse_args(args)
-
-    # Attempt RGB support detection
     rgb = os.getenv('COLORTERM') == 'truecolor' or args.rgb
 
-    # Ignore SIGINT
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    config = parse_config(read_file(args.config) or '', rgb=rgb)
 
-    return parse_config(read_file(args.config) or '', rgb=rgb)
+    def update_config_handler(_1=None, _2=None):
+        parse_config(read_file(args.config) or '', config, rgb)
+
+    # Ignore SIGINT and SIGUSR2, reload config with SIGUSR1
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGUSR2, signal.SIG_IGN)
+    signal.signal(signal.SIGUSR1, update_config_handler)
+
+    return config
 
 
 def eprint(*args, **kwargs):
@@ -143,9 +148,12 @@ def highlight(config, data):
     return data
 
 
-def parse_config(data, rgb=False):
-    """Parse `data` (a YAML string), returning a dictionary of the config."""
-    config = {'rules': [], 'reset_code': '\033[m'}
+def parse_config(data, config=None, rgb=False):
+    """Parse `data` (a YAML string), modifying/returning the `config` dict."""
+    if config is None:
+        config = {'reset_code': '\033[m'}
+
+    config['rules'] = []
 
     try:  # Load the YAML configuration file
         load = yaml.safe_load(data) or {}

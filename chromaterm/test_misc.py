@@ -7,8 +7,8 @@ import chromaterm
 import chromaterm.misc
 
 CONFIG = chromaterm.parse_config(chromaterm.misc.DEFAULT_CONFIG)
-DIR_FAKE = '.test_chromaterm'
-FILE_FAKE = '.test_chromaterm.yml'
+TEMP_DIR = '.test_chromaterm'
+TEMP_FILE = '.test_chromaterm.yml'
 
 
 def assert_highlight(positives, negatives, rule, permutate=True):
@@ -119,9 +119,9 @@ def test_find_rule():
 
 def test_write_default_config():
     """Write config file."""
-    assert chromaterm.misc.write_default_config('.', FILE_FAKE) is True
-    assert os.access(os.path.join('.', FILE_FAKE), os.F_OK)
-    os.remove(FILE_FAKE)
+    assert chromaterm.misc.write_default_config('.', TEMP_FILE) is True
+    assert os.access(os.path.join('.', TEMP_FILE), os.F_OK)
+    os.remove(TEMP_FILE)
 
 
 def test_write_default_config_no_directory():
@@ -131,13 +131,13 @@ def test_write_default_config_no_directory():
 
 def test_write_default_config_exists():
     """Config file already exists."""
-    open(FILE_FAKE, 'w').close()
-    assert chromaterm.misc.write_default_config('.', FILE_FAKE) is False
-    os.remove(FILE_FAKE)
+    open(TEMP_FILE, 'w').close()
+    assert chromaterm.misc.write_default_config('.', TEMP_FILE) is False
+    os.remove(TEMP_FILE)
 
 
 def test_write_default_config_no_permission():
     """No write permission on directory."""
-    os.mkdir(DIR_FAKE, mode=0o444)
-    assert chromaterm.misc.write_default_config(DIR_FAKE) is False
-    os.rmdir(DIR_FAKE)
+    os.mkdir(TEMP_DIR, mode=0o444)
+    assert chromaterm.misc.write_default_config(TEMP_DIR) is False
+    os.rmdir(TEMP_DIR)
