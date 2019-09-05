@@ -1,6 +1,6 @@
 from setuptools import setup
 
-REQUIRES = ['PyYAML']
+REQUIRES = ['psutil', 'PyYAML']
 REQUIRES_PYTHON = '>=3.5.0'
 
 with open('README.md', 'r') as f:

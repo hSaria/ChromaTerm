@@ -29,7 +29,8 @@ DEPRECATE_MSG_GROUP = False
 
 
 def config_init(args=None):
-    """Return the parsed configuration according to the program arguments."""
+    """Return the parsed configuration according to the program arguments. if
+    there is an error, a string with the message is returned."""
     parser = argparse.ArgumentParser(description='Colorize your output using'
                                      'RegEx.')
 
@@ -38,22 +39,38 @@ def config_init(args=None):
                         type=str,
                         help='location of config file (default: %(default)s)',
                         default='$HOME/.chromaterm.yml')
+    parser.add_argument('--reload',
+                        action='store_true',
+                        help='Reload the config of all CT instances')
     parser.add_argument('--rgb',
                         action='store_true',
                         help='Use RGB colors (default: attempt detection, '
                         'fall-back to xterm-256)')
 
     args = parser.parse_args(args)
-    rgb = os.getenv('COLORTERM') == 'truecolor' or args.rgb
 
+    if args.reload:
+        import psutil  # Imported here to reduce normal startup delay
+        count = 0
+
+        for process in [x.as_dict() for x in psutil.process_iter()]:
+            if process['pid'] == os.getpid():  # Skip the current process
+                continue
+
+            if process['cmdline'] and sys.argv[0] in process['cmdline']:
+                os.kill(process['pid'], signal.SIGUSR1)
+                count += 1
+
+        return 'Processes reloaded: ' + str(count)
+
+    rgb = os.getenv('COLORTERM') == 'truecolor' or args.rgb
     config = parse_config(read_file(args.config) or '', rgb=rgb)
 
     def update_config_handler(_1=None, _2=None):
         parse_config(read_file(args.config) or '', config, rgb)
 
-    # Ignore SIGINT and SIGUSR2, reload config with SIGUSR1
+    # Ignore SIGINT, reload config with SIGUSR1
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-    signal.signal(signal.SIGUSR2, signal.SIG_IGN)
     signal.signal(signal.SIGUSR1, update_config_handler)
 
     return config
@@ -364,6 +381,9 @@ def split_buffer(buffer):
 def main(config, max_wait=None):
     """Main entry point that uses `config` from config_init to process stdin.
     `max_wait` is the longest period to wait without input before quiting."""
+    if isinstance(config, str):  # An error message
+        return config
+
     buffer = ''
 
     while read_ready(max_wait):

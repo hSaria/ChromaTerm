@@ -5,6 +5,7 @@ import os
 import re
 import signal
 import socket
+import subprocess
 import time
 from threading import Thread
 
@@ -772,3 +773,12 @@ def test_main_reload_config(capsys, monkeypatch):
         os.remove(TEMP_FILE)
         os.remove(TEMP_SOCKET)
         main_thread.join()
+
+
+def test_main_reload_processes():
+    """Reload all other CT processes"""
+    for i in range(3):  # Spawn processes
+        subprocess.Popen("sleep 1 | ./ct", shell=True)
+
+    result = subprocess.run(['./ct', '--reload'], stderr=subprocess.PIPE)
+    assert result.stderr == b'Processes reloaded: 3\n'
