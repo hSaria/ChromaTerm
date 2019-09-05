@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+"""ChromaTerm setup"""
+
 from setuptools import setup
 
 REQUIRES = ['psutil', 'PyYAML']
