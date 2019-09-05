@@ -103,3 +103,5 @@ A color can be applied per RegEx group (see the 2nd example rule). You can apply
 # Help
 
 If you've got any questions or suggestions, please open up an [issue](https://github.com/hSaria/ChromaTerm/issues/new/choose) (always appreciated).
+
+There is no planned support for Windows due to the lack in standards support.
