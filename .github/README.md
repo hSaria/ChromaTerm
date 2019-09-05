@@ -2,16 +2,6 @@
 
 [![PyPI version](https://badge.fury.io/py/chromaterm.svg)](https://badge.fury.io/py/chromaterm) [![Build Status](https://travis-ci.org/hSaria/ChromaTerm.svg?branch=master)](https://travis-ci.org/hSaria/ChromaTerm) [![Coverage Status](https://coveralls.io/repos/github/hSaria/ChromaTerm/badge.svg)](https://coveralls.io/github/hSaria/ChromaTerm)
 
-A tool for colorizing the output of programs.
-
--   [About](#about)
--   [Installation](#installation)
--   [Usage](#usage)
--   [Highlight Rules](#highlight-rules)
--   [Help](#help)
-
-# About
-
 ChromaTerm (`ct`) reads from standard input and colors it according to user-configurable rules.
 
 Think of ChromaTerm like `grep`; just pipe data into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have `ssh() { /usr/bin/ssh $* | ct; }` in my `.bash_profile` to give my sessions color.
