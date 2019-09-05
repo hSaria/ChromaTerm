@@ -18,11 +18,11 @@ MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
 READ_SIZE = 65536  # 64 KiB
 
 STYLES = {
-    'blink': '\033[5m',
-    'bold': '\033[1m',
-    'italic': '\033[3m',
-    'striked': '\033[9m',
-    'underline': '\033[4m',
+    'blink': '5',
+    'bold': '1',
+    'italic': '3',
+    'strike': '9',
+    'underline': '4',
 }
 
 # CT cannot determine if it is processing input faster than the piping process
@@ -101,15 +101,16 @@ def get_color_code(color, rgb=False):
     if not re.search(color_re, color):
         return None
 
-    code = ''
+    codes = []
 
     # Colors
     for match in re.findall(r'(b|f)#([0-9a-fA-F]{6})', color):
-        target = '\033[38;' if match[0] == 'f' else '\033[48;'
+        target = '38;' if match[0] == 'f' else '48;'
         rgb_int = [int(match[1][i:i + 2], 16) for i in [0, 2, 4]]
 
-        if target in code:  # Duplicate targets
-            return None
+        for code in codes:
+            if code.startswith(target):  # Duplicate color target
+                return None
 
         if rgb:
             target += '2;'
@@ -118,13 +119,16 @@ def get_color_code(color, rgb=False):
             target += '5;'
             color_id = rgb_to_8bit(*rgb_int)
 
-        code += target + str(color_id) + 'm'
+        codes.append(target + str(color_id))
 
     # Styles
     for match in re.findall(words, color.lower().strip()):
-        code += STYLES[match]
+        if STYLES[match] in codes:  # Duplicate style
+            return None
 
-    return code or None
+        codes.append(STYLES[match])
+
+    return '\033[' + ';'.join(codes) + 'm' if codes else None
 
 
 def get_default_config():

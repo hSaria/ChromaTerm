@@ -70,7 +70,7 @@ def test_get_color_code_rgb():
 
 def test_get_color_code_style():
     """Terminal styles."""
-    colors = ['blink', 'BOLD', 'iTaLiC', 'striked', 'underline']
+    colors = ['blink', 'BOLD', 'iTaLiC', 'strike', 'underline']
     codes = ['5m', '1m', '3m', '9m', '4m']
 
     for color, code in zip(colors, codes):
@@ -79,9 +79,9 @@ def test_get_color_code_style():
 
 def test_get_color_code_compound():
     """All sorts of color codes."""
-    color = 'bold b#0973d8 italic f#45f2d7'
+    color = 'bold b#0973d8 underline f#45f2d7'
     # Styles are always added last
-    code = '\033[48;5;33m\033[38;5;87m\033[1m\033[3m'
+    code = '\033[48;5;33;38;5;87;1;4m'
 
     assert chromaterm.get_color_code(color) == code
 
@@ -95,9 +95,10 @@ def test_get_color_code_excessive_colors():
 
 def test_get_color_code_duplicate_target():
     """Duplicate targets (e.g. two foreground colors)."""
-    colors = 'f#020202 f#030303'
+    colors = ['f#020202 f#030303', 'bold bold']
 
-    assert chromaterm.get_color_code(colors) is None
+    for color in colors:
+        assert chromaterm.get_color_code(color) is None
 
 
 def test_highlight_enscapsulated():
@@ -526,7 +527,7 @@ def test_process_buffer_rule_multiple_colors(capsys):
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
-    success = r'^test (\033\[[34]8;5;[0-9]{1,3}m){2}hello world\033\[m test$'
+    success = r'^test \033\[([34]8;5;[0-9]{1,3};?){2}mhello world\033\[m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
