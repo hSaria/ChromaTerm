@@ -3,7 +3,7 @@ from setuptools import setup
 REQUIRES = ['psutil', 'PyYAML']
 REQUIRES_PYTHON = '>=3.5.0'
 
-with open('README.md', 'r') as f:
+with open('.github/README.md', 'r') as f:
     LONG_DESCRIPTION = f.read()
 
 setup(
