@@ -3,7 +3,6 @@
 
 import argparse
 import os
-import platform
 import re
 import select
 import signal
@@ -48,10 +47,9 @@ def config_init(args=None):
                         type=str,
                         help='location of config file (default: %(default)s)',
                         default='$HOME/.chromaterm.yml')
-    if platform.system() != 'Windows':
-        parser.add_argument('--reload',
-                            action='store_true',
-                            help='Reload the config of all CT instances')
+    parser.add_argument('--reload',
+                        action='store_true',
+                        help='Reload the config of all CT instances')
     parser.add_argument('--rgb',
                         action='store_true',
                         help='Use RGB colors (default: attempt detection, '
@@ -59,7 +57,7 @@ def config_init(args=None):
 
     args = parser.parse_args(args)
 
-    if platform.system() != 'Windows' and args.reload:
+    if args.reload:
         import psutil  # Imported here to reduce normal startup delay
         count = 0
 
@@ -81,8 +79,7 @@ def config_init(args=None):
 
     # Ignore SIGINT, reload config with SIGUSR1
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-    if platform.system() != 'Windows':
-        signal.signal(signal.SIGUSR1, update_config_handler)
+    signal.signal(signal.SIGUSR1, update_config_handler)
 
     return config
 
