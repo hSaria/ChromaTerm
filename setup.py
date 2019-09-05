@@ -27,5 +27,5 @@ setup(
     requires=REQUIRES,
     scripts=['ct'],
     url='https://github.com/hSaria/ChromaTerm',
-    version='0.4.2',
+    version='0.4.3',
 )
