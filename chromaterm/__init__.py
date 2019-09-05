@@ -74,12 +74,11 @@ def config_init(args=None):
     rgb = os.getenv('COLORTERM') == 'truecolor' or args.rgb
     config = parse_config(read_file(args.config) or '', rgb=rgb)
 
-    def update_config_handler(_1=None, _2=None):
+    def update_config_handler(_1, _2):
         parse_config(read_file(args.config) or '', config, rgb)
 
-    # Ignore SIGINT, reload config with SIGUSR1
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-    signal.signal(signal.SIGUSR1, update_config_handler)
+    signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
+    signal.signal(signal.SIGUSR1, update_config_handler)  # Reload handler
 
     return config
 
@@ -91,9 +90,7 @@ def eprint(*args, **kwargs):
 
 def get_color_code(color, rgb=False):
     """Return the ANSI code to be used when highlighting with `color` or None if
-    the `color` is invalid. The `color` is a string in the format of b#abcdef
-    for background or f#abcdef for foreground. Can be multiple colors if
-    separated by a space."""
+    the `color` is invalid."""
     color = color.lower().strip()
     words = '|'.join([x for x in STYLES])
     color_re = r'(?i)^(((b|f)#([0-9a-fA-F]{6})|' + words + r')(\s+|$))+$'
@@ -133,7 +130,7 @@ def get_color_code(color, rgb=False):
 
 def get_default_config():
     """Return a dict with the default configuration."""
-    return {'rules': [], 'reset_code': '\033[m'}
+    return {'rules': [], 'reset': '\033[m'}
 
 
 def get_rule_inserts(rule, data):
@@ -160,21 +157,20 @@ def highlight(config, data):
     if not data:  # Empty data, don't bother doing anything
         return data
 
-    inserts = []
-    existing = []
+    existing = []  # Existing colors in the data
 
-    # Find existing colors
     for match in COLOR_RE.finditer(data):
         existing.append({'position': match.start(0), 'code': match.group(0)})
 
-    # Get all inserts from the rules
+    inserts = []  # The list of colors and their positions (inserts)
+
     for rule in config['rules']:
         inserts += get_rule_inserts(rule, data)
 
     # Process all of the inserts, returning the final list.
-    inserts = process_inserts(inserts, existing, config['reset_code'])
+    inserts = process_inserts(inserts, existing, config['reset'])
 
-    # Sort the inserts according to the position, from end to beginning
+    # Sort the inserts according to the position, from end to start
     inserts = sorted(inserts, key=lambda x: x['position'], reverse=True)
 
     # Insert the colors into the data
@@ -182,11 +178,10 @@ def highlight(config, data):
         index = insert['position']
         data = data[:index] + insert['code'] + data[index:]
 
-    # Use the last code as the reset for any next colors. The last reset is
-    # whatever the color originally was.
+    # Use the last code as the reset for any next colors
     if inserts + existing:
-        last_code = sorted(inserts + existing, key=lambda x: x['position'])[-1]
-        config['reset_code'] = last_code['code']
+        last_code = max(inserts + existing, key=lambda x: x['position'])
+        config['reset'] = last_code['code']
 
     return data
 
@@ -196,13 +191,13 @@ def parse_config(data, config=None, rgb=False):
     if config is None:
         config = get_default_config()
 
-    config['rules'] = []
-
     try:  # Load the YAML configuration file
         load = yaml.safe_load(data) or {}
     except yaml.YAMLError as exception:
         eprint('Parse error:', exception)
         return config
+
+    config['rules'] = []  # Reset the rules list
 
     # Parse the rules
     rules = load.get('rules', []) if isinstance(load, dict) else None
@@ -219,8 +214,8 @@ def parse_config(data, config=None, rgb=False):
 
 
 def parse_rule(rule, rgb=False):
-    """Return a dict containing the description, regex (compiled), color (code),
-    and group."""
+    """Return a dict of the description, regex (compiled), color (code), and
+    group."""
     # pylint: disable=too-many-return-statements
 
     description = rule.get('description', '')
@@ -276,35 +271,34 @@ def parse_rule(rule, rgb=False):
 
 
 def process_buffer(config, buffer, more):
-    """Process the `buffer` using the `config`, returning any left-over data.
-    If there's `more` data coming up, only process up to the last movement
-    split. Otherwise, process all of the buffer."""
-    lines = split_buffer(buffer)
+    """Process the `buffer` using the `config`, returning any left-over data. If
+    there's `more`, only process up to the last split. Otherwise, process all of
+    the buffer."""
+    splits = split_buffer(buffer)
 
-    if not lines:
+    if not splits:
         return ''
 
-    for line in lines[:-1]:  # Process all lines except for the last
-        print(highlight(config, line[0]) + line[1], end='')
+    for split in splits[:-1]:  # Process all splits except for the last
+        print(highlight(config, split[0]) + split[1], end='')
 
     # Indicated more data to possibly come and stdin confirmed it
     if more and read_ready(WAIT_FOR_NEW_LINE):
-        # Return last line as the left-over data
-        return lines[-1][0] + lines[-1][1]
+        # Return last split as the left-over data
+        return splits[-1][0] + splits[-1][1]
 
-    # No more data; print last line and flush as it doesn't have a new line
-    print(highlight(config, lines[-1][0]) + lines[-1][1], end='', flush=True)
+    # No more data; print last split and flush as it doesn't have a new line
+    print(highlight(config, splits[-1][0]) + splits[-1][1], end='', flush=True)
 
     return ''  # All of the buffer was processed; return an empty buffer
 
 
-def process_inserts(inserts, existing, reset_code):
+def process_inserts(inserts, existing, reset):
     """Process a list of rule inserts, removing any unnecessary colors, and
     returning a list of colors (dict containing position and code). The list of
     existing colors is used for recovery of colliding colors."""
     def get_last_color(colors, position):
-        """Return the last color before the requested position, or None if no
-        previous color."""
+        """Return the last color before the requested position, or None."""
         for color in sorted(colors, key=lambda x: x['position'], reverse=True):
             if color['position'] < position:
                 return color
@@ -312,46 +306,40 @@ def process_inserts(inserts, existing, reset_code):
 
     final_inserts = []
 
-    # Remove any resets in the middle of another color
     for insert in inserts:
         current_positions = [x['position'] for x in final_inserts]
-        overlapping_start = insert['start'] in current_positions
-        overlapping_end = insert['end'] in current_positions
+        start = insert['start']
+        end = insert['end']
 
         # Already matched by a different rule; don't bother adding the insert
-        if overlapping_start and overlapping_end:
+        if start in current_positions and end in current_positions:
             continue
 
-        # Get the last color prior to adding this insert into the final list
-        last_color = get_last_color(final_inserts + existing, insert['end'])
+        # Get the last color prior to adding current insert into the final list
+        last_color = get_last_color(final_inserts + existing, end)
 
-        final_inserts.append({
-            'position': insert['start'],
-            'code': insert['color']
-        })
+        final_inserts.append({'position': start, 'code': insert['color']})
 
-        # There's already a color at the end position
-        if overlapping_end:
+        if end in current_positions:  # Already a color at the end position
             continue
 
         if not last_color:  # No last color; default reset
-            code = reset_code
+            code = reset
         else:
             code = last_color['code']
 
-            # Last color is a reset and in the middle of current color; update it
-            if last_color['position'] > insert['start'] and last_color[
-                    'code'] == reset_code:
+            # Last color is a reset and is in the middle of current color; set
+            # it to our color so that it doesn't reset it.
+            if last_color['code'] == reset and last_color['position'] > start:
                 last_color['code'] = insert['color']
 
-        final_inserts.append({'position': insert['end'], 'code': code})
+        final_inserts.append({'position': end, 'code': code})
 
     return final_inserts
 
 
 def read_file(location):
-    """Read a file at `location`, returning its contents, or None if there's a
-    problem."""
+    """Read a file at `location`, returning its contents, or None on error."""
     location = os.path.expandvars(location)
 
     if not os.access(location, os.F_OK):
@@ -368,9 +356,8 @@ def read_file(location):
 
 def read_ready(timeout=None):
     """Return True if sys.stdin has data or is closed. If `timeout` is None,
-    this function will block until the True condition is met. If `timeout` is
-    specified, the function will return False if expired or True as soon as the
-    condition is met."""
+    block until the there's daata. If `timeout` is specified, the function will
+    return False if expired or True as soon as the condition is met."""
     return sys.stdin in select.select([sys.stdin], [], [], timeout)[0]
 
 
@@ -389,19 +376,16 @@ def split_buffer(buffer):
     """Split the buffer based on movement sequences, returning an array with
     objects in the format of [data, separator]. `data` is the part that should
     be highlighted while the sperator remains untouched."""
-    lines = MOVEMENT_RE.split(buffer)
+    if not buffer:
+        return buffer
 
-    if lines == ['']:
-        return ''
+    splits = MOVEMENT_RE.split(buffer)
 
-    # If no splits or did not end with a separator, append a empty seperator
-    if len(lines) == 1 or lines[-1] != '':
-        lines.append('')
+    # Append an empty seperator in case of no splits or no seperator at the end
+    splits.append('')
 
-    # Group all lines into format of [data, separator]
-    lines = [[x, y] for x, y in zip(lines[0::2], lines[1::2])]
-
-    return lines
+    # Group all splits into format of [data, separator]
+    return [[x, y] for x, y in zip(splits[0::2], splits[1::2])]
 
 
 def main(config, max_wait=None):
