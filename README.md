@@ -98,7 +98,7 @@ In addition to the foreground and background, the following styles are supported
 
 ### Group-Specific
 
-A color can be applied per RegEx group (see the 2nd example rule). You can apply as many groups as long as its in the RegEx.
+A color can be applied per RegEx group (see the 2nd example rule). You can apply as many groups as long as it's in the RegEx.
 
 # Help
 
