@@ -93,7 +93,7 @@ In addition to the foreground and background, the following styles are supported
 -   Blink
 -   Bold
 -   Italic
--   Striked
+-   Strike
 -   Underline
 
 ### Group-Specific
