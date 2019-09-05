@@ -12,12 +12,6 @@ import chromaterm
 FILE_FAKE = '.test_chromaterm.yml'
 
 
-def test_args_init():
-    """Parse program arguments."""
-    args = chromaterm.args_init(['--config', 'hello'])
-    assert args.config == 'hello'
-
-
 def test_eprint(capsys):
     """Print a message to stderr."""
     msg = 'Some random error message'
@@ -687,7 +681,7 @@ def test_main(capsys, monkeypatch):
     """Test stdin processing."""
     try:
         # Will auto-shutdown once "stdin" is closed
-        args = chromaterm.args_init([])
+        args = chromaterm.config_init([])
         main_thread = threading.Thread(target=chromaterm.main, args=(args, 3))
 
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

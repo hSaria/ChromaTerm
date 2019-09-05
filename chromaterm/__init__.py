@@ -28,8 +28,8 @@ WAIT_FOR_NEW_LINE = 0.0005
 DEPRECATE_MSG_GROUP = False
 
 
-def args_init(args=None):
-    """Initialzes arguments and returns the output of `parse_args`."""
+def config_init(args=None):
+    """Return the parsed configuration according to the program arguments."""
     parser = argparse.ArgumentParser(description='Colorize your output using'
                                      'RegEx.')
 
@@ -43,9 +43,15 @@ def args_init(args=None):
                         help='Use RGB colors (default: attempt detection, '
                         'fall-back to xterm-256)')
 
-    signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
+    args = parser.parse_args(args)
 
-    return parser.parse_args(args)
+    # Attempt RGB support detection
+    rgb = os.getenv('COLORTERM') == 'truecolor' or args.rgb
+
+    # Ignore SIGINT
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    return parse_config(read_file(args.config) or '', rgb=rgb)
 
 
 def eprint(*args, **kwargs):
@@ -347,15 +353,10 @@ def split_buffer(buffer):
     return lines
 
 
-def main(args, max_wait=None):
-    """Main entry point that uses `args` (return from args_init) to setup the
-    environment and begin processing stdin. `max_wait` is only used for testing;
-    keep it as None."""
-    # Attempt RGB support detection
-    rgb = os.getenv('COLORTERM') == 'truecolor' or args.rgb
-
+def main(config, max_wait=None):
+    """Main entry point that uses `config` from config_init to process stdin.
+    `max_wait` is the longest period to wait without input before quiting."""
     buffer = ''
-    config = parse_config(read_file(args.config) or '', rgb=rgb)
 
     while read_ready(max_wait):
         data = os.read(sys.stdin.fileno(), READ_SIZE)
