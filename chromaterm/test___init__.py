@@ -461,21 +461,21 @@ def test_parse_rule_group_out_of_bounds():
 
 def test_process_buffer_empty(capsys):
     """Output processing of empty input."""
-    config = {'rules': [], 'reset_code': '\033[m'}
+    config = chromaterm.get_default_config()
     chromaterm.process_buffer(config, '', False)
     assert capsys.readouterr().out == ''
 
 
 def test_process_buffer_more(capsys):
     """Output processing of empty input."""
-    config = {'rules': [], 'reset_code': '\033[m'}
+    config = chromaterm.get_default_config()
     chromaterm.process_buffer(config, '', False)
     assert capsys.readouterr().out == ''
 
 
 def test_process_buffer_multiline(capsys):
     """Output processing with multiple lines of input."""
-    config = {'rules': [], 'reset_code': '\033[m'}
+    config = chromaterm.get_default_config()
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
 
     config['rules'].append(chromaterm.parse_rule(rule))
@@ -491,7 +491,7 @@ def test_process_buffer_multiline(capsys):
 
 def test_process_buffer_rule_simple(capsys):
     """Output processing with a simple rule."""
-    config = {'rules': [], 'reset_code': '\033[m'}
+    config = chromaterm.get_default_config()
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
 
     config['rules'].append(chromaterm.parse_rule(rule))
@@ -506,7 +506,7 @@ def test_process_buffer_rule_simple(capsys):
 
 def test_process_buffer_rule_group(capsys):
     """Output processing with a group-specific rule."""
-    config = {'rules': [], 'reset_code': '\033[m'}
+    config = chromaterm.get_default_config()
     rule = {'regex': 'hello (world)', 'color': 'b#fffaaa', 'group': 1}
 
     config['rules'].append(chromaterm.parse_rule(rule))
@@ -521,7 +521,7 @@ def test_process_buffer_rule_group(capsys):
 
 def test_process_buffer_rule_multiple_colors(capsys):
     """Output processing with a multi-color rule."""
-    config = {'rules': [], 'reset_code': '\033[m'}
+    config = chromaterm.get_default_config()
     rule = {'regex': 'hello world', 'color': 'b#fffaaa f#aaafff'}
 
     config['rules'].append(chromaterm.parse_rule(rule))

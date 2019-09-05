@@ -127,6 +127,11 @@ def get_color_code(color, rgb=False):
     return code or None
 
 
+def get_default_config():
+    """Return a dict with the default configuration."""
+    return {'rules': [], 'reset_code': '\033[m'}
+
+
 def get_rule_inserts(rule, data):
     """Return a list of dicts, with each dict containing a start position, end
     position, and color of a match."""
@@ -185,7 +190,7 @@ def highlight(config, data):
 def parse_config(data, config=None, rgb=False):
     """Parse `data` (a YAML string), modifying/returning the `config` dict."""
     if config is None:
-        config = {'reset_code': '\033[m'}
+        config = get_default_config()
 
     config['rules'] = []
 
