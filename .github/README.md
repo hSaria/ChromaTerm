@@ -4,7 +4,7 @@
 
 ChromaTerm (`ct`) reads from standard input and colors it according to user-configurable rules.
 
-Think of ChromaTerm like `grep`; just pipe data into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have `ssh() { /usr/bin/ssh $@ | ct; }` in my `.bash_profile` to give my sessions color.
+Think of ChromaTerm like `grep`; just pipe data into it. However, unlike other programs which line-buffer, `ct` works with interactive applications, like `ssh`. In fact, I have `ssh() { /usr/bin/ssh "$@" | ct; }` in my `.bash_profile` to give my sessions color.
 
 Here's an example using the rules in the default configuration file:
 
