@@ -22,7 +22,7 @@ setup(
         'Topic :: Utilities'
     ],
     description='Colorize your output using RegEx',
-    license='GPLv2',
+    license='MIT',
     install_requires=REQUIRES,
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
