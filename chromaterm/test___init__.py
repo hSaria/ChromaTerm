@@ -723,11 +723,11 @@ def test_main(capsys, monkeypatch):
         assert capsys.readouterr().out == 'Hello world\n'
 
         s_conn.sendall(b'Hey there')
-        time.sleep(0.1 + chromaterm.WAIT_FOR_SPLIT)  # Include new-line wait
+        time.sleep(0.1 + chromaterm.WAIT_FOR_SPLIT)  # Include split wait
         assert capsys.readouterr().out == 'Hey there'
 
         s_conn.sendall(b'x' * (chromaterm.READ_SIZE + 1))
-        time.sleep(0.1 + chromaterm.WAIT_FOR_SPLIT)  # Include new-line wait
+        time.sleep(0.1 + chromaterm.WAIT_FOR_SPLIT)  # Include split wait
         assert capsys.readouterr().out == 'x' * (chromaterm.READ_SIZE + 1)
     finally:
         s_conn.close()
