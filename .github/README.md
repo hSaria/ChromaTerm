@@ -68,8 +68,6 @@ The RegEx engine used is Python's [re](https://docs.python.org/3/library/re.html
 
 The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and `f` for foreground (e.g. `f#abcdef`).
 
-You can color the foreground and background simultaneously by separating them with a space, like `b#123456 f#abcdef`.
-
 ### Style
 
 In addition to the foreground and background, the following styles are supported, though some terminals ignore them:
