@@ -157,31 +157,37 @@ def highlight(config, data):
     if not data:  # Empty data, don't bother doing anything
         return data
 
-    existing = []  # Existing colors in the data
+    existing = []
 
+    # Existing colors in the data
     for match in COLOR_RE.finditer(data):
         existing.append({'position': match.start(0), 'code': match.group(0)})
 
+    # Remove existing colors from the data for cleaner matching (added back later)
+    shift = 0
+    for insert in sorted(existing, key=lambda x: x['position']):
+        insert['position'] -= shift
+        index = insert['position']
+        data = data[:index] + data[index + len(insert['code']):]
+        shift += len(insert['code'])
+
     inserts = []  # The list of colors and their positions (inserts)
 
+    # Get the list of the new colors
     for rule in config['rules']:
         inserts += get_rule_inserts(rule, data)
 
-    # Process all of the inserts, returning the final list.
+    # Process all of the inserts, returning the final list
     inserts = process_inserts(inserts, existing, config['reset'])
 
-    # Sort the inserts according to the position, from end to start
-    inserts = sorted(inserts, key=lambda x: x['position'], reverse=True)
-
-    # Insert the colors into the data
-    for insert in inserts:
+    # Insert the colors into the data, from end to start (index magic)
+    for insert in sorted(inserts, key=lambda x: x['position'], reverse=True):
         index = insert['position']
         data = data[:index] + insert['code'] + data[index:]
 
     # Use the last code as the reset for any next colors
-    if inserts + existing:
-        last_code = max(inserts + existing, key=lambda x: x['position'])
-        config['reset'] = last_code['code']
+    if inserts:
+        config['reset'] = max(inserts, key=lambda x: x['position'])['code']
 
     return data
 
@@ -315,7 +321,7 @@ def process_inserts(inserts, existing, reset):
         if start in current_positions and end in current_positions:
             continue
 
-        # Get the last color prior to adding current insert into the final list
+        # Get the last color prior to adding current insert to the final list
         last_color = get_last_color(final_inserts + existing, end)
 
         final_inserts.append({'position': start, 'code': insert['color']})
@@ -335,7 +341,7 @@ def process_inserts(inserts, existing, reset):
 
         final_inserts.append({'position': end, 'code': code})
 
-    return final_inserts
+    return final_inserts + existing
 
 
 def read_file(location):
