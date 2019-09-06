@@ -29,7 +29,7 @@ STYLES = {
 # is outputting or if the input has finished. To work around this, CT will wait
 # a bit prior to assuming there's no more data in the buffer. There's no impact
 # on performace as the wait is cancelled if stdin becomes ready to be read from.
-WAIT_FOR_NEW_LINE = 0.0005
+WAIT_FOR_SPLIT = 0.0005
 
 # Print-once for deprecation messages
 # pylint: disable=global-statement
@@ -289,7 +289,7 @@ def process_buffer(config, buffer, more):
         print(highlight(config, split[0]) + split[1], end='')
 
     # Indicated more data to possibly come and stdin confirmed it
-    if more and read_ready(WAIT_FOR_NEW_LINE):
+    if more and read_ready(WAIT_FOR_SPLIT):
         # Return last split as the left-over data
         return splits[-1][0] + splits[-1][1]
 
