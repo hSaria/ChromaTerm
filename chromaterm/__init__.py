@@ -17,9 +17,6 @@ MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
 # Select Graphic Rendition sequence (all types)
 SGR_RE = re.compile(r'(?:\033\[[0-9;]*m)+')
 
-# Maximum chuck size per read
-READ_SIZE = 65536  # 64 KiB
-
 STYLES = {
     'blink': '5',
     'bold': '1',
@@ -27,6 +24,9 @@ STYLES = {
     'strike': '9',
     'underline': '4',
 }
+
+# Maximum chuck size per read
+READ_SIZE = 65536  # 64 KiB
 
 # CT cannot determine if it is processing input faster than the piping process
 # is outputting or if the input has finished. To work around this, CT will wait
