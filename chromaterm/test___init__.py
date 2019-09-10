@@ -281,6 +281,23 @@ def test_highlight_existing_orphaned():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
+def test_highlight_existing_compound():
+    """Highlight with an existing compound color (multiple SGR's) in the data."""
+    config_data = '''rules:
+    - description: first
+      regex: World
+      color: f#aaafff'''
+    config = chromaterm.parse_config(config_data)
+
+    data = '\033[33m\033[1mHello World'
+    expected = [
+        '\033[33m\033[1m', 'Hello ', '\033[38;5;153m', 'World',
+        '\033[33m\033[1m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
 def test_highlight_partial_overlap_existing_multiline():
     """Three partially-overlapping rules with an existing color over multiple
     lines. Also tested in reverse order.
