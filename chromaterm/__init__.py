@@ -10,13 +10,6 @@ import sys
 
 import yaml
 
-# Sequences that change the screen's layout or cursor's position
-MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
-                         r'1049[hl]|\r|\r\n|\n|\v|\f)')
-
-# Select Graphic Rendition sequence (all types)
-SGR_RE = re.compile(r'(?:\033\[[0-9;]*m)+')
-
 STYLES = {
     'blink': '5',
     'bold': '1',
@@ -24,6 +17,13 @@ STYLES = {
     'strike': '9',
     'underline': '4',
 }
+
+# Sequences that change the screen's layout or cursor's position
+MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
+                         r'1049[hl]|\r|\r\n|\n|\v|\f)')
+
+# Select Graphic Rendition sequence (all types)
+SGR_RE = re.compile(r'(?:\033\[[0-9;]*m)+')
 
 # Maximum chuck size per read
 READ_SIZE = 65536  # 64 KiB
