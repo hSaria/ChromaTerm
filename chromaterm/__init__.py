@@ -304,7 +304,7 @@ def process_inserts(inserts, existing, reset):
     returning a list of colors (dict containing position and code). The list of
     existing colors is used for recovery of colliding colors."""
     def get_last_color(colors, position):
-        """Return the last color before the requested position, or None."""
+        """Return the first color before the requested position, or None."""
         for color in sorted(colors, key=lambda x: x['position'], reverse=True):
             if color['position'] < position:
                 return color
