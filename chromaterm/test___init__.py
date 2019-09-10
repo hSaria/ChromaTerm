@@ -81,7 +81,7 @@ def test_get_color_code_compound():
     """All sorts of color codes."""
     color = 'bold b#0973d8 underline f#45f2d7'
     # Styles are always added last
-    code = '\033[48;5;33;38;5;87;1;4m'
+    code = '\033[48;5;33m\033[38;5;87m\033[1m\033[4m'
 
     assert chromaterm.get_color_code(color) == code
 
@@ -558,7 +558,7 @@ def test_process_buffer_rule_multiple_colors(capsys):
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
-    success = r'^test \033\[([34]8;5;[0-9]{1,3};?){2}mhello world\033\[m test$'
+    success = r'^test (\033\[[34]8;5;[0-9]{1,3}m){2}hello world\033\[m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()

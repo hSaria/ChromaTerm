@@ -10,12 +10,13 @@ import sys
 
 import yaml
 
+# Named SGR codes
 STYLES = {
-    'blink': '5',
-    'bold': '1',
-    'italic': '3',
-    'strike': '9',
-    'underline': '4',
+    'blink': '\033[5m',
+    'bold': '\033[1m',
+    'italic': '\033[3m',
+    'strike': '\033[9m',
+    'underline': '\033[4m',
 }
 
 # Sequences that change the screen's layout or cursor's position
@@ -101,16 +102,19 @@ def get_color_code(color, rgb=False):
     if not re.search(color_re, color):
         return None
 
-    codes = []
+    code = ''
 
     # Colors
     for match in re.findall(r'(b|f)#([0-9a-fA-F]{6})', color):
-        target = '38;' if match[0] == 'f' else '48;'
-        rgb_int = [int(match[1][i:i + 2], 16) for i in [0, 2, 4]]
+        if match[0] == 'f':
+            target, name = '\033[38;', 'fg'
+        else:
+            target, name = '\033[48;', 'bg'
 
-        for code in codes:
-            if code.startswith(target):  # Duplicate color target
-                return None
+        if target in code:  # Duplicate color target
+            return None
+
+        rgb_int = [int(match[1][i:i + 2], 16) for i in [0, 2, 4]]
 
         if rgb:
             target += '2;'
@@ -119,16 +123,16 @@ def get_color_code(color, rgb=False):
             target += '5;'
             color_id = rgb_to_8bit(*rgb_int)
 
-        codes.append(target + str(color_id))
+        code += target + str(color_id) + 'm'
 
     # Styles
-    for match in re.findall(words, color.lower().strip()):
-        if STYLES[match] in codes:  # Duplicate style
+    for name in re.findall(words, color.lower().strip()):
+        if STYLES[name] in code:  # Duplicate style
             return None
 
-        codes.append(STYLES[match])
+        code += STYLES[name]
 
-    return '\033[' + ';'.join(codes) + 'm' if codes else None
+    return code or None
 
 
 def get_default_config():
