@@ -10,9 +10,12 @@ import sys
 
 import yaml
 
-COLOR_RE = re.compile(r'(?:\033\[[0-9;]*m)+')
+# Sequences that change the screen's layout or cursor's position
 MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
                          r'1049[hl]|\r|\r\n|\n|\v|\f)')
+
+# Select Graphic Rendition sequence (all types)
+SGR_RE = re.compile(r'(?:\033\[[0-9;]*m)+')
 
 # Maximum chuck size per read
 READ_SIZE = 65536  # 64 KiB
@@ -160,7 +163,7 @@ def highlight(config, data):
     existing = []
 
     # Existing colors in the data
-    for match in COLOR_RE.finditer(data):
+    for match in SGR_RE.finditer(data):
         existing.append({'position': match.start(0), 'code': match.group(0)})
 
     # Remove existing colors from the data for cleaner matching (added back later)
