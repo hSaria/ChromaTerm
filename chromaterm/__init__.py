@@ -180,8 +180,9 @@ def highlight(config, data):
     # Process all of the inserts, returning the final list
     inserts = process_inserts(inserts, existing, config['reset'])
 
-    # Insert the colors into the data, from end to start (index magic)
-    for insert in sorted(inserts, key=lambda x: x['position'], reverse=True):
+    # Insert the colors into the data, from end to start (index magic). Must
+    # reverse after the sorting, not during.
+    for insert in reversed(sorted(inserts, key=lambda x: x['position'])):
         index = insert['position']
         data = data[:index] + insert['code'] + data[index:]
 
@@ -305,12 +306,12 @@ def process_inserts(inserts, existing, reset):
     existing colors is used for recovery of colliding colors."""
     def get_last_color(colors, position):
         """Return the first color before the requested position, or None."""
-        for color in sorted(colors, key=lambda x: x['position'], reverse=True):
+        for color in reversed(sorted(colors, key=lambda x: x['position'])):
             if color['position'] < position:
                 return color
         return None
 
-    final_inserts = []
+    final_inserts = existing
 
     for insert in inserts:
         current_positions = [x['position'] for x in final_inserts]
@@ -322,7 +323,7 @@ def process_inserts(inserts, existing, reset):
             continue
 
         # Get the last color prior to adding current insert to the final list
-        last_color = get_last_color(final_inserts + existing, end)
+        last_color = get_last_color(final_inserts, end)
 
         final_inserts.append({'position': start, 'code': insert['color']})
 
@@ -341,7 +342,7 @@ def process_inserts(inserts, existing, reset):
 
         final_inserts.append({'position': end, 'code': code})
 
-    return final_inserts + existing
+    return final_inserts
 
 
 def read_file(location):

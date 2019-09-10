@@ -170,7 +170,7 @@ def test_highlight_full_overlap():
 
 def test_highlight_start_overlap():
     """Two rules overlapping at the start. Both are applied. Also tested in
-    reverse order. The first match's color is applied closest to the match.
+    reverse order. The last match's color is applied closest to the match.
     x: -------
     y: --------------"""
     config_data = '''rules:
@@ -184,7 +184,7 @@ def test_highlight_start_overlap():
 
     data = 'Hello there, World'
     expected = [
-        '\033[48;5;229m', '\033[38;5;153m', 'Hello there', '\033[48;5;229m',
+        '\033[38;5;153m', '\033[48;5;229m', 'Hello there', '\033[48;5;229m',
         ', World', '\033[m'
     ]
 
@@ -218,8 +218,8 @@ def test_highlight_end_overlap():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
-def test_highlight_existing():
-    """Highlight with an existing color in the data."""
+def test_highlight_existing_start():
+    """Highlight with an existing color at the start of the data."""
     config_data = '''rules:
     - description: first
       regex: Hello World
@@ -228,6 +228,20 @@ def test_highlight_existing():
 
     data = '\033[33mHello World'
     expected = ['\033[33m', '\033[38;5;153m', 'Hello World', '\033[33m']
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_existing_end():
+    """Highlight with an existing color at the end of the data."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello World
+      color: f#aaafff'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello World\033[33m'
+    expected = ['\033[38;5;153m', 'Hello World', '\033[33m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
