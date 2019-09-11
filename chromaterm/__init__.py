@@ -279,8 +279,7 @@ def parse_rule(rule, rgb=False):
     return {
         'description': description,
         'regex': regex_compiled,
-        'color': color,
-        'group': group
+        'color': color
     }
 
 
