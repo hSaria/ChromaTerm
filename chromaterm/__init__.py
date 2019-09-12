@@ -388,7 +388,7 @@ def rgb_to_8bit(_r, _g, _b):
 def split_buffer(buffer):
     """Split the buffer based on movement sequences, returning an array with
     objects in the format of [data, separator]. `data` is the part that should
-    be highlighted while the sperator remains untouched."""
+    be highlighted while the sperator is printed unchanged."""
     if not buffer:
         return buffer
 
