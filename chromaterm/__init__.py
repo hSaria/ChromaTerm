@@ -141,7 +141,7 @@ def get_default_config():
 
 
 def get_rule_inserts(rule, data):
-    """Return a list of dicts, with each dict containing a start position, end
+    """Return a list of dicts, with each dict containing the start position, end
     position, and color of a match."""
     inserts = []
 
@@ -228,8 +228,7 @@ def parse_config(data, config=None, rgb=False):
 
 
 def parse_rule(rule, rgb=False):
-    """Return a dict of the description, regex (compiled), color (code), and
-    group."""
+    """Return a dict of the description, regex (compiled), and color (code)."""
     # pylint: disable=too-many-return-statements
 
     description = rule.get('description', '')
