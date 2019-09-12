@@ -161,7 +161,8 @@ def get_rule_inserts(rule, data):
 
 def highlight(config, data):
     """According to the rules in the `config`, return the highlighted 'data'."""
-    if not data:  # Empty data, don't bother doing anything
+    # Empty data or no rules, don't bother doing anything
+    if not data or not config['rules']:
         return data
 
     existing = []
