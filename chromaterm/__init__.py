@@ -402,7 +402,7 @@ def split_buffer(buffer):
 
 def main(config, max_wait=None):
     """Main entry point that uses `config` from config_init to process stdin.
-    `max_wait` is the longest period to wait without input before quiting."""
+    `max_wait` is the longest period to wait without input before returning."""
     if isinstance(config, str):  # An error message
         return config
 
