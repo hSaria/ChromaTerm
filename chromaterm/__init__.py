@@ -173,7 +173,7 @@ def highlight(config, data):
 
     # Remove existing colors from the data for cleaner matching (added back later)
     shift = 0
-    for insert in sorted(existing, key=lambda x: x['position']):
+    for insert in existing:
         insert['position'] -= shift
         index = insert['position']
         data = data[:index] + data[index + len(insert['code']):]
