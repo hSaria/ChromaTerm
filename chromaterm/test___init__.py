@@ -190,7 +190,7 @@ def test_highlight_start_overlap():
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
     config['rules'] = list(reversed(config['rules']))
-    expected[0], expected[1] = expected[1], expected[0]  # Flip start mark
+    expected[0], expected[1] = expected[1], expected[0]  # Flip start color
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
@@ -359,12 +359,12 @@ def test_highlight_optional_group_not_matched():
     """RegEx matched but the group specified is optional and did not match."""
     config_data = '''rules:
     - regex: Hello (World)?
-      color: f#f7e08b
-      group: 1'''
+      color:
+        1: f#f7e08b'''
     config = chromaterm.parse_config(config_data)
 
-    data = 'Hello Hello World'
-    expected = ['Hello Hello ', '\033[38;5;229m', 'World', '\033[m']
+    data = 'Hello there! Hello World'
+    expected = ['Hello there! Hello ', '\033[38;5;229m', 'World', '\033[m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
@@ -405,8 +405,7 @@ def test_parse_config_multiple_colors():
     config_data = '''rules:
     - description: group
       regex: hello (world)
-      color: b#fffaaa
-      group: 1'''
+      color: b#fffaaa f#aaafff'''
 
     assert chromaterm.parse_config(config_data)['rules']
 
@@ -480,14 +479,14 @@ def test_parse_rule_color_format_error():
 def test_parse_rule_group_type_error():
     """Parse a rule with an incorrect `group` value type."""
     msg_re = 'group .+ not an integer'
-    rule = {'regex': 'x(y)z', 'color': 'b#fffaaa', 'group': 'hi'}
+    rule = {'regex': 'x(y)z', 'color': {'1': 'b#fffaaa'}}
     assert re.search(msg_re, chromaterm.parse_rule(rule))
 
 
 def test_parse_rule_group_out_of_bounds():
     """Parse a rule with `group` number not in the regex."""
     msg_re = 'group .+ not in the regex'
-    rule = {'regex': 'x(y)z', 'color': 'b#fffaaa', 'group': 2}
+    rule = {'regex': 'x(y)z', 'color': {2: 'b#fffaaa'}}
     assert re.search(msg_re, chromaterm.parse_rule(rule))
 
 
@@ -511,7 +510,7 @@ def test_process_buffer_multiline(capsys):
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
 
     config['rules'].append(chromaterm.parse_rule(rule))
-    data = '\ntest hello world test\n'  # Empty line at the start
+    data = '\ntest hello world test\n'
     success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[m test$'
 
     chromaterm.process_buffer(config, data * 2, False)
@@ -539,7 +538,7 @@ def test_process_buffer_rule_simple(capsys):
 def test_process_buffer_rule_group(capsys):
     """Output processing with a group-specific rule."""
     config = chromaterm.get_default_config()
-    rule = {'regex': 'hello (world)', 'color': 'b#fffaaa', 'group': 1}
+    rule = {'regex': 'hello (world)', 'color': {1: 'b#fffaaa'}}
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
