@@ -185,18 +185,17 @@ def highlight(config, data):
     for rule in config['rules']:
         inserts += get_rule_inserts(rule, data)
 
-    # Process all of the inserts, returning the final list
+    # Process all of the inserts, returning the final list including existing
     inserts = process_inserts(inserts, existing, config['reset'])
 
-    # Insert the colors into the data, from end to start (index magic). Must
-    # reverse after the sorting, not during.
-    for insert in reversed(sorted(inserts, key=lambda x: x['position'])):
+    # Insert the colors into the data
+    for insert in inserts:
         index = insert['position']
         data = data[:index] + insert['code'] + data[index:]
 
-    # Use the last code as the reset for any next colors
+    # Use the last (first in the list) code as the reset for any next colors
     if inserts:
-        config['reset'] = max(inserts, key=lambda x: x['position'])['code']
+        config['reset'] = inserts[0]['code']
 
     return data
 
@@ -348,7 +347,8 @@ def process_inserts(inserts, existing, reset):
 
         final_inserts.append({'position': end, 'code': code})
 
-    return final_inserts
+    # Sort from end to start (index magic). Must reverse after sorting, not during
+    return list(reversed(sorted(final_inserts, key=lambda x: x['position'])))
 
 
 def read_file(location):
