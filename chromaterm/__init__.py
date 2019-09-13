@@ -426,7 +426,6 @@ def process_inserts(inserts, existing, config):
                     last_color['code'] = color['code']
 
             # Post-reverse, end of the current color comes after previous ends
-            #finals.append({
             finals.insert(0, {
                 'position': insert['end'],
                 'code': code,
