@@ -19,6 +19,41 @@ STYLES = {
     'underline': '\033[4m',
 }
 
+# Reset types, their default reset codes, and RegEx's for detecting color type
+RESET_TYPES = {
+    'fg': {
+        'default': '\033[39m',
+        're': re.compile(r'\033\[(?:0?|3(?:[0-79]|8;[0-9;]+))m')
+    },
+    'bg': {
+        'default': '\033[49m',
+        're': re.compile(r'\033\[(?:0?|4(?:[0-79]|8;[0-9;]+))m')
+    },
+    'blink': {
+        'default': '\033[25m',
+        're': re.compile(r'\033\[(?:0?|2?5)m')
+    },
+    'bold': {
+        'default': '\033[21m',
+        're': re.compile(r'\033\[(?:0?|2?1)m')
+    },
+    'italic': {
+        'default': '\033[23m',
+        're': re.compile(r'\033\[(?:0?|2?3)m')
+    },
+    'strike': {
+        'default': '\033[29m',
+        're': re.compile(r'\033\[(?:0?|2?9)m')
+    },
+    'underline': {
+        'default': '\033[24m',
+        're': re.compile(r'\033\[(?:0?|2?4)m')
+    }
+}
+
+# Detect a complete reset of the SGR
+COMPLETE_RESET_RE = re.compile(r'\033\[0?m')
+
 # Sequences that change the screen's layout or cursor's position
 MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
                          r'1049[hl]|\r|\r\n|\n|\v|\f)')
@@ -93,8 +128,8 @@ def eprint(*args, **kwargs):
 
 
 def get_color_code(color, rgb=False):
-    """Return the ANSI code to be used when highlighting with `color` or None if
-    the `color` is invalid."""
+    """Return the ANSI codes, one for each color, to be used when highlighting
+    with `color` or None if the `color` is invalid."""
     color = color.lower().strip()
     words = '|'.join([x for x in STYLES])
     color_re = r'(?i)^(((b|f)#([0-9a-fA-F]{6})|' + words + r')(\s+|$))+$'
@@ -102,7 +137,7 @@ def get_color_code(color, rgb=False):
     if not re.search(color_re, color):
         return None
 
-    code = ''
+    codes = []
 
     # Colors
     for match in re.findall(r'(b|f)#([0-9a-fA-F]{6})', color):
@@ -111,8 +146,9 @@ def get_color_code(color, rgb=False):
         else:
             target, name = '\033[48;', 'bg'
 
-        if target in code:  # Duplicate color target
-            return None
+        for code in [x['code'] for x in codes]:
+            if target in code:  # Duplicate color target
+                return None
 
         rgb_int = [int(match[1][i:i + 2], 16) for i in [0, 2, 4]]
 
@@ -121,23 +157,31 @@ def get_color_code(color, rgb=False):
             color_id = ';'.join([str(x) for x in rgb_int])
         else:
             target += '5;'
-            color_id = rgb_to_8bit(*rgb_int)
+            color_id = str(rgb_to_8bit(*rgb_int))
 
-        code += target + str(color_id) + 'm'
+        codes.append({'code': target + color_id + 'm', 'type': name})
 
     # Styles
     for name in re.findall(words, color.lower().strip()):
-        if STYLES[name] in code:  # Duplicate style
+        if STYLES[name] in [x['code'] for x in codes]:  # Duplicate style
             return None
 
-        code += STYLES[name]
+        codes.append({'code': STYLES[name], 'type': name})
 
-    return code or None
+    return codes or None
+
+
+def get_color_types(code):
+    """Using RESET_TYPES, return a list of type names the match the code."""
+    return [x for x in RESET_TYPES if RESET_TYPES[x]['re'].search(code)]
 
 
 def get_default_config():
     """Return a dict with the default configuration."""
-    return {'rules': [], 'reset': '\033[m'}
+    config = {'rules': []}
+    config['resets'] = {x: RESET_TYPES[x]['default'] for x in RESET_TYPES}
+
+    return config
 
 
 def get_rule_inserts(rule, data):
@@ -146,14 +190,14 @@ def get_rule_inserts(rule, data):
     inserts = []
 
     for match in rule['regex'].finditer(data):
-        for group in rule['color']:
+        for group in rule['colors']:
             if match.group(group) is None:  # Group not part of the match
                 continue
 
             inserts.append({
                 'start': match.start(group),
                 'end': match.end(group),
-                'color': rule['color'][group]
+                'colors': rule['colors'][group]
             })
 
     return inserts
@@ -169,7 +213,13 @@ def highlight(config, data):
 
     # Existing colors in the data
     for match in SGR_RE.finditer(data):
-        existing.append({'position': match.start(0), 'code': match.group(0)})
+        types = get_color_types(match.group())
+        if types:
+            existing.append({
+                'position': match.start(),
+                'code': match.group(),
+                'types': types
+            })
 
     # Remove existing colors from the data for cleaner matching (added back later)
     shift = 0
@@ -186,16 +236,30 @@ def highlight(config, data):
         inserts += get_rule_inserts(rule, data)
 
     # Process all of the inserts, returning the final list including existing
-    inserts = process_inserts(inserts, existing, config['reset'])
+    inserts = process_inserts(inserts, existing, config)
 
     # Insert the colors into the data
     for insert in inserts:
         index = insert['position']
         data = data[:index] + insert['code'] + data[index:]
 
-    # Use the last (first in the list) code as the reset for any next colors
-    if inserts:
-        config['reset'] = inserts[0]['code']
+    updated_resets = []
+
+    # Update the resets according to the last reset of each type
+    for insert in inserts:
+        left = [x for x in config['resets'] if x not in updated_resets]
+
+        if not left:  # All resets updated
+            break
+
+        for name in left:
+            if name in insert['types']:
+                # Complete reset; go back to default reset of the type
+                if COMPLETE_RESET_RE.search(insert['code']):
+                    config['resets'][name] = RESET_TYPES[name]['default']
+                else:
+                    config['resets'][name] = insert['code']
+                updated_resets.append(name)
 
     return data
 
@@ -278,7 +342,7 @@ def parse_rule(rule, rgb=False):
     return {
         'description': description,
         'regex': regex_compiled,
-        'color': color
+        'colors': color
     }
 
 
@@ -305,50 +369,52 @@ def process_buffer(config, buffer, more):
     return ''  # All of the buffer was processed; return an empty buffer
 
 
-def process_inserts(inserts, existing, reset):
+def process_inserts(inserts, existing, config):
     """Process a list of rule inserts, removing any unnecessary colors, and
     returning a list of colors (dict containing position and code). The list of
     existing colors is used for recovery of colliding colors."""
-    def get_last_color(colors, position):
-        """Return the first color before the requested position, or None."""
+    def get_last_color(colors, position, color_type):
+        """Return the first color before the requested position and of the color
+        type, or None."""
         for color in reversed(sorted(colors, key=lambda x: x['position'])):
-            if color['position'] < position:
+            if color['position'] < position and color_type in color['types']:
                 return color
         return None
 
-    final_inserts = existing
+    finals = existing
 
     for insert in inserts:
-        current_positions = [x['position'] for x in final_inserts]
-        start = insert['start']
-        end = insert['end']
+        for color in insert['colors']:
+            # Get the last color prior to adding current color to the final list
+            last_color = get_last_color(finals, insert['end'], color['type'])
 
-        # Already matched by a different rule; don't bother adding the insert
-        if start in current_positions and end in current_positions:
-            continue
+            finals.append({
+                'position': insert['start'],
+                'code': color['code'],
+                'types': [color['type']]
+            })
 
-        # Get the last color prior to adding current insert to the final list
-        last_color = get_last_color(final_inserts, end)
+            if not last_color:  # No last color; use current type reset
+                code = config['resets'][color['type']]
+            else:
+                code = last_color['code']
 
-        final_inserts.append({'position': start, 'code': insert['color']})
+                # Last color is in the middle of current color and is a reset;
+                # set it to our color so that it doesn't reset it.
+                if last_color['position'] > insert['start'] and last_color[
+                        'code'] == config['resets'][color['type']]:
+                    last_color['code'] = color['code']
 
-        if end in current_positions:  # Already a color at the end position
-            continue
-
-        if not last_color:  # No last color; default reset
-            code = reset
-        else:
-            code = last_color['code']
-
-            # Last color is a reset and is in the middle of current color; set
-            # it to our color so that it doesn't reset it.
-            if last_color['code'] == reset and last_color['position'] > start:
-                last_color['code'] = insert['color']
-
-        final_inserts.append({'position': end, 'code': code})
+            # Post-reverse, end of the current color comes after previous ends
+            #finals.append({
+            finals.insert(0, {
+                'position': insert['end'],
+                'code': code,
+                'types': [color['type']]
+            })
 
     # Sort from end to start (index magic). Must reverse after sorting, not during
-    return list(reversed(sorted(final_inserts, key=lambda x: x['position'])))
+    return list(reversed(sorted(finals, key=lambda x: x['position'])))
 
 
 def read_file(location):

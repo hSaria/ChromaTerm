@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Tests for the main program."""
 
+# pylint: disable=too-many-lines
+## You can never have too many tests, and I don't want to defy logic by moving
+## code to a different file, like test_highlight.py when it lives in __init__.py
+
 import os
 import re
 import signal
@@ -13,6 +17,12 @@ import chromaterm
 
 TEMP_FILE = '.test_chromaterm.yml'
 TEMP_SOCKET = '.test_chromaterm.socket'
+
+
+def test_complete_reset_re():
+    """COMPLETE_RESET_RE matches an full SGR reset."""
+    assert chromaterm.COMPLETE_RESET_RE.search('\033[0m')
+    assert chromaterm.COMPLETE_RESET_RE.search('\033[m')
 
 
 def test_eprint(capsys):
@@ -38,7 +48,7 @@ def test_get_color_code():
     ]
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_code(color) == '\033[' + code
+        assert chromaterm.get_color_code(color)[0]['code'] == '\033[' + code
 
 
 def test_get_color_code_grayscale():
@@ -56,16 +66,16 @@ def test_get_color_code_grayscale():
     ]
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_code(color) == '\033[' + code
+        assert chromaterm.get_color_code(color)[0]['code'] == '\033[' + code
 
 
 def test_get_color_code_rgb():
     """RGB color-codes."""
     colors = ['b#010101', 'f#020202']
-    codes = ['48;2;1;1;1m', '38;2;2;2;2m']
+    codes = ['\033[48;2;1;1;1m', '\033[38;2;2;2;2m']
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_code(color, rgb=True) == '\033[' + code
+        assert chromaterm.get_color_code(color, rgb=True)[0]['code'] == code
 
 
 def test_get_color_code_style():
@@ -74,16 +84,17 @@ def test_get_color_code_style():
     codes = ['5m', '1m', '3m', '9m', '4m']
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_code(color) == '\033[' + code
+        assert chromaterm.get_color_code(color)[0]['code'] == '\033[' + code
 
 
 def test_get_color_code_compound():
     """All sorts of color codes."""
-    color = 'bold b#0973d8 underline f#45f2d7'
+    colors = 'bold b#0973d8 underline f#45f2d7'
     # Styles are always added last
-    code = '\033[48;5;33m\033[38;5;87m\033[1m\033[4m'
+    codes = ['\033[48;5;33m', '\033[38;5;87m', '\033[1m', '\033[4m']
 
-    assert chromaterm.get_color_code(color) == code
+    for color, code in zip(chromaterm.get_color_code(colors), codes):
+        assert color['code'] == code
 
 
 def test_get_color_code_excessive_colors():
@@ -101,8 +112,83 @@ def test_get_color_code_duplicate_target():
         assert chromaterm.get_color_code(color) is None
 
 
-def test_highlight_enscapsulated():
-    """Two rules with one encapsulating the other. Also tested in reverse order.
+def test_get_color_types_bg():
+    """Background colors and reset are being detected."""
+    assert 'bg' in chromaterm.get_color_types('\033[48;5;123m')
+    assert 'bg' in chromaterm.get_color_types('\033[49m')
+
+
+def test_get_color_types_fg():
+    """Foreground colors and reset are being detected."""
+    assert 'fg' in chromaterm.get_color_types('\033[38;5;123m')
+    assert 'fg' in chromaterm.get_color_types('\033[39m')
+
+
+def test_get_color_types_styles_blink():
+    """Blink and its reset are being detected."""
+    assert 'blink' in chromaterm.get_color_types('\033[5m')
+    assert 'blink' in chromaterm.get_color_types('\033[25m')
+
+
+def test_get_color_types_styles_bold():
+    """Bold and its reset are being detected."""
+    assert 'bold' in chromaterm.get_color_types('\033[1m')
+    assert 'bold' in chromaterm.get_color_types('\033[21m')
+
+
+def test_get_color_types_styles_italic():
+    """Italic and its reset are being detected."""
+    assert 'italic' in chromaterm.get_color_types('\033[3m')
+    assert 'italic' in chromaterm.get_color_types('\033[23m')
+
+
+def test_get_color_types_styles_strike():
+    """Strike and its reset are being detected."""
+    assert 'strike' in chromaterm.get_color_types('\033[9m')
+    assert 'strike' in chromaterm.get_color_types('\033[29m')
+
+
+def test_get_color_types_styles_underline():
+    """Underline and its reset are being detected."""
+    assert 'underline' in chromaterm.get_color_types('\033[4m')
+    assert 'underline' in chromaterm.get_color_types('\033[24m')
+
+
+def test_get_color_types_complete_reset():
+    """Complete reset matches all known types."""
+    types = [x for x in chromaterm.RESET_TYPES]
+    assert types == chromaterm.get_color_types('\033[0m')
+    assert types == chromaterm.get_color_types('\033[m')
+
+
+def test_highlight_enscapsulated_same_type():
+    """Two rules of the same target type (e.g. both foreground) and one rule
+    encapsulating the other. Also tested in reverse order.
+    x: --------------
+    y:    ------"""
+    config_data = '''rules:
+    - description: first
+      regex: Hello there, World
+      color: f#aaafff
+    - description: second
+      regex: there
+      color: f#fffaaa'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello there, World'
+    expected = [
+        '\033[38;5;153m', 'Hello ', '\033[38;5;229m', 'there',
+        '\033[38;5;153m', ', World', '\033[39m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_enscapsulated_different_type():
+    """Two rules of a different target type (e.g. foreground and background)
+    and one rule encapsulating the other. Also tested in reverse order.
     x: --------------
     y:    ------"""
     config_data = '''rules:
@@ -116,8 +202,8 @@ def test_highlight_enscapsulated():
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'there',
-        '\033[38;5;153m', ', World', '\033[m'
+        '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'there', '\033[49m',
+        ', World', '\033[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -125,8 +211,9 @@ def test_highlight_enscapsulated():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
-def test_highlight_partial_overlap():
-    """Two rules with one overlapping the other. Also tested in reverse order.
+def test_highlight_partial_overlap_same_type():
+    """Two rules of the same target type (e.g. both foreground) and one
+    overlapping the other. Also tested in reverse order.
     x: ------
     y:   ------"""
     config_data = '''rules:
@@ -135,13 +222,13 @@ def test_highlight_partial_overlap():
       color: f#aaafff
     - description: second
       regex: there, World
-      color: b#fffaaa'''
+      color: f#fffaaa'''
     config = chromaterm.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'there',
-        '\033[48;5;229m', ', World', '\033[m'
+        '\033[38;5;153m', 'Hello ', '\033[38;5;229m', 'there',
+        '\033[38;5;229m', ', World', '\033[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -149,8 +236,34 @@ def test_highlight_partial_overlap():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
-def test_highlight_full_overlap():
-    """Two rules fully overlapping each other. The first match is applied.
+def test_highlight_partial_overlap_different_type():
+    """Two rules of a different target type (e.g. foreground and background)
+    and one overlapping the other. Also tested in reverse order.
+    x: ------
+    y:   ------"""
+    config_data = '''rules:
+    - description: first
+      regex: Hello there
+      color: b#aaafff
+    - description: second
+      regex: there, World
+      color: f#fffaaa'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello there, World'
+    expected = [
+        '\033[48;5;153m', 'Hello ', '\033[38;5;229m', 'there', '\033[49m',
+        ', World', '\033[39m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_full_overlap_same_type():
+    """Two rules of the same target type (e.g. both foreground) fully overlapping
+    each other. Both are applied.
     x: --------------
     y: --------------"""
     config_data = '''rules:
@@ -159,18 +272,45 @@ def test_highlight_full_overlap():
       color: f#aaafff
     - description: second
       regex: Hello there, World
-      color: b#fffaaa'''
+      color: f#fffaaa'''
     config = chromaterm.parse_config(config_data)
 
     data = 'Hello there, World'
-    expected = ['\033[38;5;153m', 'Hello there, World', '\033[m']
+    expected = [
+        '\033[38;5;153m', '\033[38;5;229m', 'Hello there, World',
+        '\033[38;5;153m', '\033[39m'
+    ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
-def test_highlight_start_overlap():
-    """Two rules overlapping at the start. Both are applied. Also tested in
-    reverse order. The last match's color is applied closest to the match.
+def test_highlight_full_overlap_different_type():
+    """Two rules of a different target type (e.g. foreground and background)
+    fully overlapping each other. Both are applied, both ends are kept.
+    x: --------------
+    y: --------------"""
+    config_data = '''rules:
+    - description: first
+      regex: Hello there, World
+      color: b#aaafff
+    - description: second
+      regex: Hello there, World
+      color: f#fffaaa'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello there, World'
+    expected = [
+        '\033[48;5;153m', '\033[38;5;229m', 'Hello there, World', '\033[39m',
+        '\033[49m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_start_overlap_same_type():
+    """Two rules of the same target type (e.g. both foreground) overlapping at
+    the start. Both are applied. Also tested in reverse order. The last rule's
+    color is applied closest to the match.
     x: -------
     y: --------------"""
     config_data = '''rules:
@@ -179,13 +319,13 @@ def test_highlight_start_overlap():
       color: f#aaafff
     - description: second
       regex: Hello there, World
-      color: b#fffaaa'''
+      color: f#fffaaa'''
     config = chromaterm.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;153m', '\033[48;5;229m', 'Hello there', '\033[48;5;229m',
-        ', World', '\033[m'
+        '\033[38;5;153m', '\033[38;5;229m', 'Hello there', '\033[38;5;229m',
+        ', World', '\033[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -194,9 +334,37 @@ def test_highlight_start_overlap():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
-def test_highlight_end_overlap():
-    """Two rules overlapping at the end. Both are applied. Also tested in
-    reverse order. Only the first match's end color is applied.
+def test_highlight_start_overlap_different_type():
+    """Two rules of a different target type (e.g. foreground and background)
+    overlapping at the start. Both are applied. Also tested in reverse order.
+    The last rule's color is applied closest to the match.
+    x: -------
+    y: --------------"""
+    config_data = '''rules:
+    - description: first
+      regex: Hello there
+      color: b#aaafff
+    - description: second
+      regex: Hello there, World
+      color: f#fffaaa'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello there, World'
+    expected = [
+        '\033[48;5;153m', '\033[38;5;229m', 'Hello there', '\033[49m',
+        ', World', '\033[39m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    expected[0], expected[1] = expected[1], expected[0]  # Flip start color
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_end_overlap_same_type():
+    """Two rules of the same target type (e.g. both foreground) overlapping at
+    the end. Both are applied. Also tested in reverse order. Only the first
+    rule's end color is applied.
     x:        -------
     y: --------------"""
     config_data = '''rules:
@@ -205,12 +373,67 @@ def test_highlight_end_overlap():
       color: f#aaafff
     - description: second
       regex: Hello there, World
-      color: b#fffaaa'''
+      color: f#fffaaa'''
     config = chromaterm.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
-        '\033[48;5;229m', 'Hello there, ', '\033[38;5;153m', 'World', '\033[m'
+        '\033[38;5;229m', 'Hello there, ', '\033[38;5;153m', 'World',
+        '\033[38;5;153m', '\033[39m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    expected[4] = '\033[38;5;229m'  # Adjust mid-color shift
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_end_overlap_different_type():
+    """Two rules of a different target type (e.g. foreground and background)
+    overlapping at the end. Both are applied. Also tested in reverse order. Both
+    rule's end colors are applied.
+    x:        -------
+    y: --------------"""
+    config_data = '''rules:
+    - description: first
+      regex: World
+      color: b#aaafff
+    - description: second
+      regex: Hello there, World
+      color: f#fffaaa'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello there, World'
+    expected = [
+        '\033[38;5;229m', 'Hello there, ', '\033[48;5;153m', 'World',
+        '\033[39m', '\033[49m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    expected[-1], expected[-2] = expected[-2], expected[-1]  # Flip end color
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_end_start_overlap_same_type():
+    """Two rules of the same target type (e.g. both foreground) overlapping the
+    end of one with the start of the other. Both are applied. Also tested in
+    reverse order.
+    x: -------
+    y:        -------"""
+    config_data = '''rules:
+    - description: first
+      regex: Hello Wo
+      color: f#aaafff
+    - description: second
+      regex: rld
+      color: f#fffaaa'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello World'
+    expected = [
+        '\033[38;5;153m', 'Hello Wo', '\033[39m', '\033[38;5;229m', 'rld',
+        '\033[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -218,8 +441,34 @@ def test_highlight_end_overlap():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
-def test_highlight_existing_start():
-    """Highlight with an existing color at the start of the data."""
+def test_highlight_end_start_overlap_different_type():
+    """Two rules of a different target type (e.g. foreground and background)
+    overlapping the end of one with the start of the other. Both are applied.
+    Also tested in reverse order.
+    x: -------
+    y:        -------"""
+    config_data = '''rules:
+    - description: first
+      regex: Hello Wo
+      color: b#aaafff
+    - description: second
+      regex: rld
+      color: f#fffaaa'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello World'
+    expected = [
+        '\033[48;5;153m', 'Hello Wo', '\033[49m', '\033[38;5;229m', 'rld',
+        '\033[39m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+    config['rules'] = list(reversed(config['rules']))
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_existing_start_same_type():
+    """Highlight with an existing, same-type, color at the start of the data."""
     config_data = '''rules:
     - description: first
       regex: Hello World
@@ -232,8 +481,22 @@ def test_highlight_existing_start():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
-def test_highlight_existing_end():
-    """Highlight with an existing color at the end of the data."""
+def test_highlight_existing_start_different_type():
+    """Highlight with an existing, different-type, color at the start of the data."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello World
+      color: b#aaafff'''
+    config = chromaterm.parse_config(config_data)
+
+    data = '\033[33mHello World'
+    expected = ['\033[33m', '\033[48;5;153m', 'Hello World', '\033[49m']
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_existing_end_same_type():
+    """Highlight with an existing, same-type, color at the end of the data."""
     config_data = '''rules:
     - description: first
       regex: Hello World
@@ -241,7 +504,21 @@ def test_highlight_existing_end():
     config = chromaterm.parse_config(config_data)
 
     data = 'Hello World\033[33m'
-    expected = ['\033[38;5;153m', 'Hello World', '\033[33m']
+    expected = ['\033[38;5;153m', 'Hello World', '\033[39m', '\033[33m']
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_existing_end_different_type():
+    """Highlight with an existing, different-type, color at the end of the data."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello World
+      color: b#aaafff'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello World\033[33m'
+    expected = ['\033[48;5;153m', 'Hello World', '\033[49m', '\033[33m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
@@ -310,18 +587,18 @@ def test_highlight_partial_overlap_existing_multiline():
       color: f#aaafff
     - description: second
       regex: World! It's
-      color: b#fffaaa
+      color: f#fffaaa
     - description: third
       regex: It's me
-      color: b#0973d8'''
+      color: f#0973d8'''
     config = chromaterm.parse_config(config_data)
 
     data = ['\033[33mSup', 'Hello World! It\'s me']
     expected = [['\033[33m', 'Sup'],
                 [
-                    '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'World',
-                    '\033[48;5;229m', '! ', '\033[48;5;33m', 'It\'s',
-                    '\033[48;5;33m', ' me', '\033[33m'
+                    '\033[38;5;153m', 'Hello ', '\033[38;5;229m', 'World',
+                    '\033[38;5;229m', '! ', '\033[38;5;33m', 'It\'s',
+                    '\033[38;5;33m', ' me', '\033[33m'
                 ]]
 
     for line_data, line_expected in zip(data, expected):
@@ -348,8 +625,8 @@ def test_highlight_optional_multi_group():
 
     data = 'Hello World! It\'s me'
     expected = [
-        'Hello ', '\033[38;5;229m', 'World', '\033[m', '! It\'s ',
-        '\033[38;5;153m', 'me', '\033[m'
+        'Hello ', '\033[38;5;229m', 'World', '\033[39m', '! It\'s ',
+        '\033[38;5;153m', 'me', '\033[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -364,9 +641,55 @@ def test_highlight_optional_group_not_matched():
     config = chromaterm.parse_config(config_data)
 
     data = 'Hello there! Hello World'
-    expected = ['Hello there! Hello ', '\033[38;5;229m', 'World', '\033[m']
+    expected = ['Hello there! Hello ', '\033[38;5;229m', 'World', '\033[39m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_update_type_reset():
+    """Feed a string to chromaterm that updates the config with new resets to
+    confirm they are not colliding."""
+    config_data = '''rules:
+    - regex: Hello
+      color: f#f7e08b'''
+    config = chromaterm.parse_config(config_data)
+
+    resets = {
+        'fg': '\033[33m',
+        'bg': '\033[45m',
+        'blink': '\033[5m',
+        'bold': '\033[1m',
+        'italic': '\033[3m',
+        'strike': '\033[9m',
+        'underline': '\033[4m'
+    }
+
+    # Feed colors
+    for data in resets.values():
+        chromaterm.highlight(config, data)
+
+    # Check the resets
+    for name in resets:
+        assert repr(config['resets'][name]) == repr(resets[name])
+
+
+def test_highlight_complete_reset_defaulting_type_resets():
+    """A complete SGR resets sets the type resets back to their defaults as
+    defined in RESET_TYPES[x]['default']."""
+    config_data = '''rules:
+    - description: first
+      regex: there
+      color: f#aaafff'''
+    config = chromaterm.parse_config(config_data)
+    default = chromaterm.RESET_TYPES['fg']['default']
+
+    # Feed a color to update the type's reset
+    chromaterm.highlight(config, '\033[33mHello there, World')
+    assert repr(config['resets']['fg']) == repr('\033[33m')
+
+    # Feed the complete reset to send back to default
+    chromaterm.highlight(config, '\033[mHello there, World')
+    assert repr(config['resets']['fg']) == repr(default)
 
 
 def test_parse_config_simple():
@@ -511,7 +834,7 @@ def test_process_buffer_multiline(capsys):
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = '\ntest hello world test\n'
-    success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[m test$'
+    success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[49m test$'
 
     chromaterm.process_buffer(config, data * 2, False)
     captured = capsys.readouterr()
@@ -527,7 +850,7 @@ def test_process_buffer_rule_simple(capsys):
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
-    success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[m test$'
+    success = r'^test \033\[48;5;[0-9]{1,3}mhello world\033\[49m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -542,7 +865,7 @@ def test_process_buffer_rule_group(capsys):
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
-    success = r'^test hello \033\[[34]8;5;[0-9]{1,3}mworld\033\[m test$'
+    success = r'^test hello \033\[48;5;[0-9]{1,3}mworld\033\[49m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -553,11 +876,11 @@ def test_process_buffer_rule_group(capsys):
 def test_process_buffer_rule_multiple_colors(capsys):
     """Output processing with a multi-color rule."""
     config = chromaterm.get_default_config()
-    rule = {'regex': 'hello world', 'color': 'b#fffaaa f#aaafff'}
+    rule = {'regex': 'hello', 'color': 'b#fffaaa f#aaafff'}
 
     config['rules'].append(chromaterm.parse_rule(rule))
-    data = 'test hello world test'
-    success = r'^test (\033\[[34]8;5;[0-9]{1,3}m){2}hello world\033\[m test$'
+    data = 'hello world'
+    success = r'^(\033\[[34]8;5;[0-9]{1,3}m){2}hello(\033\[[34]9m){2} world$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -795,8 +1118,8 @@ def test_main_reload_config(capsys, monkeypatch):
 
         s_conn.sendall(b'Hello world')
         expected = [
-            '\033[38;5;22m', 'Hello', '\033[m', ' ', '\033[48;5;52m', 'world',
-            '\033[m'
+            '\033[38;5;22m', 'Hello', '\033[39m', ' ', '\033[48;5;52m',
+            'world', '\033[49m'
         ]
         time.sleep(0.1)  # Any processing delay
         assert repr(capsys.readouterr().out) == repr(''.join(expected))
@@ -812,7 +1135,7 @@ def test_main_reload_config(capsys, monkeypatch):
         os.kill(os.getpid(), signal.SIGUSR1)
 
         s_conn.sendall(b'Hello world')
-        expected = ['\033[38;5;22m', 'Hello', '\033[m', ' world']
+        expected = ['\033[38;5;22m', 'Hello', '\033[39m', ' world']
         time.sleep(0.1)  # Any processing delay
         assert repr(capsys.readouterr().out) == repr(''.join(expected))
     finally:
