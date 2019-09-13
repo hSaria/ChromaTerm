@@ -114,51 +114,70 @@ def test_get_color_code_duplicate_target():
 
 def test_get_color_types_bg():
     """Background colors and reset are being detected."""
-    assert 'bg' in chromaterm.get_color_types('\033[48;5;123m')
-    assert 'bg' in chromaterm.get_color_types('\033[49m')
+    assert 'bg' in chromaterm.get_color_types('\033[48;5;123m')[0]['types']
+    assert 'bg' in chromaterm.get_color_types('\033[48;2;1;1;1m')[0]['types']
+    assert 'bg' in chromaterm.get_color_types('\033[49m')[0]['types']
 
 
 def test_get_color_types_fg():
     """Foreground colors and reset are being detected."""
-    assert 'fg' in chromaterm.get_color_types('\033[38;5;123m')
-    assert 'fg' in chromaterm.get_color_types('\033[39m')
+    assert 'fg' in chromaterm.get_color_types('\033[38;5;123m')[0]['types']
+    assert 'fg' in chromaterm.get_color_types('\033[38;2;1;1;1m')[0]['types']
+    assert 'fg' in chromaterm.get_color_types('\033[39m')[0]['types']
 
 
 def test_get_color_types_styles_blink():
     """Blink and its reset are being detected."""
-    assert 'blink' in chromaterm.get_color_types('\033[5m')
-    assert 'blink' in chromaterm.get_color_types('\033[25m')
+    assert 'blink' in chromaterm.get_color_types('\033[5m')[0]['types']
+    assert 'blink' in chromaterm.get_color_types('\033[25m')[0]['types']
 
 
 def test_get_color_types_styles_bold():
     """Bold and its reset are being detected."""
-    assert 'bold' in chromaterm.get_color_types('\033[1m')
-    assert 'bold' in chromaterm.get_color_types('\033[21m')
+    assert 'bold' in chromaterm.get_color_types('\033[1m')[0]['types']
+    assert 'bold' in chromaterm.get_color_types('\033[21m')[0]['types']
 
 
 def test_get_color_types_styles_italic():
     """Italic and its reset are being detected."""
-    assert 'italic' in chromaterm.get_color_types('\033[3m')
-    assert 'italic' in chromaterm.get_color_types('\033[23m')
+    assert 'italic' in chromaterm.get_color_types('\033[3m')[0]['types']
+    assert 'italic' in chromaterm.get_color_types('\033[23m')[0]['types']
 
 
 def test_get_color_types_styles_strike():
     """Strike and its reset are being detected."""
-    assert 'strike' in chromaterm.get_color_types('\033[9m')
-    assert 'strike' in chromaterm.get_color_types('\033[29m')
+    assert 'strike' in chromaterm.get_color_types('\033[9m')[0]['types']
+    assert 'strike' in chromaterm.get_color_types('\033[29m')[0]['types']
 
 
 def test_get_color_types_styles_underline():
     """Underline and its reset are being detected."""
-    assert 'underline' in chromaterm.get_color_types('\033[4m')
-    assert 'underline' in chromaterm.get_color_types('\033[24m')
+    assert 'underline' in chromaterm.get_color_types('\033[4m')[0]['types']
+    assert 'underline' in chromaterm.get_color_types('\033[24m')[0]['types']
 
 
 def test_get_color_types_complete_reset():
     """Complete reset matches all known types."""
     types = [x for x in chromaterm.RESET_TYPES]
-    assert types == chromaterm.get_color_types('\033[0m')
-    assert types == chromaterm.get_color_types('\033[m')
+    assert types == chromaterm.get_color_types('\033[0m')[0]['types']
+    assert types == chromaterm.get_color_types('\033[m')[0]['types']
+
+
+def test_get_color_types_malformed():
+    """A malformed color."""
+    assert [] == chromaterm.get_color_types('\033[38;5m')[0]['types']
+    assert 'underline' in chromaterm.get_color_types('\033[24m')[0]['types']
+
+
+def test_get_color_types_split_compound():
+    """Split the a compound SGR into discrete SGR's."""
+    colors = chromaterm.get_color_types('\033[1;33;40m')
+    codes = ['\033[1m', '\033[33m', '\033[40m']
+    types = ['bold', 'fg', 'bg']
+
+    for color, code, type in zip(colors, codes, types):
+        assert color['types'] == [type]
+        assert repr(color['code']) == repr(code)
 
 
 def test_highlight_enscapsulated_same_type():
@@ -562,14 +581,15 @@ def test_highlight_existing_compound():
     """Highlight with an existing compound color (multiple SGR's) in the data."""
     config_data = '''rules:
     - description: first
-      regex: World
+      regex: World|me
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = '\033[33m\033[1mHello World'
+    data = '\033[33;1mHello World\033[35;5m It\'s \033[32;4mme'
     expected = [
-        '\033[33m\033[1m', 'Hello ', '\033[38;5;153m', 'World',
-        '\033[33m'
+        '\033[33m\033[1m', 'Hello ', '\033[38;5;153m', 'World', '\033[33m',
+        '\033[35m', '\033[5m', ' It\'s ', '\033[32m', '\033[4m',
+        '\033[38;5;153m', 'me', '\033[32m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))

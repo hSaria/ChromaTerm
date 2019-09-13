@@ -23,31 +23,31 @@ STYLES = {
 RESET_TYPES = {
     'fg': {
         'default': '\033[39m',
-        're': re.compile(r'\033\[(?:0?|3(?:[0-79]|8;[0-9;]+))m')
+        're': re.compile(r'\033\[3(?:[0-79]|8;[0-9;]+)m')
     },
     'bg': {
         'default': '\033[49m',
-        're': re.compile(r'\033\[(?:0?|4(?:[0-79]|8;[0-9;]+))m')
+        're': re.compile(r'\033\[4(?:[0-79]|8;[0-9;]+)m')
     },
     'blink': {
         'default': '\033[25m',
-        're': re.compile(r'\033\[(?:0?|2?5)m')
+        're': re.compile(r'\033\[2?5m')
     },
     'bold': {
         'default': '\033[21m',
-        're': re.compile(r'\033\[(?:0?|2?1)m')
+        're': re.compile(r'\033\[2?1m')
     },
     'italic': {
         'default': '\033[23m',
-        're': re.compile(r'\033\[(?:0?|2?3)m')
+        're': re.compile(r'\033\[2?3m')
     },
     'strike': {
         'default': '\033[29m',
-        're': re.compile(r'\033\[(?:0?|2?9)m')
+        're': re.compile(r'\033\[2?9m')
     },
     'underline': {
         'default': '\033[24m',
-        're': re.compile(r'\033\[(?:0?|2?4)m')
+        're': re.compile(r'\033\[2?4m')
     }
 }
 
@@ -171,9 +171,47 @@ def get_color_code(color, rgb=False):
     return codes or None
 
 
-def get_color_types(code):
-    """Using RESET_TYPES, return a list of type names the match the code."""
-    return [x for x in RESET_TYPES if RESET_TYPES[x]['re'].search(code)]
+def get_color_types(source_code):
+    """Using RESET_TYPES, return a list of dicts, each containing the code and
+    type. Compound colors are split into discrete colors."""
+    def make_sgr(code_id):
+        return '\033[' + code_id + 'm'
+
+    colors = []
+    codes = source_code.lstrip('\033[').rstrip('m').split(';')
+    skip = 0
+
+    for index, code in enumerate(codes):
+        # Code processed by an index look-ahead; skip it
+        if skip:
+            skip -= 1
+            continue
+
+        if code == '' or int(code) == 0:  # Complete reset
+            # Complete reset is everyone's type
+            types = [x for x in RESET_TYPES]
+            colors.append({'code': make_sgr(code), 'types': types})
+        elif code in ['38', '48']:  # Multi-code SGR
+            types = ['fg' if code == '38' else 'bg']
+
+            if len(codes) > index + 2 and codes[index + 1] == '5':  # xterm-256
+                skip = 2
+                code = ';'.join([str(codes[index + x] for x in range(3))])
+                colors.append({'code': make_sgr(code), 'types': types})
+            elif len(codes) > index + 4 and codes[index + 1] == '2':  # RGB
+                skip = 4
+                code = ';'.join([str(codes[index + x] for x in range(5))])
+                colors.append({'code': make_sgr(code), 'types': types})
+            else:  # Does not conform to format; do not touch code
+                return [{'code': source_code, 'types': []}]
+        else:  # Single-code SGR
+            types = [
+                x for x in RESET_TYPES
+                if RESET_TYPES[x]['re'].search(make_sgr(code))
+            ]
+            colors.append({'code': make_sgr(code), 'types': types})
+
+    return colors
 
 
 def get_default_config():
@@ -209,25 +247,7 @@ def highlight(config, data):
     if not data or not config['rules']:
         return data
 
-    existing = []
-
-    # Existing colors in the data
-    for match in SGR_RE.finditer(data):
-        types = get_color_types(match.group())
-        if types:
-            existing.append({
-                'position': match.start(),
-                'code': match.group(),
-                'types': types
-            })
-
-    # Remove existing colors from the data for cleaner matching (added back later)
-    shift = 0
-    for insert in existing:
-        insert['position'] -= shift
-        index = insert['position']
-        data = data[:index] + data[index + len(insert['code']):]
-        shift += len(insert['code'])
+    existing, data = strip_existing_colors(data)
 
     inserts = []  # The list of colors and their positions (inserts)
 
@@ -465,6 +485,32 @@ def split_buffer(buffer):
 
     # Group all splits into format of [data, separator]
     return [[x, y] for x, y in zip(splits[0::2], splits[1::2])]
+
+
+def strip_existing_colors(data):
+    """Remove the existing color from the data, returning a list of existing
+    colors and the clean data. The color positions are in the "clean" data."""
+    existing = []
+
+    while True:
+        # Get first match
+        match = SGR_RE.search(data)
+
+        if not match:
+            break
+
+        # Extract the colors
+        for color in get_color_types(match.group()):
+            existing.append({
+                'position': match.start(),
+                'code': color['code'],
+                'types': color['types']
+            })
+
+        # Remove match from data; next match will start in the clean data
+        data = data[:match.start()] + data[match.end():]
+
+    return existing, data
 
 
 def main(config, max_wait=None):
