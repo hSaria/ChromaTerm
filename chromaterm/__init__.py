@@ -51,9 +51,6 @@ RESET_TYPES = {
     }
 }
 
-# Detect a complete reset of the SGR
-COMPLETE_RESET_RE = re.compile(r'\033\[0?m')
-
 # Sequences that change the screen's layout or cursor's position
 MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
                          r'1049[hl]|\r|\r\n|\n|\v|\f)')
@@ -122,6 +119,52 @@ def config_init(args=None):
     return config
 
 
+def decode_sgr(source_code):
+    """Decode an SGR splitting them into discrete colors."""
+    def make_sgr(code_id):
+        return '\033[' + str(code_id) + 'm'
+
+    colors = []
+    codes = source_code.lstrip('\033[').rstrip('m').split(';')
+    skip = 0
+
+    for index, code in enumerate(codes):
+        # Code processed by an index look-ahead; skip it
+        if skip:
+            skip -= 1
+            continue
+
+        if code == '' or int(code) == 0:  # Complete reset
+            # Complete reset is everyone's type
+            types = [x for x in RESET_TYPES]
+            colors.append({
+                'code': make_sgr(code),
+                'types': types,
+                'complete_reset': True
+            })
+        elif code in ['38', '48']:  # Multi-code SGR
+            types = ['fg' if code == '38' else 'bg']
+
+            if len(codes) > index + 2 and codes[index + 1] == '5':  # xterm-256
+                skip = 2
+                code = ';'.join([str(codes[index + x] for x in range(3))])
+                colors.append({'code': make_sgr(code), 'types': types})
+            elif len(codes) > index + 4 and codes[index + 1] == '2':  # RGB
+                skip = 4
+                code = ';'.join([str(codes[index + x] for x in range(5))])
+                colors.append({'code': make_sgr(code), 'types': types})
+            else:  # Does not conform to format; do not touch code
+                return [{'code': source_code, 'types': []}]
+        else:  # Single-code SGR
+            types = [
+                x for x in RESET_TYPES
+                if RESET_TYPES[x]['re'].search(make_sgr(int(code)))
+            ]
+            colors.append({'code': make_sgr(code), 'types': types})
+
+    return colors
+
+
 def eprint(*args, **kwargs):
     """Error print."""
     print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
@@ -171,49 +214,6 @@ def get_color_code(color, rgb=False):
     return codes or None
 
 
-def get_color_types(source_code):
-    """Using RESET_TYPES, return a list of dicts, each containing the code and
-    type. Compound colors are split into discrete colors."""
-    def make_sgr(code_id):
-        return '\033[' + code_id + 'm'
-
-    colors = []
-    codes = source_code.lstrip('\033[').rstrip('m').split(';')
-    skip = 0
-
-    for index, code in enumerate(codes):
-        # Code processed by an index look-ahead; skip it
-        if skip:
-            skip -= 1
-            continue
-
-        if code == '' or int(code) == 0:  # Complete reset
-            # Complete reset is everyone's type
-            types = [x for x in RESET_TYPES]
-            colors.append({'code': make_sgr(code), 'types': types})
-        elif code in ['38', '48']:  # Multi-code SGR
-            types = ['fg' if code == '38' else 'bg']
-
-            if len(codes) > index + 2 and codes[index + 1] == '5':  # xterm-256
-                skip = 2
-                code = ';'.join([str(codes[index + x] for x in range(3))])
-                colors.append({'code': make_sgr(code), 'types': types})
-            elif len(codes) > index + 4 and codes[index + 1] == '2':  # RGB
-                skip = 4
-                code = ';'.join([str(codes[index + x] for x in range(5))])
-                colors.append({'code': make_sgr(code), 'types': types})
-            else:  # Does not conform to format; do not touch code
-                return [{'code': source_code, 'types': []}]
-        else:  # Single-code SGR
-            types = [
-                x for x in RESET_TYPES
-                if RESET_TYPES[x]['re'].search(make_sgr(code))
-            ]
-            colors.append({'code': make_sgr(code), 'types': types})
-
-    return colors
-
-
 def get_default_config():
     """Return a dict with the default configuration."""
     config = {'rules': []}
@@ -243,8 +243,7 @@ def get_rule_inserts(rule, data):
 
 def highlight(config, data):
     """According to the rules in the `config`, return the highlighted 'data'."""
-    # Empty data or no rules, don't bother doing anything
-    if not data or not config['rules']:
+    if not data:  # Empty data, don't bother doing anything
         return data
 
     existing, data = strip_existing_colors(data)
@@ -272,14 +271,15 @@ def highlight(config, data):
         if not left:  # All resets updated
             break
 
-        for name in left:
-            if name in insert['types']:
-                # Complete reset; go back to default reset of the type
-                if COMPLETE_RESET_RE.search(insert['code']):
-                    config['resets'][name] = RESET_TYPES[name]['default']
-                else:
-                    config['resets'][name] = insert['code']
+        if insert.get('complete_reset'):
+            for name in left:
+                config['resets'][name] = RESET_TYPES[name]['default']
                 updated_resets.append(name)
+        else:
+            for name in left:
+                if name in insert['types']:
+                    config['resets'][name] = insert['code']
+                    updated_resets.append(name)
 
     return data
 
@@ -370,10 +370,11 @@ def process_buffer(config, buffer, more):
     """Process the `buffer` using the `config`, returning any left-over data. If
     there's `more`, only process up to the last split. Otherwise, process all of
     the buffer."""
-    splits = split_buffer(buffer)
-
-    if not splits:
+    if not buffer or not config['rules']:  # Nothing to do
+        print(buffer, end='')
         return ''
+
+    splits = split_buffer(buffer)
 
     for split in splits[:-1]:  # Process all splits except for the last
         print(highlight(config, split[0]) + split[1], end='')
@@ -416,8 +417,10 @@ def process_inserts(inserts, existing, config):
 
             if not last_color:  # No last color; use current type reset
                 code = config['resets'][color['type']]
+                complete_reset = False
             else:
                 code = last_color['code']
+                complete_reset = last_color.get('complete_reset')
 
                 # Last color is in the middle of current color and is a reset;
                 # set it to our color so that it doesn't reset it.
@@ -426,11 +429,13 @@ def process_inserts(inserts, existing, config):
                     last_color['code'] = color['code']
 
             # Post-reverse, end of the current color comes after previous ends
-            finals.insert(0, {
-                'position': insert['end'],
-                'code': code,
-                'types': [color['type']]
-            })
+            finals.insert(
+                0, {
+                    'position': insert['end'],
+                    'code': code,
+                    'types': [color['type']],
+                    'complete_reset': complete_reset
+                })
 
     # Sort from end to start (index magic). Must reverse after sorting, not during
     return list(reversed(sorted(finals, key=lambda x: x['position'])))
@@ -474,9 +479,6 @@ def split_buffer(buffer):
     """Split the buffer based on movement sequences, returning an array with
     objects in the format of [data, separator]. `data` is the part that should
     be highlighted while the sperator is printed unchanged."""
-    if not buffer:
-        return buffer
-
     splits = MOVEMENT_RE.split(buffer)
 
     # Append an empty seperator in case of no splits or no seperator at the end
@@ -499,12 +501,9 @@ def strip_existing_colors(data):
             break
 
         # Extract the colors
-        for color in get_color_types(match.group()):
-            existing.append({
-                'position': match.start(),
-                'code': color['code'],
-                'types': color['types']
-            })
+        for color in decode_sgr(match.group()):
+            color['position'] = match.start()
+            existing.append(color)
 
         # Remove match from data; next match will start in the clean data
         data = data[:match.start()] + data[match.end():]

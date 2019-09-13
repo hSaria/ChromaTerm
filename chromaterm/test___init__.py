@@ -19,10 +19,72 @@ TEMP_FILE = '.test_chromaterm.yml'
 TEMP_SOCKET = '.test_chromaterm.socket'
 
 
-def test_complete_reset_re():
-    """COMPLETE_RESET_RE matches an full SGR reset."""
-    assert chromaterm.COMPLETE_RESET_RE.search('\033[0m')
-    assert chromaterm.COMPLETE_RESET_RE.search('\033[m')
+def test_decode_sgr_bg():
+    """Background colors and reset are being detected."""
+    assert 'bg' in chromaterm.decode_sgr('\033[48;5;123m')[0]['types']
+    assert 'bg' in chromaterm.decode_sgr('\033[48;2;1;1;1m')[0]['types']
+    assert 'bg' in chromaterm.decode_sgr('\033[49m')[0]['types']
+
+
+def test_decode_sgr_fg():
+    """Foreground colors and reset are being detected."""
+    assert 'fg' in chromaterm.decode_sgr('\033[38;5;123m')[0]['types']
+    assert 'fg' in chromaterm.decode_sgr('\033[38;2;1;1;1m')[0]['types']
+    assert 'fg' in chromaterm.decode_sgr('\033[39m')[0]['types']
+
+
+def test_decode_sgr_styles_blink():
+    """Blink and its reset are being detected."""
+    assert 'blink' in chromaterm.decode_sgr('\033[5m')[0]['types']
+    assert 'blink' in chromaterm.decode_sgr('\033[25m')[0]['types']
+
+
+def test_decode_sgr_styles_bold():
+    """Bold and its reset are being detected."""
+    assert 'bold' in chromaterm.decode_sgr('\033[1m')[0]['types']
+    assert 'bold' in chromaterm.decode_sgr('\033[21m')[0]['types']
+
+
+def test_decode_sgr_styles_italic():
+    """Italic and its reset are being detected."""
+    assert 'italic' in chromaterm.decode_sgr('\033[3m')[0]['types']
+    assert 'italic' in chromaterm.decode_sgr('\033[23m')[0]['types']
+
+
+def test_decode_sgr_styles_strike():
+    """Strike and its reset are being detected."""
+    assert 'strike' in chromaterm.decode_sgr('\033[9m')[0]['types']
+    assert 'strike' in chromaterm.decode_sgr('\033[29m')[0]['types']
+
+
+def test_decode_sgr_styles_underline():
+    """Underline and its reset are being detected."""
+    assert 'underline' in chromaterm.decode_sgr('\033[4m')[0]['types']
+    assert 'underline' in chromaterm.decode_sgr('\033[24m')[0]['types']
+
+
+def test_decode_sgr_complete_reset():
+    """Complete reset matches all known types."""
+    types = [x for x in chromaterm.RESET_TYPES]
+    assert types == chromaterm.decode_sgr('\033[0m')[0]['types']
+    assert types == chromaterm.decode_sgr('\033[m')[0]['types']
+
+
+def test_decode_sgr_malformed():
+    """A malformed color."""
+    assert [] == chromaterm.decode_sgr('\033[38;5m')[0]['types']
+    assert 'underline' in chromaterm.decode_sgr('\033[24m')[0]['types']
+
+
+def test_decode_sgr_split_compound():
+    """Split the a compound SGR into discrete SGR's."""
+    colors = chromaterm.decode_sgr('\033[1;33;40m')
+    codes = ['\033[1m', '\033[33m', '\033[40m']
+    types = ['bold', 'fg', 'bg']
+
+    for color, code, name in zip(colors, codes, types):
+        assert color['types'] == [name]
+        assert repr(color['code']) == repr(code)
 
 
 def test_eprint(capsys):
@@ -110,74 +172,6 @@ def test_get_color_code_duplicate_target():
 
     for color in colors:
         assert chromaterm.get_color_code(color) is None
-
-
-def test_get_color_types_bg():
-    """Background colors and reset are being detected."""
-    assert 'bg' in chromaterm.get_color_types('\033[48;5;123m')[0]['types']
-    assert 'bg' in chromaterm.get_color_types('\033[48;2;1;1;1m')[0]['types']
-    assert 'bg' in chromaterm.get_color_types('\033[49m')[0]['types']
-
-
-def test_get_color_types_fg():
-    """Foreground colors and reset are being detected."""
-    assert 'fg' in chromaterm.get_color_types('\033[38;5;123m')[0]['types']
-    assert 'fg' in chromaterm.get_color_types('\033[38;2;1;1;1m')[0]['types']
-    assert 'fg' in chromaterm.get_color_types('\033[39m')[0]['types']
-
-
-def test_get_color_types_styles_blink():
-    """Blink and its reset are being detected."""
-    assert 'blink' in chromaterm.get_color_types('\033[5m')[0]['types']
-    assert 'blink' in chromaterm.get_color_types('\033[25m')[0]['types']
-
-
-def test_get_color_types_styles_bold():
-    """Bold and its reset are being detected."""
-    assert 'bold' in chromaterm.get_color_types('\033[1m')[0]['types']
-    assert 'bold' in chromaterm.get_color_types('\033[21m')[0]['types']
-
-
-def test_get_color_types_styles_italic():
-    """Italic and its reset are being detected."""
-    assert 'italic' in chromaterm.get_color_types('\033[3m')[0]['types']
-    assert 'italic' in chromaterm.get_color_types('\033[23m')[0]['types']
-
-
-def test_get_color_types_styles_strike():
-    """Strike and its reset are being detected."""
-    assert 'strike' in chromaterm.get_color_types('\033[9m')[0]['types']
-    assert 'strike' in chromaterm.get_color_types('\033[29m')[0]['types']
-
-
-def test_get_color_types_styles_underline():
-    """Underline and its reset are being detected."""
-    assert 'underline' in chromaterm.get_color_types('\033[4m')[0]['types']
-    assert 'underline' in chromaterm.get_color_types('\033[24m')[0]['types']
-
-
-def test_get_color_types_complete_reset():
-    """Complete reset matches all known types."""
-    types = [x for x in chromaterm.RESET_TYPES]
-    assert types == chromaterm.get_color_types('\033[0m')[0]['types']
-    assert types == chromaterm.get_color_types('\033[m')[0]['types']
-
-
-def test_get_color_types_malformed():
-    """A malformed color."""
-    assert [] == chromaterm.get_color_types('\033[38;5m')[0]['types']
-    assert 'underline' in chromaterm.get_color_types('\033[24m')[0]['types']
-
-
-def test_get_color_types_split_compound():
-    """Split the a compound SGR into discrete SGR's."""
-    colors = chromaterm.get_color_types('\033[1;33;40m')
-    codes = ['\033[1m', '\033[33m', '\033[40m']
-    types = ['bold', 'fg', 'bg']
-
-    for color, code, name in zip(colors, codes, types):
-        assert color['types'] == [name]
-        assert repr(color['code']) == repr(code)
 
 
 def test_highlight_enscapsulated_same_type():
@@ -704,11 +698,11 @@ def test_highlight_complete_reset_defaulting_type_resets():
     default = chromaterm.RESET_TYPES['fg']['default']
 
     # Feed a color to update the type's reset
-    chromaterm.highlight(config, '\033[33mHello there, World')
+    assert chromaterm.highlight(config, '\033[33mHello there, World')
     assert repr(config['resets']['fg']) == repr('\033[33m')
 
     # Feed the complete reset to send back to default
-    chromaterm.highlight(config, '\033[mHello there, World')
+    assert chromaterm.highlight(config, '\033[mHello there, World')
     assert repr(config['resets']['fg']) == repr(default)
 
 
