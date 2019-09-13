@@ -175,8 +175,8 @@ def test_get_color_types_split_compound():
     codes = ['\033[1m', '\033[33m', '\033[40m']
     types = ['bold', 'fg', 'bg']
 
-    for color, code, type in zip(colors, codes, types):
-        assert color['types'] == [type]
+    for color, code, name in zip(colors, codes, types):
+        assert color['types'] == [name]
         assert repr(color['code']) == repr(code)
 
 
