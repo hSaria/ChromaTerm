@@ -59,7 +59,7 @@ MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
                          r'1049[hl]|\r|\r\n|\n|\v|\f)')
 
 # Select Graphic Rendition sequence (all types)
-SGR_RE = re.compile(r'(?:\033\[[0-9;]*m)+')
+SGR_RE = re.compile(r'\033\[[0-9;]*m')
 
 # Maximum chuck size per read
 READ_SIZE = 4096  # 4 KiB

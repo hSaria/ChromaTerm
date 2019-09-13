@@ -569,7 +569,7 @@ def test_highlight_existing_compound():
     data = '\033[33m\033[1mHello World'
     expected = [
         '\033[33m\033[1m', 'Hello ', '\033[38;5;153m', 'World',
-        '\033[33m\033[1m'
+        '\033[33m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
