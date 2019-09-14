@@ -374,7 +374,7 @@ def process_buffer(config, buffer, more):
 
 def process_inserts(inserts, existing, config):
     """Process a list of rule inserts, removing any unnecessary colors, and
-    returning am iterator of colors. The list of existing colors is used for
+    returning an iterator of colors. The list of existing colors is used for
     recovery of colliding colors. Existing colors are included in the iterator."""
     def get_last_color(colors, position, color_type):
         """Return the first color before the requested position and of the color
