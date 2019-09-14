@@ -37,11 +37,11 @@ echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
 
 > The default config file is copied to your home directory if it's not there.
 
-You may want to set up functions in your `.bash_profile` to always color a command like `ssh() { /usr/bin/ssh "$@" | ct; }`.
+Tip: set up functions, like `ssh() { /usr/bin/ssh "$@" | ct; }`, in your `.bash_profile` to always color the output of a program (`ssh` in this example).
 
 # Highlight Rules
 
-All of the highlight rules are placed under the `rules` array in the configuration file. Here's an example config file:
+All of the highlight rules are placed under the `rules` list in the configuration file. Here's an example config file:
 
 ```yaml
 rules:
