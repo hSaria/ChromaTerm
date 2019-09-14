@@ -570,6 +570,68 @@ def test_highlight_existing_orphaned():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
+def test_highlight_existing_complete_reset():
+    """Highlight with an existing complete reset in the data. It should be set
+    to our color."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello there, World
+      color: f#aaafff'''
+    config = chromaterm.parse_config(config_data)
+
+    data = 'Hello\033[m there, World'
+    expected = [
+        '\033[38;5;153m', 'Hello', '\033[38;5;153m', ' there, World',
+        '\033[39m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_existing_color_complete_reset_same_type():
+    """Highlight with an existing color and complete reset in the data. The
+    color is before the reset. The first rule's match covers both. The second
+    rule's match covers the reset only. The rules are of the same type."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello there
+      color: f#aaafff
+    - description: first
+      regex: there, World
+      color: f#fffaaa'''
+    config = chromaterm.parse_config(config_data)
+
+    data = '\033[33mHello the\033[mre, World'
+    expected = [
+        '\033[33m', '\033[38;5;153m', 'Hello ', '\033[38;5;229m', 'the',
+        '\033[38;5;153m', 're', '\033[38;5;229m', ', World', '\033[39m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
+def test_highlight_existing_color_complete_reset_different_type():
+    """Highlight with an existing color and complete reset in the data. The
+    color is before the reset. The first rule's match covers both. The second
+    rule's match covers the reset only. The rules are of different types."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello there
+      color: f#aaafff
+    - description: first
+      regex: there, World
+      color: b#fffaaa'''
+    config = chromaterm.parse_config(config_data)
+
+    data = '\033[44mHello the\033[mre, World'
+    expected = [
+        '\033[44m', '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'the',
+        '\033[38;5;153m', 're', '\033[39m', ', World', '\033[44m'
+    ]
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
 def test_highlight_existing_compound():
     """Highlight with an existing compound color (multiple SGR's) in the data."""
     config_data = '''rules:
@@ -954,19 +1016,19 @@ def test_read_file():
 
 def test_read_file_non_existent(capsys):
     """Read a non-existent file."""
-    msg = 'Configuration file ' + TEMP_FILE + ' not found\n'
-    chromaterm.read_file(TEMP_FILE)
+    msg = 'Configuration file ' + TEMP_FILE + '1' + ' not found\n'
+    chromaterm.read_file(TEMP_FILE + '1')
     assert msg in capsys.readouterr().err
 
 
 def test_read_file_no_permission(capsys):
     """Create a file with no permissions and attempt to read it. Delete the file
     once done with it."""
-    msg = 'Cannot read configuration file ' + TEMP_FILE + ' (permission)\n'
+    msg = 'Cannot read configuration file ' + TEMP_FILE + '2' + ' (permission)\n'
 
-    os.close(os.open(TEMP_FILE, os.O_CREAT | os.O_WRONLY, 0o0000))
-    chromaterm.read_file(TEMP_FILE)
-    os.remove(TEMP_FILE)
+    os.close(os.open(TEMP_FILE + '2', os.O_CREAT | os.O_WRONLY, 0o0000))
+    chromaterm.read_file(TEMP_FILE + '2')
+    os.remove(TEMP_FILE + '2')
 
     assert msg in capsys.readouterr().err
 
@@ -976,9 +1038,9 @@ def test_read_ready_input(monkeypatch):
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET)
+        s_sock.bind(TEMP_SOCKET + '1')
         s_sock.listen(2)
-        c_sock.connect(TEMP_SOCKET)
+        c_sock.connect(TEMP_SOCKET + '1')
         s_conn, _ = s_sock.accept()
 
         monkeypatch.setattr('sys.stdin', c_sock)
@@ -989,17 +1051,17 @@ def test_read_ready_input(monkeypatch):
         s_conn.close()
         c_sock.close()
         s_sock.close()
-        os.remove(TEMP_SOCKET)
+        os.remove(TEMP_SOCKET + '1')
 
 
 def test_read_ready_timeout_empty(monkeypatch):
     """Wait for 1 second with no input."""
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET)
+        s_sock.bind(TEMP_SOCKET + '2')
         s_sock.listen(2)
         c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        c_sock.connect(TEMP_SOCKET)
+        c_sock.connect(TEMP_SOCKET + '2')
         s_conn, _ = s_sock.accept()
 
         monkeypatch.setattr('sys.stdin', c_sock)
@@ -1013,17 +1075,17 @@ def test_read_ready_timeout_empty(monkeypatch):
         s_conn.close()
         c_sock.close()
         s_sock.close()
-        os.remove(TEMP_SOCKET)
+        os.remove(TEMP_SOCKET + '2')
 
 
 def test_read_ready_timeout_input(monkeypatch):
     """Immediate ready with timeout when there is input buffered."""
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET)
+        s_sock.bind(TEMP_SOCKET + '3')
         s_sock.listen(2)
         c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        c_sock.connect(TEMP_SOCKET)
+        c_sock.connect(TEMP_SOCKET + '3')
         s_conn, _ = s_sock.accept()
 
         monkeypatch.setattr('sys.stdin', c_sock)
@@ -1038,7 +1100,7 @@ def test_read_ready_timeout_input(monkeypatch):
         s_conn.close()
         c_sock.close()
         s_sock.close()
-        os.remove(TEMP_SOCKET)
+        os.remove(TEMP_SOCKET + '3')
 
 
 def test_rgb_to_8bit():
@@ -1072,10 +1134,10 @@ def test_main(capsys, monkeypatch):
         main_thread = Thread(target=chromaterm.main, args=(config, 1))
 
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET)
+        s_sock.bind(TEMP_SOCKET + '4')
         s_sock.listen(2)
         c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        c_sock.connect(TEMP_SOCKET)
+        c_sock.connect(TEMP_SOCKET + '4')
         s_conn, _ = s_sock.accept()
 
         monkeypatch.setattr('sys.stdin', c_sock)
@@ -1099,28 +1161,28 @@ def test_main(capsys, monkeypatch):
         s_conn.close()
         c_sock.close()
         s_sock.close()
-        os.remove(TEMP_SOCKET)
+        os.remove(TEMP_SOCKET + '4')
         main_thread.join()
 
 
 def test_main_reload_config(capsys, monkeypatch):
     """Reload the configuration while the program is running."""
     try:
-        with open(TEMP_FILE, 'w') as file:
+        with open(TEMP_FILE + '3', 'w') as file:
             file.write('''rules:
             - regex: Hello
               color: f#123123
             - regex: world
               color: b#321321''')
 
-        config = chromaterm.config_init(['--config', TEMP_FILE])
+        config = chromaterm.config_init(['--config', TEMP_FILE + '3'])
         main_thread = Thread(target=chromaterm.main, args=(config, 1))
 
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET)
+        s_sock.bind(TEMP_SOCKET + '5')
         s_sock.listen(2)
         c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        c_sock.connect(TEMP_SOCKET)
+        c_sock.connect(TEMP_SOCKET + '5')
         s_conn, _ = s_sock.accept()
 
         monkeypatch.setattr('sys.stdin', c_sock)
@@ -1138,8 +1200,8 @@ def test_main_reload_config(capsys, monkeypatch):
         assert repr(capsys.readouterr().out) == repr(''.join(expected))
 
         # Create file without the 'world' rule
-        os.remove(TEMP_FILE)
-        with open(TEMP_FILE, 'w') as file:
+        os.remove(TEMP_FILE + '3')
+        with open(TEMP_FILE + '3', 'w') as file:
             file.write('''rules:
             - regex: Hello
               color: f#123123''')
@@ -1155,8 +1217,8 @@ def test_main_reload_config(capsys, monkeypatch):
         s_conn.close()
         c_sock.close()
         s_sock.close()
-        os.remove(TEMP_FILE)
-        os.remove(TEMP_SOCKET)
+        os.remove(TEMP_FILE + '3')
+        os.remove(TEMP_SOCKET + '5')
         main_thread.join()
 
 

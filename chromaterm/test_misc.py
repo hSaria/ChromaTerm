@@ -120,9 +120,9 @@ def test_find_rule():
 
 def test_write_default_config():
     """Write config file."""
-    assert chromaterm.misc.write_default_config('.', TEMP_FILE) is True
-    assert os.access(os.path.join('.', TEMP_FILE), os.F_OK)
-    os.remove(TEMP_FILE)
+    assert chromaterm.misc.write_default_config('.', TEMP_FILE + '1') is True
+    assert os.access(os.path.join('.', TEMP_FILE + '1'), os.F_OK)
+    os.remove(TEMP_FILE + '1')
 
 
 def test_write_default_config_no_directory():
@@ -132,13 +132,13 @@ def test_write_default_config_no_directory():
 
 def test_write_default_config_exists():
     """Config file already exists."""
-    open(TEMP_FILE, 'w').close()
-    assert chromaterm.misc.write_default_config('.', TEMP_FILE) is False
-    os.remove(TEMP_FILE)
+    open(TEMP_FILE + '2', 'w').close()
+    assert chromaterm.misc.write_default_config('.', TEMP_FILE + '2') is False
+    os.remove(TEMP_FILE + '2')
 
 
 def test_write_default_config_no_permission():
     """No write permission on directory."""
-    os.mkdir(TEMP_DIR, mode=0o444)
-    assert chromaterm.misc.write_default_config(TEMP_DIR) is False
-    os.rmdir(TEMP_DIR)
+    os.mkdir(TEMP_DIR + '1', mode=0o444)
+    assert chromaterm.misc.write_default_config(TEMP_DIR + '1') is False
+    os.rmdir(TEMP_DIR + '1')

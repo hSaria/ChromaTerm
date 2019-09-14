@@ -408,22 +408,27 @@ def process_inserts(inserts, existing, config):
             })
 
             if not last_color:  # No last color; use current type reset
-                code = config['resets'][color['type']]
+                reset = config['resets'][color['type']]
                 color_type = color['type']
             else:
-                code = last_color['code']
-                color_type = last_color['type']
+                reset = last_color['code']
 
-                # Last color is in the middle of current color and is a reset;
-                # set it to our color so that it doesn't reset it.
-                if last_color['position'] > insert['start'] and last_color[
-                        'code'] == config['resets'][color['type']]:
-                    last_color['code'] = color['code']
+                # Last color is in the middle of current color.
+                if last_color['position'] > insert['start']:
+                    # Last color is a (complete )?reset
+                    if last_color['type'] == 'complete_reset' or last_color[
+                            'code'] == config['resets'][color['type']]:
+                        # Set it to our color so that it doesn't reset it.
+                        last_color['code'] = color['code']
+                        last_color['type'] = color['type']
+                        reset = config['resets'][color['type']]
+
+                color_type = last_color['type']
 
             # Post-reverse, end of the current color comes after previous ends
             finals.insert(0, {
                 'position': insert['end'],
-                'code': code,
+                'code': reset,
                 'type': color_type
             })
 
