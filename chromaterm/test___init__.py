@@ -65,9 +65,9 @@ def test_decode_sgr_styles_underline():
 
 def test_decode_sgr_complete_reset():
     """Complete reset detection."""
-    assert chromaterm.decode_sgr('\033[00m')[0]['type'] is 'complete_reset'
-    assert chromaterm.decode_sgr('\033[0m')[0]['type'] is 'complete_reset'
-    assert chromaterm.decode_sgr('\033[m')[0]['type'] is 'complete_reset'
+    assert chromaterm.decode_sgr('\033[00m')[0]['type'] == 'complete_reset'
+    assert chromaterm.decode_sgr('\033[0m')[0]['type'] == 'complete_reset'
+    assert chromaterm.decode_sgr('\033[m')[0]['type'] == 'complete_reset'
 
 
 def test_decode_sgr_malformed():
