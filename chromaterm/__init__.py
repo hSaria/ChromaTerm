@@ -233,7 +233,8 @@ def get_rule_inserts(rule, data):
 
 
 def highlight(config, data):
-    """According to the rules in the `config`, return the highlighted 'data'."""
+    """According to the rules in the `config`, return the highlighted 'data'.
+    The resets of each color type in the config are updated accordingly."""
     if not data:  # Empty data, don't bother doing anything
         return data
 
@@ -241,15 +242,13 @@ def highlight(config, data):
 
     inserts = []  # The list of colors and their positions (inserts)
 
-    # Get the list of the new colors
-    for rule in config['rules']:
+    for rule in config['rules']:  # Get the list of the new colors
         inserts += get_rule_inserts(rule, data)
 
-    # Process all of the inserts, returning the final list including existing
+    # Process all of the inserts, returning the final list, including existing
     inserts = process_inserts(inserts, existing, config)
 
-    # Insert the colors into the data
-    for insert in inserts:
+    for insert in inserts:  # Insert the colors into the data
         index = insert['position']
         data = data[:index] + insert['code'] + data[index:]
 
@@ -471,9 +470,9 @@ def rgb_to_8bit(_r, _g, _b):
 
 
 def split_buffer(buffer):
-    """Split the buffer based on movement sequences, returning an array with
-    objects in the format of [data, separator]. `data` is the part that should
-    be highlighted while the sperator is printed unchanged."""
+    """Split the buffer based on movement sequences, returning a list of lists
+    in the format of [data, separator]. `data` is the part that should be
+    highlighted while the sperator is printed unchanged."""
     splits = MOVEMENT_RE.split(buffer)
 
     # Append an empty seperator in case of no splits or no seperator at the end
@@ -484,7 +483,7 @@ def split_buffer(buffer):
 
 
 def strip_existing_colors(data):
-    """Remove the existing color from the data, returning a list of existing
+    """Remove the existing colors from the data, returning a list of existing
     colors and the clean data. The color positions are in the "clean" data."""
     existing = []
 
