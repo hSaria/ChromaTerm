@@ -135,32 +135,28 @@ def decode_sgr(source_code):
             continue
 
         if code == '' or int(code) == 0:  # Complete reset
-            # Complete reset is everyone's type
-            types = [x for x in RESET_TYPES]
             colors.append({
                 'code': make_sgr(code),
-                'types': types,
+                'type': None,
                 'complete_reset': True
             })
         elif code in ['38', '48']:  # Multi-code SGR
-            types = ['fg' if code == '38' else 'bg']
+            color_type = 'fg' if code == '38' else 'bg'
 
             if len(codes) > index + 2 and codes[index + 1] == '5':  # xterm-256
                 skip = 2
                 code = ';'.join([str(codes[index + x] for x in range(3))])
-                colors.append({'code': make_sgr(code), 'types': types})
             elif len(codes) > index + 4 and codes[index + 1] == '2':  # RGB
                 skip = 4
                 code = ';'.join([str(codes[index + x] for x in range(5))])
-                colors.append({'code': make_sgr(code), 'types': types})
             else:  # Does not conform to format; do not touch code
-                return [{'code': source_code, 'types': []}]
+                return [{'code': source_code, 'type': None}]
+
+            colors.append({'code': make_sgr(code), 'type': color_type})
         else:  # Single-code SGR
-            types = [
-                x for x in RESET_TYPES
-                if RESET_TYPES[x]['re'].search(make_sgr(int(code)))
-            ]
-            colors.append({'code': make_sgr(code), 'types': types})
+            for name in RESET_TYPES:
+                if RESET_TYPES[name]['re'].search(make_sgr(int(code))):
+                    colors.append({'code': make_sgr(code), 'type': name})
 
     return colors
 
@@ -277,7 +273,7 @@ def highlight(config, data):
                 updated_resets.append(name)
         else:
             for name in left:
-                if name in insert['types']:
+                if name == insert['type']:
                     config['resets'][name] = insert['code']
                     updated_resets.append(name)
 
@@ -398,7 +394,8 @@ def process_inserts(inserts, existing, config):
         """Return the first color before the requested position and of the color
         type, or None."""
         for color in reversed(sorted(colors, key=lambda x: x['position'])):
-            if color['position'] < position and color_type in color['types']:
+            if color['position'] < position and (color_type == color['type'] or
+                                                 color.get('complete_reset')):
                 return color
         return None
 
@@ -412,7 +409,7 @@ def process_inserts(inserts, existing, config):
             finals.append({
                 'position': insert['start'],
                 'code': color['code'],
-                'types': [color['type']]
+                'type': color['type']
             })
 
             if not last_color:  # No last color; use current type reset
@@ -433,7 +430,7 @@ def process_inserts(inserts, existing, config):
                 0, {
                     'position': insert['end'],
                     'code': code,
-                    'types': [color['type']],
+                    'type': color['type'],
                     'complete_reset': complete_reset
                 })
 
