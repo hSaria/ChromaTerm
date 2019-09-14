@@ -64,9 +64,10 @@ def test_decode_sgr_styles_underline():
 
 
 def test_decode_sgr_complete_reset():
-    """Complete reset matches all known types."""
-    assert chromaterm.decode_sgr('\033[0m')[0]['type'] is None
-    assert chromaterm.decode_sgr('\033[m')[0]['type'] is None
+    """Complete reset detection."""
+    assert chromaterm.decode_sgr('\033[00m')[0]['type'] is 'complete_reset'
+    assert chromaterm.decode_sgr('\033[0m')[0]['type'] is 'complete_reset'
+    assert chromaterm.decode_sgr('\033[m')[0]['type'] is 'complete_reset'
 
 
 def test_decode_sgr_malformed():
@@ -696,7 +697,7 @@ def test_highlight_complete_reset_defaulting_type_resets():
     default = chromaterm.RESET_TYPES['fg']['default']
 
     # Feed a color to update the type's reset
-    assert chromaterm.highlight(config, '\033[33mHello there, World')
+    assert chromaterm.highlight(config, '\033[33mHello there, \033[43mWorld')
     assert repr(config['resets']['fg']) == repr('\033[33m')
 
     # Feed the complete reset to send back to default
