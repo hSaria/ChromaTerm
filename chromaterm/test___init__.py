@@ -694,14 +694,15 @@ def test_highlight_optional_multi_group():
     config_data = '''rules:
     - regex: Hello (World)! It's (me)
       color:
+        0: bold
         1: f#f7e08b
         2: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
     data = 'Hello World! It\'s me'
     expected = [
-        'Hello ', '\033[38;5;229m', 'World', '\033[39m', '! It\'s ',
-        '\033[38;5;153m', 'me', '\033[39m'
+        '\033[1m', 'Hello ', '\033[38;5;229m', 'World', '\033[39m', '! It\'s ',
+        '\033[38;5;153m', 'me', '\033[39m', '\033[21m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
