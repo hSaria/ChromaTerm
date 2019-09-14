@@ -491,18 +491,16 @@ def strip_existing_colors(data):
     existing = []
 
     while True:
-        # Get first match
-        match = SGR_RE.search(data)
+        match = SGR_RE.search(data)  # Get the first match
 
-        if not match:
+        if not match:  # Stop if there aren't any SGR's in the data
             break
 
-        # Extract the colors
-        for color in decode_sgr(match.group()):
+        for color in decode_sgr(match.group()):  # Extract the colors
             color['position'] = match.start()
             existing.append(color)
 
-        # Remove match from data; next match will start in the clean data
+        # Remove match from data; next match's start is in the clean data
         data = data[:match.start()] + data[match.end():]
 
     return existing, data
