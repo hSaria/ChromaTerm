@@ -247,21 +247,14 @@ def highlight(config, data):
 
     # Process all of the inserts, returning the final list, including existing
     inserts = process_inserts(inserts, existing, config)
+    updated_resets = []
 
     for insert in inserts:  # Insert the colors into the data
         index = insert['position']
         data = data[:index] + insert['code'] + data[index:]
 
-    updated_resets = []
-
-    # Update the resets according to the last reset of each type
-    for insert in inserts:
-        left = [x for x in config['resets'] if x not in updated_resets]
-
-        if not left:  # All resets updated
-            break
-
-        for name in left:
+        # Update the resets according to the last reset of each type
+        for name in [x for x in config['resets'] if x not in updated_resets]:
             if insert['type'] == 'complete_reset':
                 # Set to type's default reset on a complete reset
                 config['resets'][name] = RESET_TYPES[name]['default']
@@ -381,8 +374,8 @@ def process_buffer(config, buffer, more):
 
 def process_inserts(inserts, existing, config):
     """Process a list of rule inserts, removing any unnecessary colors, and
-    returning a list of colors (dict containing position and code). The list of
-    existing colors is used for recovery of colliding colors."""
+    returning am iterator of colors. The list of existing colors is used for
+    recovery of colliding colors. Existing colors are included in the iterator."""
     def get_last_color(colors, position, color_type):
         """Return the first color before the requested position and of the color
         type, or None."""
@@ -432,7 +425,7 @@ def process_inserts(inserts, existing, config):
             })
 
     # Sort from end to start (index magic). Must reverse after sorting, not during
-    return list(reversed(sorted(finals, key=lambda x: x['position'])))
+    return reversed(sorted(finals, key=lambda x: x['position']))
 
 
 def read_file(location):
