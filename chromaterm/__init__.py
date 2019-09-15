@@ -88,8 +88,8 @@ def config_init(args=None):
                         help='Reload the config of all CT instances')
     parser.add_argument('--rgb',
                         action='store_true',
-                        help='Use RGB colors (default: attempt detection, '
-                        'fall-back to xterm-256)')
+                        help='Use RGB colors (default: detect support, '
+                        'fallback to xterm-256)')
 
     args = parser.parse_args(args)
 
@@ -238,7 +238,7 @@ def highlight(config, data):
     if not data:  # Empty data, don't bother doing anything
         return data
 
-    existing, data = strip_existing_colors(data)
+    existing, data = strip_colors(data)
 
     inserts = []  # The list of colors and their positions (inserts)
 
@@ -278,12 +278,10 @@ def parse_config(data, config=None, rgb=False):
         return config
 
     config['rules'] = []  # Reset the rules list
+    rules = load.get('rules', []) if isinstance(load, dict) else None
 
     # Parse the rules
-    rules = load.get('rules', []) if isinstance(load, dict) else None
-    rules = rules if isinstance(rules, list) else []
-
-    for rule in rules:
+    for rule in rules if isinstance(rules, list) else []:
         parsed_rule = parse_rule(rule, rgb=rgb)
         if isinstance(parsed_rule, dict):
             config['rules'].append(parsed_rule)
@@ -475,10 +473,10 @@ def split_buffer(buffer):
     return [[x, y] for x, y in zip(splits[0::2], splits[1::2])]
 
 
-def strip_existing_colors(data):
-    """Remove the existing colors from the data, returning a list of existing
-    colors and the clean data. The color positions are in the "clean" data."""
-    existing = []
+def strip_colors(data):
+    """Remove the colors from the data, returning a list of colors as well as
+    the clean data. The color positions are relative to the "clean" data."""
+    colors = []
 
     while True:
         match = SGR_RE.search(data)  # Get the first match
@@ -486,14 +484,14 @@ def strip_existing_colors(data):
         if not match:  # Stop if there aren't any SGR's in the data
             break
 
-        for color in decode_sgr(match.group()):  # Extract the colors
+        for color in decode_sgr(match.group()):  # Split compound colors
             color['position'] = match.start()
-            existing.append(color)
+            colors.append(color)
 
         # Remove match from data; next match's start is in the clean data
         data = data[:match.start()] + data[match.end():]
 
-    return existing, data
+    return colors, data
 
 
 def main(config, max_wait=None):
