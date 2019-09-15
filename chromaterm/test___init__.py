@@ -1056,7 +1056,7 @@ def test_read_ready_input(monkeypatch):
 
 
 def test_read_ready_timeout_empty(monkeypatch):
-    """Wait for 1 second with no input."""
+    """Wait with no input."""
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s_sock.bind(TEMP_SOCKET + '2')
@@ -1068,10 +1068,10 @@ def test_read_ready_timeout_empty(monkeypatch):
         monkeypatch.setattr('sys.stdin', c_sock)
 
         before = time.time()
-        assert not chromaterm.read_ready(1)
+        assert not chromaterm.read_ready(0.5)
 
         after = time.time()
-        assert after - before >= 1
+        assert after - before >= 0.5
     finally:
         s_conn.close()
         c_sock.close()
@@ -1093,10 +1093,10 @@ def test_read_ready_timeout_input(monkeypatch):
 
         s_conn.sendall(b'Hello world')
         before = time.time()
-        assert chromaterm.read_ready(1)
+        assert chromaterm.read_ready(0.5)
 
         after = time.time()
-        assert after - before < 1
+        assert after - before < 0.5
     finally:
         s_conn.close()
         c_sock.close()
