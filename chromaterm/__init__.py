@@ -446,7 +446,7 @@ def read_file(location):
 
 def read_ready(timeout=None):
     """Return True if sys.stdin has data or is closed. If `timeout` is None,
-    block until the there's daata. If `timeout` is specified, the function will
+    block until there's data. If `timeout` is specified, the function will
     return False if expired or True as soon as the condition is met."""
     return sys.stdin in select.select([sys.stdin], [], [], timeout)[0]
 
