@@ -588,7 +588,7 @@ def test_highlight_existing_complete_reset():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
-def test_highlight_existing_color_complete_reset_same_type():
+def test_highlight_existing_complete_reset_same_type():
     """Highlight with an existing color and complete reset in the data. The
     color is before the reset. The first rule's match covers both. The second
     rule's match covers the reset only. The rules are of the same type."""
@@ -610,7 +610,7 @@ def test_highlight_existing_color_complete_reset_same_type():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
-def test_highlight_existing_color_complete_reset_different_type():
+def test_highlight_existing_complete_reset_different_type():
     """Highlight with an existing color and complete reset in the data. The
     color is before the reset. The first rule's match covers both. The second
     rule's match covers the reset only. The rules are of different types."""
@@ -635,16 +635,15 @@ def test_highlight_existing_color_complete_reset_different_type():
 def test_highlight_existing_compound():
     """Highlight with an existing compound color (multiple SGR's) in the data."""
     config_data = '''rules:
-    - description: first
-      regex: World|me
+    - regex: World|me
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = '\033[33;1mHello World\033[35;5m It\'s \033[32;4mme'
+    data = '\033[1;38;5;123;38;2;1;1;1;4mHello World\033[35;5m It\'s \033[32;24mme'
     expected = [
-        '\033[33m\033[1m', 'Hello ', '\033[38;5;153m', 'World', '\033[33m',
-        '\033[35m', '\033[5m', ' It\'s ', '\033[32m', '\033[4m',
-        '\033[38;5;153m', 'me', '\033[32m'
+        '\033[1m\033[38;5;123m\033[38;2;1;1;1m\033[4m', 'Hello ',
+        '\033[38;5;153m', 'World', '\033[38;2;1;1;1m', '\033[35m\033[5m',
+        ' It\'s ', '\033[32m\033[24m', '\033[38;5;153m', 'me', '\033[32m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))

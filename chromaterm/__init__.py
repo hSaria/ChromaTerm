@@ -140,10 +140,10 @@ def decode_sgr(source_code):
 
             if len(codes) > index + 2 and codes[index + 1] == '5':  # xterm-256
                 skip = 2
-                code = ';'.join([str(codes[index + x] for x in range(3))])
+                code = ';'.join([str(codes[index + x]) for x in range(3)])
             elif len(codes) > index + 4 and codes[index + 1] == '2':  # RGB
                 skip = 4
-                code = ';'.join([str(codes[index + x] for x in range(5))])
+                code = ';'.join([str(codes[index + x]) for x in range(5)])
             else:  # Does not conform to format; do not touch code
                 return [{'code': source_code, 'type': None}]
 
