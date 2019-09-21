@@ -21,58 +21,101 @@ TEMP_SOCKET = '.test_chromaterm.socket'
 
 def test_decode_sgr_bg():
     """Background colors and reset are being detected."""
-    assert chromaterm.decode_sgr('\033[48;5;123m')[0]['type'] == 'bg'
-    assert chromaterm.decode_sgr('\033[48;2;1;1;1m')[0]['type'] == 'bg'
-    assert chromaterm.decode_sgr('\033[49m')[0]['type'] == 'bg'
+    for code in ['\033[48;5;123m', '\033[48;2;1;1;1m', '\033[49m']:
+        colors = chromaterm.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color in colors:
+            assert color['type'] == 'bg'
+            assert color['code'] == code
 
 
 def test_decode_sgr_fg():
     """Foreground colors and reset are being detected."""
-    assert chromaterm.decode_sgr('\033[38;5;123m')[0]['type'] == 'fg'
-    assert chromaterm.decode_sgr('\033[38;2;1;1;1m')[0]['type'] == 'fg'
-    assert chromaterm.decode_sgr('\033[39m')[0]['type'] == 'fg'
+    for code in ['\033[38;5;123m', '\033[38;2;1;1;1m', '\033[39m']:
+        colors = chromaterm.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color in colors:
+            assert color['type'] == 'fg'
+            assert color['code'] == code
 
 
 def test_decode_sgr_styles_blink():
     """Blink and its reset are being detected."""
-    assert chromaterm.decode_sgr('\033[5m')[0]['type'] == 'blink'
-    assert chromaterm.decode_sgr('\033[25m')[0]['type'] == 'blink'
+    for code in ['\033[5m', '\033[25m']:
+        colors = chromaterm.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color in colors:
+            assert color['type'] == 'blink'
+            assert color['code'] == code
 
 
 def test_decode_sgr_styles_bold():
     """Bold and its reset are being detected."""
-    assert chromaterm.decode_sgr('\033[1m')[0]['type'] == 'bold'
-    assert chromaterm.decode_sgr('\033[21m')[0]['type'] == 'bold'
+    for code in ['\033[1m', '\033[21m']:
+        colors = chromaterm.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color in colors:
+            assert color['type'] == 'bold'
+            assert color['code'] == code
 
 
 def test_decode_sgr_styles_italic():
     """Italic and its reset are being detected."""
-    assert chromaterm.decode_sgr('\033[3m')[0]['type'] == 'italic'
-    assert chromaterm.decode_sgr('\033[23m')[0]['type'] == 'italic'
+    for code in ['\033[3m', '\033[23m']:
+        colors = chromaterm.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color in colors:
+            assert color['type'] == 'italic'
+            assert color['code'] == code
 
 
 def test_decode_sgr_styles_strike():
     """Strike and its reset are being detected."""
-    assert chromaterm.decode_sgr('\033[9m')[0]['type'] == 'strike'
-    assert chromaterm.decode_sgr('\033[29m')[0]['type'] == 'strike'
+    for code in ['\033[9m', '\033[29m']:
+        colors = chromaterm.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color in colors:
+            assert color['type'] == 'strike'
+            assert color['code'] == code
 
 
 def test_decode_sgr_styles_underline():
     """Underline and its reset are being detected."""
-    assert chromaterm.decode_sgr('\033[4m')[0]['type'] == 'underline'
-    assert chromaterm.decode_sgr('\033[24m')[0]['type'] == 'underline'
+    for code in ['\033[4m', '\033[24m']:
+        colors = chromaterm.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color in colors:
+            assert color['type'] == 'underline'
+            assert color['code'] == code
 
 
 def test_decode_sgr_complete_reset():
     """Complete reset detection."""
-    assert chromaterm.decode_sgr('\033[00m')[0]['type'] == 'complete_reset'
-    assert chromaterm.decode_sgr('\033[0m')[0]['type'] == 'complete_reset'
-    assert chromaterm.decode_sgr('\033[m')[0]['type'] == 'complete_reset'
+    for code in ['\033[00m', '\033[0m', '\033[m']:
+        colors = chromaterm.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color in colors:
+            assert color['type'] == 'complete_reset'
+            assert color['code'] == code
 
 
 def test_decode_sgr_malformed():
-    """A malformed color."""
-    assert chromaterm.decode_sgr('\033[38;5m')[0]['type'] is None
+    """Malformed colors."""
+    for code in ['\033[38;5m', '\033[38;2;1;1m', '\033[38;5;123;38;2;1;1m']:
+        colors = chromaterm.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color in colors:
+            assert color['type'] is None
+            assert color['code'] == code
 
 
 def test_decode_sgr_split_compound():
