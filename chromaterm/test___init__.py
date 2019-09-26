@@ -1270,6 +1270,7 @@ def test_main_reload_processes():
     for _ in range(3):  # Spawn processes
         subprocess.Popen("sleep 1 | ./ct", shell=True)
 
+    # pylint: disable=subprocess-run-check
     result = subprocess.run(['./ct', '--reload'], stderr=subprocess.PIPE)
     assert result.stderr == b'Processes reloaded: 3\n'
 
@@ -1277,7 +1278,7 @@ def test_main_reload_processes():
 def test_main_buffer_close_time():
     """Confirm that the program exists as soon as stdin closes."""
     before = time.time()
-    subprocess.run("echo hi | ./ct", shell=True)
+    subprocess.run("echo hi | ./ct", check=True, shell=True)
     after = time.time()
 
     assert after - before < 1

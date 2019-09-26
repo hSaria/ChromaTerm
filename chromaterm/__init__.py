@@ -94,6 +94,7 @@ def config_init(args=None):
     args = parser.parse_args(args)
 
     if args.reload:
+        # pylint: disable=import-outside-toplevel
         import psutil  # Imported here to reduce normal startup delay
         count = 0
 
@@ -165,7 +166,7 @@ def get_color_code(color, rgb=False):
     """Return the ANSI codes, one for each color, to be used when highlighting
     with `color` or None if the `color` is invalid."""
     color = color.lower().strip()
-    words = '|'.join([x for x in STYLES])
+    words = '|'.join(STYLES)
     color_re = r'(?i)^(((b|f)#([0-9a-fA-F]{6})|' + words + r')(\s+|$))+$'
 
     if not re.search(color_re, color):
