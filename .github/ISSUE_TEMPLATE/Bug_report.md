@@ -13,7 +13,7 @@ about: Help improve ChromaTerm by reporting problems
 ## Configuration File
 If you know which highlight rule is causing the issue, put it here. If not, put the contents of `~/.chromaterm.yml`.
 
-```
+```yaml
 regex: hello world
 color: f#123abc
 ```
