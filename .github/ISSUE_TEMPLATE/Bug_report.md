@@ -1,20 +1,19 @@
 ---
-name: Bug report
-about: Create a report to help improve ChromaTerm
+name: Bug
+about: Help improve ChromaTerm by reporting problems
 ---
 
 ## Description
 [e.g. I see dead people]
 
-**Environment**
-
+## Environment
 -   OS: [e.g. macOS 10.14.5]
--   ChromaTerm (`pip3 show chromaterm`): [e.g. 0.4.0]
+-   ChromaTerm: [e.g. 0.4.0 (`pip3 show chromaterm`)]
 
-**Configuration File**
+## Configuration File
+If you know which highlight rule in `~/.chromaterm.yml` is causing the issue, put it here. If not, put the whole file in.
 
-If you know which highlight rule is causing the issue, put it here. Otherwise, attach `~/.chromatermrc`.
-
-    regex: hello world
-    color: green
-    priority: 1000
+```
+regex: hello world
+color: f#123abc
+```
