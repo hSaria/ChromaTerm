@@ -162,28 +162,26 @@ def eprint(*args, **kwargs):
     print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
 
 
-def get_color_code(color, rgb=False):
+def get_color_codes(color_str, rgb=False):
     """Return the ANSI codes, one for each color, to be used when highlighting
-    with `color` or None if the `color` is invalid."""
-    color = color.lower().strip()
-    words = '|'.join(STYLES)
-    color_re = r'(?i)^(((b|f)#([0-9a-fA-F]{6})|' + words + r')(\s+|$))+$'
+    with `color_str` or None if the `color_str` is invalid."""
+    color_str = color_str.lower().strip()
+    color_re = r'^(((b|f)#[0-9a-f]{6}|' + '|'.join(STYLES) + r')(\s+|$))+$'
 
-    if not re.search(color_re, color):
+    if not re.search(color_re, color_str):
         return None
 
-    codes = []
+    colors = []
 
     # Colors
-    for match in re.findall(r'(b|f)#([0-9a-fA-F]{6})', color):
+    for match in re.findall(r'(b|f)#([0-9a-f]{6})', color_str):
         if match[0] == 'f':
             target, name = '\033[38;', 'fg'
         else:
             target, name = '\033[48;', 'bg'
 
-        for code in [x['code'] for x in codes]:
-            if target in code:  # Duplicate color target
-                return None
+        if name in [x['type'] for x in colors]:  # Duplicate color target
+            return None
 
         rgb_int = [int(match[1][i:i + 2], 16) for i in [0, 2, 4]]
 
@@ -194,16 +192,16 @@ def get_color_code(color, rgb=False):
             target += '5;'
             color_id = str(rgb_to_8bit(*rgb_int))
 
-        codes.append({'code': target + color_id + 'm', 'type': name})
+        colors.append({'code': target + color_id + 'm', 'type': name})
 
     # Styles
-    for name in re.findall(words, color.lower().strip()):
-        if STYLES[name] in [x['code'] for x in codes]:  # Duplicate style
+    for name in re.findall('|'.join(STYLES), color_str):
+        if name in [x['type'] for x in colors]:  # Duplicate style
             return None
 
-        codes.append({'code': STYLES[name], 'type': name})
+        colors.append({'code': STYLES[name], 'type': name})
 
-    return codes or None
+    return colors or None
 
 
 def get_default_config():
@@ -333,12 +331,12 @@ def parse_rule(rule, rgb=False):
         if group > regex_compiled.groups:
             return 'group {} not in the regex'.format(group)
 
-        color_code = get_color_code(color[group], rgb=rgb)
+        color_codes = get_color_codes(color[group], rgb=rgb)
 
-        if not color_code:
+        if not color_codes:
             return 'color "{}" not in the correct format'.format(color)
 
-        color[group] = color_code
+        color[group] = color_codes
 
     return {
         'description': description,

@@ -136,7 +136,7 @@ def test_eprint(capsys):
     assert msg in capsys.readouterr().err
 
 
-def test_get_color_code():
+def test_get_color_codes():
     """Random known-good color codes."""
     colors = [
         'b#0973d8', 'b#8b6dd3', 'b#2867c7', 'b#18923a', 'b#636836', 'b#a0da5e',
@@ -152,10 +152,10 @@ def test_get_color_code():
     ]
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_code(color)[0]['code'] == '\033[' + code
+        assert chromaterm.get_color_codes(color)[0]['code'] == '\033[' + code
 
 
-def test_get_color_code_grayscale():
+def test_get_color_codes_grayscale():
     """Random known-good grayscale codes."""
     colors = [
         'b#000000', 'b#5d5d5d', 'b#373737', 'b#c8c8c8', 'b#cecece', 'b#d7d7d7',
@@ -170,50 +170,57 @@ def test_get_color_code_grayscale():
     ]
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_code(color)[0]['code'] == '\033[' + code
+        assert chromaterm.get_color_codes(color)[0]['code'] == '\033[' + code
 
 
-def test_get_color_code_rgb():
+def test_get_color_codes_rgb():
     """RGB color-codes."""
     colors = ['b#010101', 'f#020202']
     codes = ['\033[48;2;1;1;1m', '\033[38;2;2;2;2m']
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_code(color, rgb=True)[0]['code'] == code
+        assert chromaterm.get_color_codes(color, rgb=True)[0]['code'] == code
 
 
-def test_get_color_code_style():
+def test_get_color_codes_style():
     """Terminal styles."""
     colors = ['blink', 'BOLD', 'iTaLiC', 'strike', 'underline']
     codes = ['5m', '1m', '3m', '9m', '4m']
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_code(color)[0]['code'] == '\033[' + code
+        assert chromaterm.get_color_codes(color)[0]['code'] == '\033[' + code
 
 
-def test_get_color_code_compound():
+def test_get_color_codes_compound():
     """All sorts of color codes."""
     colors = 'bold b#0973d8 underline f#45f2d7'
     # Styles are always added last
     codes = ['\033[48;5;33m', '\033[38;5;87m', '\033[1m', '\033[4m']
 
-    for color, code in zip(chromaterm.get_color_code(colors), codes):
+    for color, code in zip(chromaterm.get_color_codes(colors), codes):
         assert color['code'] == code
 
 
-def test_get_color_code_excessive_colors():
+def test_get_color_codes_mixed_case():
+    """Color is mixed case."""
+    colors = 'b#abcABC bOlD'
+
+    assert len(chromaterm.get_color_codes(colors)) == 2
+
+
+def test_get_color_codes_excessive_colors():
     """Too many colors (more than 2)."""
     colors = 'b#010101 f#020202 f#020202'
 
-    assert chromaterm.get_color_code(colors) is None
+    assert chromaterm.get_color_codes(colors) is None
 
 
-def test_get_color_code_duplicate_target():
+def test_get_color_codes_duplicate_target():
     """Duplicate targets (e.g. two foreground colors)."""
     colors = ['f#020202 f#030303', 'bold bold']
 
     for color in colors:
-        assert chromaterm.get_color_code(color) is None
+        assert chromaterm.get_color_codes(color) is None
 
 
 def test_highlight_enscapsulated_same_type():
