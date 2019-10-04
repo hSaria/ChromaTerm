@@ -4,7 +4,7 @@ on: [push]
 jobs:
   build:
     name: Python ${{ matrix.python }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.platform }}
     strategy:
       max-parallel: 8
       matrix:
