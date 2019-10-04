@@ -9,8 +9,9 @@ jobs:
       max-parallel: 8
       matrix:
         os:
-          - ubuntu-latest
-          - macos-latest
+          - ubuntu-16.04
+          - ubuntu-18.04
+          - macos-10.14
         python-version:
           - '3.5'
           - '3.6'
