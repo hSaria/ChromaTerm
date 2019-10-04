@@ -4,7 +4,7 @@ on:
   - pull_request
 jobs:
   build:
-    name: ${{ matrix.os }}/Python ${{ matrix.python-version }}
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -25,7 +25,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
-      run: pip3 install pylint pytest-cov
+      run: pip3 install pylint pytest-cov python-coveralls
 
     - name: Install ChromaTerm
       run: python3 setup.py install
@@ -40,6 +40,6 @@ jobs:
       run: pytest --cov chromaterm/ --cov-report term-missing
 
     - name: Coveralls
-      uses: coverallsapp/github-action@v1.0.1
-      with:
-        github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      run: coveralls -v
+      env:
+         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
