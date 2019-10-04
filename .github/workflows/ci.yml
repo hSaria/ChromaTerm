@@ -25,7 +25,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: pip3 install pylint pytest-cov python-coveralls
+        run: pip3 install pylint pytest-cov coveralls
 
       - name: Install ChromaTerm
         run: python3 setup.py install
@@ -43,9 +43,3 @@ jobs:
         run: coveralls
         env:
            COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-
-      - name: Testing
-        run: |
-          which coveralls
-          coverall -h
-          ls -l
