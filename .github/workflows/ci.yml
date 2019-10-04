@@ -1,6 +1,7 @@
 name: CI
-on: [push]
-
+on:
+  - push
+  - pull_request
 jobs:
   build:
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
