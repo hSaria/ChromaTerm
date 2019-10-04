@@ -9,8 +9,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-latest
           - macos-latest
+          - ubuntu-latest
         python-version:
           - '3.5'
           - '3.6'
