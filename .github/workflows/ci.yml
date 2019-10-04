@@ -40,4 +40,4 @@ jobs:
       run: pytest --cov chromaterm/ --cov-report term-missing
 
     - name: Coveralls
-      run: coveralls
+      run: coveralls ${{ secrets.COVERALLS_REPO_TOKEN }
