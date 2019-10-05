@@ -19,17 +19,6 @@ Here's an example using the rules in the default configuration file:
 pip3 install chromaterm
 ```
 
-> If you have the legacy version of ChromaTerm, be sure to uninstall it first.
->
-> ```shell
-> # If installed using HomeBrew
-> brew uninstall chromaterm
->
-> # If installed from source
-> git clone -b legacy git@github.com:hSaria/ChromaTerm.git
-> cd ChromaTerm/src/ && ./configure && make uninstall
-> ```
-
 # Usage
 
 By default, ChromaTerm reads `.chromaterm.yml` in your home directory. As an example, run the following:
