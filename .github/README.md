@@ -41,7 +41,7 @@ rules:
   regex: hello.+world
   color: f#ff0000
 
-- description: Color the foreground and background for "there" and make it bold. Paint "buddy" red.
+- description: Color the foreground and background for "there" and make it bold. Paint "buddy" red
   regex: Hey (there), (buddy)
   color:
     1: b#abcabc f#123123 bold
@@ -72,7 +72,7 @@ In addition to the foreground and background, the following styles are supported
 -   Strike
 -   Underline
 
-### Group-Specific
+### Group
 
 A color can be applied per RegEx group (see the 2nd example rule). Any group can be referenced as long as it's in the RegEx.
 
