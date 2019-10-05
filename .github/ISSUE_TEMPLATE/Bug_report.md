@@ -10,7 +10,7 @@ about: Help improve ChromaTerm by reporting problems
 -   OS: [macOS 10.14.5]
 -   ChromaTerm: [0.5.0 (`pip3 show chromaterm`)]
 
-## Configuration File
+## Configuration
 If you know which highlight rule is causing the issue, put it here. If not, put the contents of `~/.chromaterm.yml`.
 
 ```yaml
