@@ -67,10 +67,6 @@ READ_SIZE = 4096  # 4 KiB
 # on performance as the wait is cancelled if stdin becomes ready to be read from.
 WAIT_FOR_SPLIT = 0.0005
 
-# Print-once for deprecation messages
-# pylint: disable=global-statement
-DEPRECATE_MSG_GROUP = False
-
 
 def config_init(args=None):
     """Return the parsed configuration according to the program arguments. if
@@ -313,14 +309,7 @@ def parse_rule(rule, rgb=False):
         return 'color not found'
 
     if isinstance(color, str):
-        global DEPRECATE_MSG_GROUP
-        group = rule.get('group')
-
-        if not DEPRECATE_MSG_GROUP and group is not None:
-            DEPRECATE_MSG_GROUP = True
-            eprint('group key is deprecated; use color dictionary instead')
-
-        color = {group or 0: color}
+        color = {0: color}
     elif not isinstance(color, dict):
         return 'color not a string or dictionary'
 
