@@ -620,6 +620,23 @@ def test_highlight_existing_orphaned():
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
+def test_highlight_existing_intensity_orphaned():
+    """Highlight with an existing intensity (i.e. bold or faint) in the data."""
+    config_data = '''rules:
+    - description: first
+      regex: World
+      color: bold'''
+    config = chromaterm.parse_config(config_data)
+
+    data = ['\033[2mHello World', '\033[1mHello World']
+    expected = [['\033[2m', 'Hello ', '\033[1m', 'World', '\033[2m'],
+                ['\033[1m', 'Hello ', '\033[1m', 'World', '\033[1m']]
+
+    for line_data, line_expected in zip(data, expected):
+        assert repr(chromaterm.highlight(config, line_data)) == repr(
+            ''.join(line_expected))
+
+
 def test_highlight_existing_complete_reset():
     """Highlight with an existing complete reset in the data. It should be set
     to our color."""
