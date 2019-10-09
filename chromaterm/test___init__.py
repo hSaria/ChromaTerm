@@ -54,7 +54,7 @@ def test_decode_sgr_styles_blink():
 
 def test_decode_sgr_styles_bold():
     """Bold and its reset are being detected."""
-    for code in ['\033[1m', '\033[21m']:
+    for code in ['\033[1m', '\033[2m', '\033[22m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -751,7 +751,7 @@ def test_highlight_optional_multi_group():
     data = 'Hello World! It\'s me'
     expected = [
         '\033[1m', 'Hello ', '\033[38;5;229m', 'World', '\033[39m', '! It\'s ',
-        '\033[38;5;153m', 'me', '\033[39m', '\033[21m'
+        '\033[38;5;153m', 'me', '\033[39m', '\033[22m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))

@@ -34,8 +34,8 @@ RESET_TYPES = {
         're': re.compile(r'\033\[2?5m')
     },
     'bold': {
-        'default': '\033[21m',
-        're': re.compile(r'\033\[2?1m')
+        'default': '\033[22m',  # Normal intensity
+        're': re.compile(r'\033\[(?:1|2?2)m')  # Any intensity type
     },
     'italic': {
         'default': '\033[23m',
