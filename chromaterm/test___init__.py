@@ -1040,13 +1040,14 @@ def test_process_buffer_movement_sequences(capsys):
     config = chromaterm.parse_config(config_data)
 
     data_fmt = 'Hello{} World'
-    movements = [
+    c1s = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'S', 'T']
+    csis = [
         'A', '1A', '123A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'S', 'T',
         'H', '1;H', ';1H', '1;1H', 'f', '?1049h', '?1049l'
     ]
     splits = ['\r', '\n', '\r\n', '\v', '\f']
 
-    for prefix, items in zip(['\x1b[', ''], [movements, splits]):
+    for prefix, items in zip(['\x1b', '\x1b[', ''], [c1s, csis, splits]):
         for item in items:
             data = data_fmt.format(prefix + item)
             chromaterm.process_buffer(config, data, False)
