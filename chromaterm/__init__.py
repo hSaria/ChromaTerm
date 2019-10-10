@@ -51,9 +51,10 @@ RESET_TYPES = {
     }
 }
 
-# Sequences that change the screen's layout or cursor's position
-MOVEMENT_RE = re.compile(r'(\x1b\[[0-9]*[A-GJKST]|\x1b\[[0-9;]*[Hf]|\x1b\[\?'
-                         r'1049[hl]|\r|\r\n|\n|\v|\f)')
+# Sequences upon which ct will split during processing. This includes CSI and
+# C1 sets (ECMA-048), new lines, vertical spaces, and form feeds.
+SPLIT_SEQUENCES_RE = re.compile(r'(\x1b\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|'
+                                r'\x1b[\x40-\x5f]|\r|\r\n|\n|\v|\f)')
 
 # Select Graphic Rendition sequence (all types)
 SGR_RE = re.compile(r'\x1b\[[0-9;]*m')
@@ -449,10 +450,10 @@ def rgb_to_8bit(_r, _g, _b):
 
 
 def split_buffer(buffer):
-    """Split the buffer based on movement sequences, returning a list of lists
-    in the format of [data, separator]. `data` is the part that should be
-    highlighted while the sperator is printed unchanged."""
-    splits = MOVEMENT_RE.split(buffer)
+    """Split the buffer based on split sequences, returning a list of lists in
+    the format of [data, separator]. `data` should be highlighted while the
+    `sperator` is printed unchanged, after the `data`."""
+    splits = SPLIT_SEQUENCES_RE.split(buffer)
 
     # Append an empty separator in case of no splits or no separator at the end
     splits.append('')
