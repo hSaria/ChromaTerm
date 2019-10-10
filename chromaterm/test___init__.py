@@ -21,7 +21,7 @@ TEMP_SOCKET = '.test_chromaterm.socket'
 
 def test_decode_sgr_bg():
     """Background colors and reset are being detected."""
-    for code in ['\033[48;5;123m', '\033[48;2;1;1;1m', '\033[49m']:
+    for code in ['\x1b[48;5;123m', '\x1b[48;2;1;1;1m', '\x1b[49m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -32,7 +32,7 @@ def test_decode_sgr_bg():
 
 def test_decode_sgr_fg():
     """Foreground colors and reset are being detected."""
-    for code in ['\033[38;5;123m', '\033[38;2;1;1;1m', '\033[39m']:
+    for code in ['\x1b[38;5;123m', '\x1b[38;2;1;1;1m', '\x1b[39m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -43,7 +43,7 @@ def test_decode_sgr_fg():
 
 def test_decode_sgr_styles_blink():
     """Blink and its reset are being detected."""
-    for code in ['\033[5m', '\033[25m']:
+    for code in ['\x1b[5m', '\x1b[25m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -54,7 +54,7 @@ def test_decode_sgr_styles_blink():
 
 def test_decode_sgr_styles_bold():
     """Bold and its reset are being detected."""
-    for code in ['\033[1m', '\033[2m', '\033[22m']:
+    for code in ['\x1b[1m', '\x1b[2m', '\x1b[22m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -65,7 +65,7 @@ def test_decode_sgr_styles_bold():
 
 def test_decode_sgr_styles_italic():
     """Italic and its reset are being detected."""
-    for code in ['\033[3m', '\033[23m']:
+    for code in ['\x1b[3m', '\x1b[23m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -76,7 +76,7 @@ def test_decode_sgr_styles_italic():
 
 def test_decode_sgr_styles_strike():
     """Strike and its reset are being detected."""
-    for code in ['\033[9m', '\033[29m']:
+    for code in ['\x1b[9m', '\x1b[29m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -87,7 +87,7 @@ def test_decode_sgr_styles_strike():
 
 def test_decode_sgr_styles_underline():
     """Underline and its reset are being detected."""
-    for code in ['\033[4m', '\033[24m']:
+    for code in ['\x1b[4m', '\x1b[24m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -98,7 +98,7 @@ def test_decode_sgr_styles_underline():
 
 def test_decode_sgr_complete_reset():
     """Complete reset detection."""
-    for code in ['\033[00m', '\033[0m', '\033[m']:
+    for code in ['\x1b[00m', '\x1b[0m', '\x1b[m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -109,7 +109,7 @@ def test_decode_sgr_complete_reset():
 
 def test_decode_sgr_malformed():
     """Malformed colors."""
-    for code in ['\033[38;5m', '\033[38;2;1;1m', '\033[38;5;123;38;2;1;1m']:
+    for code in ['\x1b[38;5m', '\x1b[38;2;1;1m', '\x1b[38;5;123;38;2;1;1m']:
         colors = chromaterm.decode_sgr(code)
         assert len(colors) == 1
 
@@ -120,8 +120,8 @@ def test_decode_sgr_malformed():
 
 def test_decode_sgr_split_compound():
     """Split the a compound SGR into discrete SGR's."""
-    colors = chromaterm.decode_sgr('\033[1;33;40m')
-    codes = ['\033[1m', '\033[33m', '\033[40m']
+    colors = chromaterm.decode_sgr('\x1b[1;33;40m')
+    codes = ['\x1b[1m', '\x1b[33m', '\x1b[40m']
     types = ['bold', 'fg', 'bg']
 
     for color, code, name in zip(colors, codes, types):
@@ -152,7 +152,7 @@ def test_get_color_codes():
     ]
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_codes(color)[0]['code'] == '\033[' + code
+        assert chromaterm.get_color_codes(color)[0]['code'] == '\x1b[' + code
 
 
 def test_get_color_codes_grayscale():
@@ -170,13 +170,13 @@ def test_get_color_codes_grayscale():
     ]
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_codes(color)[0]['code'] == '\033[' + code
+        assert chromaterm.get_color_codes(color)[0]['code'] == '\x1b[' + code
 
 
 def test_get_color_codes_rgb():
     """RGB color-codes."""
     colors = ['b#010101', 'f#020202']
-    codes = ['\033[48;2;1;1;1m', '\033[38;2;2;2;2m']
+    codes = ['\x1b[48;2;1;1;1m', '\x1b[38;2;2;2;2m']
 
     for color, code in zip(colors, codes):
         assert chromaterm.get_color_codes(color, rgb=True)[0]['code'] == code
@@ -188,14 +188,14 @@ def test_get_color_codes_style():
     codes = ['5m', '1m', '3m', '9m', '4m']
 
     for color, code in zip(colors, codes):
-        assert chromaterm.get_color_codes(color)[0]['code'] == '\033[' + code
+        assert chromaterm.get_color_codes(color)[0]['code'] == '\x1b[' + code
 
 
 def test_get_color_codes_compound():
     """All sorts of color codes."""
     colors = 'bold b#0973d8 underline f#45f2d7'
     # Styles are always added last
-    codes = ['\033[48;5;33m', '\033[38;5;87m', '\033[1m', '\033[4m']
+    codes = ['\x1b[48;5;33m', '\x1b[38;5;87m', '\x1b[1m', '\x1b[4m']
 
     for color, code in zip(chromaterm.get_color_codes(colors), codes):
         assert color['code'] == code
@@ -239,8 +239,8 @@ def test_highlight_enscapsulated_same_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;153m', 'Hello ', '\033[38;5;229m', 'there',
-        '\033[38;5;153m', ', World', '\033[39m'
+        '\x1b[38;5;153m', 'Hello ', '\x1b[38;5;229m', 'there',
+        '\x1b[38;5;153m', ', World', '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -264,8 +264,8 @@ def test_highlight_enscapsulated_different_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'there', '\033[49m',
-        ', World', '\033[39m'
+        '\x1b[38;5;153m', 'Hello ', '\x1b[48;5;229m', 'there', '\x1b[49m',
+        ', World', '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -289,8 +289,8 @@ def test_highlight_partial_overlap_same_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;153m', 'Hello ', '\033[38;5;229m', 'there',
-        '\033[38;5;229m', ', World', '\033[39m'
+        '\x1b[38;5;153m', 'Hello ', '\x1b[38;5;229m', 'there',
+        '\x1b[38;5;229m', ', World', '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -314,8 +314,8 @@ def test_highlight_partial_overlap_different_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[48;5;153m', 'Hello ', '\033[38;5;229m', 'there', '\033[49m',
-        ', World', '\033[39m'
+        '\x1b[48;5;153m', 'Hello ', '\x1b[38;5;229m', 'there', '\x1b[49m',
+        ', World', '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -339,8 +339,8 @@ def test_highlight_full_overlap_same_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;153m', '\033[38;5;229m', 'Hello there, World',
-        '\033[38;5;153m', '\033[39m'
+        '\x1b[38;5;153m', '\x1b[38;5;229m', 'Hello there, World',
+        '\x1b[38;5;153m', '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -362,8 +362,8 @@ def test_highlight_full_overlap_different_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[48;5;153m', '\033[38;5;229m', 'Hello there, World', '\033[39m',
-        '\033[49m'
+        '\x1b[48;5;153m', '\x1b[38;5;229m', 'Hello there, World', '\x1b[39m',
+        '\x1b[49m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -386,8 +386,8 @@ def test_highlight_start_overlap_same_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;153m', '\033[38;5;229m', 'Hello there', '\033[38;5;229m',
-        ', World', '\033[39m'
+        '\x1b[38;5;153m', '\x1b[38;5;229m', 'Hello there', '\x1b[38;5;229m',
+        ', World', '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -413,8 +413,8 @@ def test_highlight_start_overlap_different_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[48;5;153m', '\033[38;5;229m', 'Hello there', '\033[49m',
-        ', World', '\033[39m'
+        '\x1b[48;5;153m', '\x1b[38;5;229m', 'Hello there', '\x1b[49m',
+        ', World', '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -440,13 +440,13 @@ def test_highlight_end_overlap_same_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;229m', 'Hello there, ', '\033[38;5;153m', 'World',
-        '\033[38;5;153m', '\033[39m'
+        '\x1b[38;5;229m', 'Hello there, ', '\x1b[38;5;153m', 'World',
+        '\x1b[38;5;153m', '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
     config['rules'] = list(reversed(config['rules']))
-    expected[4] = '\033[38;5;229m'  # Adjust mid-color shift
+    expected[4] = '\x1b[38;5;229m'  # Adjust mid-color shift
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
 
@@ -467,8 +467,8 @@ def test_highlight_end_overlap_different_type():
 
     data = 'Hello there, World'
     expected = [
-        '\033[38;5;229m', 'Hello there, ', '\033[48;5;153m', 'World',
-        '\033[39m', '\033[49m'
+        '\x1b[38;5;229m', 'Hello there, ', '\x1b[48;5;153m', 'World',
+        '\x1b[39m', '\x1b[49m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -494,8 +494,8 @@ def test_highlight_end_start_overlap_same_type():
 
     data = 'Hello World'
     expected = [
-        '\033[38;5;153m', 'Hello Wo', '\033[39m', '\033[38;5;229m', 'rld',
-        '\033[39m'
+        '\x1b[38;5;153m', 'Hello Wo', '\x1b[39m', '\x1b[38;5;229m', 'rld',
+        '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -520,8 +520,8 @@ def test_highlight_end_start_overlap_different_type():
 
     data = 'Hello World'
     expected = [
-        '\033[48;5;153m', 'Hello Wo', '\033[49m', '\033[38;5;229m', 'rld',
-        '\033[39m'
+        '\x1b[48;5;153m', 'Hello Wo', '\x1b[49m', '\x1b[38;5;229m', 'rld',
+        '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -537,8 +537,8 @@ def test_highlight_existing_start_same_type():
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = '\033[33mHello World'
-    expected = ['\033[33m', '\033[38;5;153m', 'Hello World', '\033[33m']
+    data = '\x1b[33mHello World'
+    expected = ['\x1b[33m', '\x1b[38;5;153m', 'Hello World', '\x1b[33m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
@@ -551,8 +551,8 @@ def test_highlight_existing_start_different_type():
       color: b#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = '\033[33mHello World'
-    expected = ['\033[33m', '\033[48;5;153m', 'Hello World', '\033[49m']
+    data = '\x1b[33mHello World'
+    expected = ['\x1b[33m', '\x1b[48;5;153m', 'Hello World', '\x1b[49m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
@@ -565,8 +565,8 @@ def test_highlight_existing_end_same_type():
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = 'Hello World\033[33m'
-    expected = ['\033[38;5;153m', 'Hello World', '\033[39m', '\033[33m']
+    data = 'Hello World\x1b[33m'
+    expected = ['\x1b[38;5;153m', 'Hello World', '\x1b[39m', '\x1b[33m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
@@ -579,8 +579,8 @@ def test_highlight_existing_end_different_type():
       color: b#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = 'Hello World\033[33m'
-    expected = ['\033[48;5;153m', 'Hello World', '\033[49m', '\033[33m']
+    data = 'Hello World\x1b[33m'
+    expected = ['\x1b[48;5;153m', 'Hello World', '\x1b[49m', '\x1b[33m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
@@ -593,9 +593,9 @@ def test_highlight_existing_multiline():
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = ['\033[33mHi there', 'Hello World']
-    expected = [['\033[33m', 'Hi there'],
-                ['\033[38;5;153m', 'Hello World', '\033[33m']]
+    data = ['\x1b[33mHi there', 'Hello World']
+    expected = [['\x1b[33m', 'Hi there'],
+                ['\x1b[38;5;153m', 'Hello World', '\x1b[33m']]
 
     for line_data, line_expected in zip(data, expected):
         assert repr(chromaterm.highlight(config, line_data)) == repr(
@@ -611,10 +611,10 @@ def test_highlight_existing_orphaned():
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = '\033[33mHello \033[34mthere\033[m, World'
+    data = '\x1b[33mHello \x1b[34mthere\x1b[m, World'
     expected = [
-        '\033[33m', 'Hello ', '\033[34m', 'there', '\033[m', ', ',
-        '\033[38;5;153m', 'World', '\033[m'
+        '\x1b[33m', 'Hello ', '\x1b[34m', 'there', '\x1b[m', ', ',
+        '\x1b[38;5;153m', 'World', '\x1b[m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -628,9 +628,9 @@ def test_highlight_existing_intensity_orphaned():
       color: bold'''
     config = chromaterm.parse_config(config_data)
 
-    data = ['\033[2mHello World', '\033[1mHello World']
-    expected = [['\033[2m', 'Hello ', '\033[1m', 'World', '\033[2m'],
-                ['\033[1m', 'Hello ', '\033[1m', 'World', '\033[1m']]
+    data = ['\x1b[2mHello World', '\x1b[1mHello World']
+    expected = [['\x1b[2m', 'Hello ', '\x1b[1m', 'World', '\x1b[2m'],
+                ['\x1b[1m', 'Hello ', '\x1b[1m', 'World', '\x1b[1m']]
 
     for line_data, line_expected in zip(data, expected):
         assert repr(chromaterm.highlight(config, line_data)) == repr(
@@ -646,10 +646,10 @@ def test_highlight_existing_complete_reset():
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = 'Hello\033[m there, World'
+    data = 'Hello\x1b[m there, World'
     expected = [
-        '\033[38;5;153m', 'Hello', '\033[38;5;153m', ' there, World',
-        '\033[39m'
+        '\x1b[38;5;153m', 'Hello', '\x1b[38;5;153m', ' there, World',
+        '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -668,10 +668,10 @@ def test_highlight_existing_complete_reset_same_type():
       color: f#fffaaa'''
     config = chromaterm.parse_config(config_data)
 
-    data = '\033[33mHello the\033[mre, World'
+    data = '\x1b[33mHello the\x1b[mre, World'
     expected = [
-        '\033[33m', '\033[38;5;153m', 'Hello ', '\033[38;5;229m', 'the',
-        '\033[38;5;153m', 're', '\033[38;5;229m', ', World', '\033[39m'
+        '\x1b[33m', '\x1b[38;5;153m', 'Hello ', '\x1b[38;5;229m', 'the',
+        '\x1b[38;5;153m', 're', '\x1b[38;5;229m', ', World', '\x1b[39m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -690,10 +690,10 @@ def test_highlight_existing_complete_reset_different_type():
       color: b#fffaaa'''
     config = chromaterm.parse_config(config_data)
 
-    data = '\033[44mHello the\033[mre, World'
+    data = '\x1b[44mHello the\x1b[mre, World'
     expected = [
-        '\033[44m', '\033[38;5;153m', 'Hello ', '\033[48;5;229m', 'the',
-        '\033[38;5;153m', 're', '\033[39m', ', World', '\033[44m'
+        '\x1b[44m', '\x1b[38;5;153m', 'Hello ', '\x1b[48;5;229m', 'the',
+        '\x1b[38;5;153m', 're', '\x1b[39m', ', World', '\x1b[44m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -706,11 +706,11 @@ def test_highlight_existing_compound():
       color: f#aaafff'''
     config = chromaterm.parse_config(config_data)
 
-    data = '\033[1;38;5;123;38;2;1;1;1;4mHello World\033[35;5m It\'s \033[32;24mme'
+    data = '\x1b[1;38;5;123;38;2;1;1;1;4mHello World\x1b[35;5m It\'s \x1b[32;24mme'
     expected = [
-        '\033[1m\033[38;5;123m\033[38;2;1;1;1m\033[4m', 'Hello ',
-        '\033[38;5;153m', 'World', '\033[38;2;1;1;1m', '\033[35m\033[5m',
-        ' It\'s ', '\033[32m\033[24m', '\033[38;5;153m', 'me', '\033[32m'
+        '\x1b[1m\x1b[38;5;123m\x1b[38;2;1;1;1m\x1b[4m', 'Hello ',
+        '\x1b[38;5;153m', 'World', '\x1b[38;2;1;1;1m', '\x1b[35m\x1b[5m',
+        ' It\'s ', '\x1b[32m\x1b[24m', '\x1b[38;5;153m', 'me', '\x1b[32m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -734,12 +734,12 @@ def test_highlight_partial_overlap_existing_multiline():
       color: f#0973d8'''
     config = chromaterm.parse_config(config_data)
 
-    data = ['\033[33mSup', 'Hello World! It\'s me']
-    expected = [['\033[33m', 'Sup'],
+    data = ['\x1b[33mSup', 'Hello World! It\'s me']
+    expected = [['\x1b[33m', 'Sup'],
                 [
-                    '\033[38;5;153m', 'Hello ', '\033[38;5;229m', 'World',
-                    '\033[38;5;229m', '! ', '\033[38;5;33m', 'It\'s',
-                    '\033[38;5;33m', ' me', '\033[33m'
+                    '\x1b[38;5;153m', 'Hello ', '\x1b[38;5;229m', 'World',
+                    '\x1b[38;5;229m', '! ', '\x1b[38;5;33m', 'It\'s',
+                    '\x1b[38;5;33m', ' me', '\x1b[33m'
                 ]]
 
     for line_data, line_expected in zip(data, expected):
@@ -767,8 +767,8 @@ def test_highlight_optional_multi_group():
 
     data = 'Hello World! It\'s me'
     expected = [
-        '\033[1m', 'Hello ', '\033[38;5;229m', 'World', '\033[39m', '! It\'s ',
-        '\033[38;5;153m', 'me', '\033[39m', '\033[22m'
+        '\x1b[1m', 'Hello ', '\x1b[38;5;229m', 'World', '\x1b[39m', '! It\'s ',
+        '\x1b[38;5;153m', 'me', '\x1b[39m', '\x1b[22m'
     ]
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
@@ -783,7 +783,7 @@ def test_highlight_optional_group_not_matched():
     config = chromaterm.parse_config(config_data)
 
     data = 'Hello there! Hello World'
-    expected = ['Hello there! Hello ', '\033[38;5;229m', 'World', '\033[39m']
+    expected = ['Hello there! Hello ', '\x1b[38;5;229m', 'World', '\x1b[39m']
 
     assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
 
@@ -797,13 +797,13 @@ def test_highlight_update_type_reset():
     config = chromaterm.parse_config(config_data)
 
     resets = {
-        'fg': '\033[33m',
-        'bg': '\033[45m',
-        'blink': '\033[5m',
-        'bold': '\033[1m',
-        'italic': '\033[3m',
-        'strike': '\033[9m',
-        'underline': '\033[4m'
+        'fg': '\x1b[33m',
+        'bg': '\x1b[45m',
+        'blink': '\x1b[5m',
+        'bold': '\x1b[1m',
+        'italic': '\x1b[3m',
+        'strike': '\x1b[9m',
+        'underline': '\x1b[4m'
     }
 
     # Feed colors
@@ -826,11 +826,11 @@ def test_highlight_complete_reset_defaulting_type_resets():
     default = chromaterm.RESET_TYPES['fg']['default']
 
     # Feed a color to update the type's reset
-    assert chromaterm.highlight(config, '\033[33mHello there, \033[43mWorld')
-    assert repr(config['resets']['fg']) == repr('\033[33m')
+    assert chromaterm.highlight(config, '\x1b[33mHello there, \x1b[43mWorld')
+    assert repr(config['resets']['fg']) == repr('\x1b[33m')
 
     # Feed the complete reset to send back to default
-    assert chromaterm.highlight(config, '\033[mHello there, World')
+    assert chromaterm.highlight(config, '\x1b[mHello there, World')
     assert repr(config['resets']['fg']) == repr(default)
 
 
@@ -976,7 +976,7 @@ def test_process_buffer_multiline(capsys):
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = '\ntest hello world test\n'
-    success = r'^test \033\[[34]8;5;[0-9]{1,3}mhello world\033\[49m test$'
+    success = r'^test \x1b\[[34]8;5;[0-9]{1,3}mhello world\x1b\[49m test$'
 
     chromaterm.process_buffer(config, data * 2, False)
     captured = capsys.readouterr()
@@ -992,7 +992,7 @@ def test_process_buffer_rule_simple(capsys):
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
-    success = r'^test \033\[48;5;[0-9]{1,3}mhello world\033\[49m test$'
+    success = r'^test \x1b\[48;5;[0-9]{1,3}mhello world\x1b\[49m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -1007,7 +1007,7 @@ def test_process_buffer_rule_group(capsys):
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'test hello world test'
-    success = r'^test hello \033\[48;5;[0-9]{1,3}mworld\033\[49m test$'
+    success = r'^test hello \x1b\[48;5;[0-9]{1,3}mworld\x1b\[49m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -1022,7 +1022,7 @@ def test_process_buffer_rule_multiple_colors(capsys):
 
     config['rules'].append(chromaterm.parse_rule(rule))
     data = 'hello world'
-    success = r'^(\033\[[34]8;5;[0-9]{1,3}m){2}hello(\033\[[34]9m){2} world$'
+    success = r'^(\x1b\[[34]8;5;[0-9]{1,3}m){2}hello(\x1b\[[34]9m){2} world$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -1046,7 +1046,7 @@ def test_process_buffer_movement_sequences(capsys):
     ]
     splits = ['\r', '\n', '\r\n', '\v', '\f']
 
-    for prefix, items in zip(['\033[', ''], [movements, splits]):
+    for prefix, items in zip(['\x1b[', ''], [movements, splits]):
         for item in items:
             data = data_fmt.format(prefix + item)
             chromaterm.process_buffer(config, data, False)
@@ -1260,8 +1260,8 @@ def test_main_reload_config(capsys, monkeypatch):
 
         s_conn.sendall(b'Hello world')
         expected = [
-            '\033[38;5;22m', 'Hello', '\033[39m', ' ', '\033[48;5;52m',
-            'world', '\033[49m'
+            '\x1b[38;5;22m', 'Hello', '\x1b[39m', ' ', '\x1b[48;5;52m',
+            'world', '\x1b[49m'
         ]
         time.sleep(0.1)  # Any processing delay
         assert repr(capsys.readouterr().out) == repr(''.join(expected))
@@ -1277,7 +1277,7 @@ def test_main_reload_config(capsys, monkeypatch):
         os.kill(os.getpid(), signal.SIGUSR1)
 
         s_conn.sendall(b'Hello world')
-        expected = ['\033[38;5;22m', 'Hello', '\033[39m', ' world']
+        expected = ['\x1b[38;5;22m', 'Hello', '\x1b[39m', ' world']
         time.sleep(0.1)  # Any processing delay
         assert repr(capsys.readouterr().out) == repr(''.join(expected))
     finally:

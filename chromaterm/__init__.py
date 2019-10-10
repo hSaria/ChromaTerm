@@ -12,51 +12,51 @@ import yaml
 
 # Named SGR codes
 STYLES = {
-    'blink': '\033[5m',
-    'bold': '\033[1m',
-    'italic': '\033[3m',
-    'strike': '\033[9m',
-    'underline': '\033[4m',
+    'blink': '\x1b[5m',
+    'bold': '\x1b[1m',
+    'italic': '\x1b[3m',
+    'strike': '\x1b[9m',
+    'underline': '\x1b[4m',
 }
 
 # Reset types, their default reset codes, and RegEx's for detecting color type
 RESET_TYPES = {
     'fg': {
-        'default': '\033[39m',
-        're': re.compile(r'\033\[3(?:[0-79]|8;[0-9;]+)m')
+        'default': '\x1b[39m',
+        're': re.compile(r'\x1b\[3(?:[0-79]|8;[0-9;]+)m')
     },
     'bg': {
-        'default': '\033[49m',
-        're': re.compile(r'\033\[4(?:[0-79]|8;[0-9;]+)m')
+        'default': '\x1b[49m',
+        're': re.compile(r'\x1b\[4(?:[0-79]|8;[0-9;]+)m')
     },
     'blink': {
-        'default': '\033[25m',
-        're': re.compile(r'\033\[2?5m')
+        'default': '\x1b[25m',
+        're': re.compile(r'\x1b\[2?5m')
     },
     'bold': {
-        'default': '\033[22m',  # Normal intensity
-        're': re.compile(r'\033\[(?:1|2?2)m')  # Any intensity type
+        'default': '\x1b[22m',  # Normal intensity
+        're': re.compile(r'\x1b\[(?:1|2?2)m')  # Any intensity type
     },
     'italic': {
-        'default': '\033[23m',
-        're': re.compile(r'\033\[2?3m')
+        'default': '\x1b[23m',
+        're': re.compile(r'\x1b\[2?3m')
     },
     'strike': {
-        'default': '\033[29m',
-        're': re.compile(r'\033\[2?9m')
+        'default': '\x1b[29m',
+        're': re.compile(r'\x1b\[2?9m')
     },
     'underline': {
-        'default': '\033[24m',
-        're': re.compile(r'\033\[2?4m')
+        'default': '\x1b[24m',
+        're': re.compile(r'\x1b\[2?4m')
     }
 }
 
 # Sequences that change the screen's layout or cursor's position
-MOVEMENT_RE = re.compile(r'(\033\[[0-9]*[A-GJKST]|\033\[[0-9;]*[Hf]|\033\[\?'
+MOVEMENT_RE = re.compile(r'(\x1b\[[0-9]*[A-GJKST]|\x1b\[[0-9;]*[Hf]|\x1b\[\?'
                          r'1049[hl]|\r|\r\n|\n|\v|\f)')
 
 # Select Graphic Rendition sequence (all types)
-SGR_RE = re.compile(r'\033\[[0-9;]*m')
+SGR_RE = re.compile(r'\x1b\[[0-9;]*m')
 
 # Maximum chuck size per read
 READ_SIZE = 4096  # 4 KiB
@@ -119,10 +119,10 @@ def config_init(args=None):
 def decode_sgr(source_code):
     """Decode an SGR, splitting it into discrete colors."""
     def make_sgr(code_id):
-        return '\033[' + str(code_id) + 'm'
+        return '\x1b[' + str(code_id) + 'm'
 
     colors = []
-    codes = source_code.lstrip('\033[').rstrip('m').split(';')
+    codes = source_code.lstrip('\x1b[').rstrip('m').split(';')
     skip = 0
 
     for index, code in enumerate(codes):
@@ -172,9 +172,9 @@ def get_color_codes(color_str, rgb=False):
     # Colors
     for match in re.findall(r'(b|f)#([0-9a-f]{6})', color_str):
         if match[0] == 'f':
-            target, name = '\033[38;', 'fg'
+            target, name = '\x1b[38;', 'fg'
         else:
-            target, name = '\033[48;', 'bg'
+            target, name = '\x1b[48;', 'bg'
 
         if name in [x['type'] for x in colors]:  # Duplicate color target
             return None
