@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Colorize your output using RegEx"""
+"""Colorize your output using RegEx."""
 
 import argparse
 import os
@@ -72,8 +72,7 @@ WAIT_FOR_SPLIT = 0.0005
 def config_init(args=None):
     """Return the parsed configuration according to the program arguments. if
     there is an error, a string with the message is returned."""
-    parser = argparse.ArgumentParser(description='Colorize your output using'
-                                     'RegEx.')
+    parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument('--config',
                         metavar='FILE',
