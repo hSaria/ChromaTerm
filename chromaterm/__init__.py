@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Colorize your output using RegEx."""
+# A couple of sections of the program are used _rarely_ and I don't want to
+# _always_ spend time importing them.
+# pylint: disable=import-outside-toplevel
 
 import argparse
 import os
@@ -90,7 +93,6 @@ def config_init(args=None):
     args = parser.parse_args(args)
 
     if args.reload:
-        # pylint: disable=import-outside-toplevel
         import psutil  # Imported here to reduce normal startup delay
         count = 0
 
