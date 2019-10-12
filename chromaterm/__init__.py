@@ -348,7 +348,7 @@ def process_buffer(config, buffer, more):
         print(highlight(config, split[0]) + split[1], end='')
 
     # Indicated more data to possibly come and stdin confirmed it
-    if more and read_ready(WAIT_FOR_SPLIT):
+    if more and read_ready(config.get('read_fd'), WAIT_FOR_SPLIT):
         # Return last split as the left-over data
         return splits[-1][0] + splits[-1][1]
 
@@ -430,11 +430,13 @@ def read_file(location):
         return file.read()
 
 
-def read_ready(timeout=None):
-    """Return True if sys.stdin has data or is closed. If `timeout` is None,
-    block until there's data. If `timeout` is specified, the function will
-    return False if expired or True as soon as the condition is met."""
-    return sys.stdin in select.select([sys.stdin], [], [], timeout)[0]
+def read_ready(read_fd, timeout=None):
+    """Return True if read_fd has data or has hit EOF. If `timeout` is None,
+    block until there's data/EOF. If `timeout` is specified, the function will
+    return False if expired or True as soon as there's data/EOF."""
+    if read_fd is None:
+        return False
+    return read_fd in select.select([read_fd], [], [], timeout)[0]
 
 
 def rgb_to_8bit(_r, _g, _b):
@@ -488,10 +490,12 @@ def main(config, max_wait=None):
     if isinstance(config, str):  # An error message
         return config
 
+    config['read_fd'] = config.get('read_fd', sys.stdin.fileno())
+
     buffer = ''
 
-    while read_ready(max_wait):
-        data = os.read(sys.stdin.fileno(), READ_SIZE)
+    while read_ready(config['read_fd'], max_wait):
+        data = os.read(config['read_fd'], READ_SIZE)
         buffer += data.decode()
 
         if not buffer:  # Entire buffer was processed empty and fd is closed

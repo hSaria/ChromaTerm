@@ -1101,7 +1101,7 @@ def test_read_file_no_permission(capsys):
     assert msg in capsys.readouterr().err
 
 
-def test_read_ready_input(monkeypatch):
+def test_read_ready_input():
     """Immediate ready when there is input buffered."""
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -1111,10 +1111,8 @@ def test_read_ready_input(monkeypatch):
         c_sock.connect(TEMP_SOCKET + '1')
         s_conn, _ = s_sock.accept()
 
-        monkeypatch.setattr('sys.stdin', c_sock)
-
         s_conn.sendall(b'Hello world')
-        assert chromaterm.read_ready()
+        assert chromaterm.read_ready(c_sock.fileno())
     finally:
         s_conn.close()
         c_sock.close()
@@ -1122,7 +1120,12 @@ def test_read_ready_input(monkeypatch):
         os.remove(TEMP_SOCKET + '1')
 
 
-def test_read_ready_timeout_empty(monkeypatch):
+def test_read_ready_no_read_fd():
+    """read_ready with None as read_fd must return False (no data to read)."""
+    assert not chromaterm.read_ready(None)
+
+
+def test_read_ready_timeout_empty():
     """Wait with no input."""
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -1132,10 +1135,8 @@ def test_read_ready_timeout_empty(monkeypatch):
         c_sock.connect(TEMP_SOCKET + '2')
         s_conn, _ = s_sock.accept()
 
-        monkeypatch.setattr('sys.stdin', c_sock)
-
         before = time.time()
-        assert not chromaterm.read_ready(0.5)
+        assert not chromaterm.read_ready(c_sock.fileno(), 0.5)
 
         after = time.time()
         assert after - before >= 0.5
@@ -1146,7 +1147,7 @@ def test_read_ready_timeout_empty(monkeypatch):
         os.remove(TEMP_SOCKET + '2')
 
 
-def test_read_ready_timeout_input(monkeypatch):
+def test_read_ready_timeout_input():
     """Immediate ready with timeout when there is input buffered."""
     try:
         s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -1156,11 +1157,9 @@ def test_read_ready_timeout_input(monkeypatch):
         c_sock.connect(TEMP_SOCKET + '3')
         s_conn, _ = s_sock.accept()
 
-        monkeypatch.setattr('sys.stdin', c_sock)
-
         s_conn.sendall(b'Hello world')
         before = time.time()
-        assert chromaterm.read_ready(0.5)
+        assert chromaterm.read_ready(c_sock.fileno(), 0.5)
 
         after = time.time()
         assert after - before < 0.5
