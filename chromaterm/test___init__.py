@@ -1294,8 +1294,8 @@ def test_main_reload_processes():
     for _ in range(3):  # Spawn processes
         subprocess.Popen("sleep 1 | ./ct", shell=True)
 
-    # pylint: disable=subprocess-run-check
-    result = subprocess.run(['./ct', '--reload'], stderr=subprocess.PIPE)
+    program = ['./ct', '--reload']
+    result = subprocess.run(program, check=False, stderr=subprocess.PIPE)
     assert result.stderr == b'Processes reloaded: 3\n'
 
 
