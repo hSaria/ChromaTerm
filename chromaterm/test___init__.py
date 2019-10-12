@@ -1082,13 +1082,6 @@ def test_read_file():
     assert chromaterm.read_file('$HOME/.chromaterm.yml') is not None
 
 
-def test_read_file_non_existent(capsys):
-    """Read a non-existent file."""
-    msg = 'Configuration file ' + TEMP_FILE + '1' + ' not found\n'
-    chromaterm.read_file(TEMP_FILE + '1')
-    assert msg in capsys.readouterr().err
-
-
 def test_read_file_no_permission(capsys):
     """Create a file with no permissions and attempt to read it. Delete the file
     once done with it."""
@@ -1098,6 +1091,13 @@ def test_read_file_no_permission(capsys):
     chromaterm.read_file(TEMP_FILE + '2')
     os.remove(TEMP_FILE + '2')
 
+    assert msg in capsys.readouterr().err
+
+
+def test_read_file_non_existent(capsys):
+    """Read a non-existent file."""
+    msg = 'Configuration file ' + TEMP_FILE + '1' + ' not found\n'
+    chromaterm.read_file(TEMP_FILE + '1')
     assert msg in capsys.readouterr().err
 
 
@@ -1232,6 +1232,15 @@ def test_main(capsys, monkeypatch):
         main_thread.join()
 
 
+def test_main_buffer_close_time():
+    """Confirm that the program exists as soon as stdin closes."""
+    before = time.time()
+    subprocess.run("echo hi | ./ct", check=True, shell=True)
+    after = time.time()
+
+    assert after - before < 1
+
+
 def test_main_reload_config(capsys, monkeypatch):
     """Reload the configuration while the program is running."""
     try:
@@ -1297,12 +1306,3 @@ def test_main_reload_processes():
     program = ['./ct', '--reload']
     result = subprocess.run(program, check=False, stderr=subprocess.PIPE)
     assert result.stderr == b'Processes reloaded: 3\n'
-
-
-def test_main_buffer_close_time():
-    """Confirm that the program exists as soon as stdin closes."""
-    before = time.time()
-    subprocess.run("echo hi | ./ct", check=True, shell=True)
-    after = time.time()
-
-    assert after - before < 1
