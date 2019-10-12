@@ -18,6 +18,13 @@ import chromaterm
 TEMP_FILE = '.test_chromaterm.yml'
 TEMP_SOCKET = '.test_chromaterm.socket'
 
+TTY_TEST_CODE = """import os, sys
+t_stdin = os.isatty(sys.stdin.fileno())
+t_stdout = os.isatty(sys.stdout.fileno())
+print('stdin={}, stdout={}'.format(t_stdin, t_stdout))"""
+TTY_TEST_PROGRAM = 'python3 -c "{}"'.format('; '.join(
+    TTY_TEST_CODE.splitlines()))
+
 
 def test_decode_sgr_bg():
     """Background colors and reset are being detected."""
@@ -1194,6 +1201,49 @@ def test_rgb_to_8bit():
     assert chromaterm.rgb_to_8bit(246, 240, 108) == 228
 
 
+def test_tty_test_code_no_pipe():
+    """Baseline the test code with no pipes on stdin or stdout."""
+    master, slave = os.openpty()
+    subprocess.run(TTY_TEST_PROGRAM,
+                   check=True,
+                   shell=True,
+                   stdin=master,
+                   stdout=slave)
+    assert 'stdin=True, stdout=True' in os.read(master, 1024).decode()
+
+
+def test_tty_test_code_in_pipe():
+    """Baseline the test code with a pipe on stdin."""
+    master, slave = os.openpty()
+    subprocess.run(TTY_TEST_PROGRAM,
+                   check=True,
+                   shell=True,
+                   stdin=subprocess.PIPE,
+                   stdout=slave)
+    assert 'stdin=False, stdout=True' in os.read(master, 1024).decode()
+
+
+def test_tty_test_code_out_pipe():
+    """Baseline the test code with a pipe on stdout."""
+    master, _ = os.openpty()
+    result = subprocess.run(TTY_TEST_PROGRAM,
+                            check=True,
+                            shell=True,
+                            stdin=master,
+                            stdout=subprocess.PIPE)
+    assert 'stdin=True, stdout=False' in result.stdout.decode()
+
+
+def test_tty_test_code_in_out_pipe():
+    """Baseline the test code with pipes on stdin and stdout."""
+    result = subprocess.run(TTY_TEST_PROGRAM,
+                            check=True,
+                            shell=True,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE)
+    assert 'stdin=False, stdout=False' in result.stdout.decode()
+
+
 def test_main(capsys, monkeypatch):
     """General stdin processing."""
     try:
@@ -1235,7 +1285,7 @@ def test_main(capsys, monkeypatch):
 def test_main_buffer_close_time():
     """Confirm that the program exists as soon as stdin closes."""
     before = time.time()
-    subprocess.run("echo hi | ./ct", check=True, shell=True)
+    subprocess.run('echo hi | ./ct', check=True, shell=True)
     after = time.time()
 
     assert after - before < 1
@@ -1301,8 +1351,58 @@ def test_main_reload_config(capsys, monkeypatch):
 def test_main_reload_processes():
     """Reload all other CT processes."""
     for _ in range(3):  # Spawn processes
-        subprocess.Popen("sleep 1 | ./ct", shell=True)
+        subprocess.Popen('sleep 1 | ./ct', shell=True)
 
     program = ['./ct', '--reload']
     result = subprocess.run(program, check=False, stderr=subprocess.PIPE)
     assert result.stderr == b'Processes reloaded: 3\n'
+
+
+def test_main_run_no_file_found():
+    """Have CT `--run` with an unavailable command."""
+    program = ['./ct', '--run', 'plz-no-work']
+    result = subprocess.run(program, check=False, stderr=subprocess.PIPE)
+    assert result.stderr == b'./ct: plz-no-work: command not found\n'
+
+
+def test_main_run_no_pipe():
+    """Have CT `--run` the tty test code with no pipes."""
+    master, slave = os.openpty()
+    subprocess.run('./ct --run ' + TTY_TEST_PROGRAM,
+                   check=True,
+                   shell=True,
+                   stdin=master,
+                   stdout=slave)
+    assert 'stdin=True, stdout=True' in os.read(master, 1024).decode()
+
+
+def test_main_run_in_pipe():
+    """Have CT `--run` the tty test code with a pipe on stdin."""
+    master, slave = os.openpty()
+    subprocess.run('./ct --run ' + TTY_TEST_PROGRAM,
+                   check=True,
+                   shell=True,
+                   stdin=subprocess.PIPE,
+                   stdout=slave)
+    assert 'stdin=False, stdout=True' in os.read(master, 1024).decode()
+
+
+def test_main_run_out_pipe():
+    """Have CT `--run` the tty test code with a pipe on stdout."""
+    master, _ = os.openpty()
+    result = subprocess.run('./ct --run ' + TTY_TEST_PROGRAM,
+                            check=True,
+                            shell=True,
+                            stdin=master,
+                            stdout=subprocess.PIPE)
+    assert 'stdin=True, stdout=True' in result.stdout.decode()
+
+
+def test_main_run_in_out_pipe():
+    """Have CT `--run` the tty test code with pipes on stdin and stdout."""
+    result = subprocess.run('./ct --run ' + TTY_TEST_PROGRAM,
+                            check=True,
+                            shell=True,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE)
+    assert 'stdin=False, stdout=True' in result.stdout.decode()

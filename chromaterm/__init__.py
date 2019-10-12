@@ -14,6 +14,9 @@ import sys
 
 import yaml
 
+# Default SIGINT signal handler
+DEFAULT_SIGINT_HANDLER = signal.getsignal(signal.SIGINT)
+
 # Named SGR codes
 STYLES = {
     'blink': '\x1b[5m',
@@ -76,7 +79,12 @@ WAIT_FOR_SPLIT = 0.0005
 def config_init(args=None):
     """Return the parsed configuration according to the program arguments. if
     there is an error, a string with the message is returned."""
-    parser = argparse.ArgumentParser(description=__doc__)
+    epilog = """ChromaTerm reads from standard input; just pipe data to it. As
+    this exposes the existance of a pipe to the piping process, ChromaTerm
+    can --run your program in order to hide the pipe. This is normally only
+    needed for programs that want to be on a controlling terminal, like `less`."""
+
+    parser = argparse.ArgumentParser(epilog=epilog)
 
     parser.add_argument('--config',
                         metavar='FILE',
@@ -90,6 +98,11 @@ def config_init(args=None):
                         action='store_true',
                         help='Use RGB colors (default: detect support, '
                         'fallback to xterm-256)')
+    parser.add_argument('--run',
+                        type=str,
+                        nargs=argparse.REMAINDER,
+                        help='run a program with anything after it used as '
+                        'arguments')
 
     args = parser.parse_args(args)
 
@@ -112,6 +125,9 @@ def config_init(args=None):
 
     def update_config_handler(_1, _2):
         parse_config(read_file(args.config) or '', config, rgb)
+
+    if args.run:
+        run_program(config, args.run)
 
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
     signal.signal(signal.SIGUSR1, update_config_handler)  # Reload handler
@@ -453,6 +469,61 @@ def rgb_to_8bit(_r, _g, _b):
     return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
 
 
+def run_program(config, program_args):
+    """Fork a program with its stdout set to use an os.opentty. The ct fork will
+    attach a handler for SIGUSR2 that will set config['close'] to True and write
+    b' ' to the tty_program (see handler for details). Once the program closes,
+    it will signal SIGUSR2 to ct then sys.exit."""
+    import fcntl
+    import termios
+    import shutil
+    import struct
+
+    # Create the tty file decriptors
+    tty_ct, tty_program = os.openpty()
+
+    # Update terminal size on the program's TTY (starts uninitialized)
+    window_size = shutil.get_terminal_size()
+    window_size = struct.pack('2H', window_size.lines, window_size.columns)
+    fcntl.ioctl(tty_program, termios.TIOCSWINSZ, window_size)
+
+    config['read_fd'] = tty_ct
+
+    # Store the details of the fork (PID's and FD's)
+    config['fork'] = {
+        'ct': {
+            'fd': tty_ct,
+            'pid': os.getpid()
+        },
+        'program': {
+            'fd': tty_program,
+            'pid': os.fork()
+        }
+    }
+
+    if config['fork']['program']['pid']:  # CT
+
+        def program_close_handler(_1, _2):
+            """Mark close in the config then, to get around an undefined
+            behavior, write something to tty_program such that ct (reading on
+            tty_ct) receives it and breaks out of select. The default SIGINT
+            handler is restored once this handler is called."""
+            config['close'] = True
+            signal.signal(signal.SIGINT, DEFAULT_SIGINT_HANDLER)
+            os.write(tty_program, b'\x00')
+
+        signal.signal(signal.SIGUSR2, program_close_handler)
+    else:  # Program
+        try:
+            import subprocess
+            subprocess.run(program_args, check=False, stdout=tty_program)
+        except FileNotFoundError:
+            eprint(program_args[0] + ': command not found')
+        finally:
+            os.kill(config['fork']['ct']['pid'], signal.SIGUSR2)
+        sys.exit()
+
+
 def split_buffer(buffer):
     """Split the buffer based on split sequences, returning a list of lists in
     the format of [data, separator]. `data` should be highlighted while the
@@ -500,6 +571,14 @@ def main(config, max_wait=None):
     while read_ready(config['read_fd'], max_wait):
         data = os.read(config['read_fd'], READ_SIZE)
         buffer += data.decode()
+
+        if config.get('close'):  # Close signaled; --run program ended
+            # Process leftovers minus the dummy byte used to get out of select.
+            buffer = process_buffer(config, buffer[:-1], False)
+
+            # Close the os.openpty fd's
+            os.close(config['fork']['ct']['fd'])
+            os.close(config['fork']['program']['fd'])
 
         if not buffer:  # Entire buffer was processed empty and fd hit EOF
             break
