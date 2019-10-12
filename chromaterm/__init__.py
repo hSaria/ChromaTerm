@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Colorize your output using RegEx."""
+
 # A couple of sections of the program are used _rarely_ and I don't want to
 # _always_ spend time importing them.
 # pylint: disable=import-outside-toplevel
@@ -68,7 +69,7 @@ READ_SIZE = 4096  # 4 KiB
 # CT cannot determine if it is processing input faster than the piping process
 # is outputting or if the input has finished. To work around this, CT will wait
 # a bit prior to assuming there's no more data in the buffer. There's no impact
-# on performance as the wait is cancelled if stdin becomes ready to be read from.
+# on performance as the wait is cancelled if read_fd becomes ready.
 WAIT_FOR_SPLIT = 0.0005
 
 
@@ -93,7 +94,7 @@ def config_init(args=None):
     args = parser.parse_args(args)
 
     if args.reload:
-        import psutil  # Imported here to reduce normal startup delay
+        import psutil
         count = 0
 
         for process in [x.as_dict() for x in psutil.process_iter()]:
@@ -349,7 +350,7 @@ def process_buffer(config, buffer, more):
     for split in splits[:-1]:  # Process all splits except for the last
         print(highlight(config, split[0]) + split[1], end='')
 
-    # Indicated more data to possibly come and stdin confirmed it
+    # Indicated more data to possibly come and read_fd confirmed it
     if more and read_ready(config.get('read_fd'), WAIT_FOR_SPLIT):
         # Return last split as the left-over data
         return splits[-1][0] + splits[-1][1]
@@ -487,7 +488,7 @@ def strip_colors(data):
 
 
 def main(config, max_wait=None):
-    """Main entry point that uses `config` from config_init to process stdin.
+    """Main entry point that uses `config` from config_init to process data.
     `max_wait` is the longest period to wait without input before returning."""
     if isinstance(config, str):  # An error message
         return config
@@ -500,7 +501,7 @@ def main(config, max_wait=None):
         data = os.read(config['read_fd'], READ_SIZE)
         buffer += data.decode()
 
-        if not buffer:  # Entire buffer was processed empty and fd is closed
+        if not buffer:  # Entire buffer was processed empty and fd hit EOF
             break
 
         # Process the buffer, updating it with any left-over data
