@@ -1307,12 +1307,16 @@ def test_main_reload_config(capsys):
 
 def test_main_reload_processes():
     """Reload all other CT processes."""
-    for _ in range(3):  # Spawn processes
-        subprocess.Popen('sleep 1 | ./ct', shell=True)
+    processes = [  # Spawn dummy ct processes
+        subprocess.Popen('sleep 1 | ./ct', shell=True) for _ in range(3)
+    ]
 
     program = ['./ct', '--reload']
     result = subprocess.run(program, check=False, stderr=subprocess.PIPE)
     assert result.stderr == b'Processes reloaded: 3\n'
+
+    for process in processes:
+        process.wait()
 
 
 def test_main_run_no_file_found():
