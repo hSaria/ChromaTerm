@@ -78,11 +78,16 @@ def config_init(args=None):
     there is an error, a string with the message is returned."""
     epilog = """ChromaTerm reads from standard input; just pipe data to it. As
     this exposes the existance of a pipe to the piping process, ChromaTerm
-    can --run your program in order to hide the pipe. This is normally only
+    can run your program in order to hide the pipe. This is normally only
     needed for programs that want to be on a controlling terminal, like `less`."""
 
     parser = argparse.ArgumentParser(epilog=epilog)
 
+    parser.add_argument('program',
+                        type=str,
+                        nargs=argparse.REMAINDER,
+                        help='run a program with anything after it used as '
+                        'arguments')
     parser.add_argument('--config',
                         metavar='FILE',
                         type=str,
@@ -95,11 +100,6 @@ def config_init(args=None):
                         action='store_true',
                         help='Use RGB colors (default: detect support, '
                         'fallback to xterm-256)')
-    parser.add_argument('--run',
-                        type=str,
-                        nargs=argparse.REMAINDER,
-                        help='run a program with anything after it used as '
-                        'arguments')
 
     args = parser.parse_args(args)
 
@@ -123,8 +123,8 @@ def config_init(args=None):
     def update_config_handler(_1, _2):
         parse_config(read_file(args.config) or '', config, rgb)
 
-    if args.run:
-        run_program(config, args.run)
+    if args.program:
+        run_program(config, args.program)
 
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
     signal.signal(signal.SIGUSR1, update_config_handler)  # Reload handler
