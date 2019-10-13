@@ -14,9 +14,6 @@ import sys
 
 import yaml
 
-# Default SIGINT signal handler
-DEFAULT_SIGINT_HANDLER = signal.getsignal(signal.SIGINT)
-
 # Named SGR codes
 STYLES = {
     'blink': '\x1b[5m',
@@ -367,7 +364,7 @@ def process_buffer(config, buffer, more):
         print(highlight(config, split[0]) + split[1], end='')
 
     # Indicated more data to possibly come and read_fd confirmed it
-    if more and read_ready(config.get('read_fd'), WAIT_FOR_SPLIT):
+    if more and read_ready(config.get('read_fds'), WAIT_FOR_SPLIT):
         # Return last split as the left-over data
         return splits[-1][0] + splits[-1][1]
 
@@ -449,13 +446,13 @@ def read_file(location):
         return file.read()
 
 
-def read_ready(read_fd, timeout=None):
-    """Return True if read_fd has data or has hit EOF. If `timeout` is None,
-    block until there's data/EOF. If `timeout` is specified, the function will
-    return False if expired or True as soon as there's data/EOF."""
-    if read_fd is None:
-        return False
-    return read_fd in select.select([read_fd], [], [], timeout)[0]
+def read_ready(read_fds, timeout=None):
+    """Return the list of fds that have  data or have hit EOF. If `timeout` is
+    None, block until data/EOF. If `timeout` is specified, assume not ready on
+    timeout (i.e. won't be added to the list)."""
+    if read_fds is None:
+        return []
+    return select.select(read_fds, [], [], timeout)[0]
 
 
 def rgb_to_8bit(_r, _g, _b):
@@ -470,57 +467,43 @@ def rgb_to_8bit(_r, _g, _b):
 
 
 def run_program(config, program_args):
-    """Fork a program with its stdout set to use an os.opentty. The ct fork will
-    attach a handler for SIGUSR2 that will set config['close'] to True and write
-    b' ' to the tty_program (see handler for details). Once the program closes,
-    it will signal SIGUSR2 to ct then sys.exit."""
+    """Fork a program with its stdout set to use an os.opentty. config['fork' is
+    updated with the tty and close pipes Once the program closes, it will write
+    a dummy byte to the close pipe."""
     import fcntl
     import termios
     import shutil
     import struct
 
-    # Create the tty file decriptors
-    tty_ct, tty_program = os.openpty()
+    # Create the tty and close_signal file decriptors
+    tty_r, tty_w = os.openpty()
+    close_r, close_w = os.pipe()
+
+    config['read_fds'] = [tty_r, close_r]
+    config['fork'] = {
+        'tty': {
+            'read': tty_r,
+            'write': tty_w
+        },
+        'close': {
+            'read': close_r,
+            'write': close_w
+        }
+    }
 
     # Update terminal size on the program's TTY (starts uninitialized)
     window_size = shutil.get_terminal_size()
     window_size = struct.pack('2H', window_size.lines, window_size.columns)
-    fcntl.ioctl(tty_program, termios.TIOCSWINSZ, window_size)
+    fcntl.ioctl(tty_w, termios.TIOCSWINSZ, window_size)
 
-    config['read_fd'] = tty_ct
-
-    # Store the details of the fork (PID's and FD's)
-    config['fork'] = {
-        'ct': {
-            'fd': tty_ct,
-            'pid': os.getpid()
-        },
-        'program': {
-            'fd': tty_program,
-            'pid': os.fork()
-        }
-    }
-
-    if config['fork']['program']['pid']:  # CT
-
-        def program_close_handler(_1, _2):
-            """Mark close in the config then, to get around an undefined
-            behavior, write something to tty_program such that ct (reading on
-            tty_ct) receives it and breaks out of select. The default SIGINT
-            handler is restored once this handler is called."""
-            config['close'] = True
-            signal.signal(signal.SIGINT, DEFAULT_SIGINT_HANDLER)
-            os.write(tty_program, b'\x00')
-
-        signal.signal(signal.SIGUSR2, program_close_handler)
-    else:  # Program
+    if os.fork() == 0:  # Program
         try:
             import subprocess
-            subprocess.run(program_args, check=False, stdout=tty_program)
+            subprocess.run(program_args, check=False, stdout=tty_w)
         except FileNotFoundError:
             eprint(program_args[0] + ': command not found')
         finally:
-            os.kill(config['fork']['ct']['pid'], signal.SIGUSR2)
+            os.write(close_w, b'\x00')
         sys.exit()
 
 
@@ -558,29 +541,27 @@ def strip_colors(data):
     return colors, data
 
 
-def main(config, max_wait=None):
+def main(config, max_wait=None, read_fd=None):
     """Main entry point that uses `config` from config_init to process data.
-    `max_wait` is the longest period to wait without input before returning."""
+    `max_wait` is the longest period to wait without input before returning.
+    read_fd will utilize stdin if not specified."""
     if isinstance(config, str):  # An error message
         return config
 
-    config['read_fd'] = config.get('read_fd', sys.stdin.fileno())
+    if read_fd is None:
+        read_fd = sys.stdin.fileno()
 
     buffer = ''
+    config['read_fds'] = config.get('read_fds', [read_fd])
 
-    while read_ready(config['read_fd'], max_wait):
-        data = os.read(config['read_fd'], READ_SIZE)
-        buffer += data.decode()
+    while True:
+        ready_fds = read_ready(config['read_fds'], max_wait)
 
-        if config.get('close'):  # Close signaled; --run program ended
-            # Process leftovers minus the dummy byte used to get out of select.
-            buffer = process_buffer(config, buffer[:-1], False)
+        if config['read_fds'][0] in ready_fds:  # Data FD
+            data = os.read(config['read_fds'][0], READ_SIZE)
+            buffer += data.decode()
 
-            # Close the os.openpty fd's
-            os.close(config['fork']['ct']['fd'])
-            os.close(config['fork']['program']['fd'])
-
-        if not buffer:  # Entire buffer was processed empty and fd hit EOF
+        if not buffer:  # Buffer was processed empty and data fd hit EOF
             break
 
         # Process the buffer, updating it with any left-over data

@@ -8,7 +8,6 @@
 import os
 import re
 import signal
-import socket
 import subprocess
 import time
 from threading import Thread
@@ -16,7 +15,6 @@ from threading import Thread
 import chromaterm
 
 TEMP_FILE = '.test_chromaterm.yml'
-TEMP_SOCKET = '.test_chromaterm.socket'
 
 TTY_TEST_CODE = """import os, sys
 t_stdin = os.isatty(sys.stdin.fileno())
@@ -1092,39 +1090,32 @@ def test_read_file():
 def test_read_file_no_permission(capsys):
     """Create a file with no permissions and attempt to read it. Delete the file
     once done with it."""
-    msg = 'Cannot read configuration file ' + TEMP_FILE + '2' + ' (permission)\n'
+    msg = 'Cannot read configuration file ' + TEMP_FILE + '1' + ' (permission)\n'
 
-    os.close(os.open(TEMP_FILE + '2', os.O_CREAT | os.O_WRONLY, 0o0000))
-    chromaterm.read_file(TEMP_FILE + '2')
-    os.remove(TEMP_FILE + '2')
+    os.close(os.open(TEMP_FILE + '1', os.O_CREAT | os.O_WRONLY, 0o0000))
+    chromaterm.read_file(TEMP_FILE + '1')
+    os.remove(TEMP_FILE + '1')
 
     assert msg in capsys.readouterr().err
 
 
 def test_read_file_non_existent(capsys):
     """Read a non-existent file."""
-    msg = 'Configuration file ' + TEMP_FILE + '1' + ' not found\n'
-    chromaterm.read_file(TEMP_FILE + '1')
+    msg = 'Configuration file ' + TEMP_FILE + '2' + ' not found\n'
+    chromaterm.read_file(TEMP_FILE + '2')
     assert msg in capsys.readouterr().err
 
 
 def test_read_ready_input():
     """Immediate ready when there is input buffered."""
     try:
-        s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET + '1')
-        s_sock.listen(2)
-        c_sock.connect(TEMP_SOCKET + '1')
-        s_conn, _ = s_sock.accept()
+        pipe_r, pipe_w = os.pipe()
 
-        s_conn.sendall(b'Hello world')
-        assert chromaterm.read_ready(c_sock.fileno())
+        os.write(pipe_w, b'Hello world')
+        assert chromaterm.read_ready([pipe_r])
     finally:
-        s_conn.close()
-        c_sock.close()
-        s_sock.close()
-        os.remove(TEMP_SOCKET + '1')
+        os.close(pipe_r)
+        os.close(pipe_w)
 
 
 def test_read_ready_no_read_fd():
@@ -1135,46 +1126,32 @@ def test_read_ready_no_read_fd():
 def test_read_ready_timeout_empty():
     """Wait with no input."""
     try:
-        s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET + '2')
-        s_sock.listen(2)
-        c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        c_sock.connect(TEMP_SOCKET + '2')
-        s_conn, _ = s_sock.accept()
+        pipe_r, pipe_w = os.pipe()
 
         before = time.time()
-        assert not chromaterm.read_ready(c_sock.fileno(), 0.5)
+        assert not chromaterm.read_ready([pipe_r], 0.5)
 
         after = time.time()
         assert after - before >= 0.5
     finally:
-        s_conn.close()
-        c_sock.close()
-        s_sock.close()
-        os.remove(TEMP_SOCKET + '2')
+        os.close(pipe_r)
+        os.close(pipe_w)
 
 
 def test_read_ready_timeout_input():
     """Immediate ready with timeout when there is input buffered."""
     try:
-        s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET + '3')
-        s_sock.listen(2)
-        c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        c_sock.connect(TEMP_SOCKET + '3')
-        s_conn, _ = s_sock.accept()
+        pipe_r, pipe_w = os.pipe()
 
-        s_conn.sendall(b'Hello world')
+        os.write(pipe_w, b'Hello world')
         before = time.time()
-        assert chromaterm.read_ready(c_sock.fileno(), 0.5)
+        assert chromaterm.read_ready([pipe_r], 0.5)
 
         after = time.time()
         assert after - before < 0.5
     finally:
-        s_conn.close()
-        c_sock.close()
-        s_sock.close()
-        os.remove(TEMP_SOCKET + '3')
+        os.close(pipe_r)
+        os.close(pipe_w)
 
 
 def test_rgb_to_8bit():
@@ -1244,41 +1221,31 @@ def test_tty_test_code_in_out_pipe():
     assert 'stdin=False, stdout=False' in result.stdout.decode()
 
 
-def test_main(capsys, monkeypatch):
+def test_main(capsys):
     """General stdin processing."""
     try:
+        pipe_r, pipe_w = os.pipe()
         config = chromaterm.config_init([])
-        main_thread = Thread(target=chromaterm.main, args=(config, 1))
-
-        s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET + '4')
-        s_sock.listen(2)
-        c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        c_sock.connect(TEMP_SOCKET + '4')
-        s_conn, _ = s_sock.accept()
-
-        monkeypatch.setattr('sys.stdin', c_sock)
+        main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
 
         main_thread.start()
-        time.sleep(0.2)  # Any start-up delay
+        time.sleep(0.1)  # Any start-up delay
         assert main_thread.is_alive()
 
-        s_conn.sendall(b'Hello world\n')
+        os.write(pipe_w, b'Hello world\n')
         time.sleep(0.1)  # Any processing delay
         assert capsys.readouterr().out == 'Hello world\n'
 
-        s_conn.sendall(b'Hey there')
+        os.write(pipe_w, b'Hey there')
         time.sleep(0.1 + chromaterm.WAIT_FOR_SPLIT)  # Include split wait
         assert capsys.readouterr().out == 'Hey there'
 
-        s_conn.sendall(b'x' * (chromaterm.READ_SIZE + 1))
+        os.write(pipe_w, b'x' * (chromaterm.READ_SIZE + 1))
         time.sleep(0.1 + chromaterm.WAIT_FOR_SPLIT)  # Include split wait
         assert capsys.readouterr().out == 'x' * (chromaterm.READ_SIZE + 1)
     finally:
-        s_conn.close()
-        c_sock.close()
-        s_sock.close()
-        os.remove(TEMP_SOCKET + '4')
+        os.close(pipe_r)
+        os.close(pipe_w)
         main_thread.join()
 
 
@@ -1291,7 +1258,7 @@ def test_main_buffer_close_time():
     assert after - before < 1
 
 
-def test_main_reload_config(capsys, monkeypatch):
+def test_main_reload_config(capsys):
     """Reload the configuration while the program is running."""
     try:
         with open(TEMP_FILE + '3', 'w') as file:
@@ -1301,23 +1268,15 @@ def test_main_reload_config(capsys, monkeypatch):
             - regex: world
               color: b#321321''')
 
+        pipe_r, pipe_w = os.pipe()
         config = chromaterm.config_init(['--config', TEMP_FILE + '3'])
-        main_thread = Thread(target=chromaterm.main, args=(config, 1))
-
-        s_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s_sock.bind(TEMP_SOCKET + '5')
-        s_sock.listen(2)
-        c_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        c_sock.connect(TEMP_SOCKET + '5')
-        s_conn, _ = s_sock.accept()
-
-        monkeypatch.setattr('sys.stdin', c_sock)
+        main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
 
         main_thread.start()
-        time.sleep(0.2)  # Any start-up delay
+        time.sleep(0.1)  # Any start-up delay
         assert main_thread.is_alive()
 
-        s_conn.sendall(b'Hello world')
+        os.write(pipe_w, b'Hello world')
         expected = [
             '\x1b[38;5;22m', 'Hello', '\x1b[39m', ' ', '\x1b[48;5;52m',
             'world', '\x1b[49m'
@@ -1335,16 +1294,14 @@ def test_main_reload_config(capsys, monkeypatch):
         # Reload config
         os.kill(os.getpid(), signal.SIGUSR1)
 
-        s_conn.sendall(b'Hello world')
+        os.write(pipe_w, b'Hello world')
         expected = ['\x1b[38;5;22m', 'Hello', '\x1b[39m', ' world']
         time.sleep(0.1)  # Any processing delay
         assert repr(capsys.readouterr().out) == repr(''.join(expected))
     finally:
-        s_conn.close()
-        c_sock.close()
-        s_sock.close()
+        os.close(pipe_r)
+        os.close(pipe_w)
         os.remove(TEMP_FILE + '3')
-        os.remove(TEMP_SOCKET + '5')
         main_thread.join()
 
 
