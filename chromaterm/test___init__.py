@@ -1363,23 +1363,3 @@ def test_main_run_in_out_pipe():
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE)
     assert 'stdin=False, stdout=True' in result.stdout.decode()
-
-
-def test_main_run_sigint():
-    """Send the forked CT (spawns program) a SIGINT; the process should exit but
-    CT shouldn't freak out."""
-    before = time.time()
-    program = subprocess.Popen('./ct --run sleep 1',
-                               shell=True,
-                               stderr=subprocess.PIPE)
-
-    time.sleep(0.5)
-    subprocess.run('kill -2 $(ps -o ppid= 0$(pgrep "^sleep$"))',
-                   check=False,
-                   shell=True)
-
-    program.wait()
-    after = time.time()
-
-    assert program.stderr.read().decode() == ''
-    assert after - before < 1
