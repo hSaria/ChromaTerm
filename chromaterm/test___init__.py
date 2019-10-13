@@ -1320,16 +1320,16 @@ def test_main_reload_processes():
 
 
 def test_main_run_no_file_found():
-    """Have CT `--run` with an unavailable command."""
-    program = ['./ct', '--run', 'plz-no-work']
+    """Have CT run with an unavailable command."""
+    program = ['./ct', 'plz-no-work']
     result = subprocess.run(program, check=False, stderr=subprocess.PIPE)
     assert result.stderr == b'./ct: plz-no-work: command not found\n'
 
 
 def test_main_run_no_pipe():
-    """Have CT `--run` the tty test code with no pipes."""
+    """Have CT run the tty test code with no pipes."""
     master, slave = os.openpty()
-    subprocess.run('./ct --run ' + TTY_TEST_PROGRAM,
+    subprocess.run('./ct ' + TTY_TEST_PROGRAM,
                    check=True,
                    shell=True,
                    stdin=master,
@@ -1338,9 +1338,9 @@ def test_main_run_no_pipe():
 
 
 def test_main_run_in_pipe():
-    """Have CT `--run` the tty test code with a pipe on stdin."""
+    """Have CT run the tty test code with a pipe on stdin."""
     master, slave = os.openpty()
-    subprocess.run('./ct --run ' + TTY_TEST_PROGRAM,
+    subprocess.run('./ct ' + TTY_TEST_PROGRAM,
                    check=True,
                    shell=True,
                    stdin=subprocess.PIPE,
@@ -1349,9 +1349,9 @@ def test_main_run_in_pipe():
 
 
 def test_main_run_out_pipe():
-    """Have CT `--run` the tty test code with a pipe on stdout."""
+    """Have CT run the tty test code with a pipe on stdout."""
     master, _ = os.openpty()
-    result = subprocess.run('./ct --run ' + TTY_TEST_PROGRAM,
+    result = subprocess.run('./ct ' + TTY_TEST_PROGRAM,
                             check=True,
                             shell=True,
                             stdin=master,
@@ -1360,8 +1360,8 @@ def test_main_run_out_pipe():
 
 
 def test_main_run_in_out_pipe():
-    """Have CT `--run` the tty test code with pipes on stdin and stdout."""
-    result = subprocess.run('./ct --run ' + TTY_TEST_PROGRAM,
+    """Have CT run the tty test code with pipes on stdin and stdout."""
+    result = subprocess.run('./ct ' + TTY_TEST_PROGRAM,
                             check=True,
                             shell=True,
                             stdin=subprocess.PIPE,
