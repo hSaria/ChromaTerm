@@ -502,7 +502,7 @@ def run_program(config, program_args):
             subprocess.run(program_args, check=False, stdout=tty_w)
         except FileNotFoundError:
             eprint(program_args[0] + ': command not found')
-        except KeyboardInterrupt:
+        except KeyboardInterrupt:  # pragma: no cover  # Limitation when forking
             pass  # Program gets the signal; CT shouldn't freak out
         finally:
             os.write(close_w, b'\x00')
