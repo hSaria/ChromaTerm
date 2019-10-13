@@ -502,6 +502,8 @@ def run_program(config, program_args):
             subprocess.run(program_args, check=False, stdout=tty_w)
         except FileNotFoundError:
             eprint(program_args[0] + ': command not found')
+        except KeyboardInterrupt:
+            pass  # Program gets the signal; CT shouldn't freak out
         finally:
             os.write(close_w, b'\x00')
         sys.exit()
@@ -544,7 +546,8 @@ def strip_colors(data):
 def main(config, max_wait=None, read_fd=None):
     """Main entry point that uses `config` from config_init to process data.
     `max_wait` is the longest period to wait without input before returning.
-    read_fd will utilize stdin if not specified."""
+    read_fd will utilize stdin if not specified. If config['read_fds'] is set,
+    the read_fd keyword is ignored."""
     if isinstance(config, str):  # An error message
         return config
 
