@@ -1178,7 +1178,7 @@ def test_split_buffer_ecma_048_c1_set():
     c1_set_above_csi = range(int('5c', 16), int('60', 16))
 
     for char_id in itertools.chain(c1_set_up_to_csi, c1_set_above_csi):
-        data = 'Hello \x1b{} World'.format(chr(char_id))  # TODO
+        data = 'Hello \x1b{} World'.format(chr(char_id))
         expected = [['Hello ', '\x1b' + chr(char_id)], [' World', '']]
 
         assert repr(chromaterm.split_buffer(data)) == repr(expected)
