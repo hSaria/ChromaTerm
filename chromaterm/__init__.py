@@ -55,10 +55,10 @@ RESET_TYPES = {
     }
 }
 
-# Sequences upon which ct will split during processing. This includes CSI and
-# C1 sets (ECMA-048), new lines, vertical spaces, and form feeds.
-SPLIT_SEQUENCES_RE = re.compile(r'(\x1b\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|'
-                                r'\x1b[\x40-\x5f]|\r|\r\n|\n|\v|\f)')
+# Sequences upon which ct will split during processing. This includes new lines,
+# vertical spaces, form feeds, C1 set (ECMA-048), and CSI (excluding SGR).
+SPLIT_RE = re.compile(r'(\r|\r\n|\n|\v|\f|\x1b[\x40-\x5a\x5c-\x5f]'
+                      r'\x1b\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e])')
 
 # Select Graphic Rendition sequence (all types)
 SGR_RE = re.compile(r'\x1b\[[0-9;]*m')
@@ -513,7 +513,7 @@ def split_buffer(buffer):
     """Split the buffer based on split sequences, returning a list of lists in
     the format of [data, separator]. `data` should be highlighted while the
     `sperator` is printed unchanged, after the `data`."""
-    splits = SPLIT_SEQUENCES_RE.split(buffer)
+    splits = SPLIT_RE.split(buffer)
 
     # Append an empty separator in case of no splits or no separator at the end
     splits.append('')
