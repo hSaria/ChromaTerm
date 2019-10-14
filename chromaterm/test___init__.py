@@ -5,6 +5,7 @@
 # code to a different file, like test_highlight.py when it lives in __init__.py.
 # pylint: disable=too-many-lines
 
+import itertools
 import os
 import re
 import signal
@@ -1035,53 +1036,6 @@ def test_process_buffer_rule_multiple_colors(capsys):
     assert re.search(success, captured.out)
 
 
-def test_process_buffer_movement_sequences(capsys):
-    """Input data includes movement sequences; the data must be split on it,
-    thus not matching the rule's regex."""
-    config_data = '''rules:
-    - description: first
-      regex: Hello.+World
-      color: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
-
-    data_fmt = 'Hello{} World'
-    c1s = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'S', 'T']
-    csis = [
-        'A', '1A', '123A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'S', 'T',
-        'H', '1;H', ';1H', '1;1H', 'f', '?1049h', '?1049l'
-    ]
-    splits = ['\r', '\n', '\r\n', '\v', '\f']
-
-    for prefix, items in zip(['\x1b', '\x1b[', ''], [c1s, csis, splits]):
-        for item in items:
-            data = data_fmt.format(prefix + item)
-            chromaterm.process_buffer(config, data, False)
-            assert repr(data) == repr(capsys.readouterr().out)
-
-
-def test_process_buffer_false_movement_sequences(capsys):
-    """Input data includes sequences that appear to be movements, but are not;
-    the data must not be split and thus the rule's regex is matched."""
-    config_data = '''rules:
-    - description: first
-      regex: Hello.+World
-      color: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
-
-    data_fmt = 'Hello{} World'
-    movements = [
-        'A', '1A', '123A', 'B', 'C', 'D', 'E', 'F', 'G', 'J', 'K', 'S', 'T',
-        'H', '1;H', ';1H', '1;1H', 'f', '?1049h', '?1049l'
-    ]
-    splits = ['r', 'n', 'rn', 'v', 'f']
-
-    for prefix, items in zip(['[', ''], [movements, splits]):
-        for item in items:
-            data = data_fmt.format(prefix + item)
-            chromaterm.process_buffer(config, data, False)
-            assert repr(data) != repr(capsys.readouterr().out)
-
-
 def test_read_file():
     """Read the default configuration."""
     assert chromaterm.read_file('$HOME/.chromaterm.yml') is not None
@@ -1176,6 +1130,129 @@ def test_rgb_to_8bit():
     assert chromaterm.rgb_to_8bit(178, 249, 57) == 191
     assert chromaterm.rgb_to_8bit(229, 112, 100) == 210
     assert chromaterm.rgb_to_8bit(246, 240, 108) == 228
+
+
+def test_split_buffer_new_line_r():
+    """Split based on \\r"""
+    data = 'Hello \rWorld'
+    expected = [['Hello ', '\r'], ['World', '']]
+
+    assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_new_line_r_n():
+    """Split based on \\r\\n"""
+    data = 'Hello \r\n World'
+    expected = [['Hello ', '\r\n'], [' World', '']]
+
+    assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_new_line_n():
+    """Split based on \\n"""
+    data = 'Hello \n World'
+    expected = [['Hello ', '\n'], [' World', '']]
+
+    assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_vertical_space():
+    """Split based on \\v"""
+    data = 'Hello \v World'
+    expected = [['Hello ', '\v'], [' World', '']]
+
+    assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_form_feed():
+    """Split based on \\f"""
+    data = 'Hello \f World'
+    expected = [['Hello ', '\f'], [' World', '']]
+
+    assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_ecma_048_c1_set():
+    """Split based on the ECMA-048 C1 set, excluding CSI."""
+    c1_set_up_to_csi = range(int('40', 16), int('5b', 16))
+    c1_set_above_csi = range(int('5c', 16), int('60', 16))
+
+    for char_id in itertools.chain(c1_set_up_to_csi, c1_set_above_csi):
+        data = 'Hello \x1b{} World'.format(chr(char_id))  # TODO
+        expected = [['Hello ', '\x1b' + chr(char_id)], [' World', '']]
+
+        assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_ecma_048_exclude_csi_sgr():
+    """Fail to split based on the ECMA-048 C1 CSI SGR. Added some intermediate
+    characters to prevent matching other CSI codes; strictly checking empty SGR."""
+    data = 'Hello \x1b[!0World'
+    expected = [['Hello \x1b[!0World', '']]
+
+    assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_ecma_048_csi_no_parameter_no_intermediate():
+    """Split based on CSI with no parameter or intermediate bytes."""
+    csi_up_to_sgr = range(int('40', 16), int('6d', 16))
+    csi_above_sgr = range(int('6e', 16), int('7f', 16))
+
+    for char_id in itertools.chain(csi_up_to_sgr, csi_above_sgr):
+        data = 'Hello \x1b[{} World'.format(chr(char_id))
+        expected = [['Hello ', '\x1b[' + chr(char_id)], [' World', '']]
+
+        assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_ecma_048_csi_parameter_no_intermediate():
+    """Split based on CSI with parameters bytes but no intermediate bytes. Up to
+    3 bytes."""
+    csi_up_to_sgr = range(int('40', 16), int('6d', 16))
+    csi_above_sgr = range(int('6e', 16), int('7f', 16))
+
+    for char_id in itertools.chain(csi_up_to_sgr, csi_above_sgr):
+        for parameter in range(int('30', 16), int('40', 16)):
+            for count in range(1, 4):
+                code = chr(parameter) * count + chr(char_id)
+                data = 'Hello \x1b[{} World'.format(code)
+                expected = [['Hello ', '\x1b[' + code], [' World', '']]
+
+                assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_ecma_048_csi_intermediate_no_parameter():
+    """Split based on CSI with intermediate bytes but no parameter bytes."""
+    csi_up_to_sgr = range(int('40', 16), int('6d', 16))
+    csi_above_sgr = range(int('6e', 16), int('7f', 16))
+
+    for char_id in itertools.chain(csi_up_to_sgr, csi_above_sgr):
+        for intermediate in range(int('20', 16), int('30', 16)):
+            for count in range(1, 4):
+                code = chr(intermediate) * count + chr(char_id)
+                data = 'Hello \x1b[{} World'.format(code)
+                expected = [['Hello ', '\x1b[' + code], [' World', '']]
+
+                assert repr(chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_ecma_048_csi_parameter_intermediate():
+    """Split based on CSI with parameter and intermediate bytes. Up to 3 bytes
+    each."""
+    csi_up_to_sgr = range(int('40', 16), int('6d', 16))
+    csi_above_sgr = range(int('6e', 16), int('7f', 16))
+
+    for char_id in itertools.chain(csi_up_to_sgr, csi_above_sgr):
+        for parameter in range(int('30', 16), int('40', 16)):
+            for intermediate in range(int('20', 16), int('30', 16)):
+                for count in range(1, 4):
+                    code = chr(parameter) * count + chr(
+                        intermediate) * count + chr(char_id)
+                    data = 'Hello \x1b[{} World'.format(code)
+                    expected = [['Hello ', '\x1b[' + code], [' World', '']]
+
+                    assert repr(
+                        chromaterm.split_buffer(data)) == repr(expected)
 
 
 def test_tty_test_code_no_pipe():
