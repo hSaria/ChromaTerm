@@ -1335,6 +1335,26 @@ def test_main_buffer_close_time():
     assert after - before < 1
 
 
+def test_main_decode_error(capsys):
+    """Attempt to decode a character that is not UTF-8."""
+    try:
+        pipe_r, pipe_w = os.pipe()
+        config = chromaterm.config_init([])
+        main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
+
+        main_thread.start()
+        time.sleep(0.1)  # Any start-up delay
+        assert main_thread.is_alive()
+
+        os.write(pipe_w, b'\x80')
+        time.sleep(0.1)  # Any processing delay
+        assert capsys.readouterr().out == '�'
+    finally:
+        os.close(pipe_r)
+        os.close(pipe_w)
+        main_thread.join()
+
+
 def test_main_reload_config(capsys):
     """Reload the configuration while the program is running."""
     try:

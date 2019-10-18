@@ -562,7 +562,7 @@ def main(config, max_wait=None, read_fd=None):
 
         if config['read_fds'][0] in ready_fds:  # Data FD
             data = os.read(config['read_fds'][0], READ_SIZE)
-            buffer += data.decode()
+            buffer += data.decode(encoding='utf-8', errors='replace')
 
         if not buffer:  # Buffer was processed empty and data fd hit EOF
             break
