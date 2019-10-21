@@ -132,6 +132,7 @@ def config_init(args=None):
     if args.program:
         run_program(config, [args.program] + args.arguments)
 
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)  # Default for broken pipe
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
     signal.signal(signal.SIGUSR1, update_config_handler)  # Reload handler
 

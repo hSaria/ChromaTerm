@@ -1326,6 +1326,16 @@ def test_main(capsys):
         main_thread.join()
 
 
+def test_main_broken_pipe():
+    """Break a pipe while CT is trying to write to it. The echo at the end will
+    close before CT has had the chance to write to the pipe."""
+    result = subprocess.run('echo | ./ct | echo',
+                            check=False,
+                            shell=True,
+                            stderr=subprocess.PIPE)
+    assert b'Broken pipe' not in result.stderr
+
+
 def test_main_buffer_close_time():
     """Confirm that the program exists as soon as stdin closes."""
     before = time.time()
