@@ -14,15 +14,15 @@ import time
 from threading import Thread
 
 import chromaterm
+import chromaterm.config
 
 TEMP_FILE = '.test_chromaterm.yml'
 
-TTY_TEST_CODE = """import os, sys
+TTY_CODE = """import os, sys
 t_stdin = os.isatty(sys.stdin.fileno())
 t_stdout = os.isatty(sys.stdout.fileno())
 print('stdin={}, stdout={}'.format(t_stdin, t_stdout))"""
-TTY_TEST_PROGRAM = 'python3 -c "{}"'.format('; '.join(
-    TTY_TEST_CODE.splitlines()))
+TTY_PROGRAM = 'python3 -c "{}"'.format('; '.join(TTY_CODE.splitlines()))
 
 
 def test_decode_sgr_bg():
@@ -135,100 +135,6 @@ def test_decode_sgr_split_compound():
         assert repr(color['code']) == repr(code)
 
 
-def test_eprint(capsys):
-    """Print a message to stderr."""
-    msg = 'Some random error message'
-    chromaterm.eprint(msg)
-    assert msg in capsys.readouterr().err
-
-
-def test_get_color_codes():
-    """Random known-good color codes."""
-    colors = [
-        'b#0973d8', 'b#8b6dd3', 'b#2867c7', 'b#18923a', 'b#636836', 'b#a0da5e',
-        'b#b99153', 'b#fafb19', 'f#6cb0d7', 'f#6f5e3a', 'f#7d6256', 'f#15c93d',
-        'f#45f2d7', 'f#50a910', 'f#1589b3', 'f#b8df23', 'f#d5a3bf', 'f#d7e764',
-        'f#e002d7', 'f#f56726'
-    ]
-    codes = [
-        '48;5;33m', '48;5;140m', '48;5;32m', '48;5;35m', '48;5;101m',
-        '48;5;156m', '48;5;179m', '48;5;226m', '38;5;117m', '38;5;101m',
-        '38;5;102m', '38;5;41m', '38;5;87m', '38;5;70m', '38;5;38m',
-        '38;5;190m', '38;5;182m', '38;5;228m', '38;5;201m', '38;5;208m'
-    ]
-
-    for color, code in zip(colors, codes):
-        assert chromaterm.get_color_codes(color)[0]['code'] == '\x1b[' + code
-
-
-def test_get_color_codes_grayscale():
-    """Random known-good grayscale codes."""
-    colors = [
-        'b#000000', 'b#5d5d5d', 'b#373737', 'b#c8c8c8', 'b#cecece', 'b#d7d7d7',
-        'b#d8d8d8', 'b#fcfcfc', 'f#0b0b0b', 'f#000000', 'f#2b2b2b', 'f#2f2f2f',
-        'f#4c4c4c', 'f#4d4d4d', 'f#9d9d9d', 'f#808080'
-    ]
-    codes = [
-        '48;5;232m', '48;5;240m', '48;5;237m', '48;5;250m', '48;5;251m',
-        '48;5;252m', '48;5;252m', '48;5;255m', '38;5;233m', '38;5;232m',
-        '38;5;236m', '38;5;236m', '38;5;239m', '38;5;239m', '38;5;246m',
-        '38;5;244m'
-    ]
-
-    for color, code in zip(colors, codes):
-        assert chromaterm.get_color_codes(color)[0]['code'] == '\x1b[' + code
-
-
-def test_get_color_codes_rgb():
-    """RGB color-codes."""
-    colors = ['b#010101', 'f#020202']
-    codes = ['\x1b[48;2;1;1;1m', '\x1b[38;2;2;2;2m']
-
-    for color, code in zip(colors, codes):
-        assert chromaterm.get_color_codes(color, rgb=True)[0]['code'] == code
-
-
-def test_get_color_codes_style():
-    """Terminal styles."""
-    colors = ['blink', 'BOLD', 'iTaLiC', 'strike', 'underline']
-    codes = ['5m', '1m', '3m', '9m', '4m']
-
-    for color, code in zip(colors, codes):
-        assert chromaterm.get_color_codes(color)[0]['code'] == '\x1b[' + code
-
-
-def test_get_color_codes_compound():
-    """All sorts of color codes."""
-    colors = 'bold b#0973d8 underline f#45f2d7'
-    # Styles are always added last
-    codes = ['\x1b[48;5;33m', '\x1b[38;5;87m', '\x1b[1m', '\x1b[4m']
-
-    for color, code in zip(chromaterm.get_color_codes(colors), codes):
-        assert color['code'] == code
-
-
-def test_get_color_codes_mixed_case():
-    """Color is mixed case."""
-    colors = 'b#abcABC bOlD'
-
-    assert len(chromaterm.get_color_codes(colors)) == 2
-
-
-def test_get_color_codes_excessive_colors():
-    """Too many colors (more than 2)."""
-    colors = 'b#010101 f#020202 f#020202'
-
-    assert chromaterm.get_color_codes(colors) is None
-
-
-def test_get_color_codes_duplicate_target():
-    """Duplicate targets (e.g. two foreground colors)."""
-    colors = ['f#020202 f#030303', 'bold bold']
-
-    for color in colors:
-        assert chromaterm.get_color_codes(color) is None
-
-
 def test_highlight_enscapsulated_same_type():
     """Two rules of the same target type (e.g. both foreground) and one rule
     encapsulating the other. Also tested in reverse order.
@@ -241,7 +147,7 @@ def test_highlight_enscapsulated_same_type():
     - description: second
       regex: there
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -266,7 +172,7 @@ def test_highlight_enscapsulated_different_type():
     - description: second
       regex: there
       color: b#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -291,7 +197,7 @@ def test_highlight_partial_overlap_same_type():
     - description: second
       regex: there, World
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -316,7 +222,7 @@ def test_highlight_partial_overlap_different_type():
     - description: second
       regex: there, World
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -341,7 +247,7 @@ def test_highlight_full_overlap_same_type():
     - description: second
       regex: Hello there, World
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -364,7 +270,7 @@ def test_highlight_full_overlap_different_type():
     - description: second
       regex: Hello there, World
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -388,7 +294,7 @@ def test_highlight_start_overlap_same_type():
     - description: second
       regex: Hello there, World
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -415,7 +321,7 @@ def test_highlight_start_overlap_different_type():
     - description: second
       regex: Hello there, World
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -442,7 +348,7 @@ def test_highlight_end_overlap_same_type():
     - description: second
       regex: Hello there, World
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -469,7 +375,7 @@ def test_highlight_end_overlap_different_type():
     - description: second
       regex: Hello there, World
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there, World'
     expected = [
@@ -496,7 +402,7 @@ def test_highlight_end_start_overlap_same_type():
     - description: second
       regex: rld
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello World'
     expected = [
@@ -522,7 +428,7 @@ def test_highlight_end_start_overlap_different_type():
     - description: second
       regex: rld
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello World'
     expected = [
@@ -541,7 +447,7 @@ def test_highlight_existing_start_same_type():
     - description: first
       regex: Hello World
       color: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = '\x1b[33mHello World'
     expected = ['\x1b[33m', '\x1b[38;5;153m', 'Hello World', '\x1b[33m']
@@ -555,7 +461,7 @@ def test_highlight_existing_start_different_type():
     - description: first
       regex: Hello World
       color: b#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = '\x1b[33mHello World'
     expected = ['\x1b[33m', '\x1b[48;5;153m', 'Hello World', '\x1b[49m']
@@ -569,7 +475,7 @@ def test_highlight_existing_end_same_type():
     - description: first
       regex: Hello World
       color: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello World\x1b[33m'
     expected = ['\x1b[38;5;153m', 'Hello World', '\x1b[39m', '\x1b[33m']
@@ -583,7 +489,7 @@ def test_highlight_existing_end_different_type():
     - description: first
       regex: Hello World
       color: b#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello World\x1b[33m'
     expected = ['\x1b[48;5;153m', 'Hello World', '\x1b[49m', '\x1b[33m']
@@ -597,7 +503,7 @@ def test_highlight_existing_multiline():
     - description: first
       regex: Hello World
       color: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = ['\x1b[33mHi there', 'Hello World']
     expected = [['\x1b[33m', 'Hi there'],
@@ -615,7 +521,7 @@ def test_highlight_existing_orphaned():
     - description: first
       regex: World
       color: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = '\x1b[33mHello \x1b[34mthere\x1b[m, World'
     expected = [
@@ -632,7 +538,7 @@ def test_highlight_existing_intensity_orphaned():
     - description: first
       regex: World
       color: bold'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = ['\x1b[2mHello World', '\x1b[1mHello World']
     expected = [['\x1b[2m', 'Hello ', '\x1b[1m', 'World', '\x1b[2m'],
@@ -650,7 +556,7 @@ def test_highlight_existing_complete_reset():
     - description: first
       regex: Hello there, World
       color: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello\x1b[m there, World'
     expected = [
@@ -672,7 +578,7 @@ def test_highlight_existing_complete_reset_same_type():
     - description: first
       regex: there, World
       color: f#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = '\x1b[33mHello the\x1b[mre, World'
     expected = [
@@ -694,7 +600,7 @@ def test_highlight_existing_complete_reset_different_type():
     - description: first
       regex: there, World
       color: b#fffaaa'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = '\x1b[44mHello the\x1b[mre, World'
     expected = [
@@ -710,7 +616,7 @@ def test_highlight_existing_compound():
     config_data = '''rules:
     - regex: World|me
       color: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = '\x1b[1;38;5;123;38;2;1;1;1;4mHello World\x1b[35;5m It\'s \x1b[32;24mme'
     expected = [
@@ -738,7 +644,7 @@ def test_highlight_partial_overlap_existing_multiline():
     - description: third
       regex: It's me
       color: f#0973d8'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = ['\x1b[33mSup', 'Hello World! It\'s me']
     expected = [['\x1b[33m', 'Sup'],
@@ -753,7 +659,7 @@ def test_highlight_partial_overlap_existing_multiline():
             ''.join(line_expected))
 
     # Reset color tracking and reverse the rule order
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
     config['rules'] = list(reversed(config['rules']))
 
     for line_data, line_expected in zip(data, expected):
@@ -769,7 +675,7 @@ def test_highlight_optional_multi_group():
         0: bold
         1: f#f7e08b
         2: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello World! It\'s me'
     expected = [
@@ -786,7 +692,7 @@ def test_highlight_optional_group_not_matched():
     - regex: Hello (World)?
       color:
         1: f#f7e08b'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     data = 'Hello there! Hello World'
     expected = ['Hello there! Hello ', '\x1b[38;5;229m', 'World', '\x1b[39m']
@@ -800,7 +706,7 @@ def test_highlight_update_type_reset():
     config_data = '''rules:
     - regex: Hello
       color: f#f7e08b'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
 
     resets = {
         'fg': '\x1b[33m',
@@ -828,7 +734,7 @@ def test_highlight_complete_reset_defaulting_type_resets():
     - description: first
       regex: there
       color: f#aaafff'''
-    config = chromaterm.parse_config(config_data)
+    config = chromaterm.config.parse_config(config_data)
     default = chromaterm.RESET_TYPES['fg']['default']
 
     # Feed a color to update the type's reset
@@ -840,147 +746,26 @@ def test_highlight_complete_reset_defaulting_type_resets():
     assert repr(config['resets']['fg']) == repr(default)
 
 
-def test_parse_config_simple():
-    """Parse a config file with a simple rule."""
-    config_data = '''rules:
-    - description: simple
-      regex: hello world
-      color: f#fffaaa'''
-
-    assert chromaterm.parse_config(config_data)['rules']
-
-
-def test_parse_config_group():
-    """Parse a config file with a group-specific rule."""
-    config_data = '''rules:
-    - regex: hello (world)! It's (me).
-      color:
-        1: b#fffaaa
-        2: f#123123'''
-
-    assert chromaterm.parse_config(config_data)['rules']
-
-
-def test_parse_config_group_legacy():
-    """Parse a config file with a legacy group-specific rule."""
-    config_data = '''rules:
-    - regex: hello (world)
-      color: b#fffaaa
-      group: 1'''
-
-    assert chromaterm.parse_config(config_data)['rules']
-
-
-def test_parse_config_multiple_colors():
-    """Parse a config file with a multi-color rule."""
-    config_data = '''rules:
-    - description: group
-      regex: hello (world)
-      color: b#fffaaa f#aaafff'''
-
-    assert chromaterm.parse_config(config_data)['rules']
-
-
-def test_parse_config_rule_format_error(capsys):
-    """Parse a config file with a syntax problem."""
-    config_data = '''rules:
-    - description: simple'''
-    chromaterm.parse_config(config_data)
-
-    assert 'Rule error on' in capsys.readouterr().err
-
-
-def test_parse_config_yaml_format_error(capsys):
-    """Parse an incorrect YAML file."""
-    chromaterm.parse_config('-x-\nhi:')
-    assert 'Parse error:' in capsys.readouterr().err
-
-
-def test_parse_rule_regex_missing():
-    """Parse a rule without a `regex` key."""
-    msg = 'regex not found'
-    rule = {'color': 'b#fffaaa'}
-    assert chromaterm.parse_rule(rule) == msg
-
-
-def test_parse_rule_regex_type_error():
-    """Parse a rule with an incorrect `regex` value type."""
-    msg = 'regex not a string or integer'
-    rule = {'regex': ['hi'], 'color': 'b#fffaaa'}
-    assert chromaterm.parse_rule(rule) == msg
-
-
-def test_parse_rule_regex_invalid():
-    """Parse a rule with an invalid `regex`."""
-    rule = {'regex': '+', 'color': 'b#fffaaa'}
-    assert 're.error: ' in chromaterm.parse_rule(rule)
-
-
-def test_parse_rule_color_missing():
-    """Parse a rule without a `color` key."""
-    msg = 'color not found'
-    rule = {'regex': 'x(y)z'}
-    assert chromaterm.parse_rule(rule) == msg
-
-
-def test_parse_rule_color_type_error():
-    """Parse a rule with an incorrect `color` value type."""
-    msg = 'color not a string or dictionary'
-    rule = {'regex': 'x(y)z', 'color': ['hi']}
-    assert chromaterm.parse_rule(rule) == msg
-
-
-def test_parse_rule_color_format_error():
-    """Parse a rule with an incorrect `color` format."""
-    msg_re = 'color ".+" not in the correct format'
-
-    rule = {'regex': 'x(y)z', 'color': 'b#xyzxyz'}
-    assert re.search(msg_re, chromaterm.parse_rule(rule))
-
-    rule = {'regex': 'x(y)z', 'color': 'x#fffaaa'}
-    assert re.search(msg_re, chromaterm.parse_rule(rule))
-
-    rule = {'regex': 'x(y)z', 'color': 'b@fffaaa'}
-    assert re.search(msg_re, chromaterm.parse_rule(rule))
-
-    rule = {'regex': 'x(y)z', 'color': 'b#fffaaa-f#fffaaa'}
-    assert re.search(msg_re, chromaterm.parse_rule(rule))
-
-
-def test_parse_rule_group_type_error():
-    """Parse a rule with an incorrect `group` value type."""
-    msg_re = 'group .+ not an integer'
-    rule = {'regex': 'x(y)z', 'color': {'1': 'b#fffaaa'}}
-    assert re.search(msg_re, chromaterm.parse_rule(rule))
-
-
-def test_parse_rule_group_out_of_bounds():
-    """Parse a rule with `group` number not in the regex."""
-    msg_re = 'group .+ not in the regex'
-    rule = {'regex': 'x(y)z', 'color': {2: 'b#fffaaa'}}
-    assert re.search(msg_re, chromaterm.parse_rule(rule))
-
-
 def test_process_buffer_empty(capsys):
     """Output processing of empty input."""
-    config = chromaterm.get_default_config()
+    config = chromaterm.config.get_default_config()
     chromaterm.process_buffer(config, '', False)
     assert capsys.readouterr().out == ''
 
 
 def test_process_buffer_more(capsys):
     """Output processing of empty input."""
-    config = chromaterm.get_default_config()
+    config = chromaterm.config.get_default_config()
     chromaterm.process_buffer(config, '', False)
     assert capsys.readouterr().out == ''
 
 
 def test_process_buffer_multiline(capsys):
     """Output processing with multiple lines of input."""
-    config = chromaterm.get_default_config()
+    config = chromaterm.config.get_default_config()
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
 
-    config['rules'].append(chromaterm.parse_rule(rule))
+    config['rules'].append(chromaterm.config.parse_rule(rule))
     data = '\ntest hello world test\n'
     success = r'^test \x1b\[[34]8;5;[0-9]{1,3}mhello world\x1b\[49m test$'
 
@@ -993,10 +778,10 @@ def test_process_buffer_multiline(capsys):
 
 def test_process_buffer_rule_simple(capsys):
     """Output processing with a simple rule."""
-    config = chromaterm.get_default_config()
+    config = chromaterm.config.get_default_config()
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
 
-    config['rules'].append(chromaterm.parse_rule(rule))
+    config['rules'].append(chromaterm.config.parse_rule(rule))
     data = 'test hello world test'
     success = r'^test \x1b\[48;5;[0-9]{1,3}mhello world\x1b\[49m test$'
 
@@ -1008,10 +793,10 @@ def test_process_buffer_rule_simple(capsys):
 
 def test_process_buffer_rule_group(capsys):
     """Output processing with a group-specific rule."""
-    config = chromaterm.get_default_config()
+    config = chromaterm.config.get_default_config()
     rule = {'regex': 'hello (world)', 'color': {1: 'b#fffaaa'}}
 
-    config['rules'].append(chromaterm.parse_rule(rule))
+    config['rules'].append(chromaterm.config.parse_rule(rule))
     data = 'test hello world test'
     success = r'^test hello \x1b\[48;5;[0-9]{1,3}mworld\x1b\[49m test$'
 
@@ -1023,10 +808,10 @@ def test_process_buffer_rule_group(capsys):
 
 def test_process_buffer_rule_multiple_colors(capsys):
     """Output processing with a multi-color rule."""
-    config = chromaterm.get_default_config()
+    config = chromaterm.config.get_default_config()
     rule = {'regex': 'hello', 'color': 'b#fffaaa f#aaafff'}
 
-    config['rules'].append(chromaterm.parse_rule(rule))
+    config['rules'].append(chromaterm.config.parse_rule(rule))
     data = 'hello world'
     success = r'^(\x1b\[[34]8;5;[0-9]{1,3}m){2}hello(\x1b\[[34]9m){2} world$'
 
@@ -1034,30 +819,6 @@ def test_process_buffer_rule_multiple_colors(capsys):
     captured = capsys.readouterr()
 
     assert re.search(success, captured.out)
-
-
-def test_read_file():
-    """Read the default configuration."""
-    assert chromaterm.read_file('$HOME/.chromaterm.yml') is not None
-
-
-def test_read_file_no_permission(capsys):
-    """Create a file with no permissions and attempt to read it. Delete the file
-    once done with it."""
-    msg = 'Cannot read configuration file ' + TEMP_FILE + '1' + ' (permission)\n'
-
-    os.close(os.open(TEMP_FILE + '1', os.O_CREAT | os.O_WRONLY, 0o0000))
-    chromaterm.read_file(TEMP_FILE + '1')
-    os.remove(TEMP_FILE + '1')
-
-    assert msg in capsys.readouterr().err
-
-
-def test_read_file_non_existent(capsys):
-    """Read a non-existent file."""
-    msg = 'Configuration file ' + TEMP_FILE + '2' + ' not found\n'
-    chromaterm.read_file(TEMP_FILE + '2')
-    assert msg in capsys.readouterr().err
 
 
 def test_read_ready_input():
@@ -1106,30 +867,6 @@ def test_read_ready_timeout_input():
     finally:
         os.close(pipe_r)
         os.close(pipe_w)
-
-
-def test_rgb_to_8bit():
-    """20 random known-good translations."""
-    assert chromaterm.rgb_to_8bit(13, 176, 1) == 40
-    assert chromaterm.rgb_to_8bit(22, 32, 13) == 16
-    assert chromaterm.rgb_to_8bit(29, 233, 205) == 50
-    assert chromaterm.rgb_to_8bit(43, 48, 138) == 61
-    assert chromaterm.rgb_to_8bit(44, 4, 5) == 52
-    assert chromaterm.rgb_to_8bit(45, 245, 37) == 82
-    assert chromaterm.rgb_to_8bit(75, 75, 194) == 62
-    assert chromaterm.rgb_to_8bit(88, 121, 30) == 100
-    assert chromaterm.rgb_to_8bit(119, 223, 223) == 123
-    assert chromaterm.rgb_to_8bit(139, 87, 30) == 136
-    assert chromaterm.rgb_to_8bit(146, 83, 47) == 131
-    assert chromaterm.rgb_to_8bit(149, 67, 58) == 131
-    assert chromaterm.rgb_to_8bit(149, 230, 209) == 158
-    assert chromaterm.rgb_to_8bit(151, 153, 27) == 142
-    assert chromaterm.rgb_to_8bit(163, 25, 80) == 125
-    assert chromaterm.rgb_to_8bit(165, 186, 53) == 149
-    assert chromaterm.rgb_to_8bit(171, 186, 6) == 184
-    assert chromaterm.rgb_to_8bit(178, 249, 57) == 191
-    assert chromaterm.rgb_to_8bit(229, 112, 100) == 210
-    assert chromaterm.rgb_to_8bit(246, 240, 108) == 228
 
 
 def test_split_buffer_new_line_r():
@@ -1258,7 +995,7 @@ def test_split_buffer_ecma_048_csi_parameter_intermediate():
 def test_tty_test_code_no_pipe():
     """Baseline the test code with no pipes on stdin or stdout."""
     master, slave = os.openpty()
-    subprocess.run(TTY_TEST_PROGRAM,
+    subprocess.run(TTY_PROGRAM,
                    check=True,
                    shell=True,
                    stdin=master,
@@ -1269,7 +1006,7 @@ def test_tty_test_code_no_pipe():
 def test_tty_test_code_in_pipe():
     """Baseline the test code with a pipe on stdin."""
     master, slave = os.openpty()
-    subprocess.run(TTY_TEST_PROGRAM,
+    subprocess.run(TTY_PROGRAM,
                    check=True,
                    shell=True,
                    stdin=subprocess.PIPE,
@@ -1280,7 +1017,7 @@ def test_tty_test_code_in_pipe():
 def test_tty_test_code_out_pipe():
     """Baseline the test code with a pipe on stdout."""
     master, _ = os.openpty()
-    result = subprocess.run(TTY_TEST_PROGRAM,
+    result = subprocess.run(TTY_PROGRAM,
                             check=True,
                             shell=True,
                             stdin=master,
@@ -1290,7 +1027,7 @@ def test_tty_test_code_out_pipe():
 
 def test_tty_test_code_in_out_pipe():
     """Baseline the test code with pipes on stdin and stdout."""
-    result = subprocess.run(TTY_TEST_PROGRAM,
+    result = subprocess.run(TTY_PROGRAM,
                             check=True,
                             shell=True,
                             stdin=subprocess.PIPE,
@@ -1302,7 +1039,7 @@ def test_main(capsys):
     """General stdin processing."""
     try:
         pipe_r, pipe_w = os.pipe()
-        config = chromaterm.config_init([])
+        config = chromaterm.args_init([])
         main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
 
         main_thread.start()
@@ -1349,7 +1086,7 @@ def test_main_decode_error(capsys):
     """Attempt to decode a character that is not UTF-8."""
     try:
         pipe_r, pipe_w = os.pipe()
-        config = chromaterm.config_init([])
+        config = chromaterm.args_init([])
         main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
 
         main_thread.start()
@@ -1368,7 +1105,7 @@ def test_main_decode_error(capsys):
 def test_main_reload_config(capsys):
     """Reload the configuration while the program is running."""
     try:
-        with open(TEMP_FILE + '3', 'w') as file:
+        with open(TEMP_FILE + '1', 'w') as file:
             file.write('''rules:
             - regex: Hello
               color: f#123123
@@ -1376,7 +1113,7 @@ def test_main_reload_config(capsys):
               color: b#321321''')
 
         pipe_r, pipe_w = os.pipe()
-        config = chromaterm.config_init(['--config', TEMP_FILE + '3'])
+        config = chromaterm.args_init(['--config', TEMP_FILE + '1'])
         main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
 
         main_thread.start()
@@ -1392,8 +1129,8 @@ def test_main_reload_config(capsys):
         assert repr(capsys.readouterr().out) == repr(''.join(expected))
 
         # Create file without the 'world' rule
-        os.remove(TEMP_FILE + '3')
-        with open(TEMP_FILE + '3', 'w') as file:
+        os.remove(TEMP_FILE + '1')
+        with open(TEMP_FILE + '1', 'w') as file:
             file.write('''rules:
             - regex: Hello
               color: f#123123''')
@@ -1408,7 +1145,7 @@ def test_main_reload_config(capsys):
     finally:
         os.close(pipe_r)
         os.close(pipe_w)
-        os.remove(TEMP_FILE + '3')
+        os.remove(TEMP_FILE + '1')
         main_thread.join()
 
 
@@ -1436,7 +1173,7 @@ def test_main_run_no_file_found():
 def test_main_run_no_pipe():
     """Have CT run the tty test code with no pipes."""
     master, slave = os.openpty()
-    subprocess.run('./ct ' + TTY_TEST_PROGRAM,
+    subprocess.run('./ct ' + TTY_PROGRAM,
                    check=True,
                    shell=True,
                    stdin=master,
@@ -1447,7 +1184,7 @@ def test_main_run_no_pipe():
 def test_main_run_in_pipe():
     """Have CT run the tty test code with a pipe on stdin."""
     master, slave = os.openpty()
-    subprocess.run('./ct ' + TTY_TEST_PROGRAM,
+    subprocess.run('./ct ' + TTY_PROGRAM,
                    check=True,
                    shell=True,
                    stdin=subprocess.PIPE,
@@ -1458,7 +1195,7 @@ def test_main_run_in_pipe():
 def test_main_run_out_pipe():
     """Have CT run the tty test code with a pipe on stdout."""
     master, _ = os.openpty()
-    result = subprocess.run('./ct ' + TTY_TEST_PROGRAM,
+    result = subprocess.run('./ct ' + TTY_PROGRAM,
                             check=True,
                             shell=True,
                             stdin=master,
@@ -1468,7 +1205,7 @@ def test_main_run_out_pipe():
 
 def test_main_run_in_out_pipe():
     """Have CT run the tty test code with pipes on stdin and stdout."""
-    result = subprocess.run('./ct ' + TTY_TEST_PROGRAM,
+    result = subprocess.run('./ct ' + TTY_PROGRAM,
                             check=True,
                             shell=True,
                             stdin=subprocess.PIPE,

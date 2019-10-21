@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
-"""Miscellaneous tests."""
+"""Miscellaneous and default rules tests."""
 
 import os
 
 import chromaterm
+import chromaterm.config
 import chromaterm.misc
 
 CONFIG = chromaterm.parse_config(chromaterm.misc.DEFAULT_CONFIG)
-TEMP_DIR = '.test_chromaterm'
-TEMP_FILE = '.test_chromaterm.yml'
+TEMP_DIR = '.test_chromaterm_misc'
+TEMP_FILE = '.test_chromaterm_misc.yml'
 
 
 def assert_highlight(positives, negatives, rule, permutate=True):
     """Assert that all positives are highlighted while negatives are not."""
     assert rule
 
-    config = chromaterm.get_default_config()
+    config = chromaterm.config.get_default_config()
     config['rules'] = [rule]
 
     for entry in permutate_data(positives) if permutate else positives:
