@@ -474,9 +474,9 @@ def rgb_to_8bit(_r, _g, _b):
 
 
 def run_program(config, program_args):
-    """Fork a program with its stdout set to use an os.opentty. config['fork' is
-    updated with the tty and close pipes Once the program closes, it will write
-    a dummy byte to the close pipe."""
+    """Fork a program with its stdout set to use an os.opentty. Once the program
+    closes, it will write a dummy byte to the close pipe. config['read_fds'] is
+    populated with the program FD followed by the close FD, in that order."""
     import fcntl
     import termios
     import shutil
@@ -487,16 +487,6 @@ def run_program(config, program_args):
     close_r, close_w = os.pipe()
 
     config['read_fds'] = [tty_r, close_r]
-    config['fork'] = {
-        'tty': {
-            'read': tty_r,
-            'write': tty_w
-        },
-        'close': {
-            'read': close_r,
-            'write': close_w
-        }
-    }
 
     # Update terminal size on the program's TTY (starts uninitialized)
     window_size = shutil.get_terminal_size()
