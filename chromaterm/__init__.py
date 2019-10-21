@@ -85,9 +85,15 @@ def config_init(args=None):
 
     parser.add_argument('program',
                         type=str,
-                        nargs=argparse.REMAINDER,
+                        metavar='program ...',
+                        nargs='?',
                         help='run a program with anything after it used as '
                         'arguments')
+    parser.add_argument('arguments',
+                        type=str,
+                        nargs=argparse.REMAINDER,
+                        help=argparse.SUPPRESS,
+                        default=[])
     parser.add_argument('--config',
                         metavar='FILE',
                         type=str,
@@ -124,7 +130,7 @@ def config_init(args=None):
         parse_config(read_file(args.config) or '', config, rgb)
 
     if args.program:
-        run_program(config, args.program)
+        run_program(config, [args.program] + args.arguments)
 
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
     signal.signal(signal.SIGUSR1, update_config_handler)  # Reload handler
