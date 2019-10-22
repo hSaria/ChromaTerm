@@ -64,7 +64,7 @@ The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and `
 
 ### Style
 
-In addition to the foreground and background, the following styles are supported, though some terminals ignore them:
+In addition to the background and foreground, the following styles are supported, though some terminals ignore them:
 
 -   Blink
 -   Bold
