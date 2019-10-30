@@ -172,8 +172,11 @@ def test_parse_rule_regex_missing():
 
 def test_parse_rule_regex_type_error():
     """Parse a rule with an incorrect `regex` value type."""
-    msg = 'regex not a string or integer'
+    msg = 'regex not a string'
     rule = {'regex': ['hi'], 'color': 'b#fffaaa'}
+    assert chromaterm.config.parse_rule(rule) == msg
+
+    rule = {'regex': 111, 'color': 'b#fffaaa'}
     assert chromaterm.config.parse_rule(rule) == msg
 
 

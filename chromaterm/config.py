@@ -139,8 +139,8 @@ def parse_rule(rule, rgb=False):
     if not regex:
         return 'regex not found'
 
-    if not isinstance(regex, str) and not isinstance(regex, int):
-        return 'regex not a string or integer'
+    if not isinstance(regex, str):
+        return 'regex not a string'
 
     try:
         regex_compiled = re.compile(regex)
