@@ -12,7 +12,7 @@ import select
 import signal
 import sys
 
-from chromaterm.config import eprint, parse_config, read_file, RESET_TYPES
+from chromaterm.config import RESET_TYPES, eprint, parse_config, read_file
 
 # Sequences upon which ct will split during processing. This includes new lines,
 # vertical spaces, form feeds, C1 set (ECMA-048), and CSI (excluding SGR).
