@@ -142,7 +142,8 @@ def get_rule_inserts(rule, data):
 
     for match in rule['regex'].finditer(data):
         for group in rule['colors']:
-            if match.group(group) is None:  # Group not part of the match
+            # Group is zero-length or is not in the match (start = end = -1)
+            if match.start(group) == match.end(group):
                 continue
 
             inserts.append({

@@ -746,6 +746,21 @@ def test_highlight_complete_reset_defaulting_type_resets():
     assert repr(config['resets']['fg']) == repr(default)
 
 
+def test_highlight_zero_length_match():
+    """No color should be applied to a zero-length match."""
+    config_data = '''rules:
+    - description: first
+      regex: Hello, ()World
+      color:
+        1: f#aaafff'''
+    config = chromaterm.config.parse_config(config_data)
+
+    data = 'Hello, World'
+    expected = ['Hello, ', 'World']
+
+    assert repr(chromaterm.highlight(config, data)) == repr(''.join(expected))
+
+
 def test_process_buffer_empty(capsys):
     """Output processing of empty input."""
     config = chromaterm.config.get_default_config()
