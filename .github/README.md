@@ -80,6 +80,6 @@ A color can be applied per RegEx group (see the 2nd example rule). Any group can
 
 If you've got any questions or suggestions, please open up an [issue](https://github.com/hSaria/ChromaTerm/issues/new/choose) (always appreciated).
 
-Check out the `contrib/rules` directory in the project; it has topic-specific rules which are not in the defaults.
+Check out the [`contrib/rules`](https://github.com/hSaria/ChromaTerm/tree/master/contrib/rules) directory in the project; it has topic-specific rules which are not in the defaults.
 
 There is no planned support for Windows due to the lack of standards.
