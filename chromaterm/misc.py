@@ -24,14 +24,6 @@ DEFAULT_CONFIG = r"""rules:
   regex: \b((?<!:)((2[0-3])|[0-1]\d):[0-5]\d(:[0-5]\d)?((\.|,)\d{3,6})?(?!:))\b
   color: b#af5f00
 
-- description: Juniper interfaces
-  regex: (?i)\b(((fe|ge|xe|et|gr|ip|lt|lsq|mt|sp|vcp)\-\d*/\d*/\d*)|(((b)?me|em|fab|fxp|fti|lo|pp(d|e)?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pimd|pime|tap|vlan|vme|vtep)|((ae|reth)\d*))(\.\d*)?\b
-  color: f#f07a7c
-
-- description: Cisco interfaces
-  regex: (?i)\b(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Eth|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|(B|N)VI)((\d*/){0,2}\d*)(\.\d*)?\b
-  color: f#f07a7c
-
 - description: Generics - Bad
   regex: (?i)\b(password|abnormal(ly)?|down|los(t|s|ing)|err(or(s)?)?|(den(y|ies|ied)?)|reject(ing|ed)?|drop(ped|s)?|(err\-)?disable(d)?|(time(d)?(\-)?out)|fail(s|ed|iure)?|disconnect(ed)?|unreachable|invalid|bad|notconnect|unusable|block(ing|ed)?|blk|inaccessible|wrong|collision(s)?|unsynchronized|mismatch|runts|CRC)\b
   color: f#ff0000
@@ -51,42 +43,6 @@ DEFAULT_CONFIG = r"""rules:
 - description: Generics - Good
   regex: (?i)\b(up|ok(ay)?|permit(ed|s)?|accept(s|ed)?|enable(d)?|online|succe((ss(ful|fully)?)|ed(ed)?)?|connect(ed)?|reachable|valid|forwarding|synchronized)\b
   color: f#00ff00
-
-- description: Half-duplex
-  regex: (?i)\b(half(\-)?duplex)\b
-  color: f#ff0000
-
-- description: Cisco Syslog facilities - Emergency to error
-  regex: \b(%\w+\-[0-3]\-\w+)\b
-  color: f#ff0000
-
-- description: Cisco Syslog facilities - Warning to notice
-  regex: \b(%\w+\-[4-5]\-\w+)\b
-  color: f#ffff00
-
-- description: Cisco Syslog facilities - Info to debug
-  regex: \b(%\w+\-[6-7]\-\w+)\b
-  color: f#65d7fd
-
-- description: Spanning tree - Problematic states
-  regex: \b(BKN|(LOOP|ROOT|TYPE|PVID)_Inc)\b
-  color: f#ff0000
-
-- description: Spanning tree - Forwarding states
-  regex: \b(FWD|Root|Desg)\b
-  color: f#00ff00
-
-- description: OSPF - Transitional states
-  regex: \b(ATTEMPT|INIT|EXCHANGE|LOADING)\b
-  color: f#ffff00
-
-- description: OSPF - Acceptable states
-  regex: \b(2WAY|FULL)\b
-  color: f#00ff00
-
-- description: BGP - Transitional states
-  regex: \b(Idle|Connect|Active|OpenSent|OpenConfirm)\b
-  color: f#ffff00
 """
 
 

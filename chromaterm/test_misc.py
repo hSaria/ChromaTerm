@@ -115,7 +115,7 @@ def test_default_config_time():
 
 def test_find_rule():
     """Verify find rule is able to locate rules in the default configuration."""
-    assert find_rule('BGP')['description'] == 'BGP - Transitional states'
+    assert find_rule('Generics - Bad')['description'] == 'Generics - Bad'
     assert find_rule('A fake rule that does not exist') is None
 
 
