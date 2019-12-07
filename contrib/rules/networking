@@ -41,3 +41,8 @@
 - description: Cisco Syslog facilities - Info to debug
   regex: \b(%\w+\-[6-7]\-\w+)\b
   color: f#65d7fd
+
+- description: Fortinet edit IDs
+  regex: (?:^|\s)edit\s(\d+)$
+  color:
+    1: f#078ba6
