@@ -70,15 +70,21 @@ def args_init(args=None):
 
     if args.reload:
         import psutil
-        count = 0
 
-        for process in [x.as_dict() for x in psutil.process_iter()]:
-            if process['pid'] == os.getpid():  # Skip the current process
+        count = 0
+        current_process = psutil.Process()
+
+        for process in psutil.process_iter():
+            if process.pid == current_process.pid:  # Skip the current process
                 continue
 
-            if process['cmdline'] and sys.argv[0] in process['cmdline']:
-                os.kill(process['pid'], signal.SIGUSR1)
-                count += 1
+            try:
+                # Only compare the first two arguments (Python and script paths)
+                if process.cmdline()[:2] == current_process.cmdline()[:2]:
+                    os.kill(process.pid, signal.SIGUSR1)
+                    count += 1
+            except psutil.AccessDenied:
+                pass
 
         return 'Processes reloaded: ' + str(count)
 
