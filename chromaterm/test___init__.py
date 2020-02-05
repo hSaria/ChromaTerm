@@ -1182,7 +1182,8 @@ def test_main_run_no_file_found():
     """Have CT run with an unavailable command."""
     program = ['./ct', 'plz-no-work']
     result = subprocess.run(program, check=False, stderr=subprocess.PIPE)
-    assert result.stderr == b'./ct: plz-no-work: command not found\n'
+    output = re.sub(br'\x1b\[[\d;]+?m', b'', result.stderr)
+    assert output == b'./ct: plz-no-work: command not found\n'
 
 
 def test_main_run_no_pipe():

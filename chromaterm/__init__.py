@@ -307,7 +307,10 @@ def run_program(config, program_args):
     if os.fork() == 0:  # Program
         try:
             import subprocess
-            subprocess.run(program_args, check=False, stdout=tty_w)
+            subprocess.run(program_args,
+                           check=False,
+                           stdout=tty_w,
+                           stderr=tty_w)
         except FileNotFoundError:
             eprint(program_args[0] + ': command not found')
         except KeyboardInterrupt:  # pragma: no cover  # Limitation when forking
