@@ -95,7 +95,7 @@ def args_init(args=None):
         parse_config(read_file(args.config) or '', config, rgb)
 
     if args.program:
-        run_program(config, [args.program] + args.arguments)
+        config['read_fds'] = list(run_program([args.program] + args.arguments))
 
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)  # Default for broken pipe
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
@@ -284,20 +284,19 @@ def read_ready(read_fds, timeout=None):
     return select.select(read_fds, [], [], timeout)[0]
 
 
-def run_program(config, program_args):
-    """Fork a program with its stdout set to use an os.opentty. Once the program
-    closes, it will write a dummy byte to the close pipe. config['read_fds'] is
-    populated with the program FD followed by the close FD, in that order."""
+def run_program(program_args):
+    """Fork a program with its stdout and stderr set to a pty. Once the program
+    closes, it will write a dummy byte to a close pipe. The master of the pty
+    and the close pipe are returned."""
     import fcntl
     import termios
     import shutil
     import struct
+    import subprocess
 
     # Create the tty and close_signal file decriptors
     tty_r, tty_w = os.openpty()
     close_r, close_w = os.pipe()
-
-    config['read_fds'] = [tty_r, close_r]
 
     # Update terminal size on the program's TTY (starts uninitialized)
     window_size = shutil.get_terminal_size()
@@ -306,7 +305,6 @@ def run_program(config, program_args):
 
     if os.fork() == 0:  # Program
         try:
-            import subprocess
             subprocess.run(program_args,
                            check=False,
                            stdout=tty_w,
@@ -318,6 +316,8 @@ def run_program(config, program_args):
         finally:
             os.write(close_w, b'\x00')
         sys.exit()
+
+    return tty_r, close_r
 
 
 def split_buffer(buffer):
