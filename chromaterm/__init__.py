@@ -15,9 +15,10 @@ import sys
 from .config import RESET_TYPES, eprint, parse_config, read_file
 
 # Sequences upon which ct will split during processing. This includes new lines,
-# vertical spaces, form feeds, C1 set (ECMA-048), and CSI (excluding SGR).
-SPLIT_RE = re.compile(r'(\r\n?|\n|\v|\f|\x1b[\x40-\x5a\x5c-\x5f]|'
-                      r'\x1b\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e])')
+# vertical spaces, form feeds, C1 set (ECMA-048), CSI (excluding SGR), and OSC.
+SPLIT_RE = re.compile(r'(\r\n?|\n|\v|\f|\x1b[\x40-\x5a\x5c\x5e\x5f]|'
+                      r'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
+                      r'\x1b\x5d[\x08-\x0d\x20-\x7e]*(?:\x07|\x1b\x5c))')
 
 # Select Graphic Rendition sequence (all types)
 SGR_RE = re.compile(r'\x1b\[[0-9;]*m')
