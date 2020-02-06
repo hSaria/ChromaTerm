@@ -88,3 +88,4 @@
 - description: Prompt
   regex: ^([^$#(]+)(\$|#|\([^)]+\)#)
   color: f#ffffff
+
