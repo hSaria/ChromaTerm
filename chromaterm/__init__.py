@@ -84,7 +84,10 @@ def args_init(args=None):
                 if process.cmdline()[:2] == current_process.cmdline()[:2]:
                     os.kill(process.pid, signal.SIGUSR1)
                     count += 1
-            except psutil.AccessDenied:
+            except (psutil.AccessDenied,
+                    psutil.NoSuchProcess):  # pragma: no cover
+                # As per the documentation, expect those errors when accessing
+                # the methods of process
                 pass
 
         return 'Processes reloaded: ' + str(count)
