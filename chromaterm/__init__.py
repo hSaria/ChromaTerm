@@ -366,7 +366,11 @@ def main(config, max_wait=None, read_fd=None):
     config['read_fd'] = config.get('read_fd', read_fd)
 
     while read_ready(config['read_fd'], max_wait):
-        data = os.read(config['read_fd'], READ_SIZE)
+        try:
+            data = os.read(config['read_fd'], READ_SIZE)
+        except OSError:
+            data = b''
+
         buffer += data.decode(encoding='utf-8', errors='replace')
 
         if not buffer:  # Buffer was processed empty and data fd hit EOF
