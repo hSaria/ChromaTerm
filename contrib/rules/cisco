@@ -1,163 +1,90 @@
-# Based on .chromatermrc from  vista- and translated to YAML.
-# Source: https://notx.ml/Own_projects/Highlighting_Cisco_keywords_or_output_on_Linux/
+# Based on .chromatermrc from https://notx.ml/Own_projects/Highlighting_Cisco_keywords_or_output_on_Linux/
+# Translated to YAML in https://github.com/hSaria/ChromaTerm/pull/79
 
-rules:
-  - description: "MAC address. Example: 0a1b.2c3d.4e5f"
-    regex: \b([0-9a-f]{4}\.){2}[0-9a-f]{4}\b
-    color: f#008080
+- description: IP-address:nn RD or RT
+  regex: \b(RT:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d):(?:[1-9]|\d{2,5})\b
+  color: f#0000ff
 
-  - description: "SAF Identifier Numbers?"
-    regex: \b((::FFFF)?::?(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]))\b
-    color: f#00FFFF
+- description: VPNv4 Addresses
+  regex: \b((\d{1,10}:){2}((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d):\d{1,10}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))\b
+  color: f#00ffff
 
-  - description: "VPNv6 Addresses"
-    regex: \b(\[\d{1,10}:\d{1,10}\](?:(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?=(?:[0-9A-Fa-f]{0,4}:){0,7}[0-9A-Fa-f]{0,4}(?![:.\w]))(([0-9A-Fa-f]{1,4}:){1,7}|:)((:[0-9A-Fa-f]{1,4}){1,7}|:)|(?:[0-9A-Fa-f]{1,4}:){7}:|:(:[0-9A-Fa-f]{1,4}){7})(?![:.\w])|\[\d{1,3}(\.\d{1,3}){3}:\d{1,10}\](?:(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?=(?:[0-9A-Fa-f]{0,4}:){0,7}[0-9A-Fa-f]{0,4}(?![:.\w]))(([0-9A-Fa-f]{1,4}:){1,7}|:)((:[0-9A-Fa-f]{1,4}){1,7}|:)|(?:[0-9A-Fa-f]{1,4}:){7}:|:(:[0-9A-Fa-f]{1,4}){7})(?![:.\w]))\b
-    color: f#00FFFF
+- description: VPNv6 Addresses
+  regex: (?i)\[(\d{1,10}|\d{1,3}(\.\d{1,3}){3}):\d{1,10}\](([\da-f]{1,4}:){7}[\da-f]{1,4}|([\da-f]{1,4}:){1,1}(:[\da-f]{1,4}){1,6}|([\da-f]{1,4}:){1,2}(:[\da-f]{1,4}){1,5}|([\da-f]{1,4}:){1,3}(:[\da-f]{1,4}){1,4}|([\da-f]{1,4}:){1,4}(:[\da-f]{1,4}){1,3}|([\da-f]{1,4}:){1,5}(:[\da-f]{1,4}){1,2}|([\da-f]{1,4}:){1,6}(:[\da-f]{1,4})|([\da-f]{1,4}:){1,7}:|:((:[\da-f]{1,4}){1,7}|:)|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|([\da-f]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))(?![:.\w])
+  color: f#00ffff
 
-  - description: "VPNv4 Addresses"
-    regex: \b((\d{1,10}:){2}(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])|(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]):\d{1,10}:(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]))\b
-    color: f#00FFFF
+- description: Days and hours, like 3650d23h
+  regex: \b(\d{3,4}d\d{2}h)\b
+  color: f#af5f00
 
-  - description: "IPv6 Addresses"
-    regex: \b((?:(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?=(?:[0-9A-Fa-f]{0,4}:){0,7}[0-9A-Fa-f]{0,4}(?![:.\w]))(([0-9A-Fa-f]{1,4}:){1,7}|:)((:[0-9A-Fa-f]{1,4}){1,7}|:)|(?:[0-9A-Fa-f]{1,4}:){7}:|:(:[0-9A-Fa-f]{1,4}){7})(?![:.\w]))\b
-    color: f#00FFFF
+- description: Interfaces
+  regex: (?i)\b(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Eth|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|(B|N)VI)((\d*/){0,2}\d*)(\.\d*)?\b
+  color: f#f07a7c
 
-  - description: "Days and hours. Example: 3650d23h"
-    regex: \b(\d{3,4}d\d{2}h)\b
-    color: f#ffff00
+- description: Bad responses
+  regex: \b(administratively|down|Down|DOWN|fail|failed|not|not active|not activated|bad|never|BLK|fddi|n\-isl|isl|notconnect|blocking|\(tdp\)|tdp|TDP|denied|invalid|err\-disabled|disabled|unusable|DENIED|err\-disable|infinity|inaccessible|wrong|cannot|MM_NO_STATE|MM_KEY_EXCH|UP\-NO\-IKE|K[13]=(\d{2,3}|[02-9])|K[245]=(\d{2,3}|[1-9]))\b
+  color: f#ff0000
 
-  - description: "Timestamps. Example: 23:59:59.123"
-    regex: \b((2[0-3]|[01][0-9])(:([0-5]?[0-9])){2}\.\d{3}|(2[0-3]|[01][0-9])(:([0-5]?[0-9])){1,2})\b
-    color: f#C0C0C0
+- description: Good responses
+  regex: \b(rstp|best|our_master|UP\-ACTIVE|\*\>|root|Root|802\.1q|connected|LocalT|yes|forwarding|synchronized|active|rapid\-pvst|up|Up|UP)\b
+  color: f#00ff00
 
-  - description: "IP-address:nn RD or RT"
-    regex: \b((RT:)?(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]):\d{2,5}|(RT:)?(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]):[1-9])\b
-    color: f#0000FF
+- description: Possible warning and other things that deserve attention
+  regex: '(?<!\w)(Total output drops: [1-9][0-9]*|[1-9][0-9]* ((input |output )?errors|runts|CRC|(late )?collisions|unknown protocol drops)|err(or(s)?)?|reset|act\/unsup|dhcp|DHCP|mismatch|notconnect|dropped|LRN|learning|listening|LIS|unsynchronized|Peer\(STP\)|Shr|Edge|pvst|ieee|Bound\(PVST\)|TFTP|Mbgp|LAPB|l2ckt\(\d{1,10}\)|DCE|DTE|passive|r |RIB\-failure|discriminator|Standby|aggregate(d|\/\w+)|atomic\-aggregate|\(global\)|tag|key-chain|md5|backup\/repair|repair|v2\/D|v2\/SD|Condition\-map|Advertise\-map|no\-advertise|no\-export|local\-AS|internet)(?!\w)'
+  color: f#ffff00
 
-  - description: "IPv4 address: Example: 10.1.10.10"
-    regex: \b((?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]))\b
-    color: f#00FFFF
+- description: Syslog facilities - Emergency to error
+  regex: \b(%\w+\-[0-3]\-\w+)\b
+  color: f#ff0000
 
-  - description: "HundredGigabitEthernet. Example: HundredGigabitEthernet0/1.100"
-    regex: \b((HundredGigabitEthernet\d/\d{1,2}\.\d{1,10}|HundredGigabitEthernet\d/\d{1,2}|Hu\d/\d{1,2}\.\d{1,10}|Hu\d/\d{1,2}|H\d/\d{1,2}\.\d{1,10}|H\d/\d{1,2}))\b
-    color: f#008080
+- description: Syslog facilities - Warning to notice
+  regex: \b(%\w+\-[4-5]\-\w+)\b
+  color: f#ffff00
 
-  - description: "FortyGigabitEthernet"
-    regex: \b((FortyGigabitEthernet\d/\d{1,2}\.\d{1,10}|FortyGigabitEthernet\d/\d{1,2}|Fo\d/\d{1,2}\.\d{1,10}|Fo\d/\d{1,2}))\b
-    color: f#008080
+- description: Syslog facilities - Info to debug
+  regex: \b(%\w+\-[6-7]\-\w+)\b
+  color: f#65d7fd
 
-  - description: "TenGigabitEthernet"
-    regex: \b((TenGigabitEthernet\d/\d{1,2}\.\d{1,10}|TenGigabitEthernet\d/\d{1,2}|Te\d/\d{1,2}\.\d{1,10}|Te\d/\d{1,2}|T\d/\d{1,2}\.\d{1,10}|T\d/\d{1,2}))\b
-    color: f#008080
+- description: BGP
+  regex: \b((Cost:pre\-bestpath|0x880\d):\d{1,10}:\d{1,10})\b
+  color: f#c0c0c0
 
-  - description: "GigabitEthernet"
-    regex: \b((GigabitEthernet\d/\d{1,2}\.\d{1,10}|GigabitEthernet\d/\d{1,2}|Gi\d/\d{1,2}\.\d{1,10}|Gi\d/\d{1,2}|G\d/\d{1,2}\.\d{1,10}|G\d/\d{1,2}))\b
-    color: f#008080
+- description: BGP Part 2
+  regex: \b(%(BGP|BGP_SESSION)\-\d\-\w+|bgp|BGP|B|IGP|incomplete|\d{2,7}\/nolabel\(\w+\)|RR\-client|Originator|cluster\-id|Cluster\-id|Cluster|Route\-Reflector)\b
+  color: f#0000ff
 
-  - description: "FastEthernet"
-    regex: \b((FastEthernet\d/\d{1,2}\.\d{1,10}|FastEthernet\d/\d{1,2}|Fa\d/\d{1,2}\.\d{1,10}|Fa\d/\d{1,2}|F\d/\d{1,2}\.\d{1,10}|F\d/\d{1,2}))\b
-    color: f#008080
+- description: OSPFv2 and OSPFv3
+  regex: \b(OSPF_VL\d{1,2}|OSPF_SL\d{1,2}|VL\d{1,2}|SL\d{1,2}|Type\-\d|ospf|OSPF|O|IA|E[12]|N[12]|P2P|P2MP|BDR|DR|ABR|ASBR|LOOP|DROTHER|POINT_TO_POINT|POINT_TO_MULTIPOINT|BROADCAST|NON_BROADCAST|LOOPBACK|SHAM_LINK|3101|1587|transit|Transit|nssa|NSSA|stub|Stub|Superbackbone|OSPFv3_VL\d{1,2}|OSPFv3\-\d{1,5}\-IPv6|ospfv3|OSPFv3|OI|OE[12]|ON[12]|V6\-Bit|E\-Bit|R\-bit|DC\-Bit|opaque|DROTH|%OSPF(V3)?\-\d\-\w+)\b
+  color: f#ffa500
 
-  - description: "Ethernet"
-    regex: \b((Ethernet\d/\d{1,2}\.\d{1,10}|Ethernet\d/\d{1,2}|Et\d/\d{1,2}\.\d{1,10}|Et\d/\d{1,2}|E\d/\d{1,2}.\d{1,10}|E\d/\d{1,2}))\b
-    color: f#008080
+- description: EIGRP
+  regex: \b(EIGRP\-IPv6|EIGRP\-IPv4|eigrp|EIGRP|EX|D|K[13]=1|K[245]=0|Internal|External|%DUAL\-\d\-\w+)\b
+  color: f#008080
 
-  - description: "Serial interface. Example: Serial0/0.100"
-    regex: \b((Serial\d/\d\.\d{1,10}|Serial\d/\d|Se\d/\d\.\d{1,10}|Se\d/\d|S\d/\d\.\d{1,10}|S\d/\d))\b
-    color: f#008080
+- description: RIP
+  regex: \b((rip|RIP|R))\b
+  color: f#ff0000
 
-  - description: "Loopbacks, tunnels, VLANs. Example: Vlan1234"
-    regex: \b((Null0|Loopback\d{1,10}|Lo\d{1,10}|L\d{1,10}|Tunnel\d{1,3}|Tu\d{1,3}|T\d{1,3}|Vlan\d{1,4}|Vl\d{1,4}))\b
-    color: f#008080
+- description: Multicast
+  regex: \b((PIM\/IPv4|RP\:|v2\/S|BSR)|%(PIM|MSDP|IGMP)\-\d\-\w+)\b
+  color: f#ff00ff
 
-  - description: "Other interface types. Example: Virtual-Access100"
-    regex: \b((Portchannel\d{1,2}|Port-channel\d{1,2}|Po\d{1,2}|NVI\d{1,2}|Virtual-Template\d{1,3}|Virtual-Access\d{1,3}\.\d{1,10}|Virtual-Access\d{1,3}|Vi\d{1,3}\.\d{1,10}|Vi\d{1,3}|Multilink\d{1,10}|Mu\d{1,10}|Dialer\d{1,3}|Di\d{1,3}|BVI\d{1,3}))\b
-    color: f#008080
+- description: Routing table metrics
+  regex: \b(\[\d{1,3}\/\d{1,12}\])
+  color: f#ffff00
 
-  - description: "Misc. interfaces. Example: a-1/0/2"
-    regex: \b([a-z]+-\d+/\d+/\d+(\.\d+)?)\b
-    color: f#008080
+- description: EIGRP topology table metrics and ping responses
+  regex: \b(\(\d{1,12}\/\d{1,12}\))
+  color: f#ffff00
 
-  - description: "Bad responses"
-    regex: \b(administratively|down|Down|DOWN|fail|failed|not|not active|not activated|bad|never|BLK|fddi|n\-isl|isl|notconnect|blocking|\(tdp\)|tdp|TDP|denied|invalid|err\-disabled|disabled|unusable|DENIED|err\-disable|infinity|inaccessible|\*ROOT_Inc|BKN\*|\*LOOP_Inc|wrong|K2=1|K4=1|K5=1|cannot|MM_NO_STATE|MM_KEY_EXCH|UP\-NO\-IKE|K[13]=(\d{2,3}|[02-9])|K[245]=(\d{2,3}|[1-9]))\b
-    color: f#FF0000
+- description: LDP
+  regex: \b(%(LDP|LSD)\-\d\-\w+)\b
+  color: f#ff00ff
 
-  - description: "Good responses"
-    regex: \b(rstp|best|ldp|CIST|QM_IDLE|(IP|L|CDP)CP\+|CHAP\+|PAP\+|(IP|L|CDP)CP\[Open\]|our_master|UP\-ACTIVE|\*\>|FWD|root|Root|802\.1q|connected|LocalT|yes|\(ldp\)|ldp|\(SU\)|\(RU\)|forwarding|synchronized|active|rapid\-pvst|up|Up|UP|FULL)\b
-    color: f#00FF00
+- description: IPv6 Neighbor Discovery
+  regex: \b(%IPV6_ND\-\d\-\w+)\b
+  color: f#00ffff
 
-  - description: "Possible warning and other things that deserve attention"
-    regex: '\b(([1-9][0-9]* (input|output) errors|[1-9][0-9]* errors|error|err|reset|act\/unsup|dhcp|DHCP|mismatch|notconnect|Total output drops: [1-9][0-9]*)|dropped|[1-9][0-9]* runts|[1-9][0-9]* CRC|[1-9][0-9]* collisions|[1-9][0-9]* late collision|[1-9][0-9]* unknown protocol drops|LRN|learning|listening|LIS|unsynchronized|Peer\(STP\)|Shr|Edge|pvst|ieee|Bound\(PVST\)|INIT|TFTP|Mbgp|LAPB|l2ckt\(\d{1,10}\)|DCE|DTE|passive|\[ANY\]|r |RIB\-failure|discriminator|Standby|aggregate(d|\/\w*)|atomic\-aggregate|\[V\]|ATTEMPT|INIT|2WAY|EXCHANGE|LOADING|\(global\)|tag|key-chain|md5|backup\/repair|repair|v2\/D|v2\/SD|Condition\-map|Advertise\-map|no\-advertise|no\-export|local\-AS|internet)\b'
-    color: f#ffff00
-
-  - description: "BGP"
-    regex: \b((Cost:pre\-bestpath|0x880\d):\d{1,10}:\d{1,10})\b
-    color: f#C0C0C0
-
-  - description: "BGP Part 2"
-    regex: \b(%BGP\-\d\-\w+|bgp|BGP|B|IGP|incomplete|\d{2,7}\/nolabel\(\w*\)|RR\-client|Originator|cluster\-id|Cluster\-id|Cluster|Route\-Reflector|%BGP_SESSION\-\d\-\w*)\b
-    color: f#0000FF
-
-  - description: "OSPFv2 and OSPFv3"
-    regex: \b(OSPF_VL\d{1,2}|OSPF_SL\d{1,2}|VL\d{1,2}|SL\d{1,2}|Type\-\d|ospf|OSPF|O|IA|E[12]|N[12]|P2P|P2MP|BDR|DR|ABR|ASBR|LOOP|DROTHER|POINT_TO_POINT|POINT_TO_MULTIPOINT|BROADCAST|NON_BROADCAST|LOOPBACK|SHAM_LINK|3101|1587|transit|Transit|nssa|NSSA|stub|Stub|Superbackbone|OSPFv3_VL\d{1,2}|OSPFv3\-\d{1,5}\-IPv6|ospfv3|OSPFv3|OI|OE[12]|ON[12]|V6\-Bit|E\-Bit|R\-bit|DC\-Bit|opaque|DROTH|%OSPFV3\-\d\-\w+|%OSPF\-\d\-\w+)\b
-    color: f#FFA500
-
-  - description: "EIGRP"
-    regex: \b(EIGRP\-IPv6|EIGRP\-IPv4|eigrp|EIGRP|EX|D|K[13]=1|K[245]=0|Internal|External%DUAL\-\d\-\w+)\b
-    color: f#008080
-
-  - description: "RIP"
-    regex: \b((rip|RIP|R))\b
-    color: f#FF0000
-
-  - description: "PIM"
-    regex: \b((PIM\/IPv4|RP\:|v2\/S|BSR)|%PIM\-\d\-\w*)\b
-    color: f#FF00FF
-
-  - description: "MSDP"
-    regex: \b(%MSDP\-\d\-\w*)\b
-    color: f#FF00FF 
-
-  - description: "IGMP"
-    regex: (%IGMP\-\d\-\w*)
-    color: f#FF00FF 
-
-  - description: "Routing table metrics"
-    regex: \b(\[\d{1,3}\/\d{1,12}\])
-    color: f#ffff00
-
-  - description: "EIGRP topology table metrics and ping responses"
-    regex: \b(\(\d{1,12}\/\d{1,12}\))
-    color: f#ffff00
-
-  - description: "LDP"
-    regex: (%LDP\-\d\-\w*|%LSD\-\d\-\w*)
-    color: f#FF00FF 
-
-  - description: "IPv6 Neighbor Discovery"
-    regex: \b(%IPV6_ND\-\d\-\w*)\b
-    color: f#00FFFF 
-
-  - description: "Various log messages I turn yellow"
-    regex: (%CDP\-\d\-\w*|%DHCP\-\d\-\w*|%SPANTREE\-\d\-\w*|%TDP\-\d\-\w*|%SW_DAI\-\d\-\w*|%SW_VLAN\-\d\-\w*|%PM\-d\-\w*|%STORM_CONTROL\-\d-\w*|%PV\-\d\-\w*|%SPANTREE_FAST\-\d\-\w*|%TRACK\-\d\-\w*|%TRACKING\-\d\-\w*|%FR_EEK\-\d\-\w*|%HSRP\-\d\-\w*|%SNAT\-\d\-\w*|%SEC\-\d\-\w*|%IPRT\-\d\-\w*|%SYS\-\d\-LOGGINGHOST\w*|%PARSER\-\d\-cfglog\w*|%ENVMON\-\d\-\w*|%EC\-\d\-\w*|%GLDP\-\d\-\w*|%CRYPTO\-\d\-\w*|%NHRP\-\d\-\w*|%SNMP\-\d\-\w*|%CP\-\d\-\w*|%HA_EM\-\d\-\w*|%TCP\-\d\-\w*|%IP\-\d\-\w*)
-    color: f#ffff00 
-
-  - description: "Catch-all for all other log messages. Example: %A-01-ABC"
-    regex: (%\w+\-[34567]\-\w+|%\w+\-[012]\-\w+)
-    color: f#ffff00 
-
-  - description: "?"
-    regex: \b((R\d{1,2}%\w*|R\d{1,2}|SW\d{1,2}|BB\d|BB|PE\d{1,2}|CE\d{1,2}|P\d{1,2}|FRS|Sw\d{1,2}))\b
-    color: f#00FF00
-
-  - description: "?"
-    regex: \b((DT2|T2))\b
-    color: f#800080
-    
-  - description: "?"
-    regex: (?i)\b(((fe|ge|xe|gr|ip|lt|vcp)\-\d*/\d*/\d*)|(((b)?me|em|fab|fxp|lo|pp(d|e)?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pimd|pime|tap|vlan|vme|vtep)|((ae|reth)\d*))(\.\d*)?\b
-    color: f#008080
-
-  - description: "?"
-    regex: ^([^$#(]+)(\$|#|\([^)]+\)#)
-    color: f#ffffff
+- description: Prompt
+  regex: ^([^$#(]+)(\$|#|\([^)]+\)#)
+  color: f#ffffff
