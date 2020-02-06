@@ -98,7 +98,7 @@ def args_init(args=None):
         parse_config(read_file(args.config) or '', config, rgb)
 
     if args.program:
-        config['read_fds'] = list(run_program([args.program] + args.arguments))
+        config['read_fd'] = run_program([args.program] + args.arguments)
 
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)  # Default for broken pipe
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # Ignore SIGINT
@@ -212,7 +212,7 @@ def process_buffer(config, buffer, more):
         print(highlight(config, split[0]) + split[1], end='')
 
     # Indicated more data to possibly come and read_fd confirmed it
-    if more and read_ready(config.get('read_fds'), WAIT_FOR_SPLIT):
+    if more and read_ready(config.get('read_fd'), WAIT_FOR_SPLIT):
         # Return last split as the left-over data
         return splits[-1][0] + splits[-1][1]
 
@@ -278,49 +278,43 @@ def process_inserts(inserts, existing, config):
     return reversed(sorted(finals, key=lambda x: x['position']))
 
 
-def read_ready(read_fds, timeout=None):
-    """Return the list of fds that have  data or have hit EOF. If `timeout` is
-    None, block until data/EOF. If `timeout` is specified, assume not ready on
-    timeout (i.e. won't be added to the list)."""
-    if read_fds is None:
-        return []
-    return select.select(read_fds, [], [], timeout)[0]
+def read_ready(read_fd, timeout=None):
+    """Return True if `read_fd` has data or has hit EOF. If `timeout` is
+    specified, and it expires, return False. Otherwise, block until data/EOF."""
+    return bool(select.select([read_fd], [], [], timeout)[0])
 
 
 def run_program(program_args):
-    """Fork a program with its stdout and stderr set to a pty. Once the program
-    closes, it will write a dummy byte to a close pipe. The master of the pty
-    and the close pipe are returned."""
+    """Fork a program with its stdout and stderr set to a pty. The master of the
+    pty and the close pipe are returned."""
     import fcntl
     import termios
     import shutil
     import struct
-    import subprocess
 
-    # Create the tty and close_signal file decriptors
-    tty_r, tty_w = os.openpty()
-    close_r, close_w = os.pipe()
+    # Create the tty file decriptors
+    master_fd, slave_fd = os.openpty()
 
     # Update terminal size on the program's TTY (starts uninitialized)
     window_size = shutil.get_terminal_size()
     window_size = struct.pack('2H', window_size.lines, window_size.columns)
-    fcntl.ioctl(tty_w, termios.TIOCSWINSZ, window_size)
+    fcntl.ioctl(slave_fd, termios.TIOCSWINSZ, window_size)
 
     if os.fork() == 0:  # Program
+        os.dup2(slave_fd, sys.stdout.fileno())
+        os.dup2(slave_fd, sys.stderr.fileno())
+        os.close(master_fd)
+        os.close(slave_fd)
+
         try:
-            subprocess.run(program_args,
-                           check=False,
-                           stdout=tty_w,
-                           stderr=tty_w)
+            os.execvp(program_args[0], program_args)
         except FileNotFoundError:
             eprint(program_args[0] + ': command not found')
-        except KeyboardInterrupt:
-            pass  # Program gets the signal; CT shouldn't freak out
-        finally:
-            os.write(close_w, b'\x00')
-        sys.exit()
 
-    return tty_r, close_r
+        sys.exit()
+    else:  # CT
+        os.close(slave_fd)
+        return master_fd
 
 
 def split_buffer(buffer):
@@ -360,7 +354,7 @@ def strip_colors(data):
 def main(config, max_wait=None, read_fd=None):
     """Main entry point that uses `config` from args_init to process data.
     `max_wait` is the longest period to wait without input before returning.
-    read_fd will utilize stdin if not specified. If config['read_fds'] is set,
+    read_fd will utilize stdin if not specified. If config['read_fd'] is set,
     the read_fd keyword is ignored."""
     if isinstance(config, str):  # An error message
         return config
@@ -369,14 +363,11 @@ def main(config, max_wait=None, read_fd=None):
         read_fd = sys.stdin.fileno()
 
     buffer = ''
-    config['read_fds'] = config.get('read_fds', [read_fd])
+    config['read_fd'] = config.get('read_fd', read_fd)
 
-    while True:
-        ready_fds = read_ready(config['read_fds'], max_wait)
-
-        if config['read_fds'][0] in ready_fds:  # Data FD
-            data = os.read(config['read_fds'][0], READ_SIZE)
-            buffer += data.decode(encoding='utf-8', errors='replace')
+    while read_ready(config['read_fd'], max_wait):
+        data = os.read(config['read_fd'], READ_SIZE)
+        buffer += data.decode(encoding='utf-8', errors='replace')
 
         if not buffer:  # Buffer was processed empty and data fd hit EOF
             break

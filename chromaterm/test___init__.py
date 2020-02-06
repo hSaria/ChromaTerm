@@ -842,15 +842,10 @@ def test_read_ready_input():
         pipe_r, pipe_w = os.pipe()
 
         os.write(pipe_w, b'Hello world')
-        assert chromaterm.read_ready([pipe_r])
+        assert chromaterm.read_ready(pipe_r)
     finally:
         os.close(pipe_r)
         os.close(pipe_w)
-
-
-def test_read_ready_no_read_fd():
-    """read_ready with None as read_fd must return False (no data to read)."""
-    assert not chromaterm.read_ready(None)
 
 
 def test_read_ready_timeout_empty():
@@ -859,7 +854,7 @@ def test_read_ready_timeout_empty():
         pipe_r, pipe_w = os.pipe()
 
         before = time.time()
-        assert not chromaterm.read_ready([pipe_r], 0.5)
+        assert not chromaterm.read_ready(pipe_r, 0.5)
 
         after = time.time()
         assert after - before >= 0.5
@@ -875,7 +870,7 @@ def test_read_ready_timeout_input():
 
         os.write(pipe_w, b'Hello world')
         before = time.time()
-        assert chromaterm.read_ready([pipe_r], 0.5)
+        assert chromaterm.read_ready(pipe_r, 0.5)
 
         after = time.time()
         assert after - before < 0.5
@@ -1194,9 +1189,9 @@ def test_main_reload_processes():
 def test_main_run_no_file_found():
     """Have CT run with an unavailable command."""
     program = ['./ct', 'plz-no-work']
-    result = subprocess.run(program, check=False, stderr=subprocess.PIPE)
-    output = re.sub(br'\x1b\[[\d;]+?m', b'', result.stderr)
-    assert output == b'./ct: plz-no-work: command not found\n'
+    result = subprocess.run(program, check=False, stdout=subprocess.PIPE)
+    output = re.sub(br'\x1b\[[\d;]+?m', b'', result.stdout)
+    assert b'./ct: plz-no-work: command not found' in output
 
 
 def test_main_run_no_pipe():
