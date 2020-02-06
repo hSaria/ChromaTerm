@@ -925,11 +925,13 @@ def test_split_buffer_form_feed():
 
 
 def test_split_buffer_ecma_048_c1_set():
-    """Split based on the ECMA-048 C1 set, excluding CSI."""
-    c1_set_up_to_csi = range(int('40', 16), int('5b', 16))
-    c1_set_above_csi = range(int('5c', 16), int('60', 16))
+    """Split based on the ECMA-048 C1 set, excluding CSI and OSC."""
+    c1_except_csi_and_osc = itertools.chain(
+        range(int('40', 16), int('5b', 16)),
+        [int('5c', 16), int('5e', 16), int('5f', 16)],
+    )
 
-    for char_id in itertools.chain(c1_set_up_to_csi, c1_set_above_csi):
+    for char_id in c1_except_csi_and_osc:
         data = 'Hello \x1b{} World'.format(chr(char_id))
         expected = [['Hello ', '\x1b' + chr(char_id)], [' World', '']]
 
@@ -1005,6 +1007,17 @@ def test_split_buffer_ecma_048_csi_parameter_intermediate():
 
                     assert repr(
                         chromaterm.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_ecma_048_osc_title():
+    """Operating System Command (OSC) can supply arbitrary commands within the
+    visible character set."""
+    for end in ['\x07', '\x1b\x5c']:
+        osc = '\x1b]Ignored{}'.format(end)
+        data = '{}Hello world'.format(osc)
+        expected = [['', osc], ['Hello world', '']]
+
+        assert repr(chromaterm.split_buffer(data)) == repr(expected)
 
 
 def test_tty_test_code_no_pipe():
@@ -1182,7 +1195,8 @@ def test_main_run_no_file_found():
     """Have CT run with an unavailable command."""
     program = ['./ct', 'plz-no-work']
     result = subprocess.run(program, check=False, stderr=subprocess.PIPE)
-    assert result.stderr == b'./ct: plz-no-work: command not found\n'
+    output = re.sub(br'\x1b\[[\d;]+?m', b'', result.stderr)
+    assert output == b'./ct: plz-no-work: command not found\n'
 
 
 def test_main_run_no_pipe():
