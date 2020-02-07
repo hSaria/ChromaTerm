@@ -282,7 +282,7 @@ def process_inserts(inserts, existing, config):
 
 def read_ready(*read_fds, timeout=None):
     """Wrapper for the read fds of `select`. Returns the list of ready read fds."""
-    return select.select(read_fds, [], [], timeout)[0]
+    return [] if not read_fds else select.select(read_fds, [], [], timeout)[0]
 
 
 def run_program(program_args):
