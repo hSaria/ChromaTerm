@@ -287,39 +287,44 @@ def read_ready(*read_fds, timeout=None):
 
 def run_program(program_args):
     """Fork a program over a pty of which the master fd is returned."""
+    import atexit
     import fcntl
     import termios
+    import pty
     import shutil
     import struct
+    import tty
 
-    # Create the pty file decriptors
-    master_fd, slave_fd = os.openpty()
-
-    # Update terminal size and attributes on the program's (slave) pty
+    # Save the current tty's window size and attributes (used by slave pty)
     window_size = shutil.get_terminal_size()
     window_size = struct.pack('2H', window_size.lines, window_size.columns)
-    fcntl.ioctl(slave_fd, termios.TIOCSWINSZ, window_size)
 
     try:
         attributes = termios.tcgetattr(sys.stdin.fileno())
-        termios.tcsetattr(slave_fd, termios.TCSANOW, attributes)
-    except termios.error:
-        pass
 
-    if os.fork() == 0:  # Program
-        os.dup2(slave_fd, sys.stdout.fileno())
-        os.dup2(slave_fd, sys.stderr.fileno())
-        os.close(master_fd)
-        os.close(slave_fd)
+        # Set to raw as the pty will be handling any processing
+        tty.setraw(sys.stdin.fileno())
+        atexit.register(termios.tcsetattr, sys.stdin.fileno(), termios.TCSANOW,
+                        attributes)
+    except termios.error:
+        attributes = None
+
+    pid, master_fd = pty.fork()  # openpty, login_tty, then fork
+
+    if pid == 0:  # Program
+        # Update the slave's pty (now on std fds) window size and attributes
+        fcntl.ioctl(sys.stdin.fileno(), termios.TIOCSWINSZ, window_size)
+
+        if attributes:
+            termios.tcsetattr(sys.stdin.fileno(), termios.TCSANOW, attributes)
 
         try:
             os.execvp(program_args[0], program_args)
         except FileNotFoundError:
             eprint(program_args[0] + ': command not found')
 
-        sys.exit()
+        sys.exit(1)  # Shouldn't be hit as exec replaces the fork's process
     else:  # CT
-        os.close(slave_fd)
         return master_fd
 
 
@@ -362,22 +367,42 @@ def main(config, max_wait=None, read_fd=None):
     `max_wait` is the longest period to wait without input before returning.
     read_fd will default to stdin if not specified. If config['read_fd'] is set,
     the read_fd keyword is ignored."""
-    if read_fd is None:
-        read_fd = sys.stdin.fileno()
+    # data piped over stdin
+    if config.get('read_fd', read_fd) in [None, sys.stdin.fileno()]:
+        config['read_fd'] = sys.stdin.fileno()
+        fds = [config['read_fd']]
+    # data coming from pty, stdin is forwarded to the pty
+    else:
+        config['read_fd'] = config.get('read_fd', read_fd)
+        fds = [sys.stdin.fileno(), config['read_fd']]
 
     buffer = ''
-    config['read_fd'] = config.get('read_fd', read_fd)
+    ready_fds = read_ready(*fds, timeout=max_wait)
 
-    while read_ready(config['read_fd'], timeout=max_wait):
-        try:
-            data = os.read(config['read_fd'], READ_SIZE)
-        except OSError:
-            data = b''
+    while ready_fds:
+        # stdin has data (piped) or has input to forward to the pty
+        if sys.stdin.fileno() in ready_fds:
+            data = os.read(sys.stdin.fileno(), READ_SIZE)
 
-        buffer += data.decode(encoding='utf-8', errors='replace')
+            if sys.stdin.fileno() == config['read_fd']:  # stdin is data
+                buffer += data.decode(encoding='utf-8', errors='replace')
+            else:  # stdin is forwarded to pty
+                os.write(config['read_fd'], data)
 
-        if not buffer:  # Buffer was processed empty and data fd hit EOF
-            break
+            if not data:  # stdin or pty closed; don't forward anymore
+                fds.remove(sys.stdin.fileno())
 
-        # Process the buffer, updating it with any left-over data
-        buffer = process_buffer(config, buffer, bool(data))
+        # Data was received. If read_fd is stdin, then just process the buffer
+        # as the data was already read above. Otherwise, read_fd is pty.
+        if config['read_fd'] in ready_fds:
+            if config['read_fd'] != sys.stdin.fileno():
+                data = os.read(config['read_fd'], READ_SIZE)
+                buffer += data.decode(encoding='utf-8', errors='replace')
+
+            if not buffer:  # Buffer was processed empty and data fd hit EOF
+                break
+
+            # Process the buffer, updating it with any left-over data
+            buffer = process_buffer(config, buffer, bool(data))
+
+        ready_fds = read_ready(*fds, timeout=max_wait)

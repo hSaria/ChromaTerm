@@ -10,6 +10,7 @@ import os
 import re
 import signal
 import subprocess
+import sys
 import time
 from threading import Thread
 
@@ -18,11 +19,25 @@ import chromaterm.config
 
 TEMP_FILE = '.test_chromaterm.yml'
 
-TTY_CODE = """import os, sys
-t_stdin = os.isatty(sys.stdin.fileno())
-t_stdout = os.isatty(sys.stdout.fileno())
-print('stdin={}, stdout={}'.format(t_stdin, t_stdout))"""
-TTY_PROGRAM = 'python3 -c "{}"'.format('; '.join(TTY_CODE.splitlines()))
+CODE_ISATTY = """import os, sys
+stdin = os.isatty(sys.stdin.fileno())
+stdout = os.isatty(sys.stdout.fileno())
+print('stdin={}, stdout={}'.format(stdin, stdout))"""
+
+CODE_TTYNAME = """import os, sys
+print(os.ttyname(sys.stdin.fileno()) if os.isatty(sys.stdin.fileno()) else None)"""
+
+_, MOCK_FD = os.openpty()
+
+
+def mock_fd_fileno():
+    """Returns MOCK_FD. To be used when monkeypatching sys.stdin.fileno"""
+    return MOCK_FD
+
+
+def get_python_command(code):
+    """Returns the python shell command that runs `code`."""
+    return 'python3 -c "{}"'.format('; '.join(code.splitlines()))
 
 
 def test_decode_sgr_bg():
@@ -1055,7 +1070,7 @@ def test_split_buffer_ecma_048_osc_title():
 def test_tty_test_code_no_pipe():
     """Baseline the test code with no pipes on stdin or stdout."""
     master, slave = os.openpty()
-    subprocess.run(TTY_PROGRAM,
+    subprocess.run(get_python_command(CODE_ISATTY),
                    check=True,
                    shell=True,
                    stdin=slave,
@@ -1066,7 +1081,7 @@ def test_tty_test_code_no_pipe():
 def test_tty_test_code_in_pipe():
     """Baseline the test code with a pipe on stdin."""
     master, slave = os.openpty()
-    subprocess.run(TTY_PROGRAM,
+    subprocess.run(get_python_command(CODE_ISATTY),
                    check=True,
                    shell=True,
                    stdin=subprocess.PIPE,
@@ -1077,7 +1092,7 @@ def test_tty_test_code_in_pipe():
 def test_tty_test_code_out_pipe():
     """Baseline the test code with a pipe on stdout."""
     _, slave = os.openpty()
-    result = subprocess.run(TTY_PROGRAM,
+    result = subprocess.run(get_python_command(CODE_ISATTY),
                             check=True,
                             shell=True,
                             stdin=slave,
@@ -1087,7 +1102,7 @@ def test_tty_test_code_out_pipe():
 
 def test_tty_test_code_in_out_pipe():
     """Baseline the test code with pipes on stdin and stdout."""
-    result = subprocess.run(TTY_PROGRAM,
+    result = subprocess.run(get_python_command(CODE_ISATTY),
                             check=True,
                             shell=True,
                             stdin=subprocess.PIPE,
@@ -1095,10 +1110,39 @@ def test_tty_test_code_in_out_pipe():
     assert 'stdin=False, stdout=False' in result.stdout.decode()
 
 
-def test_main(capsys):
+def test_tty_test_code_ttyname_same():
+    """Baseline the ttyname code, ensuring it detects matching ttys."""
+    master, slave = os.openpty()
+
+    subprocess.run(get_python_command(CODE_TTYNAME),
+                   check=True,
+                   shell=True,
+                   stdin=slave,
+                   stdout=slave)
+
+    assert os.ttyname(slave) in os.read(master, 1024).decode()
+
+
+def test_tty_test_code_ttyname_different():
+    """Baseline the ttyname code, ensuring it detects different ttys."""
+    master, slave = os.openpty()
+    another_master, another_slave = os.openpty()
+
+    subprocess.run(get_python_command(CODE_TTYNAME),
+                   check=True,
+                   shell=True,
+                   stdin=slave,
+                   stdout=slave)
+
+    assert os.ttyname(another_slave) not in os.read(master, 1024).decode()
+
+
+def test_main(capsys, monkeypatch):
     """General stdin processing."""
     try:
         pipe_r, pipe_w = os.pipe()
+        monkeypatch.setattr(sys.stdin, 'fileno', mock_fd_fileno)
+
         config = chromaterm.args_init([])
         main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
 
@@ -1142,10 +1186,12 @@ def test_main_buffer_close_time():
     assert after - before < 1
 
 
-def test_main_decode_error(capsys):
+def test_main_decode_error(capsys, monkeypatch):
     """Attempt to decode a character that is not UTF-8."""
     try:
         pipe_r, pipe_w = os.pipe()
+        monkeypatch.setattr(sys.stdin, 'fileno', mock_fd_fileno)
+
         config = chromaterm.args_init([])
         main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
 
@@ -1162,7 +1208,7 @@ def test_main_decode_error(capsys):
         main_thread.join()
 
 
-def test_main_reload_config(capsys):
+def test_main_reload_config(capsys, monkeypatch):
     """Reload the configuration while the program is running."""
     try:
         with open(TEMP_FILE + '1', 'w') as file:
@@ -1173,6 +1219,8 @@ def test_main_reload_config(capsys):
               color: b#321321''')
 
         pipe_r, pipe_w = os.pipe()
+        monkeypatch.setattr(sys.stdin, 'fileno', mock_fd_fileno)
+
         config = chromaterm.args_init(['--config', TEMP_FILE + '1'])
         main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
 
@@ -1234,7 +1282,7 @@ def test_main_run_no_file_found():
 def test_main_run_no_pipe():
     """Have CT run the tty test code with no pipes."""
     master, slave = os.openpty()
-    subprocess.run('./ct ' + TTY_PROGRAM,
+    subprocess.run('./ct ' + get_python_command(CODE_ISATTY),
                    check=True,
                    shell=True,
                    stdin=slave,
@@ -1245,18 +1293,18 @@ def test_main_run_no_pipe():
 def test_main_run_in_pipe():
     """Have CT run the tty test code with a pipe on stdin."""
     master, slave = os.openpty()
-    subprocess.run('./ct ' + TTY_PROGRAM,
+    subprocess.run('./ct ' + get_python_command(CODE_ISATTY),
                    check=True,
                    shell=True,
                    stdin=subprocess.PIPE,
                    stdout=slave)
-    assert 'stdin=False, stdout=True' in os.read(master, 1024).decode()
+    assert 'stdin=True, stdout=True' in os.read(master, 1024).decode()
 
 
 def test_main_run_out_pipe():
     """Have CT run the tty test code with a pipe on stdout."""
     _, slave = os.openpty()
-    result = subprocess.run('./ct ' + TTY_PROGRAM,
+    result = subprocess.run('./ct ' + get_python_command(CODE_ISATTY),
                             check=True,
                             shell=True,
                             stdin=slave,
@@ -1266,9 +1314,22 @@ def test_main_run_out_pipe():
 
 def test_main_run_in_out_pipe():
     """Have CT run the tty test code with pipes on stdin and stdout."""
-    result = subprocess.run('./ct ' + TTY_PROGRAM,
+    result = subprocess.run('./ct ' + get_python_command(CODE_ISATTY),
                             check=True,
                             shell=True,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE)
-    assert 'stdin=False, stdout=True' in result.stdout.decode()
+    assert 'stdin=True, stdout=True' in result.stdout.decode()
+
+
+def test_main_run_child_ttyname():
+    """Ensure that CT spawns the child in a pseudo-terminal."""
+    master, slave = os.openpty()
+
+    subprocess.run('./ct ' + get_python_command(CODE_TTYNAME),
+                   check=True,
+                   shell=True,
+                   stdin=slave,
+                   stdout=slave)
+
+    assert os.ttyname(slave) not in os.read(master, 1024).decode()
