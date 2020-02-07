@@ -90,7 +90,7 @@ def args_init(args=None):
                 # the methods of process
                 pass
 
-        return 'Processes reloaded: ' + str(count)
+        sys.exit('Processes reloaded: ' + str(count))
 
     rgb = os.getenv('COLORTERM') == 'truecolor' or args.rgb
     config = parse_config(read_file(args.config) or '', rgb=rgb)
@@ -360,11 +360,8 @@ def strip_colors(data):
 def main(config, max_wait=None, read_fd=None):
     """Main entry point that uses `config` from args_init to process data.
     `max_wait` is the longest period to wait without input before returning.
-    read_fd will utilize stdin if not specified. If config['read_fd'] is set,
+    read_fd will default to stdin if not specified. If config['read_fd'] is set,
     the read_fd keyword is ignored."""
-    if isinstance(config, str):  # An error message
-        return config
-
     if read_fd is None:
         read_fd = sys.stdin.fileno()
 
