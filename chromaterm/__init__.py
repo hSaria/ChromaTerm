@@ -285,20 +285,25 @@ def read_ready(read_fd, timeout=None):
 
 
 def run_program(program_args):
-    """Fork a program with its stdout and stderr set to a pty. The master of the
-    pty and the close pipe are returned."""
+    """Fork a program over a pty of which the master fd is returned."""
     import fcntl
     import termios
     import shutil
     import struct
 
-    # Create the tty file decriptors
+    # Create the pty file decriptors
     master_fd, slave_fd = os.openpty()
 
-    # Update terminal size on the program's TTY (starts uninitialized)
+    # Update terminal size and attributes on the program's (slave) pty
     window_size = shutil.get_terminal_size()
     window_size = struct.pack('2H', window_size.lines, window_size.columns)
     fcntl.ioctl(slave_fd, termios.TIOCSWINSZ, window_size)
+
+    try:
+        attributes = termios.tcgetattr(sys.stdin.fileno())
+        termios.tcsetattr(slave_fd, termios.TCSANOW, attributes)
+    except termios.error:
+        pass
 
     if os.fork() == 0:  # Program
         os.dup2(slave_fd, sys.stdout.fileno())
