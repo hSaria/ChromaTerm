@@ -797,7 +797,7 @@ def test_process_buffer_rule_simple(capsys):
     rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
 
     config['rules'].append(chromaterm.config.parse_rule(rule))
-    data = 'test hello world test'
+    data = 'test hello world test\n'
     success = r'^test \x1b\[48;5;[0-9]{1,3}mhello world\x1b\[49m test$'
 
     chromaterm.process_buffer(config, data, False)
@@ -812,7 +812,7 @@ def test_process_buffer_rule_group(capsys):
     rule = {'regex': 'hello (world)', 'color': {1: 'b#fffaaa'}}
 
     config['rules'].append(chromaterm.config.parse_rule(rule))
-    data = 'test hello world test'
+    data = 'test hello world test\n'
     success = r'^test hello \x1b\[48;5;[0-9]{1,3}mworld\x1b\[49m test$'
 
     chromaterm.process_buffer(config, data, False)
@@ -827,7 +827,7 @@ def test_process_buffer_rule_multiple_colors(capsys):
     rule = {'regex': 'hello', 'color': 'b#fffaaa f#aaafff'}
 
     config['rules'].append(chromaterm.config.parse_rule(rule))
-    data = 'hello world'
+    data = 'hello world\n'
     success = r'^(\x1b\[[34]8;5;[0-9]{1,3}m){2}hello(\x1b\[[34]9m){2} world$'
 
     chromaterm.process_buffer(config, data, False)
@@ -1143,10 +1143,10 @@ def test_main_reload_config(capsys):
         time.sleep(0.1)  # Any start-up delay
         assert main_thread.is_alive()
 
-        os.write(pipe_w, b'Hello world')
+        os.write(pipe_w, b'Hello world\n')
         expected = [
             '\x1b[38;5;22m', 'Hello', '\x1b[39m', ' ', '\x1b[48;5;52m',
-            'world', '\x1b[49m'
+            'world', '\x1b[49m', '\n'
         ]
         time.sleep(0.1)  # Any processing delay
         assert repr(capsys.readouterr().out) == repr(''.join(expected))
@@ -1161,8 +1161,8 @@ def test_main_reload_config(capsys):
         # Reload config
         os.kill(os.getpid(), signal.SIGUSR1)
 
-        os.write(pipe_w, b'Hello world')
-        expected = ['\x1b[38;5;22m', 'Hello', '\x1b[39m', ' world']
+        os.write(pipe_w, b'Hello world\n')
+        expected = ['\x1b[38;5;22m', 'Hello', '\x1b[39m', ' world\n']
         time.sleep(0.1)  # Any processing delay
         assert repr(capsys.readouterr().out) == repr(''.join(expected))
     finally:
