@@ -1126,7 +1126,7 @@ def test_tty_test_code_ttyname_same():
 def test_tty_test_code_ttyname_different():
     """Baseline the ttyname code, ensuring it detects different ttys."""
     master, slave = os.openpty()
-    another_master, another_slave = os.openpty()
+    _, another_slave = os.openpty()
 
     subprocess.run(get_python_command(CODE_TTYNAME),
                    check=True,
