@@ -1058,7 +1058,7 @@ def test_tty_test_code_no_pipe():
     subprocess.run(TTY_PROGRAM,
                    check=True,
                    shell=True,
-                   stdin=master,
+                   stdin=slave,
                    stdout=slave)
     assert 'stdin=True, stdout=True' in os.read(master, 1024).decode()
 
@@ -1076,11 +1076,11 @@ def test_tty_test_code_in_pipe():
 
 def test_tty_test_code_out_pipe():
     """Baseline the test code with a pipe on stdout."""
-    master, _ = os.openpty()
+    _, slave = os.openpty()
     result = subprocess.run(TTY_PROGRAM,
                             check=True,
                             shell=True,
-                            stdin=master,
+                            stdin=slave,
                             stdout=subprocess.PIPE)
     assert 'stdin=True, stdout=False' in result.stdout.decode()
 
@@ -1237,7 +1237,7 @@ def test_main_run_no_pipe():
     subprocess.run('./ct ' + TTY_PROGRAM,
                    check=True,
                    shell=True,
-                   stdin=master,
+                   stdin=slave,
                    stdout=slave)
     assert 'stdin=True, stdout=True' in os.read(master, 1024).decode()
 
@@ -1255,11 +1255,11 @@ def test_main_run_in_pipe():
 
 def test_main_run_out_pipe():
     """Have CT run the tty test code with a pipe on stdout."""
-    master, _ = os.openpty()
+    _, slave = os.openpty()
     result = subprocess.run('./ct ' + TTY_PROGRAM,
                             check=True,
                             shell=True,
-                            stdin=master,
+                            stdin=slave,
                             stdout=subprocess.PIPE)
     assert 'stdin=True, stdout=True' in result.stdout.decode()
 
