@@ -794,7 +794,7 @@ def test_process_buffer_more_new_line(capsys):
         config['read_fd'] = pipe_r
         config['rules'].append(chromaterm.config.parse_rule(rule))
         data = 'test hello world test\n'
-        success = r'^test \x1b\[48;5;[0-9]{1,3}mhello world\x1b\[49m test$'
+        success = r'^test \x1b\[48;5;\d{1,3}mhello world\x1b\[49m test$'
 
         chromaterm.process_buffer(config, data, True)
         captured = capsys.readouterr()
@@ -834,7 +834,7 @@ def test_process_buffer_multiline(capsys):
 
     config['rules'].append(chromaterm.config.parse_rule(rule))
     data = '\ntest hello world test\n'
-    success = r'^test \x1b\[[34]8;5;[0-9]{1,3}mhello world\x1b\[49m test$'
+    success = r'^test \x1b\[[34]8;5;\d{1,3}mhello world\x1b\[49m test$'
 
     chromaterm.process_buffer(config, data * 2, False)
     captured = capsys.readouterr()
@@ -850,7 +850,7 @@ def test_process_buffer_rule_simple(capsys):
 
     config['rules'].append(chromaterm.config.parse_rule(rule))
     data = 'test hello world test\n'
-    success = r'^test \x1b\[48;5;[0-9]{1,3}mhello world\x1b\[49m test$'
+    success = r'^test \x1b\[48;5;\d{1,3}mhello world\x1b\[49m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -865,7 +865,7 @@ def test_process_buffer_rule_group(capsys):
 
     config['rules'].append(chromaterm.config.parse_rule(rule))
     data = 'test hello world test\n'
-    success = r'^test hello \x1b\[48;5;[0-9]{1,3}mworld\x1b\[49m test$'
+    success = r'^test hello \x1b\[48;5;\d{1,3}mworld\x1b\[49m test$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -880,7 +880,7 @@ def test_process_buffer_rule_multiple_colors(capsys):
 
     config['rules'].append(chromaterm.config.parse_rule(rule))
     data = 'hello world\n'
-    success = r'^(\x1b\[[34]8;5;[0-9]{1,3}m){2}hello(\x1b\[[34]9m){2} world$'
+    success = r'^(\x1b\[[34]8;5;\d{1,3}m){2}hello(\x1b\[[34]9m){2} world$'
 
     chromaterm.process_buffer(config, data, False)
     captured = capsys.readouterr()
@@ -1221,6 +1221,8 @@ def test_main_reload_config(capsys, monkeypatch):
         pipe_r, pipe_w = os.pipe()
         monkeypatch.setattr(sys.stdin, 'fileno', mock_fd_fileno)
 
+        # For deterministic color codes, disable RGB terminal if supported
+        os.environ.pop('COLORTERM', None)
         config = chromaterm.args_init(['--config', TEMP_FILE + '1'])
         main_thread = Thread(target=chromaterm.main, args=(config, 1, pipe_r))
 
