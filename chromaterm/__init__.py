@@ -382,12 +382,15 @@ def main(config, max_wait=None, read_fd=None):
     while ready_fds:
         # stdin has data (piped) or has input to forward to the pty
         if sys.stdin.fileno() in ready_fds:
-            data = os.read(sys.stdin.fileno(), READ_SIZE)
+            try:
+                data = os.read(sys.stdin.fileno(), READ_SIZE)
 
-            if sys.stdin.fileno() == config['read_fd']:  # stdin is data
-                buffer += data.decode(encoding='utf-8', errors='replace')
-            else:  # stdin is forwarded to pty
-                os.write(config['read_fd'], data)
+                if sys.stdin.fileno() == config['read_fd']:  # stdin is data
+                    buffer += data.decode(encoding='utf-8', errors='replace')
+                else:  # stdin is forwarded to pty
+                    os.write(config['read_fd'], data)
+            except OSError:
+                data = b''
 
             if not data:  # stdin or pty closed; don't forward anymore
                 fds.remove(sys.stdin.fileno())
@@ -396,7 +399,11 @@ def main(config, max_wait=None, read_fd=None):
         # as the data was already read above. Otherwise, read_fd is pty.
         if config['read_fd'] in ready_fds:
             if config['read_fd'] != sys.stdin.fileno():
-                data = os.read(config['read_fd'], READ_SIZE)
+                try:
+                    data = os.read(config['read_fd'], READ_SIZE)
+                except OSError:
+                    data = b''
+
                 buffer += data.decode(encoding='utf-8', errors='replace')
 
             if not buffer:  # Buffer was processed empty and data fd hit EOF
