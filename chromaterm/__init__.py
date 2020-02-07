@@ -213,7 +213,7 @@ def process_buffer(config, buffer, more):
         print(highlight(config, split[0]) + split[1], end='')
 
     # Indicated more data to possibly come and read_fd confirmed it
-    if more and read_ready(config.get('read_fd'), WAIT_FOR_SPLIT):
+    if more and read_ready(config.get('read_fd'), timeout=WAIT_FOR_SPLIT):
         # Return last split as the left-over data
         return splits[-1][0] + splits[-1][1]
 
@@ -280,10 +280,9 @@ def process_inserts(inserts, existing, config):
     return reversed(sorted(finals, key=lambda x: x['position']))
 
 
-def read_ready(read_fd, timeout=None):
-    """Return True if `read_fd` has data or has hit EOF. If `timeout` is
-    specified, and it expires, return False. Otherwise, block until data/EOF."""
-    return bool(select.select([read_fd], [], [], timeout)[0])
+def read_ready(*read_fds, timeout=None):
+    """Wrapper for the read fds of `select`. Returns the list of ready read fds."""
+    return select.select(read_fds, [], [], timeout)[0]
 
 
 def run_program(program_args):
@@ -372,7 +371,7 @@ def main(config, max_wait=None, read_fd=None):
     buffer = ''
     config['read_fd'] = config.get('read_fd', read_fd)
 
-    while read_ready(config['read_fd'], max_wait):
+    while read_ready(config['read_fd'], timeout=max_wait):
         try:
             data = os.read(config['read_fd'], READ_SIZE)
         except OSError:

@@ -891,7 +891,7 @@ def test_read_ready_timeout_empty():
         pipe_r, pipe_w = os.pipe()
 
         before = time.time()
-        assert not chromaterm.read_ready(pipe_r, 0.5)
+        assert not chromaterm.read_ready(pipe_r, timeout=0.5)
 
         after = time.time()
         assert after - before >= 0.5
@@ -907,7 +907,7 @@ def test_read_ready_timeout_input():
 
         os.write(pipe_w, b'Hello world')
         before = time.time()
-        assert chromaterm.read_ready(pipe_r, 0.5)
+        assert chromaterm.read_ready(pipe_r, timeout=0.5)
 
         after = time.time()
         assert after - before < 0.5
