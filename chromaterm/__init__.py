@@ -29,8 +29,9 @@ READ_SIZE = 4096  # 4 KiB
 # CT cannot determine if it is processing input faster than the piping process
 # is outputting or if the input has finished. To work around this, CT will wait
 # a bit prior to assuming there's no more data in the buffer. There's no impact
-# on performance as the wait is cancelled if read_fd becomes ready.
-WAIT_FOR_SPLIT = 0.0005
+# on performance as the wait is cancelled if read_fd becomes ready. 1/256 is
+# smaller (shorter) than the fastest key repeat (1/255 second).
+WAIT_FOR_SPLIT = 1 / 256
 
 
 def args_init(args=None):
@@ -216,8 +217,9 @@ def process_buffer(config, buffer, more):
         # Return last split as the left-over data
         return splits[-1][0] + splits[-1][1]
 
-    # No more data; print last split and flush as it doesn't have a new line
-    print(highlight(config, splits[-1][0]) + splits[-1][1], end='', flush=True)
+    # No more data; print last split without highlighting it (keyboard typing)
+    # and flush (doesn't have a new line).
+    print(splits[-1][0] + splits[-1][1], end='', flush=True)
 
     return ''  # All of the buffer was processed; return an empty buffer
 

@@ -768,7 +768,7 @@ def test_process_buffer_empty(capsys):
     assert capsys.readouterr().out == ''
 
 
-def test_process_buffer_more(capsys):
+def test_process_buffer_more_new_line(capsys):
     """Output processing when more data is hinted and input ends with new line.
     The output should be highlighted."""
     try:
@@ -780,6 +780,28 @@ def test_process_buffer_more(capsys):
         config['rules'].append(chromaterm.config.parse_rule(rule))
         data = 'test hello world test\n'
         success = r'^test \x1b\[48;5;[0-9]{1,3}mhello world\x1b\[49m test$'
+
+        chromaterm.process_buffer(config, data, True)
+        captured = capsys.readouterr()
+
+        assert re.search(success, captured.out)
+    finally:
+        os.close(pipe_r)
+        os.close(pipe_w)
+
+
+def test_process_buffer_more_no_new_line(capsys):
+    """Output processing when more data is hinted and input does not end with
+    new line. The output should not be highlighted."""
+    try:
+        config = chromaterm.config.get_default_config()
+        rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
+        pipe_r, pipe_w = os.pipe()
+
+        config['read_fd'] = pipe_r
+        config['rules'].append(chromaterm.config.parse_rule(rule))
+        data = 'test hello world test'
+        success = r'^test hello world test$'
 
         chromaterm.process_buffer(config, data, True)
         captured = capsys.readouterr()
