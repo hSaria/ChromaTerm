@@ -217,9 +217,15 @@ def process_buffer(config, buffer, more):
         # Return last split as the left-over data
         return splits[-1][0] + splits[-1][1]
 
-    # No more data; print last split without highlighting it (keyboard typing)
-    # and flush (doesn't have a new line).
-    print(splits[-1][0] + splits[-1][1], end='', flush=True)
+    # A single character would indicate keyboard typing; don't highlight. This
+    # works with WAIT_FOR_SPLIT which will split keyboard typing accordingly.
+    if len(splits[-1][0]) == 1:
+        leftover_data = splits[-1][0]
+    else:
+        leftover_data = highlight(config, splits[-1][0])
+
+    # No more data; print last split and flush (doesn't have a new line).
+    print(leftover_data + splits[-1][1], end='', flush=True)
 
     return ''  # All of the buffer was processed; return an empty buffer
 

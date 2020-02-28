@@ -783,9 +783,9 @@ def test_process_buffer_empty(capsys):
     assert capsys.readouterr().out == ''
 
 
-def test_process_buffer_more_new_line(capsys):
-    """Output processing when more data is hinted and input ends with new line.
-    The output should be highlighted."""
+def test_process_buffer_more_multiple_characters(capsys):
+    """Output processing when more data is hinted and input is multiple
+    characters. The output should be highlighted as it isn't typing."""
     try:
         config = chromaterm.config.get_default_config()
         rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
@@ -793,7 +793,7 @@ def test_process_buffer_more_new_line(capsys):
 
         config['read_fd'] = pipe_r
         config['rules'].append(chromaterm.config.parse_rule(rule))
-        data = 'test hello world test\n'
+        data = 'test hello world test'
         success = r'^test \x1b\[48;5;\d{1,3}mhello world\x1b\[49m test$'
 
         chromaterm.process_buffer(config, data, True)
@@ -805,18 +805,18 @@ def test_process_buffer_more_new_line(capsys):
         os.close(pipe_w)
 
 
-def test_process_buffer_more_no_new_line(capsys):
-    """Output processing when more data is hinted and input does not end with
-    new line. The output should not be highlighted."""
+def test_process_buffer_more_single_character(capsys):
+    """Output processing when more data is hinted and input is a single
+    character. The output should not highlighted as it's possibly typing."""
     try:
         config = chromaterm.config.get_default_config()
-        rule = {'regex': 'hello world', 'color': 'b#fffaaa'}
+        rule = {'regex': 't', 'color': 'b#fffaaa'}
         pipe_r, pipe_w = os.pipe()
 
         config['read_fd'] = pipe_r
         config['rules'].append(chromaterm.config.parse_rule(rule))
-        data = 'test hello world test'
-        success = r'^test hello world test$'
+        data = 't'
+        success = r'^t$'
 
         chromaterm.process_buffer(config, data, True)
         captured = capsys.readouterr()
