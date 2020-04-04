@@ -1,11 +1,14 @@
 site_name: ChromaTerm Documentation
 site_url: https://chromaterm.readthedocs.io/
-repo_url: https://github.com/hSaria/ChromaTerm/
 site_author: Saria Hajjar
+repo_url: https://github.com/hSaria/ChromaTerm/
+python:
+  install:
+    - requirements: docs/requirements.txt
 theme: readthedocs
 nav:
-    - Introduction: 'index.md'
-    - Tutorial: 'tutorial.md'
-    - API Reference: 'api-reference.md'
-    - Command Line Script: 'command-line-script.md'
-    - Release Notes: 'release-notes.md'
+  - Introduction: 'index.md'
+  - Tutorial: 'tutorial.md'
+  - API Reference: 'api-reference.md'
+  - Command Line Script: 'command-line-script.md'
+  - Release Notes: 'release-notes.md'
