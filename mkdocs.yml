@@ -9,6 +9,6 @@ theme: readthedocs
 nav:
   - Introduction: 'index.md'
   - Tutorial: 'tutorial.md'
-  - API Reference: 'api-reference.md'
   - Command Line Script: 'command-line-script.md'
+  - API Reference: 'api-reference.md'
   - Release Notes: 'release-notes.md'
