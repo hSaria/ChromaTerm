@@ -3,7 +3,7 @@
 ChromaTerm can color the output of your module with minimal effort. The API
 has three different ways in which you can highlight.
 
-### [Color](../color)
+### [`Color`](../color)
 
 A `Color` is the simplest way to color your output; it adds the necessary ANSI
 codes and returns the string right back.
@@ -24,7 +24,7 @@ print(color.highlight('Hello World!'))
 ---
 
 
-### [Rule](../rule)
+### [`Rule`](../rule)
 
 This class will only highlight the text matching a regular expression.
 
@@ -42,7 +42,7 @@ print(rule.highlight('Hello World!'))
 
 ---
 
-### [Config](../config)
+### [`Config`](../config)
 
 Multiple rules can be bundled into an instance of `Config`.
 
