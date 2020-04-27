@@ -50,17 +50,20 @@ class Color:
 
         Args:
             color (str): A string which must contain
-                * one foreground color (hex color prefixed with "f#"),
-                * one background color (hex color prefixed with "b#"),
+
+                * one foreground color (hex color prefixed with `f#`),
+                * one background color (hex color prefixed with `b#`),
                 * at least one style (blink, bold, italic, strike, underline), or
                 * a combination of the above, seperated by spaces.
+
+                Example: `"b#123123 bold"`
             rgb (bool): Whether the color is meant for RGB-enabled terminals or
-                not. False will downscale the RGB colors to xterm-256. None will
-                attempt to detect support for RGB.
+                not. `False` will downscale the RGB colors to xterm-256. `None`
+                will attempt to detect support for RGB.
 
         Raises:
-            TypeError: If color is not a string.
-            ValueError: If the format of color is invalid.
+            TypeError: If `color` is not a string.
+            ValueError: If the format of `color` is invalid.
         """
         self.rgb = rgb
         self.color = color
@@ -84,8 +87,9 @@ class Color:
 
     @property
     def color(self):
-        """String that represents the color. When changed, updates color_code,
-        color_reset, and color_types."""
+        """String that represents the color. When changed, updates
+        [color_code][chromaterm.Color.color_code] and
+        [color_reset][chromaterm.Color.color_reset]."""
         return self._color
 
     @color.setter
@@ -147,24 +151,26 @@ class Color:
     @property
     def color_code(self):
         """ANSI escape sequence that instructs a terminal to color output.
-        Updated when color is changed."""
+        Updated when [color][chromaterm.Color.color] is changed."""
         return self._color_code
 
     @property
     def color_reset(self):
         """ANSI escape sequence that instructs a terminal to revert to the
-        default color. Updated when color is changed."""
+        default color. Updated when [color][chromaterm.Color.color] is changed."""
         return self._color_reset
 
     @property
     def color_types(self):
         """List of tuples for each color type in this instance and its value. The
-        types correspond to COLOR_TYPES. Updated when color is changed."""
+        types correspond to `chromaterm.COLOR_TYPES`. Updated when
+        [color][chromaterm.Color.color] is changed."""
         return self._color_types.copy()
 
     @property
     def rgb(self):
-        """Flag for RGB-support. When changed, updates color."""
+        """Flag for RGB-support. When changed, updates
+        [color][chromaterm.Color.color]."""
         return self._rgb
 
     @rgb.setter
@@ -191,16 +197,19 @@ class Color:
         return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
 
     def highlight(self, data):
-        """Returns a highlighted string of data.
+        """Returns a highlighted string of `data`.
 
         Args:
-            data (str): A string to highlight. __str__ of data is called.
+            data (str): A string to highlight. `__str__` of `data` is
+                called.
         """
         return self.color_code + str(data) + self.color_reset
 
 
 class Rule:
-    """A rule that highlights parts of strings that match a regular expression."""
+    """A rule that highlights parts of strings which match a regular expression.
+    The regular expression engine used is Python's
+    [re](https://docs.python.org/3/library/re.html)."""
     def __init__(self, regex, color=None, description=None):
         """Constructor.
 
@@ -210,13 +219,15 @@ class Rule:
             color (chromaterm.Color): A color used to highlight the matched
                 input. This will default to highlighting the entire match (also
                 known as group 0 of the regular expression). This can left to
-                None if you intend to use add_color to manually specify which
-                group in the regular expression should be highlighted.
-            description (str): An optional description to help identify the rule.
+                `None` if you intend to use [add_color][chromaterm.Rule.add_color]
+                to manually specify which group in the regular expression should
+                be highlighted.
+            description (str): A description to help identify the rule.
 
         Raises:
-            TypeError: If regex is not a string. If color is not an instance of
-                chromaterm.Color. If description is not a string.
+            TypeError: If `regex` is not a string. If `color` is not an instance
+                of [chromaterm.Color](../color/). If `description` is not a
+                string.
         """
         self._colors = {}
         self.regex = regex
@@ -257,9 +268,10 @@ class Rule:
 
     @property
     def colors(self):
-        """Colors of the rules. It is dictionary where the keys are integers
-        corresponding to the groups in regex and the values are instances of
-        chromaterm.Color which are used for highlighting."""
+        """Colors of the rule. It is dictionary where the keys are integers
+        corresponding to the groups in [regex][chromaterm.Rule.regex] and the
+        values are instances of [chromaterm.Color](../color/) which are used for
+        highlighting."""
         # Return a copy of the dictionary to prevent modification of shallow
         # values; modifying the content of the values, like colors[0].rgb = True
         # is fine as it doesn't change the object type.
@@ -267,7 +279,7 @@ class Rule:
 
     @property
     def description(self):
-        """Description for the rule. Optional."""
+        """Description for the rule."""
         return self._description
 
     @description.setter
@@ -291,19 +303,18 @@ class Rule:
 
     def add_color(self, color, group=0):
         """Adds a color to be used when highlighting. The group can be used to
-        limit which parts of the text should be highlighted. Group 0 (the
-        default) will highlight the entire match. Replaces an existing color, if
-        any.
+        limit the parts of the match which are highlighted. Group 0 (the default)
+        will highlight the entire match. If a color already exists for the group,
+        it is overwritten.
 
         Args:
             color (chromaterm.Color): A color for highlighting the matched input.
             group (int): The regex group to be be highlighted with the color.
 
         Raises:
-            TypeError: If color is not an instance of chromaterm.Color. If group
-                is not an integer.
-            ValueError: If the group is greater than regex.groups (group does
-                not exist in regex).
+            TypeError: If `color` is not an instance of
+                [chromaterm.Color](../color/). If `group` is not an integer.
+            ValueError: If `group` does not exist in the regular expression.
         """
         if not isinstance(color, Color):
             raise TypeError('color must be a chromaterm.Color')
@@ -328,7 +339,7 @@ class Rule:
             group (int): The regex group. It is a key in the colors dictionary.
 
         Raises:
-            TypeError: If group is not an integer.
+            TypeError: If `group` is not an integer.
         """
         if not isinstance(group, int):
             raise TypeError('group must be an integer')
@@ -337,7 +348,7 @@ class Rule:
 
     def get_matches(self, data):
         """Returns a list of tuples, each of which containing a start index, an
-        end index, and the chromaterm.Color object for that match. Only regex
+        end index, and the [chromaterm.Color][] object for that match. Only regex
         groups associated with a color are included.
 
         Args:
@@ -361,11 +372,11 @@ class Rule:
         return matches
 
     def highlight(self, data):
-        """Returns a highlighted string of data. The regex of the rule is used
-        along with the colors to highlight the matching parts of the data.
+        """Returns a highlighted string of `data`. The regex of the rule is used
+        along with the colors to highlight the matching parts of the `data`.
 
         Args:
-            data (str): A string to highlight. __str__ of data is called.
+            data (str): A string to highlight. `__str__` of `data` is called.
         """
         data = str(data)
         inserts = []
@@ -414,20 +425,20 @@ class Config:
 
     @property
     def rules(self):
-        """List of chromaterm.Rule objects used during highlighting."""
+        """List of [chromaterm.Rule](../rule/) objects used during highlighting."""
         # Return a copy of the list to prevent modification, like extending it.
         # Modifying the content of the items is fine as it doesn't change the
         # object type.
         return self._rules.copy()
 
     def add_rule(self, rule):
-        """Adds a rule to the rules list.
+        """Adds `rule` to the [rules][chromaterm.Config.rules] list.
 
         Args:
             rule (chromaterm.Rule): The rule to be added to the list of rules.
 
         Raises:
-            TypeError: If rule is not an instance of chromaterm.Rule.
+            TypeError: If `rule` is not an instance of [chromaterm.Rule](../rule/).
         """
         if not isinstance(rule, Rule):
             raise TypeError('rule must be a chromaterm.Rule')
@@ -435,13 +446,13 @@ class Config:
         self._rules.append(rule)
 
     def remove_rule(self, rule):
-        """Removes a rule from the rules list.
+        """Removes rules from the [rules][chromaterm.Config.rules] list.
 
         Args:
             rule (chromaterm.Rule): The rule to be removed from the list of rules.
 
         Raises:
-            TypeError: If rule is not an instance of chromaterm.Rule.
+            TypeError: If `rule` is not an instance of [chromaterm.Rule](../rule/).
         """
         if not isinstance(rule, Rule):
             raise TypeError('rule must be a chromaterm.Rule')
@@ -488,6 +499,7 @@ class Config:
     def get_inserts(self, data, inserts=None):
         """Returns a list containing the inserts for the color codes relative to
         data. An insert is a list containing:
+
             * A position (index relative to data),
             * The code to be inserted,
             * A boolean indicating if its a reset code or not, and
@@ -555,8 +567,8 @@ class Config:
 
     def get_matches(self, data):
         """Returns a list of tuples, each of which containing a start index, an
-        end index, and the chromaterm.Color object for that match. The tuples
-        of the latter rules are towards the end of the list.
+        end index, and the [chromaterm.Color](../color/) object for that match.
+        The tuples of the latter rules are towards the end of the list.
 
         Args:
             data (str): A string against which each rule is matched.
@@ -569,12 +581,12 @@ class Config:
         return matches
 
     def highlight(self, data):
-        """Returns a highlighted string of data. The matches from the rules
+        """Returns a highlighted string of `data`. The matches from the rules
         are gathered prior to inserting any color codes, making it so the rules
         can match without the color codes interfering.
 
         Args:
-            data (str): A string to highlight. __str__ of data is called.
+            data (str): A string to highlight. `__str__` of `data` is called.
         """
         if not self.rules:
             return str(data)
