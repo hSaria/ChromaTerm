@@ -2,7 +2,6 @@
 import itertools
 import os
 import re
-import signal
 import subprocess
 import time
 
@@ -873,7 +872,7 @@ def test_main_reload_config():
         expected = ['\x1b[38;2;18;49;35m', 'Hello', '\x1b[39m', ' world\n']
 
         # Reload config
-        process.send_signal(signal.SIGUSR1)
+        subprocess.run(CLI + ' --reload', check=False, shell=True)
 
         os.write(stdin_w, b'Hello world\n')
         time.sleep(0.1)  # Any processing delay
