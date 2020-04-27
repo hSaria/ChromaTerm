@@ -1,6 +1,4 @@
 """chromaterm tests"""
-import re
-
 import pytest
 
 import chromaterm
@@ -407,12 +405,7 @@ def test_rule_change_regex():
     rule = chromaterm.Rule('hello')
 
     rule.regex = 'hey'
-    assert isinstance(rule.regex, re.Pattern)
     assert rule.regex.pattern == 'hey'
-
-    rule.regex = re.compile('hi')
-    assert isinstance(rule.regex, re.Pattern)
-    assert rule.regex.pattern == 'hi'
 
 
 def test_rule_invalid_type_color():
@@ -429,7 +422,7 @@ def test_rule_invalid_type_description():
 
 def test_rule_invalid_type_regex():
     """Rule with an invalid regex type."""
-    with pytest.raises(TypeError, match='regex must be a string or re.Patter'):
+    with pytest.raises(TypeError, match='regex must be a string'):
         chromaterm.Rule(True)
 
 

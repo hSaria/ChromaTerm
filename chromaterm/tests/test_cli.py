@@ -272,7 +272,7 @@ def test_config_load_yaml_format_error(capsys):
 
 def test_config_parse_rule_regex_missing():
     """Parse a rule without a `regex` key."""
-    msg = 'regex must be a string or re.Pattern'
+    msg = 'regex must be a string'
 
     rule = {'color': 'b#fffaaa'}
     assert msg in chromaterm.cli.Config.parse_rule(rule)
@@ -280,7 +280,7 @@ def test_config_parse_rule_regex_missing():
 
 def test_config_parse_rule_regex_type_error():
     """Parse a rule with an incorrect `regex` value type."""
-    msg = 'regex must be a string or re.Pattern'
+    msg = 'regex must be a string'
 
     rule = {'regex': ['hi'], 'color': 'b#fffaaa'}
     assert msg in chromaterm.cli.Config.parse_rule(rule)

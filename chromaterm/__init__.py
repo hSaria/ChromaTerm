@@ -210,9 +210,8 @@ class Rule:
             description (str): An optional description to help identify the rule.
 
         Raises:
-            TypeError: If regex is not a string or an instance of re.Pattern.
-                If color is not an instance of chromaterm.Color. If description
-                is not a string.
+            TypeError: If regex is not a string. If color is not an instance of
+                chromaterm.Color. If description is not a string.
         """
         self._colors = {}
         self.regex = regex
@@ -280,8 +279,8 @@ class Rule:
 
     @regex.setter
     def regex(self, value):
-        if not isinstance(value, str) and not isinstance(value, re.Pattern):
-            raise TypeError('regex must be a string or re.Pattern')
+        if not isinstance(value, str):
+            raise TypeError('regex must be a string')
 
         self._regex = re.compile(value) if isinstance(value, str) else value
 
