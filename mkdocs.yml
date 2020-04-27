@@ -14,7 +14,11 @@ extra_css:
 
 markdown_extensions:
   - admonition
-  - codehilite
+  - codehilite:
+      guess_lang: false
+      linenums: true
+  - toc:
+      permalink: true
 
 plugins:
   - search
