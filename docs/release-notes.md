@@ -84,7 +84,7 @@ Thanks to [@aaronols](https://github.com/aaronols) for raising the issues above.
 
 ### v0.4.7 – 2019-09-17
 
-* Fixed a rare bug where the type of a color was not updated if it was a complete reset in the middle of the new color.
+* Fixed a rare bug where the type of a color was not updated if it was a full reset in the middle of the new color.
 * Optimized color handling and tracking.
 * Update license classifier for PyPI.
 * Removed a bit of redundant code and simplified color type internals.
