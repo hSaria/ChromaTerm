@@ -1,5 +1,14 @@
 # Release Notes
 
+## ChromaTerm v0.6
+
+### v0.6.0 – under development
+
+* Introduced an API for ChromaTerm; you can now color the output of your own module.
+* Added documentation (hosted at [Read the Docs](https://netbox.readthedocs.io/en/stable/)).
+
+---
+
 ## ChromaTerm v0.5
 
 ### v0.5.9 – 2020-02-28
