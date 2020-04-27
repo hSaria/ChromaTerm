@@ -26,7 +26,8 @@ def test_color_known_colors():
     ]
 
     for color_str, color_code in zip(colors, codes):
-        assert chromaterm.Color(color_str).color_code == '\x1b[' + color_code
+        color = chromaterm.Color(color_str, rgb=False)
+        assert repr(color.color_code) == repr('\x1b[' + color_code)
 
 
 def test_color_known_grayscale():
@@ -44,7 +45,8 @@ def test_color_known_grayscale():
     ]
 
     for color_str, color_code in zip(colors, codes):
-        assert chromaterm.Color(color_str).color_code == '\x1b[' + color_code
+        color = chromaterm.Color(color_str, rgb=False)
+        assert repr(color.color_code) == repr('\x1b[' + color_code)
 
 
 def test_color_highlight():
@@ -59,7 +61,7 @@ def test_color_highlight():
 
 def test_color_change_color():
     """Confirm that the color_code is updated when the color or rgb is changed."""
-    color = chromaterm.Color('b#123123')
+    color = chromaterm.Color('b#123123', rgb=False)
 
     # Change from background to foreground
     old_color_code = color.color_code
@@ -74,7 +76,7 @@ def test_color_change_color():
 
 def test_color_format_color_background():
     """Background color."""
-    color = chromaterm.Color('b#123123')
+    color = chromaterm.Color('b#123123', rgb=False)
 
     assert color.color == 'b#123123'
     assert color.color_code == '\x1b[48;5;22m'
@@ -85,7 +87,7 @@ def test_color_format_color_background():
 
 def test_color_format_color_foreground():
     """Foreground color."""
-    color = chromaterm.Color('f#123123')
+    color = chromaterm.Color('f#123123', rgb=False)
 
     assert color.color == 'f#123123'
     assert color.color_code == '\x1b[38;5;22m'
@@ -96,7 +98,7 @@ def test_color_format_color_foreground():
 
 def test_color_format_color_multiple():
     """Multiple different color types. Also tests case insensitivity"""
-    color = chromaterm.Color('f#123123 b#aBCDef bOLd')
+    color = chromaterm.Color('f#123123 b#aBCDef bOLd', rgb=False)
 
     assert color.color == 'f#123123 b#abcdef bold'
     assert color.color_code == '\x1b[38;5;22m\x1b[48;5;189m\x1b[1m'
@@ -125,7 +127,7 @@ def test_color_format_color_style():
     styles = {k: v for k, v in chromaterm.COLOR_TYPES.items() if v.get('code')}
 
     for style in styles:
-        color = chromaterm.Color(style)
+        color = chromaterm.Color(style, rgb=False)
 
         assert color.color == style
         assert color.color_code == styles[style]['code']

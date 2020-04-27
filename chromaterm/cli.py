@@ -285,7 +285,8 @@ def args_init(args=None):
     parser.add_argument('--rgb',
                         action='store_true',
                         help='Use RGB colors (default: detect support, '
-                        'fallback to xterm-256)')
+                        'fallback to xterm-256)',
+                        default=None)
 
     return parser.parse_args(args=args)
 
@@ -520,14 +521,11 @@ def main(args=None, max_wait=None, stdin_fd=None, write_default=True):
         # Write default config if not there
         write_default_config()
 
-    # Detect RGB support. Fallback to the rgb program argument
-    rgb = os.getenv('COLORTERM') in ('truecolor', '24bit') or args.rgb
-
     config = Config()
 
     # Create the signal handler to trigger reloading the config
     def reload_config_handler(*_):
-        config.load(read_file(args.config) or '', rgb=rgb)
+        config.load(read_file(args.config) or '', rgb=args.rgb)
 
     # Trigger the initial loading
     reload_config_handler()

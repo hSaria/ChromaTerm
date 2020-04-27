@@ -1,4 +1,5 @@
 """Colorize your output to terminal"""
+import os
 import re
 
 __all__ = ['Color', 'Rule', 'Config']
@@ -44,7 +45,7 @@ COLOR_TYPES = {
 
 class Color:
     """A color that highlights strings for terminals."""
-    def __init__(self, color, rgb=False):
+    def __init__(self, color, rgb=None):
         """Constructor.
 
         Args:
@@ -54,7 +55,8 @@ class Color:
                 * at least one style (blink, bold, italic, strike, underline), or
                 * a combination of the above, seperated by spaces.
             rgb (bool): Whether the color is meant for RGB-enabled terminals or
-                not. False will downscale the RGB colors to xterm-256.
+                not. False will downscale the RGB colors to xterm-256. None will
+                attempt to detect support for RGB.
 
         Raises:
             TypeError: If color is not a string.
@@ -72,7 +74,7 @@ class Color:
     def __repr__(self):
         args = [repr(self.color)]
 
-        if self.rgb:
+        if self.rgb is not None:
             args.append('rgb=' + repr(self.rgb))
 
         return '{}({})'.format(self.__class__.__name__, ', '.join(args))
@@ -114,7 +116,10 @@ class Color:
             # Break down hex color to red, green, and blue integers
             rgb_int = [int(hex_code[i:i + 2], 16) for i in [0, 2, 4]]
 
-            if self.rgb:
+            # Detect rgb support
+            rgb_supported = os.getenv('COLORTERM') in ('truecolor', '24bit')
+
+            if self.rgb or (self.rgb is None and rgb_supported):
                 target += '2;'
                 color_id = ';'.join([str(x) for x in rgb_int])
             else:
@@ -164,7 +169,7 @@ class Color:
 
     @rgb.setter
     def rgb(self, value):
-        if not isinstance(value, bool):
+        if value is not None and not isinstance(value, bool):
             raise TypeError('rgb must be a boolean')
 
         self._rgb = value
