@@ -27,10 +27,10 @@ plugins:
             show_source: false
 
 nav:
-  - Introduction: 'index.md'
+  - Overview: 'index.md'
   - Command Line Script: 'command-line-script.md'
   - API Reference:
-    - Summary: 'api/summary.md'
+    - Introduction: 'api/introduction.md'
     - chromaterm.Color: 'api/color.md'
     - chromaterm.Rule: 'api/rule.md'
     - chromaterm.Config: 'api/config.md'
