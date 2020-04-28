@@ -991,6 +991,9 @@ def test_main_stdin_processing():
                                    stdin=stdin_r,
                                    stdout=stdout_w)
 
+        time.sleep(0.5)  # Any startup delay
+        assert process.poll() is None
+
         os.write(stdin_w, b'Hello world\n')
         time.sleep(0.1)  # Any processing delay
         assert os.read(stdout_r, 100) == b'Hello world\n'
