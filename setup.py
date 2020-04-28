@@ -4,7 +4,8 @@ from setuptools import setup
 
 # We're not dealing with the CLI script on Windows
 REQUIRES = [
-    'psutil; sys_platform != "win32"', 'PyYAML; sys_platform != "win32"'
+    'psutil; sys_platform != "win32"',
+    'PyYAML; sys_platform != "win32"',
 ]
 REQUIRES_PYTHON = '>=3.5.0'
 

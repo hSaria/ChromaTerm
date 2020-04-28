@@ -374,12 +374,13 @@ def read_file(location):
         eprint('Configuration file', location, 'not found')
         return None
 
-    if not os.access(location, os.R_OK):
+    try:
+        with open(location, 'r') as file:
+            return file.read()
+    except PermissionError:
         eprint('Cannot read configuration file', location, '(permission)')
         return None
 
-    with open(location, 'r') as file:
-        return file.read()
 
 
 def read_ready(*read_fds, timeout=None):
