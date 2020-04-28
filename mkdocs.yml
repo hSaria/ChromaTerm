@@ -1,0 +1,40 @@
+site_name: ChromaTerm
+site_url: https://chromaterm.readthedocs.io/
+site_author: Saria Hajjar
+repo_url: https://github.com/hSaria/ChromaTerm/
+
+python:
+  install:
+    - requirements: docs/requirements.txt
+
+theme: material
+
+extra_css:
+  - custom.css
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_category_heading: true
+            show_root_toc_entry: false
+            show_source: false
+
+nav:
+  - Overview: 'index.md'
+  - Command Line Script: 'command-line-script.md'
+  - API Reference:
+    - Introduction: 'api/introduction.md'
+    - chromaterm.Color: 'api/color.md'
+    - chromaterm.Rule: 'api/rule.md'
+    - chromaterm.Config: 'api/config.md'
+  - Release Notes: 'release-notes.md'

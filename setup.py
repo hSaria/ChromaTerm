@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """ChromaTerm setup"""
-
 from setuptools import setup
 
 REQUIRES = ['psutil', 'PyYAML']
@@ -21,15 +20,15 @@ setup(
         'Programming Language :: Python :: 3', 'Topic :: Terminals',
         'Topic :: Utilities'
     ],
-    description='Colorize your output using RegEx',
+    description='Colorize your output to terminal',
+    entry_points={'console_scripts': ['ct = chromaterm.cli:main']},
     license='MIT',
     install_requires=REQUIRES,
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     packages=['chromaterm'],
     python_requires=REQUIRES_PYTHON,
-    scripts=['ct'],
     setup_requires=REQUIRES,
     url='https://github.com/hSaria/ChromaTerm',
-    version='0.5.10-dev',
+    version='0.6.0-dev',
 )
