@@ -252,12 +252,7 @@ def args_init(args=None):
     Args:
         args (list): A list of program arguments, Defaults to sys.argv.
     """
-    epilog = """ChromaTerm reads from standard input; just pipe data to it. As
-    this exposes the existance of a pipe to the piping process, ChromaTerm
-    can run your program in order to hide the pipe. This is normally only
-    needed for programs that want to be on a controlling terminal, like `less`."""
-
-    parser = argparse.ArgumentParser(epilog=epilog)
+    parser = argparse.ArgumentParser()
 
     parser.add_argument('program',
                         type=str,
