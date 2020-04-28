@@ -209,9 +209,9 @@ class Color:
         """A wrapper for the `print` function. It highlights before printing.
 
         Args:
-            *args: Arguments to be printed. Highlighted before being passed to
-                the `print` function.
-            **kwargs: Keyword arguments passed to the `print` function.
+            *args (...): Arguments to be printed. Highlighted before being
+                passed to the `print` function.
+            **kwargs (x=y): Keyword arguments passed to the `print` function.
         """
         print(*tuple(self.highlight(arg) for arg in args), **kwargs)
 
@@ -414,15 +414,15 @@ class Rule:
         """A wrapper for the `print` function. It highlights before printing.
 
         Args:
-            *args: Arguments to be printed. Highlighted before being passed to
-                the `print` function.
-            **kwargs: Keyword arguments passed to the `print` function.
+            *args (...): Arguments to be printed. Highlighted before being
+                passed to the `print` function.
+            **kwargs (x=y): Keyword arguments passed to the `print` function.
         """
         print(*tuple(self.highlight(arg) for arg in args), **kwargs)
 
 
 class Config:
-    """An aggregation of multiple rules which provide improved highlighting by
+    """An aggregation of multiple rules which provides improved highlighting by
     performing the regular expression matching of the rules before any colors
     are added to the string."""
     def __init__(self):
@@ -622,8 +622,8 @@ class Config:
         """A wrapper for the `print` function. It highlights before printing.
 
         Args:
-            *args: Arguments to be printed. Highlighted before being passed to
-                the `print` function.
-            **kwargs: Keyword arguments passed to the `print` function.
+            *args (...): Arguments to be printed. Highlighted before being
+                passed to the `print` function.
+            **kwargs (x=y): Keyword arguments passed to the `print` function.
         """
         print(*tuple(self.highlight(arg) for arg in args), **kwargs)
