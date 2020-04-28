@@ -1,7 +1,7 @@
 """A store for the default rules of ChromaTerm"""
 import os
 
-from . import Color, Rule
+from chromaterm import Color, Rule
 
 # pylint: disable=line-too-long
 
@@ -87,18 +87,22 @@ def generate_default_rules_yaml():
     return data
 
 
-def write_default_config(directory=os.getenv('HOME'), name='.chromaterm.yml'):
+def write_default_config(directory=None, name=None):
     """Writes the default configuration file if it doesn't exist.
 
     Args:
-        directory (str): The directory where the file should be placed.
-        name (str): The name of the file.
+        directory (str): The directory where the file should be placed. Defaults
+            to the home directory of the user.
+        name (str): The name of the file. Defaults to '.chromaterm.yml'
 
     Returns:
         True if a file was written. False otherwise.
     """
-    if not directory or not name:
-        return False
+    if not directory:
+        directory = os.path.expanduser('~')
+
+    if not name:
+        name = '.chromaterm.yml'
 
     location = os.path.join(directory, name)
 

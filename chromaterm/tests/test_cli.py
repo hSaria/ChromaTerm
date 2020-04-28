@@ -2,6 +2,8 @@
 import itertools
 import os
 import re
+import shutil
+import stat
 import subprocess
 import time
 
@@ -10,7 +12,9 @@ import chromaterm.cli
 
 # pylint: disable=too-many-lines
 
-CLI = 'python3 -m chromaterm.cli'
+PYTHON_BINARY = 'python3' if shutil.which('python3') else 'python'
+
+CLI = PYTHON_BINARY + ' -m chromaterm.cli'
 
 CODE_ISATTY = """import os, sys
 stdin = os.isatty(sys.stdin.fileno())
@@ -23,7 +27,7 @@ print(os.ttyname(sys.stdin.fileno()) if os.isatty(sys.stdin.fileno()) else None)
 
 def get_python_command(code):
     """Returns the python shell command that runs `code`."""
-    return 'python3 -c "{}"'.format('; '.join(code.splitlines()))
+    return PYTHON_BINARY + ' -c "{}"'.format('; '.join(code.splitlines()))
 
 
 def test_baseline_tty_test_code_no_pipe():
@@ -620,25 +624,27 @@ def test_process_input_single_character(capsys):
 
 
 def test_read_file():
-    """Read the default configuration."""
-    assert chromaterm.cli.read_file('$HOME/.chromaterm.yml') is not None
+    """Read the default configuration file."""
+    file = os.path.join(os.path.expanduser('~'), '.chromaterm.yml')
+    assert chromaterm.cli.read_file(file) is not None
 
 
 def test_read_file_no_file(capsys):
     """Read a non-existent file."""
-    msg = 'Configuration file ' + __name__ + '2' + ' not found\n'
-    chromaterm.cli.read_file(__name__ + '2')
+    msg = 'Configuration file ' + __name__ + '1' + ' not found\n'
+    chromaterm.cli.read_file(__name__ + '1')
     assert msg in capsys.readouterr().err
 
 
 def test_read_file_no_permission(capsys):
     """Create a file with no permissions and attempt to read it. Delete the file
     once done with it."""
-    msg = 'Cannot read configuration file ' + __name__ + '1' + ' (permission)\n'
+    msg = 'Cannot read configuration file ' + __name__ + '2' + ' (permission)\n'
 
-    os.close(os.open(__name__ + '1', os.O_CREAT | os.O_WRONLY, 0o0000))
-    chromaterm.cli.read_file(__name__ + '1')
-    os.remove(__name__ + '1')
+    os.close(os.open(__name__ + '2', os.O_CREAT | os.O_WRONLY, 0o0000))
+    chromaterm.cli.read_file(__name__ + '2')
+    os.chmod(__name__ + '2', stat.S_IWRITE)
+    os.remove(__name__ + '2')
 
     assert msg in capsys.readouterr().err
 
@@ -837,7 +843,7 @@ def test_main_reload_config():
     """Reload the configuration while the program is running."""
     try:
         # The initial configuration file
-        with open(__name__ + '1', 'w') as file:
+        with open(__name__ + '3', 'w') as file:
             file.write('''rules:
             - regex: Hello
               color: f#123123
@@ -852,7 +858,7 @@ def test_main_reload_config():
         stdin_r, stdin_w = os.pipe()
         stdout_r, stdout_w = os.pipe()
 
-        process = subprocess.Popen(CLI + ' --rgb --config ' + __name__ + '1',
+        process = subprocess.Popen(CLI + ' --rgb --config ' + __name__ + '3',
                                    shell=True,
                                    stdin=stdin_r,
                                    stdout=stdout_w)
@@ -863,8 +869,8 @@ def test_main_reload_config():
         assert repr(os.read(stdout_r, 100).decode()) == repr(''.join(expected))
 
         # Create file without the 'world' rule
-        os.remove(__name__ + '1')
-        with open(__name__ + '1', 'w') as file:
+        os.remove(__name__ + '3')
+        with open(__name__ + '3', 'w') as file:
             file.write('''rules:
             - regex: Hello
               color: f#123123''')
@@ -883,7 +889,7 @@ def test_main_reload_config():
         os.close(stdin_w)
         os.close(stdout_r)
         os.close(stdout_w)
-        os.remove(__name__ + '1')
+        os.remove(__name__ + '3')
         process.kill()
 
 

@@ -42,6 +42,9 @@ COLOR_TYPES = {
     }
 }
 
+# Detect rgb support
+RGB_SUPPORTED = os.getenv('COLORTERM') in ('truecolor', '24bit')
+
 
 class Color:
     """A color that highlights strings for terminals."""
@@ -120,10 +123,7 @@ class Color:
             # Break down hex color to red, green, and blue integers
             rgb_int = [int(hex_code[i:i + 2], 16) for i in [0, 2, 4]]
 
-            # Detect rgb support
-            rgb_supported = os.getenv('COLORTERM') in ('truecolor', '24bit')
-
-            if self.rgb or (self.rgb is None and rgb_supported):
+            if self.rgb or (self.rgb is None and RGB_SUPPORTED):
                 target += '2;'
                 color_id = ';'.join([str(x) for x in rgb_int])
             else:

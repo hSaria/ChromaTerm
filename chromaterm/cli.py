@@ -8,9 +8,9 @@ import sys
 
 import yaml
 
-from . import COLOR_TYPES, Color, Rule
-from . import Config as _Config
-from .default_config import write_default_config
+from chromaterm import COLOR_TYPES, Color, Rule
+from chromaterm import Config as _Config
+from chromaterm.default_config import write_default_config
 
 # A couple of sections of the program are used _rarely_ and I don't want to
 # _always_ spend time importing them.
