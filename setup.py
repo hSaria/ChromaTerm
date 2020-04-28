@@ -2,7 +2,10 @@
 """ChromaTerm setup"""
 from setuptools import setup
 
-REQUIRES = ['psutil', 'PyYAML']
+# We're not dealing with the CLI script on Windows
+REQUIRES = [
+    'psutil; sys_platform != "win32"', 'PyYAML; sys_platform != "win32"'
+]
 REQUIRES_PYTHON = '>=3.5.0'
 
 with open('.github/README.md', 'r') as f:
