@@ -16,8 +16,20 @@ can use the script to consistently highlight keywords across different programs.
 Think of `ct` like `grep`; just pipe data into it. It even works with interactive
 applications, like `ssh`.
 
+---
+
 ## [API](./api/introduction)
 
 If you have a Python module the output of which is meant for terminals, you may
 be interested in extending it through ChromaTerm's API to highlight significant
 output.
+
+---
+
+!!! note
+    Regarding Windows support:
+
+    * The command line script supports the [Windows Subsystem for Linux (`WSL`)](https://docs.microsoft.com/en-us/windows/wsl/about),
+      but not `cmd` nor `PowerShell`.
+    * The API supports `cmd` and `PowerShell` – in addition to `WSL` – since Windows
+      10 version 1511 (released on 2015/11/12, build 10.0.10586).
