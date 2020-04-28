@@ -36,7 +36,7 @@ from chromaterm import Color
 color = Color('bold')
 
 # The string is bold-styled
-print(color.highlight('Hello World!'))
+color.print('Hello World!')
 ```
 
 Have a look at the [introduction](https://chromaterm.readthedocs.io/api/introduction/)

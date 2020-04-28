@@ -15,7 +15,7 @@ from chromaterm import Color
 color = Color('bold')
 
 # The string is bold-styled
-print(color.highlight('Hello World!'))
+color.print('Hello World!')
 ```
 
 !!! tip
@@ -39,7 +39,7 @@ from chromaterm import Color, Rule
 rule = Rule('World', color=Color('b#412100'))
 
 # Only "World" is colored
-print(rule.highlight('Hello World!'))
+rule.print('Hello World!')
 ```
 
 ---
@@ -62,7 +62,7 @@ config.add_rule(Rule('Goo', color=Color('underline')))
 config.add_rule(Rule('Good', color=Color('b#00aa00')))
 
 # "Goo" is underlined, but "Good" is green
-print(config.highlight('Good'))
+config.print('Good')
 ```
 
 ---
@@ -70,8 +70,8 @@ print(config.highlight('Good'))
 ## Decorators
 
 All of the API classes can be used as decorators. This saves you from having to
-explicitly call `highlight`. Here's an example with `Color`, but it's the same
-case with `Rule` and `Config`.
+explicitly reference the object. Here's an example with `Color`, but it's the
+same case with `Rule` and `Config`.
 
 ```
 #!python
@@ -100,10 +100,10 @@ rule = Rule('Hello (World)!')
 rule.add_color(Color('underline'), group=1)
 
 # Only "World" is underlined
-print(rule.highlight('Hello World!'))
+rule.print('Hello World!')
 
 # The regex did not match, and so the "World" group is not underlined
-print(rule.highlight('Hi World!'))
+rule.print('Hi World!')
 ```
 
 ---
