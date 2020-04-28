@@ -106,7 +106,7 @@ print(rule.highlight('Hi World!'))
 ## Highlighting Precedence
 
 !!! note
-    The points below are very specific and likely ones you won't have to worry
+    The points below are very peculiar and ones you likely won't have to worry
     about; they're only here to document the behavior.
 
 * If one match is inside another (encapsulates it), the color of the inner match
