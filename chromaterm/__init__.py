@@ -1,6 +1,7 @@
 """Color your output to terminal"""
 import os
 import re
+import sys
 
 __all__ = ['Color', 'Rule', 'Config']
 
@@ -44,6 +45,26 @@ COLOR_TYPES = {
 
 # Detect rgb support
 RGB_SUPPORTED = os.getenv('COLORTERM') in ('truecolor', '24bit')
+
+# Enable VT100 processing on stdout (Windows 10.0.10586). At exit, revert back
+if sys.platform.startswith('win32'):  # pragma: no cover
+    import atexit
+    import ctypes
+    import ctypes.wintypes
+
+    # https://docs.microsoft.com/en-us/windows/console/getstdhandle
+    STDOUT = ctypes.windll.kernel32.GetStdHandle(-11)
+    MODE = ctypes.wintypes.DWORD()
+
+    # https://docs.microsoft.com/en-us/windows/console/getconsolemode
+    ctypes.windll.kernel32.GetConsoleMode(STDOUT, ctypes.byref(MODE))
+    ctypes.windll.kernel32.SetConsoleMode(STDOUT, MODE.value | 0x0004)
+
+    # Restore the old console mode before exiting
+    atexit.register(ctypes.windll.kernel32.SetConsoleMode, STDOUT, MODE.value)
+
+    # ANSI RGB is supported even on CMD since Windows 10.0.10586
+    RGB_SUPPORTED = True
 
 
 class Color:
