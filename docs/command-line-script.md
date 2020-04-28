@@ -1,9 +1,3 @@
-Included with ChromaTerm is a command line script, called `ct`, that can be used
-to color the output of your programs according to user-configurable rules. You
-can use the script to consistently highlight keywords across different programs.
-
-Think of `ct` like `grep`; just pipe data into it. It even works with interactive applications, like `ssh`.
-
 ## Usage
 
 Run any program and pipe it into `ct`, like so:
