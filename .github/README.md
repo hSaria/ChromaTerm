@@ -6,10 +6,7 @@
 [![PyPI version](https://badge.fury.io/py/chromaterm.svg)](https://badge.fury.io/py/chromaterm)
 
 ChromaTerm is a Python module and script used for coloring the output to
-terminals.
-
-The full documentation is hosted at
-[Read the Docs](https://chromaterm.readthedocs.io).
+terminals. Documentation is hosted at [Read the Docs](https://chromaterm.readthedocs.io).
 
 ## Installation
 
@@ -20,7 +17,7 @@ pip3 install chromaterm
 ## Command Line Script
 
 You can pipe a program into `ct` to have its output colored according to
-user-configurable rules. For instance, here's `ssh | ct`:
+user-configurable rules. For instance, `ssh | ct`:
 
 ![alt text](https://github.com/hSaria/ChromaTerm/raw/master/.github/junos-show-interface.png "Example output")
 
