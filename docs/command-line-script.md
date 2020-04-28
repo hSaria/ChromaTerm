@@ -14,6 +14,10 @@ echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
     The script reads `.chromaterm.yml` in your home directory. If it's not there,
     a default config file is copied.
 
+    Check out the [`contrib/rules`](https://github.com/hSaria/ChromaTerm/tree/master/contrib/rules)
+    directory in the project; it has topic-specific rules which are not in the
+    defaults.
+
 !!! tip
     Set up functions, like `ssh() { /usr/bin/ssh "$@" | ct; }`, in your
     `.bash_profile` to always color the output of a program (`ssh` in this
