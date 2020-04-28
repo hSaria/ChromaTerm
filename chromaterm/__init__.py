@@ -205,6 +205,16 @@ class Color:
         """
         return self.color_code + str(data) + self.color_reset
 
+    def print(self, *args, **kwargs):
+        """A wrapper for the `print` function. It highlights before printing.
+
+        Args:
+            *args: Arguments to be printed. Highlighted before being passed to
+                the `print` function.
+            **kwargs: Keyword arguments passed to the `print` function.
+        """
+        print(*tuple(self.highlight(arg) for arg in args), **kwargs)
+
 
 class Rule:
     """A rule that highlights parts of strings which match a regular expression.
@@ -399,6 +409,16 @@ class Rule:
             data = data[:position] + code + data[position:]
 
         return data
+
+    def print(self, *args, **kwargs):
+        """A wrapper for the `print` function. It highlights before printing.
+
+        Args:
+            *args: Arguments to be printed. Highlighted before being passed to
+                the `print` function.
+            **kwargs: Keyword arguments passed to the `print` function.
+        """
+        print(*tuple(self.highlight(arg) for arg in args), **kwargs)
 
 
 class Config:
@@ -597,3 +617,13 @@ class Config:
             data = data[:position] + color_code + data[position:]
 
         return data
+
+    def print(self, *args, **kwargs):
+        """A wrapper for the `print` function. It highlights before printing.
+
+        Args:
+            *args: Arguments to be printed. Highlighted before being passed to
+                the `print` function.
+            **kwargs: Keyword arguments passed to the `print` function.
+        """
+        print(*tuple(self.highlight(arg) for arg in args), **kwargs)

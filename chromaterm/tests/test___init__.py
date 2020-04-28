@@ -59,6 +59,16 @@ def test_color_highlight():
     assert repr(color.highlight(data)) == repr(''.join(expected))
 
 
+def test_color_print(capsys):
+    """Test the print wrapper for color."""
+    color = chromaterm.Color('b#123123')
+
+    data = 'hello world'
+    color.print(data)
+
+    assert color.highlight(data) in capsys.readouterr().out
+
+
 def test_color_change_color():
     """Confirm that the color_code is updated when the color or rgb is changed."""
     color = chromaterm.Color('b#123123', rgb=False)
@@ -391,6 +401,16 @@ def test_rule_highlight_zero_length_match():
     rule.add_color(color, group=1)
 
     assert repr(rule.highlight('hello world')) == repr('hello world')
+
+
+def test_rule_print(capsys):
+    """Test the print wrapper for rule."""
+    rule = chromaterm.Rule('hello|world', color=chromaterm.Color('bold'))
+
+    data = 'hello world'
+    rule.print(data)
+
+    assert rule.highlight(data) in capsys.readouterr().out
 
 
 def test_rule_change_color():
@@ -1016,6 +1036,21 @@ def test_config_highlight_no_rules():
     """Highlight with config that has no rules – nothing is changed."""
     config = chromaterm.Config()
     assert repr(config.highlight('hello world')) == repr('hello world')
+
+
+def test_config_print(capsys):
+    """Test the print wrapper for config."""
+    config = chromaterm.Config()
+
+    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    rule2 = chromaterm.Rule('world', color=chromaterm.Color('b#321321'))
+    config.add_rule(rule1)
+    config.add_rule(rule2)
+
+    data = 'hello world'
+    config.print(data)
+
+    assert config.highlight(data) in capsys.readouterr().out
 
 
 def test_config_read_only_colors():
