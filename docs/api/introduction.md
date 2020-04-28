@@ -8,7 +8,8 @@ has three different ways in which you can highlight.
 A `Color` is the simplest way to color your output; it adds the necessary ANSI
 codes and returns the string right back.
 
-```python
+```
+#!python
 from chromaterm import Color
 
 color = Color('bold')
@@ -31,7 +32,8 @@ This class will only highlight the text matching a regular expression.
 You can use a `Rule` to highlight significant words without having to go through
 every message in your program.
 
-```python
+```
+#!python
 from chromaterm import Color, Rule
 
 rule = Rule('World', color=Color('b#412100'))
@@ -51,7 +53,8 @@ expressions and then the colors are added to the text. This makes matching more
 accurate as the color (ANSI codes) of one rule won't interfere during the
 matching of another.
 
-```python
+```
+#!python
 from chromaterm import Color, Config, Rule
 
 config = Config()
@@ -70,7 +73,8 @@ All of the API classes can be used as decorators. This saves you from having to
 explicitly call `highlight`. Here's an example with `Color`, but it's the same
 case with `Rule` and `Config`.
 
-```python
+```
+#!python
 from chromaterm import Color
 
 @Color('f#00dd00')
@@ -88,7 +92,8 @@ print(multiply(5, 10))
 The highlighting of a [Rule](../rule) can be further limited to groups within
 the regular expression. By default, the entire match (group 0) is highlighted.
 
-```python
+```
+#!python
 from chromaterm import Color, Rule
 
 rule = Rule('Hello (World)!')
