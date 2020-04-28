@@ -20,7 +20,7 @@ setup(
         'Programming Language :: Python :: 3', 'Topic :: Terminals',
         'Topic :: Utilities'
     ],
-    description='Colorize your output to terminal',
+    description='Color your output to terminal',
     entry_points={'console_scripts': ['ct = chromaterm.cli:main']},
     license='MIT',
     install_requires=REQUIRES,

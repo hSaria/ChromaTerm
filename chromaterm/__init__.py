@@ -1,4 +1,4 @@
-"""Colorize your output to terminal"""
+"""Color your output to terminal"""
 import os
 import re
 
