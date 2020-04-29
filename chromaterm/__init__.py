@@ -83,10 +83,10 @@ class Color:
                 Example: `"b#123123 bold"`
             rgb (bool): Whether the color is meant for RGB-enabled terminals or
                 not. `False` will downscale the RGB colors to xterm-256. `None`
-                will attempt to detect support for RGB.
+                will detect support for RGB and fallback to xterm-256.
 
         Raises:
-            TypeError: If `color` is not a string.
+            TypeError: If `color` is not a string. If `rgb` is not a boolean.
             ValueError: If the format of `color` is invalid.
         """
         self.rgb = rgb
@@ -217,24 +217,36 @@ class Color:
 
         return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
 
-    def highlight(self, data):
+    def highlight(self, data, force=None):
         """Returns a highlighted string of `data`.
 
         Args:
             data (str): A string to highlight. `__str__` of `data` is
                 called.
+            force (bool): If `True`, the color codes are used when highlighting.
+                If `False`, the color codes will be omitted, there by disabling
+                any highlighting and simply returning back `data`. If `None`,
+                the value is determined with `isatty`.
         """
+        if force is None:
+            force = getattr(sys.stdout, 'isatty', lambda: False)()
+
+        if force is False:
+            return str(data)
+
         return self.color_code + str(data) + self.color_reset
 
-    def print(self, *args, **kwargs):
+    def print(self, *args, force=None, **kwargs):
         """A wrapper for the `print` function. It highlights before printing.
 
         Args:
             *args (...): Arguments to be printed. Highlighted before being
                 passed to the `print` function.
+            force (bool): Passed to [highlight][chromaterm.Color.highlight] when
+                highlighting.
             **kwargs (x=y): Keyword arguments passed to the `print` function.
         """
-        print(*tuple(self.highlight(arg) for arg in args), **kwargs)
+        print(*[self.highlight(arg, force=force) for arg in args], **kwargs)
 
 
 class Rule:
@@ -402,13 +414,23 @@ class Rule:
 
         return matches
 
-    def highlight(self, data):
+    def highlight(self, data, force=None):
         """Returns a highlighted string of `data`. The regex of the rule is used
         along with the colors to highlight the matching parts of the `data`.
 
         Args:
             data (str): A string to highlight. `__str__` of `data` is called.
+            force (bool): If `True`, the color codes are used when highlighting.
+                If `False`, the color codes will be omitted, there by disabling
+                any highlighting and simply returning back `data`. If `None`,
+                the value is determined with `isatty`.
         """
+        if force is None:
+            force = getattr(sys.stdout, 'isatty', lambda: False)()
+
+        if force is False:
+            return str(data)
+
         data = str(data)
         inserts = []
 
@@ -431,15 +453,17 @@ class Rule:
 
         return data
 
-    def print(self, *args, **kwargs):
+    def print(self, *args, force=None, **kwargs):
         """A wrapper for the `print` function. It highlights before printing.
 
         Args:
             *args (...): Arguments to be printed. Highlighted before being
                 passed to the `print` function.
+            force (bool): Passed to [highlight][chromaterm.Rule.highlight] when
+                highlighting.
             **kwargs (x=y): Keyword arguments passed to the `print` function.
         """
-        print(*tuple(self.highlight(arg) for arg in args), **kwargs)
+        print(*[self.highlight(arg, force=force) for arg in args], **kwargs)
 
 
 class Config:
@@ -621,15 +645,22 @@ class Config:
 
         return matches
 
-    def highlight(self, data):
+    def highlight(self, data, force=None):
         """Returns a highlighted string of `data`. The matches from the rules
         are gathered prior to inserting any color codes, making it so the rules
         can match without the color codes interfering.
 
         Args:
             data (str): A string to highlight. `__str__` of `data` is called.
+            force (bool): If `True`, the color codes are used when highlighting.
+                If `False`, the color codes will be omitted, there by disabling
+                any highlighting and simply returning back `data`. If `None`,
+                the value is determined with `isatty`.
         """
-        if not self.rules:
+        if force is None:
+            force = getattr(sys.stdout, 'isatty', lambda: False)()
+
+        if force is False or not self.rules:
             return str(data)
 
         data = str(data)
@@ -639,12 +670,14 @@ class Config:
 
         return data
 
-    def print(self, *args, **kwargs):
+    def print(self, *args, force=None, **kwargs):
         """A wrapper for the `print` function. It highlights before printing.
 
         Args:
             *args (...): Arguments to be printed. Highlighted before being
                 passed to the `print` function.
+            force (bool): Passed to [highlight][chromaterm.Config.highlight] when
+                highlighting.
             **kwargs (x=y): Keyword arguments passed to the `print` function.
         """
-        print(*tuple(self.highlight(arg) for arg in args), **kwargs)
+        print(*[self.highlight(arg, force=force) for arg in args], **kwargs)

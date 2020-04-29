@@ -58,6 +58,10 @@ def test_color_highlight():
 
     assert repr(color.highlight(data)) == repr(''.join(expected))
 
+    # Ensure that forcing a tty mode changes the highlighting effect
+    assert repr(color.highlight(data, force=False)) != repr(
+        color.highlight(data, force=True))
+
 
 def test_color_print(capsys):
     """Test the print wrapper for color."""
@@ -351,6 +355,10 @@ def test_rule_highlight():
 
     assert repr(rule.highlight(data)) == repr(''.join(expected))
 
+    # Ensure that forcing a tty mode changes the highlighting effect
+    assert repr(rule.highlight(data, force=False)) != repr(
+        rule.highlight(data, force=True))
+
 
 def test_rule_highlight_groups():
     """Highlight with rule that colors default and specific regex groups."""
@@ -555,6 +563,10 @@ def test_config_highlight():
     ]
 
     assert repr(config.highlight(data)) == repr(''.join(expected))
+
+    # Ensure that forcing a tty mode changes the highlighting effect
+    assert repr(config.highlight(data, force=False)) != repr(
+        config.highlight(data, force=True))
 
 
 def test_config_highlight_adjoin_type_different():

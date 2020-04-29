@@ -215,7 +215,7 @@ class Config(_Config):
 
         return data, inserts
 
-    def highlight(self, data):
+    def highlight(self, data, force=None):
         """Returns a highlighted version of data.
 
         Args:
@@ -380,7 +380,6 @@ def read_file(location):
     except PermissionError:
         eprint('Cannot read configuration file', location, '(permission)')
         return None
-
 
 
 def read_ready(*read_fds, timeout=None):
