@@ -242,8 +242,7 @@ class Color:
         Args:
             *args (...): Arguments to be printed. Highlighted before being
                 passed to the `print` function.
-            force (bool): Passed to [highlight][chromaterm.Color.highlight] when
-                highlighting.
+            force (bool): Passed to [highlight][chromaterm.Color.highlight].
             **kwargs (x=y): Keyword arguments passed to the `print` function.
         """
         print(*[self.highlight(arg, force=force) for arg in args], **kwargs)
@@ -459,8 +458,7 @@ class Rule:
         Args:
             *args (...): Arguments to be printed. Highlighted before being
                 passed to the `print` function.
-            force (bool): Passed to [highlight][chromaterm.Rule.highlight] when
-                highlighting.
+            force (bool): Passed to [highlight][chromaterm.Rule.highlight].
             **kwargs (x=y): Keyword arguments passed to the `print` function.
         """
         print(*[self.highlight(arg, force=force) for arg in args], **kwargs)
@@ -676,8 +674,7 @@ class Config:
         Args:
             *args (...): Arguments to be printed. Highlighted before being
                 passed to the `print` function.
-            force (bool): Passed to [highlight][chromaterm.Config.highlight] when
-                highlighting.
+            force (bool): Passed to [highlight][chromaterm.Config.highlight].
             **kwargs (x=y): Keyword arguments passed to the `print` function.
         """
         print(*[self.highlight(arg, force=force) for arg in args], **kwargs)
