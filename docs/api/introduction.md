@@ -5,8 +5,7 @@ has three different ways in which you can highlight.
 
 ### [`Color`](../color)
 
-A `Color` is the simplest way to color your output; it adds the necessary ANSI
-codes and returns the string right back.
+A `Color` is the simplest way to highlight text.
 
 ```
 #!python

@@ -6,13 +6,8 @@ Run any program and pipe it into `ct`, like so:
 echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
 ```
 
-!!! note
-    The script reads `.chromaterm.yml` in your home directory. If it's not there,
-    a default config file is copied.
-
-    Check out the [`contrib/rules`](https://github.com/hSaria/ChromaTerm/tree/master/contrib/rules)
-    directory in the project; it has topic-specific rules which are not in the
-    defaults.
+The script reads highlight rules from a configuration file called `.chromaterm.yml`,
+located in your home directory. If the file is not there, a default one is copied.
 
 !!! tip
     Set up functions, like `ssh() { /usr/bin/ssh "$@" | ct; }`, in your
@@ -39,6 +34,11 @@ rules:
     1: bold italic
     2: b#ff0000
 ```
+
+!!! note
+    Check out the [`contrib/rules`](https://github.com/hSaria/ChromaTerm/tree/master/contrib/rules)
+    directory in the project; it has topic-specific rules which are not in the
+    defaults.
 
 ### Description
 
@@ -76,7 +76,7 @@ be referenced as long as it's in the regular expression.
 ## Controlling Terminal
 
 When you use a pipe in your command, the program has the ability to detect that
-its output is being redirected causing it to act differently. For instance,
+its output is being redirected, causing it to act differently. For instance,
 `less` is interactive when it's in a controlling terminal, but it will simply
 echo out the file if it's being redirected.
 
