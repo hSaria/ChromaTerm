@@ -2,7 +2,7 @@
 
 ## ChromaTerm v0.6
 
-### v0.6.0 – under development
+### v0.6.0 – 2020-04-30
 
 * Introduced an API for ChromaTerm; you can now color the output of your own module.
 * Added documentation (hosted at [Read the Docs](https://chromaterm.readthedocs.io)).
