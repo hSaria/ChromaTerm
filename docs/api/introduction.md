@@ -113,9 +113,12 @@ rule.print('Hi World!')
     The points below are very peculiar and ones you likely won't have to worry
     about; they're only here to document the behavior.
 
+When the `Config` class has multiple rules and they match the same text, the
+following occurs:
+
 * If one match is inside another (encapsulates it), the color of the inner match
   remains unchanged.
-* If two rules have partially-overlapping matches, the overlap is colored by the
-  trailing match (the latter one in the text).
 * If two rules match the same text exactly, the latest rule added to the `Config`
   instance will color the match.
+* If two rules have partially-overlapping matches, the overlap is colored by the
+  trailing match (the latter one in the text).
