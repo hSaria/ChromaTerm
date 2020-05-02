@@ -34,5 +34,5 @@ setup(
     python_requires=REQUIRES_PYTHON,
     setup_requires=REQUIRES,
     url='https://github.com/hSaria/ChromaTerm',
-    version='0.6.1',
+    version='0.6.2-dev',
 )
