@@ -2,6 +2,12 @@
 
 ## ChromaTerm v0.6
 
+### v0.6.1 – under development
+
+* Fixed a rare bug that caused `ct` to wait on a key stroke after the program it spawned got closed.
+
+---
+
 ### v0.6.0 – 2020-04-30
 
 * Introduced an API for ChromaTerm; you can now color the output of your own module.

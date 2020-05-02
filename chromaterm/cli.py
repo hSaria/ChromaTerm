@@ -305,12 +305,9 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
         max_wait (float): The maximum time to wait with no data on either of the
             file descriptors. None will block until at least one ready to be read.
     """
-    if forward_fd is None:
-        fds = [data_fd]
-    else:
-        fds = [data_fd, forward_fd]
-
+    fds = [data_fd] if forward_fd is None else [data_fd, forward_fd]
     buffer = ''
+
     ready_fds = read_ready(*fds, timeout=max_wait)
 
     while ready_fds:
@@ -337,26 +334,26 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
 
             splits = split_buffer(buffer)
 
-            # Process all splits except for the last as might've been cut off
+            # Process splits except for the last one as it might've been cut off
             for data, separator in splits[:-1]:
                 sys.stdout.write(config.highlight(data) + separator)
 
             # Data was read and there's more to come; wait before highlighting
             if data and read_ready(data_fd, timeout=WAIT_FOR_SPLIT):
                 buffer = splits[-1][0] + splits[-1][1]
-                continue
-
-            # A single character would indicate keyboard typing; don't highlight
-            if len(splits[-1][0]) == 1:
-                leftover_data = splits[-1][0]
+            # No data buffered; print last split
             else:
-                leftover_data = config.highlight(splits[-1][0])
+                # A single character indicates keyboard typing; don't highlight
+                if len(splits[-1][0]) == 1:
+                    leftover_data = splits[-1][0]
+                else:
+                    leftover_data = config.highlight(splits[-1][0])
 
-            # No more data; print last split and flush (doesn't have a new line)
-            sys.stdout.write(leftover_data + splits[-1][1])
+                sys.stdout.write(leftover_data + splits[-1][1])
+                buffer = ''
+
+            # Flush as the last split might not end with a new line
             sys.stdout.flush()
-
-            buffer = ''
 
         ready_fds = read_ready(*fds, timeout=max_wait)
 
