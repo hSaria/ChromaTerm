@@ -491,15 +491,13 @@ def split_buffer(buffer):
     return tuple(zip(splits[0::2], splits[1::2]))
 
 
-def main(args=None, max_wait=None, stdin_fd=None, write_default=True):
+def main(args=None, max_wait=None, write_default=True):
     """Command line utility entry point.
 
     Args:
         args (list): A list of program arguments. Defaults to sys.argv.
         max_wait (float): The maximum time to wait with no data. None will block
             until data is ready to be read.
-        stdin_fd (int): The file descriptor considered as stdin. None will default
-            to sys.stdin.fileno().
         write_default (bool): Whether to write the default configuration or not.
             Only written if it doesn't exist already.
 
@@ -529,10 +527,10 @@ def main(args=None, max_wait=None, stdin_fd=None, write_default=True):
         # ChromaTerm is spawning the program in a controlling terminal; stdin is
         # being forwarded to the program
         data_fd = run_program([args.program] + args.arguments)
-        forward_fd = sys.stdin.fileno() if stdin_fd is None else stdin_fd
+        forward_fd = sys.stdin.fileno()
     else:
         # Data is being piped into ChromaTerm's stdin; no forwarding needed
-        data_fd = sys.stdin.fileno() if stdin_fd is None else stdin_fd
+        data_fd = sys.stdin.fileno()
         forward_fd = None
 
     # Ignore SIGPIPE (broken pipe) and SIGINT (CTRL+C), and attach reload handler
