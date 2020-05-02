@@ -5,6 +5,7 @@
 ### v0.6.1 – under development
 
 * Fixed a rare bug that caused `ct` to wait on a key stroke after the program it spawned got closed.
+* Fixed a regression that reduced the accuracy of highlighting. Specifically, when `ct` was processing long output.
 
 ---
 

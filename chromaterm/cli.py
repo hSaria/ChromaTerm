@@ -316,17 +316,17 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             try:
                 os.write(data_fd, os.read(forward_fd, READ_SIZE))
             except OSError:
-                # spawned program or stdin closed; don't forward anymore
+                # Spawned program or stdin closed; don't forward anymore
                 fds.remove(forward_fd)
 
         # Data to be highlighted was received
         if data_fd in ready_fds:
             try:
-                data = os.read(data_fd, READ_SIZE)
+                data_read = os.read(data_fd, READ_SIZE)
             except OSError:
-                data = b''
+                data_read = b''
 
-            buffer += data.decode(encoding='utf-8', errors='replace')
+            buffer += data_read.decode(encoding='utf-8', errors='replace')
 
             # Buffer was processed empty and data fd hit EOF
             if not buffer:
@@ -339,7 +339,7 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
                 sys.stdout.write(config.highlight(data) + separator)
 
             # Data was read and there's more to come; wait before highlighting
-            if data and read_ready(data_fd, timeout=WAIT_FOR_SPLIT):
+            if data_read and read_ready(data_fd, timeout=WAIT_FOR_SPLIT):
                 buffer = splits[-1][0] + splits[-1][1]
             # No data buffered; print last split
             else:
