@@ -106,7 +106,7 @@ def test_baseline_tty_test_code_ttyname_different():
 
 def test_config_decode_sgr_bg():
     """Background colors and reset are being detected."""
-    for code in ['\x1b[48;5;123m', '\x1b[48;2;1;1;1m', '\x1b[49m']:
+    for code in ['\x1b[48;5;12m', '\x1b[48;2;1;1;1m', '\x1b[49m', '\x1b[101m']:
         colors = chromaterm.cli.Config.decode_sgr(code)
         assert len(colors) == 1
 
@@ -117,7 +117,7 @@ def test_config_decode_sgr_bg():
 
 def test_config_decode_sgr_fg():
     """Foreground colors and reset are being detected."""
-    for code in ['\x1b[38;5;123m', '\x1b[38;2;1;1;1m', '\x1b[39m']:
+    for code in ['\x1b[38;5;12m', '\x1b[38;2;1;1;1m', '\x1b[39m', '\x1b[91m']:
         colors = chromaterm.cli.Config.decode_sgr(code)
         assert len(colors) == 1
 

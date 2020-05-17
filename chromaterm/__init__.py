@@ -10,11 +10,11 @@ __all__ = ['Color', 'Rule', 'Config']
 COLOR_TYPES = {
     'fg': {
         'reset': '\x1b[39m',
-        're': re.compile(r'\x1b\[3(?:[0-79]|8;[0-9;]+)m')
+        're': re.compile(r'\x1b\[(?:3[0-79]|9[0-7]|38;[0-9;]+)m')
     },
     'bg': {
         'reset': '\x1b[49m',
-        're': re.compile(r'\x1b\[4(?:[0-79]|8;[0-9;]+)m')
+        're': re.compile(r'\x1b\[(?:4[0-79]|10[0-7]|48;[0-9;]+)m')
     },
     'blink': {
         'code': '\x1b[5m',

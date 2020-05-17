@@ -2,6 +2,12 @@
 
 ## ChromaTerm v0.6
 
+### v0.6.2 – under development
+
+* Detect bright background and foreground colors that may exist in the input of `ct`.
+
+---
+
 ### v0.6.1 – 2020-05-02
 
 * Fixed a rare bug that caused `ct` to wait on a key stroke after the program it spawned got closed.
