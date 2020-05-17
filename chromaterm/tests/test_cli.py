@@ -2,9 +2,9 @@
 import itertools
 import os
 import re
-import shutil
 import stat
 import subprocess
+import sys
 import time
 
 import chromaterm
@@ -12,9 +12,7 @@ import chromaterm.cli
 
 # pylint: disable=too-many-lines
 
-PYTHON_BINARY = 'python3' if shutil.which('python3') else 'python'
-
-CLI = PYTHON_BINARY + ' -m chromaterm.cli'
+CLI = sys.executable + ' -m chromaterm.cli'
 
 CODE_ISATTY = """import os, sys
 stdin = os.isatty(sys.stdin.fileno())
@@ -27,7 +25,7 @@ print(os.ttyname(sys.stdin.fileno()) if os.isatty(sys.stdin.fileno()) else None)
 
 def get_python_command(code):
     """Returns the python shell command that runs `code`."""
-    return PYTHON_BINARY + ' -c "{}"'.format('; '.join(code.splitlines()))
+    return sys.executable + ' -c "{}"'.format('; '.join(code.splitlines()))
 
 
 def test_baseline_tty_test_code_no_pipe():
