@@ -819,6 +819,20 @@ def test_split_buffer_osc_title():
         assert repr(chromaterm.cli.split_buffer(data)) == repr(expected)
 
 
+def test_split_buffer_scs():
+    """Select Character Set (SCS) is used to change the terminal character set."""
+    g_sets = ['\x28', '\x29', '\x2a', '\x2b', '\x2d', '\x2e', '\x2f']
+    char_sets = map(chr, range(int('20', 16), int('7e', 16)))
+
+    for g_set in g_sets:
+        for char_set in char_sets:
+            code = '\x1b{}{}'.format(g_set, char_set)
+            data = 'Hello {} World'.format(code)
+            expected = (('Hello ', code), (' World', ''))
+
+            assert repr(chromaterm.cli.split_buffer(data)) == repr(expected)
+
+
 def test_main_broken_pipe():
     """Break a pipe while CT is trying to write to it. The echo at the end will
     close before CT has had the chance to write to the pipe."""

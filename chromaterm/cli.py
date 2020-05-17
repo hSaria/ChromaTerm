@@ -30,8 +30,10 @@ WAIT_FOR_SPLIT = 1 / 256
 SGR_RE = re.compile(r'\x1b\[[0-9;]*m')
 
 # Sequences upon which ct will split during processing. This includes new lines,
-# vertical spaces, form feeds, C1 set (ECMA-048), CSI (excluding SGR), and OSC.
+# vertical spaces, form feeds, C1 set (ECMA-048), SCS (G0 through G3 sets),
+# CSI (excluding SGR), and OSC.
 SPLIT_RE = re.compile(r'(\r\n?|\n|\v|\f|\x1b[\x40-\x5a\x5c\x5e\x5f]|'
+                      r'\x1b[\x28-\x2b\x2d-\x2f][\x20-\x7e]|'
                       r'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
                       r'\x1b\x5d[\x08-\x0d\x20-\x7e]*(?:\x07|\x1b\x5c))')
 
