@@ -720,7 +720,7 @@ def test_split_buffer_form_feed():
     assert repr(chromaterm.cli.split_buffer(data)) == repr(expected)
 
 
-def test_split_buffer_ecma_048_c1_set():
+def test_split_buffer_c1_set():
     """Split based on the ECMA-048 C1 set, excluding CSI and OSC."""
     c1_except_csi_and_osc = itertools.chain(
         range(int('40', 16), int('5b', 16)),
@@ -735,7 +735,7 @@ def test_split_buffer_ecma_048_c1_set():
         assert repr(chromaterm.cli.split_buffer(data)) == repr(expected)
 
 
-def test_split_buffer_ecma_048_exclude_csi_sgr():
+def test_split_buffer_csi_exclude_sgr():
     """Fail to split based on the ECMA-048 C1 CSI SGR. Added some intermediate
     characters to prevent matching other CSI codes; strictly checking empty SGR."""
     data = 'Hello \x1b[!0World'
@@ -744,7 +744,7 @@ def test_split_buffer_ecma_048_exclude_csi_sgr():
     assert repr(chromaterm.cli.split_buffer(data)) == repr(expected)
 
 
-def test_split_buffer_ecma_048_csi_no_parameter_no_intermediate():
+def test_split_buffer_csi_no_parameter_no_intermediate():
     """Split based on CSI with no parameter or intermediate bytes."""
     csi_up_to_sgr = range(int('40', 16), int('6d', 16))
     csi_above_sgr = range(int('6e', 16), int('7f', 16))
@@ -756,24 +756,7 @@ def test_split_buffer_ecma_048_csi_no_parameter_no_intermediate():
         assert repr(chromaterm.cli.split_buffer(data)) == repr(expected)
 
 
-def test_split_buffer_ecma_048_csi_parameter_no_intermediate():
-    """Split based on CSI with parameters bytes but no intermediate bytes. Up to
-    3 bytes."""
-    csi_up_to_sgr = range(int('40', 16), int('6d', 16))
-    csi_above_sgr = range(int('6e', 16), int('7f', 16))
-
-    for char_id in itertools.chain(csi_up_to_sgr, csi_above_sgr):
-        for parameter in range(int('30', 16), int('40', 16)):
-            for count in range(1, 4):
-                code = chr(parameter) * count + chr(char_id)
-                data = 'Hello \x1b[{} World'.format(code)
-                expected = (('Hello ', '\x1b[' + code), (' World', ''))
-
-                assert repr(
-                    chromaterm.cli.split_buffer(data)) == repr(expected)
-
-
-def test_split_buffer_ecma_048_csi_intermediate_no_parameter():
+def test_split_buffer_csi_no_parameter_intermediate():
     """Split based on CSI with intermediate bytes but no parameter bytes."""
     csi_up_to_sgr = range(int('40', 16), int('6d', 16))
     csi_above_sgr = range(int('6e', 16), int('7f', 16))
@@ -789,7 +772,7 @@ def test_split_buffer_ecma_048_csi_intermediate_no_parameter():
                     chromaterm.cli.split_buffer(data)) == repr(expected)
 
 
-def test_split_buffer_ecma_048_csi_parameter_intermediate():
+def test_split_buffer_csi_parameter_intermediate():
     """Split based on CSI with parameter and intermediate bytes. Up to 3 bytes
     each."""
     csi_up_to_sgr = range(int('40', 16), int('6d', 16))
@@ -808,7 +791,24 @@ def test_split_buffer_ecma_048_csi_parameter_intermediate():
                         chromaterm.cli.split_buffer(data)) == repr(expected)
 
 
-def test_split_buffer_ecma_048_osc_title():
+def test_split_buffer_csi_parameter_no_intermediate():
+    """Split based on CSI with parameters bytes but no intermediate bytes. Up to
+    3 bytes."""
+    csi_up_to_sgr = range(int('40', 16), int('6d', 16))
+    csi_above_sgr = range(int('6e', 16), int('7f', 16))
+
+    for char_id in itertools.chain(csi_up_to_sgr, csi_above_sgr):
+        for parameter in range(int('30', 16), int('40', 16)):
+            for count in range(1, 4):
+                code = chr(parameter) * count + chr(char_id)
+                data = 'Hello \x1b[{} World'.format(code)
+                expected = (('Hello ', '\x1b[' + code), (' World', ''))
+
+                assert repr(
+                    chromaterm.cli.split_buffer(data)) == repr(expected)
+
+
+def test_split_buffer_osc_title():
     """Operating System Command (OSC) can supply arbitrary commands within the
     visible character set."""
     for end in ['\x07', '\x1b\x5c']:
