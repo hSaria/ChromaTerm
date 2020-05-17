@@ -2,7 +2,7 @@
 
 ## ChromaTerm v0.6
 
-### v0.6.2 – under development
+### v0.6.2 – 2020-05-17
 
 * Detect bright background and foreground colors that may exist in the input of `ct`.
 * [#87](https://github.com/hSaria/ChromaTerm/issues/87) - The _Select Character Set_ ANSI codes (rarely used) were not being handled (ignored) appropriately, resulting in malformed output.
