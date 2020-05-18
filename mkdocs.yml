@@ -7,7 +7,12 @@ python:
   install:
     - requirements: docs/requirements.txt
 
-theme: material
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: orange
+    accent: yellow
 
 extra_css:
   - custom.css
