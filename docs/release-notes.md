@@ -2,6 +2,12 @@
 
 ## ChromaTerm v0.6
 
+### v0.6.3 – 2020-05-21
+
+* [#89](https://github.com/hSaria/ChromaTerm/issues/89) - Fixed an issue that prevented installation from source due to `README.md` not being included in the package.
+
+---
+
 ### v0.6.2 – 2020-05-17
 
 * Detect bright background and foreground colors that may exist in the input of `ct`.
