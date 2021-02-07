@@ -15,7 +15,7 @@ with open('README.md', 'r') as f:
 setup(
     name='chromaterm',
     author='hSaria',
-    author_email='ping@heysaria.com',
+    author_email='sariahajjar@gmail.com',
     classifiers=[
         'Intended Audience :: Information Technology',
         'Intended Audience :: System Administrators',
