@@ -35,7 +35,7 @@ jobs:
         run: echo hi | ct
 
       - name: PyLint
-        run: pylint chromaterm/
+        run: pylint chromaterm/ tests/
 
       - name: PyTest
         run: pytest --cov chromaterm/ --cov tests/ --cov-report term-missing

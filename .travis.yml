@@ -15,5 +15,5 @@ install:
 
 script:
   - echo hi | ct
-  - pylint chromaterm/
+  - pylint chromaterm/ tests/
   - pytest --cov chromaterm/ --cov tests/ --cov-report term-missing
