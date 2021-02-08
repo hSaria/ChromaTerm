@@ -16,7 +16,7 @@ jobs:
         python-version: '3.9'
 
     - name: Install dependencies
-      run: pip3 setuptools twine wheel
+      run: pip3 install setuptools twine wheel
 
     - name: Build
       run: python setup.py sdist bdist_wheel
