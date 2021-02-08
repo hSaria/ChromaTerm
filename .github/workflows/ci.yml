@@ -38,4 +38,4 @@ jobs:
         run: pylint chromaterm/
 
       - name: PyTest
-        run: pytest --cov chromaterm/ --cov-report term-missing
+        run: pytest --cov chromaterm/ --cov tests/ --cov-report term-missing
