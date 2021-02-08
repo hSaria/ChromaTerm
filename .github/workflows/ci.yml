@@ -26,7 +26,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: pip3 install pylint pytest-cov
+        run: pip3 install coveralls pylint pytest-cov
 
       - name: Install ChromaTerm
         run: python3 setup.py install
@@ -39,3 +39,9 @@ jobs:
 
       - name: PyTest
         run: pytest --cov chromaterm/ --cov tests/ --cov-report term-missing
+
+      - name: Coveralls
+        if: ${{ github.repository == 'hSaria/ChromaTerm' && github.event_name == 'push' }}
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_API_TOKEN }}
+        run: coveralls
