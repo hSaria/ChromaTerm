@@ -2,6 +2,12 @@
 
 ## ChromaTerm v0.6
 
+### v0.6.4 – 2021-02-08
+
+* Minor packaging cleanup.
+
+---
+
 ### v0.6.3 – 2020-05-21
 
 * [#89](https://github.com/hSaria/ChromaTerm/issues/89) - Fixed an issue that prevented installation from source due to `README.md` not being included in the package.
