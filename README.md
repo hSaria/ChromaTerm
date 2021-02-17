@@ -1,6 +1,6 @@
 # ChromaTerm
 
-[![Build status](https://img.shields.io/github/workflow/status/hSaria/ChromaTerm/CI/master)](https://github.com/actions/starter-workflows/actions?query=workflow:CI)
+[![Build status](https://img.shields.io/github/workflow/status/hSaria/ChromaTerm/CI/master)](https://github.com/hSaria/ChromaTerm/actions?query=workflow%3ACI)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/github/hSaria/ChromaTerm)](https://lgtm.com/projects/g/hSaria/ChromaTerm/context:python)
 [![Coverage status](https://coveralls.io/repos/github/hSaria/ChromaTerm/badge.svg)](https://coveralls.io/github/hSaria/ChromaTerm)
 [![Documentation status](https://readthedocs.org/projects/chromaterm/badge/?version=master)](https://chromaterm.readthedocs.io)
