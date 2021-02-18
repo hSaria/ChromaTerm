@@ -97,12 +97,18 @@ class Config(_Config):
             # Single-code SGR
             else:
                 color_code = make_sgr(int(code))
+                recognized = False
 
                 for name in COLOR_TYPES:
                     if COLOR_TYPES[name]['re'].search(color_code):
                         is_reset = color_code == COLOR_TYPES[name]['reset']
+                        recognized = True
 
                         colors.append([color_code, is_reset, name])
+
+                # An SGR that isn't known; add it as is
+                if not recognized:
+                    colors.append([color_code, False, None])
 
         return colors
 

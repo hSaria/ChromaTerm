@@ -215,6 +215,17 @@ def test_config_decode_sgr_split_compound():
         assert color_type == color[2]
 
 
+def test_config_decode_sgr_unrecognized():
+    """An SGR that's valid, but the type isn't recognized during decoding."""
+    colors = chromaterm.cli.Config.decode_sgr('\x1b[7m')
+    assert len(colors) == 1
+
+    for color_code, color_reset, color_type in colors:
+        assert repr(color_code) == repr('\x1b[7m')
+        assert color_reset is False
+        assert color_type is None
+
+
 def test_config_load_simple():
     """Parse config with a simple rule."""
     config = chromaterm.cli.Config()
