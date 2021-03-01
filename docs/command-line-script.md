@@ -21,8 +21,7 @@ located in your home directory. If the file is not there, a default one is copie
 All of the highlight rules are placed under the `rules` list in the
 configuration file. Here's an example config file:
 
-```
-#!yaml
+```yaml linenums="1"
 rules:
 - description: My first rule colors the foreground
   regex: hello.+world

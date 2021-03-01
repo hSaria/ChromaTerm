@@ -19,8 +19,8 @@ extra_css:
 
 markdown_extensions:
   - admonition
-  - codehilite:
-      guess_lang: false
+  - pymdownx.highlight
+  - pymdownx.superfences
   - toc:
       permalink: true
 
