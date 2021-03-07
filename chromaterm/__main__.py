@@ -310,13 +310,7 @@ def run_program(program_args):
     import fcntl
     import termios
     import pty
-    import shutil
-    import struct
     import tty
-
-    # Save the current tty's window size and attributes (used by slave pty)
-    window_size = shutil.get_terminal_size()
-    window_size = struct.pack('2H', window_size.lines, window_size.columns)
 
     try:
         attributes = termios.tcgetattr(sys.stdin.fileno())
@@ -332,9 +326,7 @@ def run_program(program_args):
     pid, master_fd = pty.fork()
 
     if pid == 0:
-        # Update the slave's pty (now on std fds) window size and attributes
-        fcntl.ioctl(sys.stdin.fileno(), termios.TIOCSWINSZ, window_size)
-
+        # Update the slave's pty (now on standard fds) attributes
         if attributes:
             termios.tcsetattr(sys.stdin.fileno(), termios.TCSANOW, attributes)
 
@@ -346,6 +338,15 @@ def run_program(program_args):
         # exec replaces the fork's process; only hit on exception
         sys.exit(1)
     else:
+        # Update the slave's window size as the master is capturing the signals
+        def window_resize_handler(*_):
+            size = fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, '0000')
+            fcntl.ioctl(master_fd, termios.TIOCSWINSZ, size)
+
+        if sys.stdin.isatty():
+            signal.signal(signal.SIGWINCH, window_resize_handler)
+            window_resize_handler()
+
         return master_fd
 
 
