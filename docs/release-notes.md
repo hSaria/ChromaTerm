@@ -2,6 +2,12 @@
 
 ## ChromaTerm v0.6
 
+### v0.6.6 – 2021-03-07
+
+* No changes were made, but this will be the last release that includes an API.
+
+---
+
 ### v0.6.5 – 2021-02-18
 
 * Fixed a bug where unrecognized color code types (e.g. reverse video) in the input were not included in the output.
