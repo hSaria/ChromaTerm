@@ -1,7 +1,0 @@
-/* Indentation for mkdocstrings */
-div.doc-contents:not(.first) {
-  padding-left: 20px;
-  border-left: 2px solid var(--md-default-fg-color--lightest);
-  margin-bottom: 50px;
-}
-
