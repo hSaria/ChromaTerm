@@ -1,10 +1,4 @@
-#!/usr/bin/env python3
-"""ChromaTerm setup"""
 from setuptools import setup
-
-# We're not dealing with the CLI script on Windows
-REQUIRES = ['psutil', 'PyYAML']
-REQUIRES_PYTHON = '>=3.5.0'
 
 with open('README.md', 'r') as f:
     LONG_DESCRIPTION = f.read()
@@ -22,13 +16,13 @@ setup(
         'Topic :: Utilities'
     ],
     description='Color your output to terminal',
-    entry_points={'console_scripts': ['ct = chromaterm.cli:main']},
+    entry_points={'console_scripts': ['ct = chromaterm.__main__:main']},
     license='MIT',
-    install_requires=REQUIRES,
+    install_requires=['psutil', 'PyYAML'],
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     packages=['chromaterm'],
-    python_requires=REQUIRES_PYTHON,
+    python_requires='>=3.5.0',
     url='https://github.com/hSaria/ChromaTerm',
     version='0.7.0-dev',
 )

@@ -1,7 +1,6 @@
 """Color your output to terminal"""
 import os
 import re
-import sys
 
 __all__ = ['Color', 'Rule', 'Config']
 
@@ -46,6 +45,9 @@ COLOR_TYPES = {
 # Detect rgb support
 RGB_SUPPORTED = os.getenv('COLORTERM') in ('truecolor', '24bit')
 
+# Select Graphic Rendition sequence (all types)
+SGR_RE = re.compile(r'\x1b\[[0-9;]*m')
+
 
 class Color:
     """A color that highlights strings for terminals."""
@@ -72,28 +74,9 @@ class Color:
         self.rgb = rgb
         self.color = color
 
-    def __call__(self, function):
-        def wrapped(*args, **kwargs):
-            return self.highlight(function(*args, **kwargs))
-
-        return wrapped
-
-    def __repr__(self):
-        args = [repr(self.color)]
-
-        if self.rgb is not None:
-            args.append('rgb=' + repr(self.rgb))
-
-        return '{}({})'.format(self.__class__.__name__, ', '.join(args))
-
-    def __str__(self):
-        return 'Color: ' + self.color
-
     @property
     def color(self):
-        """String that represents the color. When changed, updates
-        [color_code][chromaterm.Color.color_code] and
-        [color_reset][chromaterm.Color.color_reset]."""
+        """String that represents the color."""
         return self._color
 
     @color.setter
@@ -152,26 +135,24 @@ class Color:
     @property
     def color_code(self):
         """ANSI escape sequence that instructs a terminal to color output.
-        Updated when [color][chromaterm.Color.color] is changed."""
+        Updated when `self.color` is changed."""
         return self._color_code
 
     @property
     def color_reset(self):
         """ANSI escape sequence that instructs a terminal to revert to the
-        default color. Updated when [color][chromaterm.Color.color] is changed."""
+        default color. Updated when `self.color` is changed."""
         return self._color_reset
 
     @property
     def color_types(self):
         """List of tuples for each color type in this instance and its value. The
-        types correspond to `chromaterm.COLOR_TYPES`. Updated when
-        [color][chromaterm.Color.color] is changed."""
+        types correspond to `COLOR_TYPES`. Updated when `self.color` is changed."""
         return self._color_types.copy()
 
     @property
     def rgb(self):
-        """Flag for RGB-support. When changed, updates
-        [color][chromaterm.Color.color]."""
+        """Flag for RGB-support. When changed, updates `self.color`."""
         return self._rgb
 
     @rgb.setter
@@ -186,6 +167,71 @@ class Color:
             self.color = self._color
 
     @staticmethod
+    def decode_sgr(source_color_code):
+        """Decodes an SGR, splitting it into discrete colors. Each color is a list
+        that contains:
+            * color code (str),
+            * is reset (bool), and
+            * color type (str) which corresponds to `chromaterm.COLOR_TYPES`.
+
+        Args:
+            source_color_code (str): The string to be split into individual codes.
+        """
+        def make_sgr(code_id):
+            return '\x1b[' + str(code_id) + 'm'
+
+        colors = []
+        codes = source_color_code.lstrip('\x1b[').rstrip('m').split(';')
+        skip = 0
+
+        for index, code in enumerate(codes):
+            # Code processed by an index look-ahead; skip it
+            if skip:
+                skip -= 1
+                continue
+
+            # Full reset
+            if code == '' or int(code) == 0:
+                colors.append([make_sgr(code), True, None])
+            # Multi-code SGR
+            elif code in ('38', '48'):
+                color_type = 'fg' if code == '38' else 'bg'
+
+                # xterm-256
+                if len(codes) > index + 2 and codes[index + 1] == '5':
+                    skip = 2
+                    code = ';'.join([str(codes[index + x]) for x in range(3)])
+                # RGB
+                elif len(codes) > index + 4 and codes[index + 1] == '2':
+                    skip = 4
+                    code = ';'.join([str(codes[index + x]) for x in range(5)])
+                # Does not conform to format; do not touch code
+                else:
+                    return [[source_color_code, False, None]]
+
+                color_code = make_sgr(code)
+                is_reset = color_code == COLOR_TYPES[color_type]['reset']
+
+                colors.append([color_code, is_reset, color_type])
+            # Single-code SGR
+            else:
+                color_code = make_sgr(int(code))
+                recognized = False
+
+                for name in COLOR_TYPES:
+                    if COLOR_TYPES[name]['re'].search(color_code):
+                        is_reset = color_code == COLOR_TYPES[name]['reset']
+                        recognized = True
+
+                        colors.append([color_code, is_reset, name])
+
+                # An SGR that isn't known; add it as is
+                if not recognized:
+                    colors.append([color_code, False, None])
+
+        return colors
+
+    @staticmethod
     def rgb_to_8bit(_r, _g, _b):
         """Downscale from 24-bit RGB to 8-bit ANSI."""
         def downscale(value, base=6):
@@ -197,87 +243,51 @@ class Color:
 
         return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
 
-    def highlight(self, data, force=None):
-        """Returns a highlighted string of `data`.
+    @staticmethod
+    def strip_colors(data):
+        """Returns data after stripping the existing colors and a list of inserts
+        containing the stripped colors. The format of the insert is that of
+        `Config.get_inserts`.
 
         Args:
-            data (str): A string to highlight. `__str__` of `data` is
-                called.
-            force (bool): If `True`, the color codes are used when highlighting.
-                If `False`, the color codes will be omitted, there by disabling
-                any highlighting and simply returning back `data`. If `None`,
-                the value is determined with `isatty`.
+            data (str): The string from which the colors should be stripped.
         """
-        if force is None:
-            force = getattr(sys.stdout, 'isatty', lambda: False)()
+        inserts = []
+        match = SGR_RE.search(data)
 
-        if force is False:
-            return str(data)
+        while match:
+            start, end = match.span()
 
-        return self.color_code + str(data) + self.color_reset
+            for color in Color.decode_sgr(match.group()):
+                color.insert(0, start)
+                inserts.insert(0, color)
 
-    def print(self, *args, force=None, **kwargs):
-        """A wrapper for the `print` function. It highlights before printing.
+            # Remove match from data; next match's start is in the clean data
+            data = data[:start] + data[end:]
+            match = SGR_RE.search(data)
 
-        Args:
-            *args (...): Arguments to be printed. Highlighted before being
-                passed to the `print` function.
-            force (bool): Passed to [highlight][chromaterm.Color.highlight].
-            **kwargs (x=y): Keyword arguments passed to the `print` function.
-        """
-        print(*[self.highlight(arg, force=force) for arg in args], **kwargs)
+        return data, inserts
 
 
 class Rule:
-    """A rule that highlights parts of strings which match a regular expression.
-    The regular expression engine used is Python's
-    [re](https://docs.python.org/3/library/re.html)."""
+    """A rule that highlights parts of strings which match a regular expression."""
     def __init__(self, regex, color=None, description=None):
         """Constructor.
 
         Args:
-            regex (str): A regular expression used for matching the input when
-                highlighting.
-            color (chromaterm.Color): A color used to highlight the matched
-                input. This will default to highlighting the entire match (also
-                known as group 0 of the regular expression). This can left to
-                `None` if you intend to use [add_color][chromaterm.Rule.add_color]
-                to manually specify which group in the regular expression should
-                be highlighted.
-            description (str): A description to help identify the rule.
+            regex (str): Regular expression for getting matches in data.
+            color (chromaterm.Color): Color used to highlight the entire match.
+            description (str): String to help identify the rule.
 
         Raises:
             TypeError: If `regex` is not a string. If `color` is not an instance
-                of [chromaterm.Color](../color/). If `description` is not a
-                string.
+                of `Color` or not `None`. If `description` is not a string.
         """
         self._colors = {}
         self.regex = regex
         self.description = description
 
-        if color:
-            self.color = color
-
-    def __call__(self, function):
-        def wrapped(*args, **kwargs):
-            return self.highlight(function(*args, **kwargs))
-
-        return wrapped
-
-    def __repr__(self):
-        args = [repr(self.regex.pattern)]
-
-        if self.color:
-            args.append('color=' + repr(self.color))
-        if self.description:
-            args.append('description=' + repr(self.description))
-
-        return '{}({})'.format(self.__class__.__name__, ', '.join(args))
-
-    def __str__(self):
-        if self.description:
-            return 'Rule: ' + self.description
-        return 'Rule: ' + repr(self.regex.pattern)
+        self.set_color(color)
 
     @property
     def color(self):
@@ -286,14 +296,13 @@ class Rule:
 
     @color.setter
     def color(self, value):
-        self.add_color(value)
+        self.set_color(value)
 
     @property
     def colors(self):
         """Colors of the rule. It is dictionary where the keys are integers
-        corresponding to the groups in [regex][chromaterm.Rule.regex] and the
-        values are instances of [chromaterm.Color](../color/) which are used for
-        highlighting."""
+        corresponding to the groups in `self.regex` and the values are instances
+        `Color` which are used for highlighting."""
         # Return a copy of the dictionary to prevent modification of shallow
         # values; modifying the content of the values, like colors[0].rgb = True
         # is fine as it doesn't change the object type.
@@ -323,54 +332,9 @@ class Rule:
 
         self._regex = re.compile(value) if isinstance(value, str) else value
 
-    def add_color(self, color, group=0):
-        """Adds a color to be used when highlighting. The group can be used to
-        limit the parts of the match which are highlighted. Group 0 (the default)
-        will highlight the entire match. If a color already exists for the group,
-        it is overwritten.
-
-        Args:
-            color (chromaterm.Color): A color for highlighting the matched input.
-            group (int): The regex group to be be highlighted with the color.
-
-        Raises:
-            TypeError: If `color` is not an instance of
-                [chromaterm.Color](../color/). If `group` is not an integer.
-            ValueError: If `group` does not exist in the regular expression.
-        """
-        if not isinstance(color, Color):
-            raise TypeError('color must be a chromaterm.Color')
-
-        if not isinstance(group, int):
-            raise TypeError('group must be an integer')
-
-        if group > self.regex.groups:
-            raise ValueError('regex only has {} group(s); {} is '
-                             'invalid'.format(self.regex.groups, group))
-
-        self._colors[group] = color
-
-        # Sort the colors according to the group number to ensure deterministic
-        # highlighting
-        self._colors = {k: self._colors[k] for k in sorted(self._colors)}
-
-    def remove_color(self, group):
-        """Removes a color from the rule's colors.
-
-        Args:
-            group (int): The regex group. It is a key in the colors dictionary.
-
-        Raises:
-            TypeError: If `group` is not an integer.
-        """
-        if not isinstance(group, int):
-            raise TypeError('group must be an integer')
-
-        self._colors.pop(group, None)
-
     def get_matches(self, data):
         """Returns a list of tuples, each of which containing a start index, an
-        end index, and the [chromaterm.Color][] object for that match. Only regex
+        end index, and the `Color` object for that match. Only regex
         groups associated with a color are included.
 
         Args:
@@ -393,55 +357,40 @@ class Rule:
 
         return matches
 
-    def highlight(self, data, force=None):
-        """Returns a highlighted string of `data`. The regex of the rule is used
-        along with the colors to highlight the matching parts of the `data`.
+    def set_color(self, color, group=0):
+        """Sets a color to be used when highlighting. The group can be used to
+        limit the parts of the match which are highlighted. Group 0 (the default)
+        will highlight the entire match. If a color already exists for the group,
+        it is overwritten.
 
         Args:
-            data (str): A string to highlight. `__str__` of `data` is called.
-            force (bool): If `True`, the color codes are used when highlighting.
-                If `False`, the color codes will be omitted, there by disabling
-                any highlighting and simply returning back `data`. If `None`,
-                the value is determined with `isatty`.
+            color (chromaterm.Color): A color for highlighting the matched input.
+            group (int): The regex group to be be highlighted with the color.
+
+        Raises:
+            TypeError: If `color` is not an instance of `Color`.. If `group` is
+                not an integer.
+            ValueError: If `group` does not exist in the regular expression.
         """
-        if force is None:
-            force = getattr(sys.stdout, 'isatty', lambda: False)()
+        if color is None:
+            self._colors.pop(color, None)
+            return
 
-        if force is False:
-            return str(data)
+        if not isinstance(color, Color):
+            raise TypeError('color must be a chromaterm.Color')
 
-        data = str(data)
-        inserts = []
+        if not isinstance(group, int):
+            raise TypeError('group must be an integer')
 
-        for start, end, color in self.get_matches(data):
-            insert_index = 0
+        if group > self.regex.groups:
+            raise ValueError('regex only has {} group(s); {} is '
+                             'invalid'.format(self.regex.groups, group))
 
-            # Arrange the inserts in reverse order (index magic over data)
-            for index, (position, _) in enumerate(inserts):
-                # A rule will never create overlapping (because of re.finditer),
-                # so the start and end insert indexes will always be adjacent
-                if start >= position:
-                    insert_index = index
-                    break
+        self._colors[group] = color
 
-            inserts.insert(insert_index, (start, color.color_code))
-            inserts.insert(insert_index, (end, color.color_reset))
-
-        for position, code in inserts:
-            data = data[:position] + code + data[position:]
-
-        return data
-
-    def print(self, *args, force=None, **kwargs):
-        """A wrapper for the `print` function. It highlights before printing.
-
-        Args:
-            *args (...): Arguments to be printed. Highlighted before being
-                passed to the `print` function.
-            force (bool): Passed to [highlight][chromaterm.Rule.highlight].
-            **kwargs (x=y): Keyword arguments passed to the `print` function.
-        """
-        print(*[self.highlight(arg, force=force) for arg in args], **kwargs)
+        # Sort the colors according to the group number to ensure deterministic
+        # highlighting
+        self._colors = {k: self._colors[k] for k in sorted(self._colors)}
 
 
 class Config:
@@ -453,35 +402,22 @@ class Config:
         self._reset_codes = {k: COLOR_TYPES[k]['reset'] for k in COLOR_TYPES}
         self._rules = []
 
-    def __call__(self, function):
-        def wrapped(*args, **kwargs):
-            return self.highlight(function(*args, **kwargs))
-
-        return wrapped
-
-    def __repr__(self):
-        return '{}()'.format(self.__class__.__name__)
-
-    def __str__(self):
-        count = len(self.rules)
-        return 'Config: {} rule{}'.format(count, '' if count == 1 else 's')
-
     @property
     def rules(self):
-        """List of [chromaterm.Rule](../rule/) objects used during highlighting."""
+        """List of `Rule objects used during highlighting."""
         # Return a copy of the list to prevent modification, like extending it.
         # Modifying the content of the items is fine as it doesn't change the
         # object type.
         return self._rules.copy()
 
     def add_rule(self, rule):
-        """Adds `rule` to the [rules][chromaterm.Config.rules] list.
+        """Adds `rule` to the `self.rules` list.
 
         Args:
             rule (chromaterm.Rule): The rule to be added to the list of rules.
 
         Raises:
-            TypeError: If `rule` is not an instance of [chromaterm.Rule](../rule/).
+            TypeError: If `rule` is not an instance of `Rule`.
         """
         if not isinstance(rule, Rule):
             raise TypeError('rule must be a chromaterm.Rule')
@@ -489,13 +425,13 @@ class Config:
         self._rules.append(rule)
 
     def remove_rule(self, rule):
-        """Removes rules from the [rules][chromaterm.Config.rules] list.
+        """Removes rule from `self.rules`.
 
         Args:
             rule (chromaterm.Rule): The rule to be removed from the list of rules.
 
         Raises:
-            TypeError: If `rule` is not an instance of [chromaterm.Rule](../rule/).
+            TypeError: If `rule` is not an instance of `Rule`.
         """
         if not isinstance(rule, Rule):
             raise TypeError('rule must be a chromaterm.Rule')
@@ -559,8 +495,7 @@ class Config:
                 Any existing inserts are respected during processing, but ensure
                 that they are sorted in descending order based on their position.
         """
-        if not isinstance(inserts, list):
-            inserts = []
+        inserts = [] if not isinstance(inserts, list) else inserts
 
         # A lot of the code here is difficult to comprehend directly, because the
         # intent might not be immediately visible. You may find it easier to take
@@ -610,8 +545,8 @@ class Config:
 
     def get_matches(self, data):
         """Returns a list of tuples, each of which containing a start index, an
-        end index, and the [chromaterm.Color](../color/) object for that match.
-        The tuples of the latter rules are towards the end of the list.
+        end index, and the `Color` object for that match. The tuples of the
+        latter rules are towards the end of the list.
 
         Args:
             data (str): A string against which each rule is matched.
@@ -623,38 +558,34 @@ class Config:
 
         return matches
 
-    def highlight(self, data, force=None):
+    def highlight(self, data):
         """Returns a highlighted string of `data`. The matches from the rules
         are gathered prior to inserting any color codes, making it so the rules
         can match without the color codes interfering.
 
         Args:
             data (str): A string to highlight. `__str__` of `data` is called.
-            force (bool): If `True`, the color codes are used when highlighting.
-                If `False`, the color codes will be omitted, there by disabling
-                any highlighting and simply returning back `data`. If `None`,
-                the value is determined with `isatty`.
         """
-        if force is None:
-            force = getattr(sys.stdout, 'isatty', lambda: False)()
-
-        if force is False or not self.rules:
+        if not self.rules:
             return str(data)
 
-        data = str(data)
+        data, inserts = Color.strip_colors(str(data))
+        inserts = self.get_inserts(data, inserts)
 
-        for position, color_code, _, _ in self.get_inserts(data):
+        resets_to_update = list(self._reset_codes)
+
+        for position, color_code, is_reset, color_type in inserts:
             data = data[:position] + color_code + data[position:]
 
+            if resets_to_update:
+                # A full reset; default the remaining resets
+                if color_type is None and is_reset:
+                    for key in resets_to_update:
+                        self._reset_codes[key] = COLOR_TYPES[key]['reset']
+
+                    resets_to_update = []
+                elif color_type in resets_to_update:
+                    self._reset_codes[color_type] = color_code
+                    resets_to_update.remove(color_type)
+
         return data
-
-    def print(self, *args, force=None, **kwargs):
-        """A wrapper for the `print` function. It highlights before printing.
-
-        Args:
-            *args (...): Arguments to be printed. Highlighted before being
-                passed to the `print` function.
-            force (bool): Passed to [highlight][chromaterm.Config.highlight].
-            **kwargs (x=y): Keyword arguments passed to the `print` function.
-        """
-        print(*[self.highlight(arg, force=force) for arg in args], **kwargs)

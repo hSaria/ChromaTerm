@@ -49,28 +49,128 @@ def test_color_known_grayscale():
         assert repr(color.color_code) == repr('\x1b[' + color_code)
 
 
-def test_color_highlight():
-    """Highlight some text"""
-    color = chromaterm.Color('b#123123')
+def test_color_decode_sgr_bg():
+    """Background colors and reset are being detected."""
+    for code in ['\x1b[48;5;12m', '\x1b[48;2;1;1;1m', '\x1b[49m', '\x1b[101m']:
+        colors = chromaterm.Color.decode_sgr(code)
+        assert len(colors) == 1
 
-    data = 'hello'
-    expected = [color.color_code, 'hello', color.color_reset]
-
-    assert repr(color.highlight(data)) == repr(''.join(expected))
-
-    # Ensure that forcing a tty mode changes the highlighting effect
-    assert repr(color.highlight(data, force=False)) != repr(
-        color.highlight(data, force=True))
+        for color_code, _, color_type in colors:
+            assert repr(color_code) == repr(code)
+            assert color_type == 'bg'
 
 
-def test_color_print(capsys):
-    """Test the print wrapper for color."""
-    color = chromaterm.Color('b#123123')
+def test_color_decode_sgr_fg():
+    """Foreground colors and reset are being detected."""
+    for code in ['\x1b[38;5;12m', '\x1b[38;2;1;1;1m', '\x1b[39m', '\x1b[91m']:
+        colors = chromaterm.Color.decode_sgr(code)
+        assert len(colors) == 1
 
-    data = 'hello world'
-    color.print(data)
+        for color_code, _, color_type in colors:
+            assert repr(color_code) == repr(code)
+            assert color_type == 'fg'
 
-    assert color.highlight(data) in capsys.readouterr().out
+
+def test_color_decode_sgr_styles_blink():
+    """Blink and its reset are being detected."""
+    for code in ['\x1b[5m', '\x1b[25m']:
+        colors = chromaterm.Color.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color_code, _, color_type in colors:
+            assert repr(color_code) == repr(code)
+            assert color_type == 'blink'
+
+
+def test_color_decode_sgr_styles_bold():
+    """Bold and its reset are being detected."""
+    for code in ['\x1b[1m', '\x1b[2m', '\x1b[22m']:
+        colors = chromaterm.Color.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color_code, _, color_type in colors:
+            assert repr(color_code) == repr(code)
+            assert color_type == 'bold'
+
+
+def test_color_decode_sgr_styles_italic():
+    """Italic and its reset are being detected."""
+    for code in ['\x1b[3m', '\x1b[23m']:
+        colors = chromaterm.Color.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color_code, _, color_type in colors:
+            assert repr(color_code) == repr(code)
+            assert color_type == 'italic'
+
+
+def test_color_decode_sgr_styles_strike():
+    """Strike and its reset are being detected."""
+    for code in ['\x1b[9m', '\x1b[29m']:
+        colors = chromaterm.Color.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color_code, _, color_type in colors:
+            assert repr(color_code) == repr(code)
+            assert color_type == 'strike'
+
+
+def test_color_decode_sgr_styles_underline():
+    """Underline and its reset are being detected."""
+    for code in ['\x1b[4m', '\x1b[24m']:
+        colors = chromaterm.Color.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color_code, _, color_type in colors:
+            assert repr(color_code) == repr(code)
+            assert color_type == 'underline'
+
+
+def test_color_decode_sgr_full_reset():
+    """Full reset detection."""
+    for code in ['\x1b[00m', '\x1b[0m', '\x1b[m']:
+        colors = chromaterm.Color.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color_code, color_reset, color_type in colors:
+            assert repr(color_code) == repr(code)
+            assert color_reset is True
+            assert color_type is None
+
+
+def test_color_decode_sgr_malformed():
+    """Malformed colors."""
+    for code in ['\x1b[38;5m', '\x1b[38;2;1;1m', '\x1b[38;5;123;38;2;1;1m']:
+        colors = chromaterm.Color.decode_sgr(code)
+        assert len(colors) == 1
+
+        for color_code, color_reset, color_type in colors:
+            assert repr(color_code) == repr(code)
+            assert color_reset is False
+            assert color_type is None
+
+
+def test_color_decode_sgr_split_compound():
+    """Split the a compound SGR into discrete SGR's."""
+    colors = chromaterm.Color.decode_sgr('\x1b[1;33;40m')
+    codes = ['\x1b[1m', '\x1b[33m', '\x1b[40m']
+    types = ['bold', 'fg', 'bg']
+
+    for color, color_code, color_type in zip(colors, codes, types):
+        assert repr(color_code) == repr(color[0])
+        assert color[1] is False
+        assert color_type == color[2]
+
+
+def test_color_decode_sgr_unrecognized():
+    """An SGR that's valid, but the type isn't recognized during decoding."""
+    colors = chromaterm.Color.decode_sgr('\x1b[7m')
+    assert len(colors) == 1
+
+    for color_code, color_reset, color_type in colors:
+        assert repr(color_code) == repr('\x1b[7m')
+        assert color_reset is False
+        assert color_type is None
 
 
 def test_color_change_color():
@@ -238,187 +338,112 @@ def test_color_shallow_copied_color_types():
     assert color.color_types is not color.color_types
 
 
-def test_color___call__():
-    """Confim Color's decorator (__call__)."""
-    color = chromaterm.Color('b#123123')
+def test_rule_get_matches():
+    """Get matches of rule that only colors the default regex group."""
+    color = chromaterm.Color('bold')
+    rule = chromaterm.Rule('hello|world', color=color)
 
-    @color
-    def echo(*args):
-        return ', '.join(args)
+    data = 'hello world'
+    expected = [(0, 5, color), (6, 11, color)]
 
-    assert repr(color.highlight('hello world')) == repr(echo('hello world'))
-
-
-def test_color___repr__():
-    """Confim Color's __repr__ format."""
-    color = chromaterm.Color('f#123123   bold   b#123123  ')
-    assert repr(color) == "Color('f#123123 bold b#123123')"
-
-    color = chromaterm.Color('bold b#123123', rgb=True)
-    assert repr(color) == "Color('bold b#123123', rgb=True)"
+    assert rule.get_matches(data) == expected
 
 
-def test_color___str__():
-    """Confim Color's __str__ format."""
-    color = chromaterm.Color('b#123123')
-    assert str(color) == 'Color: b#123123'
+def test_rule_get_matches_groups():
+    """Get matches of rule that colors default and specific regex groups."""
+    color1 = chromaterm.Color('bold')
+    color2 = chromaterm.Color('b#123123')
+    color3 = chromaterm.Color('f#321321')
+    rule = chromaterm.Rule('(hello) (world)', color=color1)
+    rule.set_color(color2, group=1)
+    rule.set_color(color3, group=2)
+
+    data = 'hello world'
+    expected = [(0, 11, color1), (0, 5, color2), (6, 11, color3)]
+
+    assert rule.get_matches(data) == expected
 
 
-def test_rule_add_color_default_group():
+def test_rule_get_matches_groups_optional_not_matches():
+    """Get matches of rule that has a specific regex group that is optional. When
+    the optional group is not in the match, the color should not be inserted."""
+    color = chromaterm.Color('bold')
+    rule = chromaterm.Rule('hello(,)? world')
+    rule.set_color(color, group=1)
+
+    data = 'hello, world'
+    expected = [(5, 6, color)]
+
+    assert rule.get_matches(data) == expected
+
+    data = 'hello world'
+    expected = []
+
+    assert rule.get_matches(data) == expected
+
+
+def test_rule_get_matches_no_colors():
+    """Get matches of rule that has no colors – nothing is changed."""
+    assert chromaterm.Rule('hello').get_matches('hello') == []
+
+
+def test_rule_get_matches_zero_length_match():
+    """Get matches of rule that has a regex that matches zero-length data."""
+    color = chromaterm.Color('bold')
+    rule = chromaterm.Rule('hello() world')
+    rule.set_color(color, group=1)
+
+    assert rule.get_matches('hello world') == []
+
+
+def test_rule_set_color_default_group():
     """Add to a rule a color to the default regex group (0)."""
     rule = chromaterm.Rule('hello')
     assert rule.color is None
 
     color = chromaterm.Color('bold')
-    rule.add_color(color)
+    rule.set_color(color)
     assert rule.color is color
     assert rule.colors.get(0) is color
 
 
-def test_rule_add_color_specific_group():
+def test_rule_set_color_specific_group():
     """Add to a rule a color to a specific regex group. Additionally, ensure
     that the dict keys are ordered according to the group number."""
     rule = chromaterm.Rule('he(llo)')
     assert rule.color is None
 
     color = chromaterm.Color('bold')
-    rule.add_color(color, group=1)
+    rule.set_color(color, group=1)
     assert rule.color is None
     assert rule.colors.get(1) is color
 
-    rule.add_color(color)
+    rule.set_color(color)
     assert list(rule.colors) == [0, 1]
 
 
-def test_rule_add_color_invalid_type_color():
+def test_rule_set_color_invalid_type_color():
     """Add to a rule a color with invalid group type."""
     rule = chromaterm.Rule('hello')
 
     with pytest.raises(TypeError, match='color must be a chromaterm.Color'):
-        rule.add_color(True)
+        rule.set_color(True)
 
 
-def test_rule_add_color_invalid_type_group():
+def test_rule_set_color_invalid_type_group():
     """Add to a rule a color with invalid color type."""
     rule = chromaterm.Rule('hello')
 
     with pytest.raises(TypeError, match='group must be an integer'):
-        rule.add_color(chromaterm.Color('bold'), group='3')
+        rule.set_color(chromaterm.Color('bold'), group='3')
 
 
-def test_rule_add_color_invalid_value_group():
+def test_rule_set_color_invalid_value_group():
     """Add to a rule a color with invalid group value."""
     rule = chromaterm.Rule('hello')
 
     with pytest.raises(ValueError, match='regex only has 0 group'):
-        rule.add_color(chromaterm.Color('bold'), group=2)
-
-
-def test_rule_remove_color_default_group():
-    """Remove from a rule the color of the default regex group (0)."""
-    rule = chromaterm.Rule('hello')
-    rule.add_color(chromaterm.Color('bold'))
-    assert rule.colors.get(0) is not None
-
-    rule.remove_color(0)
-    assert rule.colors.get(0) is None
-
-
-def test_rule_remove_color_specific_group():
-    """Remove from a rule the color of a specific regex group."""
-    rule = chromaterm.Rule('he(llo)')
-    rule.add_color(chromaterm.Color('bold'), group=1)
-    assert rule.colors.get(1) is not None
-
-    rule.remove_color(1)
-    assert rule.colors.get(1) is None
-
-
-def test_rule_remove_color_invalid_type_group():
-    """Add to a rule a color with invalid group value."""
-    rule = chromaterm.Rule('hello')
-
-    with pytest.raises(TypeError, match='group must be an integer'):
-        rule.remove_color('2')
-
-
-def test_rule_highlight():
-    """Highlight with rule that only colors the default regex group."""
-    color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('hello|world', color=color)
-
-    data = 'hello world'
-    expected = [
-        color.color_code, 'hello', color.color_reset, ' ', color.color_code,
-        'world', color.color_reset
-    ]
-
-    assert repr(rule.highlight(data)) == repr(''.join(expected))
-
-    # Ensure that forcing a tty mode changes the highlighting effect
-    assert repr(rule.highlight(data, force=False)) != repr(
-        rule.highlight(data, force=True))
-
-
-def test_rule_highlight_groups():
-    """Highlight with rule that colors default and specific regex groups."""
-    color1 = chromaterm.Color('bold')
-    color2 = chromaterm.Color('b#123123')
-    color3 = chromaterm.Color('f#321321')
-    rule = chromaterm.Rule('(hello) (world)', color=color1)
-    rule.add_color(color2, group=1)
-    rule.add_color(color3, group=2)
-
-    data = 'hello world'
-    expected = [
-        color1.color_code, color2.color_code, 'hello', color2.color_reset, ' ',
-        color3.color_code, 'world', color3.color_reset, color1.color_reset
-    ]
-
-    assert repr(rule.highlight(data)) == repr(''.join(expected))
-
-
-def test_rule_highlight_groups_optional_not_matches():
-    """Highlight with rule that has a specific regex group that is optional. When
-    the optional group is not in the match, the color should not be inserted."""
-    color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('hello(,)? world')
-    rule.add_color(color, group=1)
-
-    data = 'hello, world'
-    expected = ['hello', color.color_code, ',', color.color_reset, ' world']
-
-    assert repr(rule.highlight(data)) == repr(''.join(expected))
-
-    data = 'hello world'
-    expected = ['hello world']
-
-    assert repr(rule.highlight(data)) == repr(''.join(expected))
-
-
-def test_rule_highlight_no_colors():
-    """Highlight with rule that has no colors – nothing is changed."""
-    rule = chromaterm.Rule('hello')
-    assert repr(rule.highlight('hello world')) == repr('hello world')
-
-
-def test_rule_highlight_zero_length_match():
-    """Highlight with rule that has a regex that matches zero-length data."""
-    color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('hello() world')
-    rule.add_color(color, group=1)
-
-    assert repr(rule.highlight('hello world')) == repr('hello world')
-
-
-def test_rule_print(capsys):
-    """Test the print wrapper for rule."""
-    rule = chromaterm.Rule('hello|world', color=chromaterm.Color('bold'))
-
-    data = 'hello world'
-    rule.print(data)
-
-    assert rule.highlight(data) in capsys.readouterr().out
+        rule.set_color(chromaterm.Color('bold'), group=2)
 
 
 def test_rule_change_color():
@@ -470,43 +495,6 @@ def test_rule_shallow_copied_colors():
     colors[0].rgb = True is fine as it doesn't change the object type."""
     rule = chromaterm.Rule('hello')
     assert rule.colors is not rule.colors
-
-
-def test_rule___call__():
-    """Confim Rule's decorator (__call__)."""
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('bold'))
-
-    @rule
-    def echo(*args):
-        return ', '.join(args)
-
-    assert repr(rule.highlight('hello world')) == repr(echo('hello world'))
-
-
-def test_rule___repr__():
-    """Confim Rule's __repr__ format."""
-    rule = chromaterm.Rule('hello')
-    assert repr(rule) == "Rule('hello')"
-
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('bold'))
-    assert repr(rule) == "Rule('hello', color=Color('bold'))"
-
-    rule = chromaterm.Rule('hello', description='Yo')
-    assert repr(rule) == "Rule('hello', description='Yo')"
-
-    rule = chromaterm.Rule('hello',
-                           color=chromaterm.Color('bold'),
-                           description='Yo')
-    assert repr(rule) == "Rule('hello', color=Color('bold'), description='Yo')"
-
-
-def test_rule___str__():
-    """Confim Rule's __str__ format."""
-    rule = chromaterm.Rule('hello')
-    assert str(rule) == "Rule: 'hello'"
-
-    rule = chromaterm.Rule('hello', description='Yo')
-    assert str(rule) == 'Rule: Yo'
 
 
 def test_config_add_rule():
@@ -563,10 +551,6 @@ def test_config_highlight():
     ]
 
     assert repr(config.highlight(data)) == repr(''.join(expected))
-
-    # Ensure that forcing a tty mode changes the highlighting effect
-    assert repr(config.highlight(data, force=False)) != repr(
-        config.highlight(data, force=True))
 
 
 def test_config_highlight_adjoin_type_different():
@@ -1050,19 +1034,213 @@ def test_config_highlight_no_rules():
     assert repr(config.highlight('hello world')) == repr('hello world')
 
 
-def test_config_print(capsys):
-    """Test the print wrapper for config."""
+def test_config_highlight_tracking_common_beginning_type_different():
+    """A rule with a match that has a color of a different type just before its
+    start. The rule's color is closer to the match and the reset is unaffected by
+    the existing color.
+    1: x-------------"""
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('world', color=chromaterm.Color('b#321321'))
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    config.add_rule(rule)
+
+    data = '\x1b[33mhello'
+    expected = [
+        '\x1b[33m', rule.color.color_code, 'hello', rule.color.color_reset
+    ]
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_common_beginning_type_same():
+    """A rule with a match that has a color of the same type just before its
+    start. The rule's color is closer to the match and the reset used is the
+    existing color.
+    1: x-------------"""
+    config = chromaterm.Config()
+
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    config.add_rule(rule)
+
+    data = '\x1b[33mhello'
+    expected = ['\x1b[33m', rule.color.color_code, 'hello', '\x1b[33m']
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_common_end_type_different():
+    """A rule with a match that has a color of a different type just after its
+    end. The rule's reset is closer to the match and the reset is unaffected by
+    the existing color.
+    1: -------------x"""
+    config = chromaterm.Config()
+
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    config.add_rule(rule)
+
+    data = 'hello\x1b[33m'
+    expected = [
+        rule.color.color_code, 'hello', rule.color.color_reset, '\x1b[33m'
+    ]
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_common_end_type_same():
+    """A rule with a match that has a color of the same type just after its end.
+    The rule's reset is closer to the match and is unaffected by the existing
+    color.
+    1: -------------x"""
+    config = chromaterm.Config()
+
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    config.add_rule(rule)
+
+    data = 'hello\x1b[33m'
+    expected = [
+        rule.color.color_code, 'hello', rule.color.color_reset, '\x1b[33m'
+    ]
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_full_reset_beginning():
+    """A rule with a match that has a full reset just before the start of the
+    match. The rule's color is closer to the match and the reset used is the
+    default for that color type.
+    1: R-------------"""
+    config = chromaterm.Config()
+
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    config.add_rule(rule)
+
+    data = '\x1b[mhello'
+    expected = [
+        '\x1b[m', rule.color.color_code, 'hello',
+        chromaterm.COLOR_TYPES[rule.color.color_types[0][0]]['reset']
+    ]
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_full_reset_end():
+    """A rule with a match that has a full reset just after the end of the match.
+    The rule's reset is closer to the match and the reset used is the default for
+    that color type.
+    1: -------------R"""
+    config = chromaterm.Config()
+
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    config.add_rule(rule)
+
+    data = 'hello\x1b[m'
+    expected = [
+        rule.color.color_code, 'hello',
+        chromaterm.COLOR_TYPES[rule.color.color_types[0][0]]['reset'], '\x1b[m'
+    ]
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_full_reset_middle():
+    """A rule with a match that has a full reset in the middle of it. The full
+    reset is changed to the color code of the match and the reset of the match
+    is changed to a full reset.
+    1: ------R-------"""
+    config = chromaterm.Config()
+
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    config.add_rule(rule)
+
+    data = 'hel\x1b[mlo'
+    expected = [
+        rule.color.color_code, 'hel', rule.color.color_code, 'lo', '\x1b[m'
+    ]
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_malformed():
+    """A rule with a match that has a malformed SGR in the middle. It should be
+    ignored and inserted back into the match. Highlighting from the rule should
+    still go through.
+    1: x-------------"""
+    config = chromaterm.Config()
+
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    config.add_rule(rule)
+
+    data = 'he\x1b[38;5mllo'
+    expected = [
+        rule.color.color_code, 'he', '\x1b[38;5m', 'llo',
+        rule.color.color_reset
+    ]
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_mixed_full_reset():
+    """Track multiple color types and ensure a full reset only defaults the types
+    that were not updated by other colors in the data."""
+    config = chromaterm.Config()
+
+    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    rule2 = chromaterm.Rule('world', color=chromaterm.Color('b#123123'))
     config.add_rule(rule1)
     config.add_rule(rule2)
 
-    data = 'hello world'
-    config.print(data)
+    data = '\x1b[33mhello\x1b[m there \x1b[43mworld'
+    expected = [
+        '\x1b[33m', rule1.color.color_code, 'hello', '\x1b[33m', '\x1b[m',
+        ' there ', '\x1b[43m', rule2.color.color_code, 'world', '\x1b[43m'
+    ]
 
-    assert config.highlight(data) in capsys.readouterr().out
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+    # The color of rule1 was reset to its default because a full reset came after
+    # it, but the color of rule2 was already updated so it wasn't affected by the
+    # full reset
+    data = 'hello there world'
+    expected = [
+        rule1.color.color_code, 'hello', rule1.color.color_reset, ' there ',
+        rule2.color.color_code, 'world', '\x1b[43m'
+    ]
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_multiline_type_different():
+    """Ensure that data with an existing color is tracked across highlights and
+    does not affect the reset of a color of a different type."""
+    config = chromaterm.Config()
+
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    config.add_rule(rule)
+
+    # Inject a foreground color to have it tracked
+    assert repr(config.highlight('\x1b[33m')) == repr('\x1b[33m')
+
+    data = 'hello'
+    expected = [rule.color.color_code, 'hello', rule.color.color_reset]
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
+
+
+def test_config_highlight_tracking_multiline_type_same():
+    """Ensure that data with an existing color is tracked across highlights and
+    affects the reset of a color of the same type."""
+    config = chromaterm.Config()
+
+    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    config.add_rule(rule)
+
+    # Inject a foreground color to have it tracked
+    assert repr(config.highlight('\x1b[33m')) == repr('\x1b[33m')
+
+    data = 'hello'
+    expected = [rule.color.color_code, 'hello', '\x1b[33m']
+
+    assert repr(config.highlight(data)) == repr(''.join(expected))
 
 
 def test_config_read_only_colors():
@@ -1079,34 +1257,3 @@ def test_config_shallow_copied_rules():
     colors[0].rgb = True is fine as it doesn't change the object type."""
     config = chromaterm.Config()
     assert config.rules is not config.rules
-
-
-def test_config___call__():
-    """Confim Config's decorator (__call__)."""
-    config = chromaterm.Config()
-    config.add_rule(chromaterm.Rule('hello', color=chromaterm.Color('bold')))
-    config.add_rule(chromaterm.Rule('world', color=chromaterm.Color('italic')))
-
-    @config
-    def echo(*args):
-        return ', '.join(args)
-
-    assert repr(config.highlight('hello world')) == repr(echo('hello world'))
-
-
-def test_config___repr__():
-    """Confim Config's __repr__ format."""
-    config = chromaterm.Config()
-    assert repr(config) == 'Config()'
-
-
-def test_config___str__():
-    """Confim Config's __str__ format."""
-    config = chromaterm.Config()
-    assert str(config) == 'Config: 0 rules'
-
-    config.add_rule(chromaterm.Rule('hello'))
-    assert str(config) == 'Config: 1 rule'
-
-    config.add_rule(chromaterm.Rule('hello'))
-    assert str(config) == 'Config: 2 rules'

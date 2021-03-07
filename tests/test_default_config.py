@@ -4,8 +4,8 @@ import os
 import chromaterm.default_config
 
 
-def assert_highlight(positives, negatives, rule):
-    """Assert that all positives are highlighted while negatives are not."""
+def assert_matches(positives, negatives, rule):
+    """Assert that all positives are matched while negatives are not."""
     def permutate_data(data):
         output = []
 
@@ -18,10 +18,10 @@ def assert_highlight(positives, negatives, rule):
         return output
 
     for data in permutate_data(positives):
-        assert repr(rule.highlight(data)) != repr(data)
+        assert len(rule.get_matches(data)) == 1
 
     for data in permutate_data(negatives):
-        assert repr(rule.highlight(data)) == repr(data)
+        assert len(rule.get_matches(data)) == 0
 
 
 def test_rule_ipv4():
@@ -30,7 +30,7 @@ def test_rule_ipv4():
     negatives = ['192.168.2.1.', '1.2.3.4.5', '256.255.255.255', '1.2.3']
     rule = chromaterm.default_config.RULE_IPV4
 
-    assert_highlight(positives, negatives, rule)
+    assert_matches(positives, negatives, rule)
 
 
 def test_rule_ipv6():
@@ -50,7 +50,7 @@ def test_rule_ipv6():
     ]
     rule = chromaterm.default_config.RULE_IPV6
 
-    assert_highlight(positives, negatives, rule)
+    assert_matches(positives, negatives, rule)
 
 
 def test_rule_mac():
@@ -62,7 +62,7 @@ def test_rule_mac():
     ]
     rule = chromaterm.default_config.RULE_MAC
 
-    assert_highlight(positives, negatives, rule)
+    assert_matches(positives, negatives, rule)
 
 
 def test_rule_date():
@@ -78,7 +78,7 @@ def test_rule_date():
     ]
     rule = chromaterm.default_config.RULE_DATE
 
-    assert_highlight(positives, negatives, rule)
+    assert_matches(positives, negatives, rule)
 
 
 def test_rule_time():
@@ -87,7 +87,7 @@ def test_rule_time():
     negatives = ['24:59', '23:60', '23:1', '23:01:1', '23:01:01:']
     rule = chromaterm.default_config.RULE_TIME
 
-    assert_highlight(positives, negatives, rule)
+    assert_matches(positives, negatives, rule)
 
 
 def test_write_default_config():
