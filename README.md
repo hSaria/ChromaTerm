@@ -8,6 +8,8 @@
 ChromaTerm (`ct`) is a Python script that colors your output to terminal using
 regular expressions. It works with interactive programs, like SSH.
 
+![alt text](https://github.com/hSaria/ChromaTerm/raw/master/.github/junos-show-interface.png "Example output")
+
 ## Installation
 
 ```shell
@@ -18,14 +20,19 @@ pip3 install chromaterm
 
 Think of `ct` like `grep`; just pipe data into it, like `ssh somewhere | ct`.
 
-> If you always want to highlight a program, like `ssh`, you can set up a function
-> in your `.bash_profile`, like `ssh() { /usr/bin/ssh "$@" | ct; }`.
+```shell
+echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
+```
 
-![alt text](https://github.com/hSaria/ChromaTerm/raw/master/.github/junos-show-interface.png "Example output")
+If you want to always highlight a program, you can set up a function in your
+`.bash_profile`. For instance, here's one for `ssh`:
+```shell
+ssh() { /usr/bin/ssh "$@" | ct; }
+```
 
-There are program that behave differently when piped, like `less`. In that case,
-`ct` can hide the pipe by spawning your program. You just have to prefix the
-command with `ct`, like `ct less file.txt`.
+Some programs behave differently when piped, like `less`. In that case, `ct` can
+hide the pipe by spawning your program. You just have to prefix the command with
+`ct`, like `ct less file.txt`.
 
 ## Highlight Rules
 
