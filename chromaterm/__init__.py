@@ -2,8 +2,6 @@
 import os
 import re
 
-__all__ = ['Color', 'Rule', 'Config']
-
 # Color types, their color codes if it's style, their default reset codes, and
 # RegEx's for detecting their color type.
 COLOR_TYPES = {
@@ -45,7 +43,7 @@ COLOR_TYPES = {
 # Detect rgb support
 RGB_SUPPORTED = os.getenv('COLORTERM') in ('truecolor', '24bit')
 
-# Select Graphic Rendition sequence (all types)
+# Select Graphic Rendition sequence (any type)
 SGR_RE = re.compile(r'\x1b\[[0-9;]*m')
 
 
@@ -330,7 +328,7 @@ class Rule:
         if not isinstance(value, str):
             raise TypeError('regex must be a string')
 
-        self._regex = re.compile(value) if isinstance(value, str) else value
+        self._regex = re.compile(value)
 
     def get_matches(self, data):
         """Returns a list of tuples, each of which containing a start index, an

@@ -11,8 +11,7 @@ import yaml
 from chromaterm import Color, Config, Rule
 from chromaterm.default_config import write_default_config
 
-# A couple of sections of the program are used _rarely_ and I don't want to
-# _always_ spend time importing them.
+# Some sections are rarely used, so avoid unnecessary imports to speed up launch
 # pylint: disable=import-outside-toplevel
 
 # Maximum chuck size per read
