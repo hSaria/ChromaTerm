@@ -73,6 +73,33 @@ def args_init(args=None):
     return parser.parse_args(args=args)
 
 
+def check_config_files(args):
+    """Checks for the existence of configuration files in the paths designated
+    by the XDG specification
+    """
+    # Paths where the configuration file might be
+    search_paths = [
+        '{}/chromaterm/chromaterm'.format(os.getenv('XDG_CONFIG_HOME', '~/.config')),
+        '~/Library/Preferences/chromaterm/chromaterm',
+        '~/.chromaterm',
+        '/etc/chromaterm/chromaterm',
+    ]
+
+    extensions = [
+        '.yaml',
+        '.yml',
+    ]
+
+    for path in search_paths:
+        for ext in extensions:
+            file = os.path.expanduser(path + ext)
+            if os.path.isfile(file):
+                args.config = file
+                break
+
+    return args
+
+
 def eprint(*args, **kwargs):
     """Prints a message to stderr."""
     print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
@@ -380,13 +407,14 @@ def main(args=None, max_wait=None, write_default=True):
         be used as sys.exit(chromaterm.cli.main()).
     """
     args = args_init(args)
+    args = check_config_files(args)
 
     if args.reload:
         return 'Processes reloaded: ' + str(reload_chromaterm_instances())
 
     if write_default:
         # Write default config if not there
-        write_default_config()
+        write_default_config(args=args)
 
     config = Config()
 
