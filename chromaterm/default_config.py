@@ -100,7 +100,7 @@ def write_default_config(directory=None, name=None, args=None):
     Returns:
         True if a file was written. False otherwise.
     """
-    if not args or not args.config:
+    if not args and not args.config:
         if not directory:
             directory = os.path.expanduser('~')
 
@@ -110,7 +110,8 @@ def write_default_config(directory=None, name=None, args=None):
         location = os.path.join(directory, name)
 
     else:
-        location = args.config
+        location  = args.config
+        directory = os.path.dirname(location)
 
     # Already exists
     if os.access(location, os.F_OK):

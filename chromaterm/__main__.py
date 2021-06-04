@@ -58,7 +58,7 @@ def args_init(args=None):
                         metavar='FILE',
                         type=str,
                         help='location of config file (default: %(default)s)',
-                        default='$HOME/.chromaterm.yml')
+                        default=None)
 
     parser.add_argument('--reload',
                         action='store_true',
@@ -407,7 +407,9 @@ def main(args=None, max_wait=None, write_default=True):
         be used as sys.exit(chromaterm.cli.main()).
     """
     args = args_init(args)
-    args = check_config_files(args)
+
+    if not args.config:
+        args = check_config_files(args)
 
     if args.reload:
         return 'Processes reloaded: ' + str(reload_chromaterm_instances())
