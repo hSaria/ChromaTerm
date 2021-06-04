@@ -87,24 +87,30 @@ def generate_default_rules_yaml():
     return data
 
 
-def write_default_config(directory=None, name=None):
+def write_default_config(directory=None, name=None, args=None):
     """Writes the default configuration file if it doesn't exist.
 
     Args:
         directory (str): The directory where the file should be placed. Defaults
             to the home directory of the user.
         name (str): The name of the file. Defaults to '.chromaterm.yml'
+        args (str): The script arguments. If given, the specified file is used
+            instead of the aforementioned arguments
 
     Returns:
         True if a file was written. False otherwise.
     """
-    if not directory:
-        directory = os.path.expanduser('~')
+    if not args or not args.config:
+        if not directory:
+            directory = os.path.expanduser('~')
 
-    if not name:
-        name = '.chromaterm.yml'
+        if not name:
+            name = '.chromaterm.yml'
 
-    location = os.path.join(directory, name)
+        location = os.path.join(directory, name)
+
+    else:
+        location = args.config
 
     # Already exists
     if os.access(location, os.F_OK):
