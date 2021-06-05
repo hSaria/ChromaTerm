@@ -65,8 +65,7 @@ def args_init(args=None):
     parser.add_argument('--config',
                         metavar='FILE',
                         type=str,
-                        help='override location of config file',
-                        default=None)
+                        help='override config file location')
 
     parser.add_argument('--reload',
                         action='store_true',
@@ -75,8 +74,7 @@ def args_init(args=None):
     parser.add_argument('--rgb',
                         action='store_true',
                         help='Use RGB colors (default: detect support, '
-                        'fallback to xterm-256)',
-                        default=None)
+                        'fallback to xterm-256)')
 
     return parser.parse_args(args=args)
 
@@ -424,8 +422,9 @@ def main(args=None, max_wait=None, write_default=True):
     # Create the signal handler to trigger reloading the config
     def reload_config_handler(*_):
         config_data = read_file(args.config)
+
         if config_data is not None:
-            load_rules(config, config_data, rgb=args.rgb)
+            load_rules(config, config_data, rgb=args.rgb or None)
 
     # Trigger the initial loading
     reload_config_handler()
