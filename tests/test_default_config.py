@@ -92,28 +92,23 @@ def test_rule_time():
 
 def test_write_default_config():
     """Write config file."""
-    name = __name__ + '1'
-    assert chromaterm.default_config.write_default_config('.', name)
-    assert os.access(os.path.join('.', name), os.F_OK)
-    os.remove(__name__ + '1')
+    path = __name__ + '1'
+    assert chromaterm.default_config.write_default_config(path)
+    assert os.access(path, os.F_OK)
+    os.remove(path)
 
 
 def test_write_default_config_exists():
     """Config file already exists."""
-    name = __name__ + '2'
-    open(name, 'w').close()
-    assert not chromaterm.default_config.write_default_config('.', name)
-    os.remove(name)
-
-
-def test_write_default_config_no_directory():
-    """No directory for default config (e.g. no home)."""
-    assert not chromaterm.default_config.write_default_config(None)
+    path = __name__ + '2'
+    open(path, 'w').close()
+    assert not chromaterm.default_config.write_default_config(path)
+    os.remove(path)
 
 
 def test_write_default_config_no_permission():
     """No write permission on directory."""
-    name = __name__ + '3'
-    os.mkdir(name, mode=0o444)
-    assert not chromaterm.default_config.write_default_config(name)
-    os.rmdir(name)
+    path = __name__ + '3' + '/hi.yml'
+    os.mkdir(os.path.dirname(path), mode=0o444)
+    assert not chromaterm.default_config.write_default_config(path + '/hi')
+    os.rmdir(os.path.dirname(path))

@@ -109,6 +109,23 @@ def test_eprint(capsys):
     assert msg in capsys.readouterr().err
 
 
+def test_get_default_config_location(monkeypatch):
+    """Assert that, if no file is found, the most-specific location is returned."""
+    monkeypatch.setattr(chromaterm.__main__, 'CONFIG_LOCATIONS', ['1', '2'])
+    open('2.yml', 'a').close()
+
+    try:
+        assert chromaterm.__main__.get_default_config_location() == '2.yml'
+    finally:
+        os.remove('2.yml')
+
+
+def test_get_default_config_location_default(monkeypatch):
+    """Assert that, if no file is found, the most-specific location is returned."""
+    monkeypatch.setattr(chromaterm.__main__, 'CONFIG_LOCATIONS', ['1', '2'])
+    assert chromaterm.__main__.get_default_config_location() == '1.yml'
+
+
 def test_load_rules_simple():
     """Parse config with a simple rule."""
     config = chromaterm.__main__.Config()

@@ -14,6 +14,14 @@ from chromaterm.default_config import write_default_config
 # Some sections are rarely used, so avoid unnecessary imports to speed up launch
 # pylint: disable=import-outside-toplevel
 
+# Possible locations of the config file, without the extension. Most-specific
+# locations lead in the list.
+CONFIG_LOCATIONS = [
+    '~/.chromaterm',
+    os.getenv('XDG_CONFIG_HOME', '~/.config') + '/chromaterm/chromaterm',
+    '/etc/chromaterm/chromaterm',
+]
+
 # Maximum chuck size per read
 READ_SIZE = 4096  # 4 KiB
 
@@ -57,7 +65,7 @@ def args_init(args=None):
     parser.add_argument('--config',
                         metavar='FILE',
                         type=str,
-                        help='location of config file (default: %(default)s)',
+                        help='override location of config file',
                         default=None)
 
     parser.add_argument('--reload',
@@ -73,36 +81,26 @@ def args_init(args=None):
     return parser.parse_args(args=args)
 
 
-def check_config_files(args):
-    """Checks for the existence of configuration files in the paths designated
-    by the XDG specification
-    """
-    # Paths where the configuration file might be
-    search_paths = [
-        '{}/chromaterm/chromaterm'.format(os.getenv('XDG_CONFIG_HOME', '~/.config')),
-        '~/Library/Preferences/chromaterm/chromaterm',
-        '~/.chromaterm',
-        '/etc/chromaterm/chromaterm',
-    ]
-
-    extensions = [
-        '.yaml',
-        '.yml',
-    ]
-
-    for path in search_paths:
-        for ext in extensions:
-            file = os.path.expanduser(path + ext)
-            if os.path.isfile(file):
-                args.config = file
-                break
-
-    return args
-
-
 def eprint(*args, **kwargs):
     """Prints a message to stderr."""
     print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
+
+
+def get_default_config_location():
+    """Returns the first location in `CONFIG_LOCATIONS` that points to a file,
+    defaulting to the first item in the list.
+    """
+    resolve = lambda x: os.path.expanduser(os.path.expandvars(x))
+
+    for location in CONFIG_LOCATIONS:
+        for extension in ['.yml', '.yaml']:
+            path = resolve(location + extension)
+
+            if os.path.isfile(path):
+                return path
+
+    # No file found; default to the most-specific location
+    return resolve(CONFIG_LOCATIONS[0] + '.yml')
 
 
 def load_rules(config, data, rgb=False):
@@ -268,8 +266,6 @@ def read_file(location):
     Args:
         location (str): The location of the file to be read.
     """
-    location = os.path.expandvars(location)
-
     if not os.access(location, os.F_OK):
         eprint('Configuration file', location, 'not found')
         return None
@@ -408,15 +404,16 @@ def main(args=None, max_wait=None, write_default=True):
     """
     args = args_init(args)
 
-    if not args.config:
-        args = check_config_files(args)
-
     if args.reload:
         return 'Processes reloaded: ' + str(reload_chromaterm_instances())
 
-    if write_default:
+    # Config file wasn't overridden; use default file
+    if not args.config:
+        args.config = get_default_config_location()
+
         # Write default config if not there
-        write_default_config(args=args)
+        if write_default:
+            write_default_config(args.config)
 
     config = Config()
 
