@@ -130,6 +130,10 @@ def load_rules(config, data, rgb=False):
 
     rules = data.get('rules') if isinstance(data, dict) else None
 
+    if rules is None:
+        eprint('Parse error: "rules" list not found in configuration')
+        return
+
     if not isinstance(rules, list):
         eprint('Parse error: "rules" is not a list')
         return
@@ -330,8 +334,8 @@ def run_program(program_args):
     """
     import atexit
     import fcntl
-    import termios
     import pty
+    import termios
     import tty
 
     try:
@@ -419,7 +423,9 @@ def main(args=None, max_wait=None, write_default=True):
 
     # Create the signal handler to trigger reloading the config
     def reload_config_handler(*_):
-        load_rules(config, read_file(args.config) or '', rgb=args.rgb)
+        config_data = read_file(args.config)
+        if config_data is not None:
+            load_rules(config, config_data, rgb=args.rgb)
 
     # Trigger the initial loading
     reload_config_handler()

@@ -10,7 +10,7 @@ import time
 import chromaterm
 import chromaterm.__main__
 
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines, consider-using-with
 
 CLI = sys.executable + ' -m chromaterm'
 
@@ -169,7 +169,15 @@ def test_load_rules_multiple_colors():
     assert config.rules[0].color.color == 'b#fffaaa f#aaafff'
 
 
-def test_load_rules_rule_format_error(capsys):
+def test_load_rules_missing(capsys):
+    """Parse a config file with the `rules` list missing."""
+    config = chromaterm.__main__.Config()
+    chromaterm.__main__.load_rules(config, '')
+
+    assert '"rules" list not found' in capsys.readouterr().err
+
+
+def test_load_rules_format_error(capsys):
     """Parse a config file with a syntax problem."""
     config = chromaterm.__main__.Config()
     chromaterm.__main__.load_rules(config, '''rules:
