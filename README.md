@@ -36,13 +36,7 @@ hide the pipe by spawning your program. You just have to prefix the command with
 
 ## Highlight Rules
 
-ChromaTerm reads highlight rules from a configuration file called `.chromaterm.yml`,
-located in your home directory. If the file is not there, a default one is created.
-
-> Check out the [`contrib/rules`](https://github.com/hSaria/ChromaTerm/tree/master/contrib/rules)
-> directory in the project; it some topic-specific rules.
-
-The rules are stored as YAML, like so:
+ChromaTerm reads highlight rules from a YAML configuration file, formatted like so:
 
 ```yaml
 rules:
@@ -56,6 +50,19 @@ rules:
     1: bold italic
     2: b#ff0000
 ```
+
+ChromaTerm will look in the following locations for the config file and use the
+first one it finds:
+
+ * `~/.chromaterm.yml`
+ * `$XDG_CONFIG_HOME/chromaterm/chromaterm.yml` (if `$XDG_CONFIG_HOME` is not set,
+ it defaults to `~/config`)
+ * `/etc/chromaterm/chromaterm.yml`
+
+If no file is found, a default one is created in your home directory.
+
+> Check out [`contrib/rules`](https://github.com/hSaria/ChromaTerm/tree/master/contrib/rules);
+> it has some topic-specific rules that are not included in the defaults.
 
 ### Description
 
