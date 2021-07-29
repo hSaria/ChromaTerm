@@ -1,5 +1,6 @@
 """The command line utility for ChromaTerm"""
 import argparse
+import io
 import os
 import re
 import select
@@ -208,6 +209,13 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
         max_wait (float): The maximum time to wait with no data on either of the
             file descriptors. None will block until at least one ready to be read.
     """
+    # Avoid BlockingIOError when output to non-blocking stdout is too fast
+    try:
+        os.set_blocking(sys.stdout.fileno(), True)
+    except io.UnsupportedOperation:
+        # In case stdout is replaced with StringIO
+        pass
+
     fds = [data_fd] if forward_fd is None else [data_fd, forward_fd]
     buffer = ''
 

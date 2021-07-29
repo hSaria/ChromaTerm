@@ -274,6 +274,19 @@ def test_parse_rule_group_out_of_bounds():
     assert re.search(msg_re, chromaterm.__main__.parse_rule(rule))
 
 
+def test_process_input_blocking_stdout():
+    """Ensure that `stdout` is put into a blocking state. Otherwise, it triggers
+    a `BlockingIOError` if it is not ready to be written to. chromaterm#93."""
+    pipe_r, _ = os.pipe()
+    config = chromaterm.__main__.Config()
+
+    os.set_blocking(sys.stdout.fileno(), False)
+    assert not os.get_blocking(sys.stdout.fileno())
+
+    chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
+    assert os.get_blocking(sys.stdout.fileno())
+
+
 def test_process_input_decode_error(capsys):
     """Attempt to decode a character that is not UTF-8."""
     pipe_r, pipe_w = os.pipe()
