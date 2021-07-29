@@ -216,9 +216,9 @@ class Color:
                 color_code = make_sgr(int(code))
                 recognized = False
 
-                for name in COLOR_TYPES:
-                    if COLOR_TYPES[name]['re'].search(color_code):
-                        is_reset = color_code == COLOR_TYPES[name]['reset']
+                for name, color_type in COLOR_TYPES.items():
+                    if color_type['re'].search(color_code):
+                        is_reset = color_code == color_type['reset']
                         recognized = True
 
                         colors.append([color_code, is_reset, name])
@@ -397,7 +397,7 @@ class Config:
     are added to the string."""
     def __init__(self):
         """Constructor."""
-        self._reset_codes = {k: COLOR_TYPES[k]['reset'] for k in COLOR_TYPES}
+        self._reset_codes = {k: v['reset'] for k, v in COLOR_TYPES.items()}
         self._rules = []
 
     @property
