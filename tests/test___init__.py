@@ -396,6 +396,19 @@ def test_rule_get_matches_zero_length_match():
     assert rule.get_matches('hello world') == []
 
 
+def test_rule_set_color_clear_existing():
+    """Clear the color of a rule by setting it to None."""
+    color = chromaterm.Color('bold')
+    rule = chromaterm.Rule('(hello|world)')
+
+    rule.set_color(color, group=0)
+    rule.set_color(color, group=1)
+    assert list(rule.colors) == [0, 1]
+
+    rule.set_color(None, group=0)
+    assert list(rule.colors) == [1]
+
+
 def test_rule_set_color_default_group():
     """Add to a rule a color to the default regex group (0)."""
     rule = chromaterm.Rule('hello')

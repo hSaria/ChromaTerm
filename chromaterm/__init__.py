@@ -359,26 +359,26 @@ class Rule:
         """Sets a color to be used when highlighting. The group can be used to
         limit the parts of the match which are highlighted. Group 0 (the default)
         will highlight the entire match. If a color already exists for the group,
-        it is overwritten.
+        it is overwritten. If `color` is None, the color of `group` is cleared.
 
         Args:
             color (chromaterm.Color): A color for highlighting the matched input.
             group (int): The regex group to be be highlighted with the color.
 
         Raises:
-            TypeError: If `color` is not an instance of `Color`.. If `group` is
-                not an integer.
+            TypeError: If `color` is not an instance of `Color` or None. If
+                `group` is not an integer.
             ValueError: If `group` does not exist in the regular expression.
         """
+        if not isinstance(group, int):
+            raise TypeError('group must be an integer')
+
         if color is None:
-            self._colors.pop(color, None)
+            self._colors.pop(group, None)
             return
 
         if not isinstance(color, Color):
             raise TypeError('color must be a chromaterm.Color')
-
-        if not isinstance(group, int):
-            raise TypeError('group must be an integer')
 
         if group > self.regex.groups:
             raise ValueError('regex only has {} group(s); {} is '
