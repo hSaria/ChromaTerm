@@ -117,6 +117,7 @@ def load_rules(config, data, rgb=False):
     Any errors are printed to stderr.
 
     Args:
+        config (chromaterm.Config): The config into which the rules are loaded.
         data (str): A string containg YAML data.
         rgb (bool): Whether the terminal is RGB-capable or not.
     """
@@ -152,11 +153,11 @@ def load_rules(config, data, rgb=False):
 
 def parse_rule(rule, rgb=False):
     """Returns an instance of chromaterm.Rule if parsed correctly. Otherwise, a
-    string with the error message is returned. The rule is a dictionary formatted
-    according to `chromaterm.cli.load_rules`.
+    string with the error message is returned.
 
     Args:
-        rule (dict): A dictionary representing the rule.
+        rule (dict): A dictionary representing the rule, formatted according to
+            `chromaterm.__main__.load_rules`.
     """
     if not isinstance(rule, dict):
         return 'Rule {} not a dictionary'.format(repr(rule))
@@ -270,8 +271,8 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
 
 
 def read_file(location):
-    """Returns the contents of a file or None on error. The error is printed to
-    stderr.
+    """Returns the contents of a file or `None` on error. The error is printed
+    to stderr.
 
     Args:
         location (str): The location of the file to be read.
@@ -383,11 +384,11 @@ def run_program(program_args):
 
 
 def split_buffer(buffer):
-    """Returns a tuples of tuples in the format of (data, separator). data should
-    be highlighted while separator should be printed unchanged, after data.
+    """Returns a tuple of tuples in the format of (data, separator). data should
+    be highlighted while separator should be printed, unchanged, after data.
 
     Args:
-        buffer (str): A string to split using SPLIT_RE.
+        buffer (str): A string to split using `SPLIT_RE`.
     """
     splits = SPLIT_RE.split(buffer)
 
@@ -409,8 +410,7 @@ def main(args=None, max_wait=None, write_default=True):
             Only written if it doesn't exist already.
 
     Returns:
-        A string indicating status/error. Otherwise, returns None. It is meant to
-        be used as sys.exit(chromaterm.cli.main()).
+        A string indicating status/error. Otherwise, returns None.
     """
     args = args_init(args)
 
