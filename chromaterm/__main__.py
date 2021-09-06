@@ -23,15 +23,17 @@ CONFIG_LOCATIONS = [
     '/etc/chromaterm/chromaterm',
 ]
 
+# ChromaTerm cannot determine if it's processing data faster than input rate or
+# if the input has finished. Therefore, ChromaTerm waits before processing the
+# last chunk in the buffer. The waiting is stopped if data becomes ready.
+# Bounds for `get_wait_duration`. 1/256 is smaller (shorter) than the fastest key
+# repeat (1/255 second). 1/8th of a second is generally enough to account for
+# the latency of command processing or a remote connection.
+INPUT_WAIT_MIN = 1 / 256
+INPUT_WAIT_MAX = 1 / 8
+
 # Maximum chuck size per read
 READ_SIZE = 4096  # 4 KiB
-
-# CT cannot determine if it is processing input faster than the piping process
-# is outputting or if the input has finished. To work around this, CT will wait
-# a bit prior to assuming there's no more data in the buffer. There's no impact
-# on performance as the wait is cancelled if read_fd becomes ready. 1/256 is
-# smaller (shorter) than the fastest key repeat (1/255 second).
-WAIT_FOR_CHUNK = 1 / 256
 
 # Sequences upon which ct will split during processing. This includes new lines,
 # vertical spaces, form feeds, C1 set (ECMA-048), SCS (G0 through G3 sets),
@@ -100,6 +102,22 @@ def get_default_config_location():
 
     # No file found; default to the most-specific location
     return resolve(CONFIG_LOCATIONS[0] + '.yml')
+
+
+def get_wait_duration(buffer):
+    """Returns the duration (float) to wait for more data before the last chunk
+    of the received data can be processed independently.
+
+    Args:
+        buffer (str): The incoming data that was processed
+    """
+    wait_duration = INPUT_WAIT_MIN
+
+    # New lines indicate long output; relax the wait duration
+    wait_duration += 1 / 16 * buffer.count('\n')
+
+    # Ensure it falls within bounds of the wait duration
+    return min(INPUT_WAIT_MAX, max(INPUT_WAIT_MIN, wait_duration))
 
 
 def load_rules(config, data, rgb=False):
@@ -251,13 +269,14 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
                 sys.stdout.write(config.highlight(data) + separator)
 
             data, separator = chunks[-1]
+            wait_duration = get_wait_duration(buffer)
 
             # Zero or one characters indicates keyboard typing; don't highlight
             if len(data) < 2:
                 sys.stdout.write(data + separator)
                 buffer = ''
             # Data was read and there's more to come; wait before highlighting
-            elif data_read and read_ready(data_fd, timeout=WAIT_FOR_CHUNK):
+            elif data_read and read_ready(data_fd, timeout=wait_duration):
                 buffer = data + separator
             else:
                 sys.stdout.write(config.highlight(data) + separator)

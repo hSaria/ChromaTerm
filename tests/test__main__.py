@@ -128,6 +128,28 @@ def test_get_default_config_location_default(monkeypatch):
     assert chromaterm.__main__.get_default_config_location() == '1.yml'
 
 
+def test_get_wait_duration():
+    """The delay is minimum when on normal input."""
+    wait_duration = chromaterm.__main__.get_wait_duration('')
+    assert wait_duration == chromaterm.__main__.INPUT_WAIT_MIN
+
+
+def test_get_wait_duration_bounds(monkeypatch):
+    """Ensure the wait duration cannot exceed the upper bound."""
+    monkeypatch.setattr(chromaterm.__main__, 'INPUT_WAIT_MIN', 10)
+
+    wait_duration = chromaterm.__main__.get_wait_duration('')
+    assert wait_duration == chromaterm.__main__.INPUT_WAIT_MAX
+
+
+def test_get_wait_duration_buffer_new_lines():
+    """New lines in the buffer extend the wait duration."""
+    wait_duration_0 = chromaterm.__main__.get_wait_duration('\n' * 0)
+    wait_duration_1 = chromaterm.__main__.get_wait_duration('\n' * 1)
+    wait_duration_2 = chromaterm.__main__.get_wait_duration('\n' * 2)
+    assert wait_duration_0 < wait_duration_1 < wait_duration_2
+
+
 def test_load_rules_simple():
     """Parse config with a simple rule."""
     config = chromaterm.__main__.Config()
