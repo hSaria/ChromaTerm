@@ -2,6 +2,7 @@
 import itertools
 import os
 import re
+import select
 import stat
 import subprocess
 import sys
@@ -323,6 +324,21 @@ def test_process_input_multiline(capsys):
     assert capsys.readouterr().out == '\nt \x1b[1mhello world\x1b[22m t\n' * 2
 
 
+def test_process_input_read_size(capsys):
+    """Input longer than READ_SIZE should not break highlighting."""
+    pipe_r, pipe_w = os.pipe()
+    config = chromaterm.__main__.Config()
+    write_size = chromaterm.__main__.READ_SIZE + 1
+
+    rule = chromaterm.Rule('x' * write_size, color=chromaterm.Color('bold'))
+    config.add_rule(rule)
+
+    os.write(pipe_w, b'x' * write_size)
+    chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
+
+    assert capsys.readouterr().out == '\x1b[1m' + 'x' * write_size + '\x1b[22m'
+
+
 def test_process_input_single_character(capsys):
     """Input processing for a single character. Even with a rule that matches
     single character, the output should not be highlighted as it is typically
@@ -340,8 +356,8 @@ def test_process_input_single_character(capsys):
 
 
 def test_process_input_trailing_chunk(capsys):
-    """Ensure that a trailing chunk is joined with the next chunk, assuming it
-    arrives within WAIT_FOR_CHUNK."""
+    """Ensure that a trailing chunk is joined with the next chunk if the latter
+    arrives in time."""
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
 
@@ -352,8 +368,10 @@ def test_process_input_trailing_chunk(capsys):
                               args=(config, pipe_r))
     worker.start()
 
+    # Write data, wait for it to be read, then write some more
     os.write(pipe_w, b'hello ')
-    time.sleep(chromaterm.__main__.WAIT_FOR_CHUNK / 2)
+    while select.select([pipe_r], [], [], 0)[0]:
+        pass
     os.write(pipe_w, b'world')
 
     os.close(pipe_w)
@@ -618,8 +636,7 @@ def test_main_reload_config():
                                    stdout=stdout_w)
 
         os.write(stdin_w, b'Hello world\n')
-        time.sleep(0.1)  # Any processing delay
-
+        assert select.select([stdout_r], [], [], 1)[0]
         assert repr(os.read(stdout_r, 100).decode()) == repr(''.join(expected))
 
         # Create file without the 'world' rule
@@ -635,8 +652,7 @@ def test_main_reload_config():
         subprocess.run(CLI + ' --reload', check=False, shell=True)
 
         os.write(stdin_w, b'Hello world\n')
-        time.sleep(0.1)  # Any processing delay
-
+        assert select.select([stdout_r], [], [], 1)[0]
         assert repr(os.read(stdout_r, 100).decode()) == repr(''.join(expected))
     finally:
         os.close(stdin_r)
@@ -732,39 +748,3 @@ def test_main_run_pipe_out():
                             stdout=subprocess.PIPE)
 
     assert 'stdin=True, stdout=True' in result.stdout.decode()
-
-
-def test_main_stdin_processing():
-    """General stdin processing with relation to READ_SIZE and WAIT_FOR_CHUNK."""
-    try:
-        stdin_r, stdin_w = os.pipe()
-        stdout_r, stdout_w = os.pipe()
-
-        process = subprocess.Popen(CLI,
-                                   shell=True,
-                                   stdin=stdin_r,
-                                   stdout=stdout_w)
-
-        time.sleep(0.5)  # Any startup delay
-        assert process.poll() is None
-
-        os.write(stdin_w, b'Hello world\n')
-        time.sleep(0.1)  # Any processing delay
-        assert os.read(stdout_r, 100) == b'Hello world\n'
-
-        # Include split wait
-        os.write(stdin_w, b'Hey there')
-        time.sleep(0.1 + chromaterm.__main__.WAIT_FOR_CHUNK)
-        assert os.read(stdout_r, 100) == b'Hey there'
-
-        # Include split wait
-        write_size = chromaterm.__main__.READ_SIZE + 1
-        os.write(stdin_w, b'x' * write_size)
-        time.sleep(0.1 + chromaterm.__main__.WAIT_FOR_CHUNK)
-        assert os.read(stdout_r, write_size * 2) == b'x' * write_size
-    finally:
-        os.close(stdin_r)
-        os.close(stdin_w)
-        os.close(stdout_r)
-        os.close(stdout_w)
-        process.kill()
