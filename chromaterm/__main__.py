@@ -31,7 +31,7 @@ READ_SIZE = 4096  # 4 KiB
 # a bit prior to assuming there's no more data in the buffer. There's no impact
 # on performance as the wait is cancelled if read_fd becomes ready. 1/256 is
 # smaller (shorter) than the fastest key repeat (1/255 second).
-WAIT_FOR_SPLIT = 1 / 256
+WAIT_FOR_CHUNK = 1 / 256
 
 # Sequences upon which ct will split during processing. This includes new lines,
 # vertical spaces, form feeds, C1 set (ECMA-048), SCS (G0 through G3 sets),
@@ -244,27 +244,26 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             if not buffer:
                 break
 
-            splits = split_buffer(buffer)
+            chunks = split_buffer(buffer)
 
-            # Process splits except for the last one as it might've been cut off
-            for data, separator in splits[:-1]:
+            # Process chunks except for the last one as it might've been cut off
+            for data, separator in chunks[:-1]:
                 sys.stdout.write(config.highlight(data) + separator)
 
-            # Data was read and there's more to come; wait before highlighting
-            if data_read and read_ready(data_fd, timeout=WAIT_FOR_SPLIT):
-                buffer = splits[-1][0] + splits[-1][1]
-            # No data buffered; print last split
-            else:
-                # A single character indicates keyboard typing; don't highlight
-                if len(splits[-1][0]) == 1:
-                    leftover_data = splits[-1][0]
-                else:
-                    leftover_data = config.highlight(splits[-1][0])
+            data, separator = chunks[-1]
 
-                sys.stdout.write(leftover_data + splits[-1][1])
+            # Zero or one characters indicates keyboard typing; don't highlight
+            if len(data) < 2:
+                sys.stdout.write(data + separator)
+                buffer = ''
+            # Data was read and there's more to come; wait before highlighting
+            elif data_read and read_ready(data_fd, timeout=WAIT_FOR_CHUNK):
+                buffer = data + separator
+            else:
+                sys.stdout.write(config.highlight(data) + separator)
                 buffer = ''
 
-            # Flush as the last split might not end with a new line
+            # Flush as the last chunk might not end with a new line
             sys.stdout.flush()
 
         ready_fds = read_ready(*fds, timeout=max_wait)
@@ -390,13 +389,13 @@ def split_buffer(buffer):
     Args:
         buffer (str): A string to split using `SPLIT_RE`.
     """
-    splits = SPLIT_RE.split(buffer)
+    chunks = SPLIT_RE.split(buffer)
 
-    # Append an empty separator in case of no splits or no separator at the end
-    splits.append('')
+    # Append an empty separator in case of no chunks or no separator at the end
+    chunks.append('')
 
-    # Group all splits into format of (data, separator)
-    return tuple(zip(splits[0::2], splits[1::2]))
+    # Group all chunks into format of (data, separator)
+    return tuple(zip(chunks[0::2], chunks[1::2]))
 
 
 def main(args=None, max_wait=None, write_default=True):

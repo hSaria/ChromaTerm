@@ -5,6 +5,7 @@ import re
 import stat
 import subprocess
 import sys
+import threading
 import time
 
 import chromaterm
@@ -336,6 +337,29 @@ def test_process_input_single_character(capsys):
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
 
     assert capsys.readouterr().out == 'x'
+
+
+def test_process_input_trailing_chunk(capsys):
+    """Ensure that a trailing chunk is joined with the next chunk, assuming it
+    arrives within WAIT_FOR_CHUNK."""
+    pipe_r, pipe_w = os.pipe()
+    config = chromaterm.__main__.Config()
+
+    rule = chromaterm.Rule('hello world', color=chromaterm.Color('bold'))
+    config.add_rule(rule)
+
+    worker = threading.Thread(target=chromaterm.__main__.process_input,
+                              args=(config, pipe_r))
+    worker.start()
+
+    os.write(pipe_w, b'hello ')
+    time.sleep(chromaterm.__main__.WAIT_FOR_CHUNK / 2)
+    os.write(pipe_w, b'world')
+
+    os.close(pipe_w)
+    worker.join()
+
+    assert capsys.readouterr().out == '\x1b[1mhello world\x1b[22m'
 
 
 def test_read_file():
@@ -711,7 +735,7 @@ def test_main_run_pipe_out():
 
 
 def test_main_stdin_processing():
-    """General stdin processing with relation to READ_SIZE and WAIT_FOR_SPLIT."""
+    """General stdin processing with relation to READ_SIZE and WAIT_FOR_CHUNK."""
     try:
         stdin_r, stdin_w = os.pipe()
         stdout_r, stdout_w = os.pipe()
@@ -730,13 +754,13 @@ def test_main_stdin_processing():
 
         # Include split wait
         os.write(stdin_w, b'Hey there')
-        time.sleep(0.1 + chromaterm.__main__.WAIT_FOR_SPLIT)
+        time.sleep(0.1 + chromaterm.__main__.WAIT_FOR_CHUNK)
         assert os.read(stdout_r, 100) == b'Hey there'
 
         # Include split wait
         write_size = chromaterm.__main__.READ_SIZE + 1
         os.write(stdin_w, b'x' * write_size)
-        time.sleep(0.1 + chromaterm.__main__.WAIT_FOR_SPLIT)
+        time.sleep(0.1 + chromaterm.__main__.WAIT_FOR_CHUNK)
         assert os.read(stdout_r, write_size * 2) == b'x' * write_size
     finally:
         os.close(stdin_r)
