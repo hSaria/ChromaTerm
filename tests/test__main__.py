@@ -113,7 +113,7 @@ def test_eprint(capsys):
 def test_get_default_config_location(monkeypatch):
     """Assert that, if no file is found, the most-specific location is returned."""
     monkeypatch.setattr(chromaterm.__main__, 'CONFIG_LOCATIONS', ['1', '2'])
-    open('2.yml', 'a').close()
+    open('2.yml', 'a', encoding='utf-8').close()
 
     try:
         assert chromaterm.__main__.get_default_config_location() == '2.yml'
@@ -597,7 +597,7 @@ def test_main_reload_config():
     """Reload the configuration while the program is running."""
     try:
         # The initial configuration file
-        with open(__name__ + '3', 'w') as file:
+        with open(__name__ + '3', 'w', encoding='utf-8') as file:
             file.write('''rules:
             - regex: Hello
               color: f#123123
@@ -624,7 +624,7 @@ def test_main_reload_config():
 
         # Create file without the 'world' rule
         os.remove(__name__ + '3')
-        with open(__name__ + '3', 'w') as file:
+        with open(__name__ + '3', 'w', encoding='utf-8') as file:
             file.write('''rules:
             - regex: Hello
               color: f#123123''')

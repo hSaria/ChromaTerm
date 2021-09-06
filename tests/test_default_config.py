@@ -101,7 +101,7 @@ def test_write_default_config():
 def test_write_default_config_exists():
     """Config file already exists."""
     path = __name__ + '2'
-    with open(path, 'w'):
+    with open(path, 'w', encoding='utf-8'):
         assert not chromaterm.default_config.write_default_config(path)
     os.remove(path)
 

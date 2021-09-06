@@ -281,7 +281,7 @@ def read_file(location):
         return None
 
     try:
-        with open(location, 'r') as file:
+        with open(location, 'r', encoding='utf-8') as file:
             return file.read()
     except PermissionError:
         eprint('Cannot read configuration file', location, '(permission)')

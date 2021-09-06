@@ -104,7 +104,7 @@ def write_default_config(path):
     if not os.access(os.path.dirname(path) or os.path.curdir, os.W_OK):
         return False
 
-    with open(path, 'w') as file:
+    with open(path, 'w', encoding='utf-8') as file:
         file.write(generate_default_rules_yaml())
 
     return True
