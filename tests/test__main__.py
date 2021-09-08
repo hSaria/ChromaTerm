@@ -12,7 +12,7 @@ import time
 import chromaterm
 import chromaterm.__main__
 
-# pylint: disable=too-many-lines, consider-using-with
+# pylint: disable=consider-using-with
 
 CLI = sys.executable + ' -m chromaterm'
 
