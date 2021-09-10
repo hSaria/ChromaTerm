@@ -637,16 +637,14 @@ def test_main_buffer_close_time():
 
 def test_main_cwd_tracking():
     """The `cwd` of ChromaTerm should match that of the spawned process."""
-    process = subprocess.Popen(CLI + ' sh -c "cd ../; sleep 2"', shell=True)
+    test_script = """import os, time
+    os.chdir('../')
+    time.sleep(2)"""
+    command = CLI + ' ' + get_python_command(test_script)
 
-    try:
-        process_info = psutil.Process(process.pid)
-        old_cwd = process_info.cwd()
-
+    with subprocess.Popen(command, shell=True) as p:
         time.sleep(1)
-        assert process_info.cwd() != old_cwd
-    finally:
-        process.kill()
+        assert psutil.Process(p.pid).cwd() != os.getcwd()
 
 
 def test_main_reload_config():
