@@ -9,6 +9,8 @@ import sys
 import threading
 import time
 
+import psutil
+
 import chromaterm
 import chromaterm.__main__
 
@@ -633,6 +635,20 @@ def test_main_buffer_close_time():
     assert after - before < 1
 
 
+def test_main_cwd_tracking():
+    """The `cwd` of ChromaTerm should match that of the spawned process."""
+    process = subprocess.Popen(CLI + ' sh -c "cd ../; sleep 2"', shell=True)
+
+    try:
+        process_info = psutil.Process(process.pid)
+        old_cwd = process_info.cwd()
+
+        time.sleep(1)
+        assert process_info.cwd() != old_cwd
+    finally:
+        process.kill()
+
+
 def test_main_reload_config():
     """Reload the configuration while the program is running."""
     try:
@@ -718,8 +734,8 @@ def test_main_run_no_file_found():
     """Have CT run with an unavailable command."""
     result = subprocess.run(CLI + ' plz-no-work',
                             check=False,
-                            stdout=subprocess.PIPE,
-                            shell=True)
+                            shell=True,
+                            stdout=subprocess.PIPE)
 
     output = re.sub(br'\x1b\[[\d;]+?m', b'', result.stdout)
     assert b'plz-no-work: command not found' in output

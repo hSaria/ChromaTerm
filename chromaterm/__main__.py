@@ -23,6 +23,9 @@ CONFIG_LOCATIONS = [
     '/etc/chromaterm/chromaterm',
 ]
 
+# The frequency to check the child process' `cwd` and update our own
+CWD_UPDATE_INTERVAL = 1 / 4
+
 # ChromaTerm cannot determine if it's processing data faster than input rate or
 # if the input has finished. Therefore, ChromaTerm waits before processing the
 # last chunk in the buffer. The waiting is stopped if data becomes ready.
@@ -361,6 +364,8 @@ def run_program(program_args):
     import fcntl
     import pty
     import termios
+    import threading
+    import time
     import tty
 
     try:
@@ -397,6 +402,26 @@ def run_program(program_args):
         if sys.stdin.isatty():
             signal.signal(signal.SIGWINCH, window_resize_handler)
             window_resize_handler()
+
+        # Some terminals update their titles based on `cwd` (see #94)
+        def update_cwd():  # pragma: no cover
+            # Covered by `test_main_cwd_tracking` but not detected by coverage
+            import psutil
+
+            try:
+                child_process = psutil.Process(pid)
+            except (psutil.AccessDenied, psutil.NoSuchProcess):
+                return
+
+            while True:
+                try:
+                    time.sleep(CWD_UPDATE_INTERVAL)
+                    os.chdir(child_process.cwd())
+                except (OSError, psutil.AccessDenied, psutil.NoSuchProcess):
+                    pass
+
+        # Daemonized to exit immediately with ChromaTerm
+        threading.Thread(target=update_cwd, daemon=True).start()
 
         return master_fd
 
