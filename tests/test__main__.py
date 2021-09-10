@@ -10,6 +10,7 @@ import threading
 import time
 
 import psutil
+import pytest
 
 import chromaterm
 import chromaterm.__main__
@@ -635,6 +636,8 @@ def test_main_buffer_close_time():
     assert after - before < 1
 
 
+@pytest.mark.skipif(sys.platform != 'darwin',
+                    reason='Not all CI environments support tracking')
 def test_main_cwd_tracking():
     """The `cwd` of ChromaTerm should match that of the spawned process."""
     test_script = """import os, time
@@ -642,9 +645,9 @@ def test_main_cwd_tracking():
     time.sleep(2)"""
     command = CLI + ' ' + get_python_command(test_script)
 
-    with subprocess.Popen(command, shell=True) as p:
+    with subprocess.Popen(command, shell=True) as process:
         time.sleep(1)
-        assert psutil.Process(p.pid).cwd() != os.getcwd()
+        assert psutil.Process(process.pid).cwd() != os.getcwd()
 
 
 def test_main_reload_config():
