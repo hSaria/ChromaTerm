@@ -6,37 +6,37 @@ import re
 # RegEx's for detecting their color type.
 COLOR_TYPES = {
     'fg': {
-        'reset': '\x1b[39m',
-        're': re.compile(r'\x1b\[(?:3[0-79]|9[0-7]|38;[0-9;]+)m')
+        'reset': b'\x1b[39m',
+        're': re.compile(br'\x1b\[(?:3[0-79]|9[0-7]|38;[0-9;]+)m')
     },
     'bg': {
-        'reset': '\x1b[49m',
-        're': re.compile(r'\x1b\[(?:4[0-79]|10[0-7]|48;[0-9;]+)m')
+        'reset': b'\x1b[49m',
+        're': re.compile(br'\x1b\[(?:4[0-79]|10[0-7]|48;[0-9;]+)m')
     },
     'blink': {
-        'code': '\x1b[5m',
-        'reset': '\x1b[25m',
-        're': re.compile(r'\x1b\[2?5m')
+        'code': b'\x1b[5m',
+        'reset': b'\x1b[25m',
+        're': re.compile(br'\x1b\[2?5m')
     },
     'bold': {
-        'code': '\x1b[1m',
-        'reset': '\x1b[22m',  # Normal intensity
-        're': re.compile(r'\x1b\[(?:1|2?2)m')  # Any intensity type
+        'code': b'\x1b[1m',
+        'reset': b'\x1b[22m',  # Normal intensity
+        're': re.compile(br'\x1b\[(?:1|2?2)m')  # Any intensity type
     },
     'italic': {
-        'code': '\x1b[3m',
-        'reset': '\x1b[23m',
-        're': re.compile(r'\x1b\[2?3m')
+        'code': b'\x1b[3m',
+        'reset': b'\x1b[23m',
+        're': re.compile(br'\x1b\[2?3m')
     },
     'strike': {
-        'code': '\x1b[9m',
-        'reset': '\x1b[29m',
-        're': re.compile(r'\x1b\[2?9m')
+        'code': b'\x1b[9m',
+        'reset': b'\x1b[29m',
+        're': re.compile(br'\x1b\[2?9m')
     },
     'underline': {
-        'code': '\x1b[4m',
-        'reset': '\x1b[24m',
-        're': re.compile(r'\x1b\[2?4m')
+        'code': b'\x1b[4m',
+        'reset': b'\x1b[24m',
+        're': re.compile(br'\x1b\[2?4m')
     }
 }
 
@@ -44,7 +44,7 @@ COLOR_TYPES = {
 RGB_SUPPORTED = os.getenv('COLORTERM') in ('truecolor', '24bit')
 
 # Select Graphic Rendition sequence (any type)
-SGR_RE = re.compile(r'\x1b\[[0-9;]*m')
+SGR_RE = re.compile(br'\x1b\[[0-9;]*m')
 
 
 class Color:
@@ -84,7 +84,7 @@ class Color:
         value = value.lower().strip()
         styles = tuple(k for k, v in COLOR_TYPES.items() if v.get('code'))
         color_re = r'^(((b|f)#[0-9a-f]{6}|' + '|'.join(styles) + r')(\s+|$))+$'
-        color_code = color_reset = ''
+        color_code = color_reset = b''
         color_types = []
 
         if not re.search(color_re, value):
@@ -93,27 +93,27 @@ class Color:
         # Colors
         for target, hex_code in re.findall(r'(b|f)#([0-9a-f]{6})', value):
             if target == 'f':
-                target, color_type = '\x1b[38;', 'fg'
+                target, color_type = b'\x1b[38;', 'fg'
             else:
-                target, color_type = '\x1b[48;', 'bg'
+                target, color_type = b'\x1b[48;', 'bg'
 
             if color_type in [x[0] for x in color_types]:
-                raise ValueError(
-                    'color accepts one foreground and one background colors')
+                raise ValueError('color accepts exactly one foreground and one'
+                                 ' background colors')
 
-            # Break down hex color to red, green, and blue integers
-            rgb_int = [int(hex_code[i:i + 2], 16) for i in [0, 2, 4]]
+            # Break down hex color to RGB integers
+            rgb_int = [int(hex_code[i:i + 2], 16) for i in (0, 2, 4)]
 
             if self.rgb or (self.rgb is None and RGB_SUPPORTED):
-                target += '2;'
-                color_id = ';'.join([str(x) for x in rgb_int])
+                target += b'2;'
+                color_id = b'%d;%d;%d' % tuple(rgb_int)
             else:
-                target += '5;'
-                color_id = str(self.rgb_to_8bit(*rgb_int))
+                target += b'5;'
+                color_id = b'%d' % self.rgb_to_8bit(*rgb_int)
 
-            color_code = color_code + target + color_id + 'm'
+            color_code = color_code + target + color_id + b'm'
             color_reset = COLOR_TYPES[color_type]['reset'] + color_reset
-            color_types.append((color_type, target + color_id + 'm'))
+            color_types.append((color_type, target + color_id + b'm'))
 
         # Styles
         for style in re.findall('|'.join(styles), value):
@@ -148,17 +148,17 @@ class Color:
     @staticmethod
     def decode_sgr(source_color_code):
         """Decodes an SGR, splitting it into a list of colors, each being a list
-        containing color code (str), is reset (bool), and color type (str) which
-        corresponds to `COLOR_TYPES`.
+        containing color code (bytes), is reset (bool), and color type (bytes)
+        which corresponds to `COLOR_TYPES`.
 
         Args:
-            source_color_code (str): String to be split into individual colors.
+            source_color_code (bytes): Bytes to be split into individual colors.
         """
         def make_sgr(code_id):
-            return '\x1b[' + str(code_id) + 'm'
+            return b'\x1b[' + code_id + b'm'
 
         colors = []
-        codes = source_color_code.lstrip('\x1b[').rstrip('m').split(';')
+        codes = source_color_code.lstrip(b'\x1b[').rstrip(b'm').split(b';')
         skip = 0
 
         for index, code in enumerate(codes):
@@ -168,43 +168,38 @@ class Color:
                 continue
 
             # Full reset
-            if code == '' or int(code) == 0:
-                colors.append([make_sgr(code), True, None])
+            if code == b'' or int(code) == 0:
+                colors.append([make_sgr(b'0'), True, None])
             # Multi-code SGR
-            elif code in ('38', '48'):
-                color_type = 'fg' if code == '38' else 'bg'
+            elif code in (b'38', b'48'):
+                color_type = 'fg' if code == b'38' else 'bg'
 
                 # xterm-256
-                if len(codes) > index + 2 and codes[index + 1] == '5':
+                if len(codes) > index + 2 and codes[index + 1] == b'5':
                     skip = 2
-                    code = ';'.join([str(codes[index + x]) for x in range(3)])
+                    code = b';'.join(codes[index:index + 3])
                 # RGB
-                elif len(codes) > index + 4 and codes[index + 1] == '2':
+                elif len(codes) > index + 4 and codes[index + 1] == b'2':
                     skip = 4
-                    code = ';'.join([str(codes[index + x]) for x in range(5)])
+                    code = b';'.join(codes[index:index + 5])
                 # Does not conform to format; do not touch code
                 else:
                     return [[source_color_code, False, None]]
 
-                color_code = make_sgr(code)
-                is_reset = color_code == COLOR_TYPES[color_type]['reset']
-
-                colors.append([color_code, is_reset, color_type])
+                colors.append([make_sgr(code), False, color_type])
             # Single-code SGR
             else:
-                color_code = make_sgr(int(code))
-                recognized = False
+                color = [make_sgr(b'%d' % int(code)), False, None]
 
                 for name, color_type in COLOR_TYPES.items():
-                    if color_type['re'].search(color_code):
-                        is_reset = color_code == color_type['reset']
-                        recognized = True
+                    if color_type['re'].search(color[0]):
+                        color[1] = color[0] == color_type['reset']
+                        color[2] = name
 
-                        colors.append([color_code, is_reset, name])
+                        # Types don't overlap; only one can match
+                        break
 
-                # An SGR that isn't known; add it as is
-                if not recognized:
-                    colors.append([color_code, False, None])
+                colors.append(color)
 
         return colors
 
@@ -227,7 +222,7 @@ class Color:
         `Config.get_inserts`.
 
         Args:
-            data (str): The string from which the colors should be stripped.
+            data (bytes): Bytes from which the colors should be stripped.
         """
         inserts = []
         match = SGR_RE.search(data)
@@ -239,7 +234,7 @@ class Color:
                 color.insert(0, start)
                 inserts.insert(0, color)
 
-            # Remove match from data; next match's start is in the clean data
+            # Next color's start index ignores length of this color
             data = data[:start] + data[end:]
             match = SGR_RE.search(data)
 
@@ -268,7 +263,7 @@ class Rule:
 
         self.colors = {}
         self.description = description
-        self.regex = re.compile(regex)
+        self.regex = re.compile(regex.encode(encoding='utf-8'))
 
         self.set_color(color)
 
@@ -286,7 +281,7 @@ class Rule:
         and the `Color` object for that match.
 
         Args:
-            data (str): A string to match regex against.
+            data (bytes): Bytes to match regex against.
         """
         matches = []
 
@@ -294,11 +289,9 @@ class Rule:
             for group in self.colors:
                 start, end = match.span(group)
 
-                # Zero-length match or optional group not in the match
-                if start == end:
-                    continue
-
-                matches.append((start, end, self.colors[group]))
+                # Ignore zero-length matches, like unmatched optional groups
+                if start != end:
+                    matches.append((start, end, self.colors[group]))
 
         return matches
 
@@ -395,7 +388,7 @@ class Config:
         data without calculating index offsetes.
 
         Args:
-            data (str): The string for which the matches are gathered.
+            data (bytes): Bytes from which the inserts are gathered.
             inserts (list): Any pre-existing inserts to be added to it.
         """
         # A lot of the code here is difficult to comprehend directly, because the
@@ -450,7 +443,7 @@ class Config:
         latter rules are towards the end of the list.
 
         Args:
-            data (str): A string against which each rule is matched.
+            data (bytes): Bytes against which each rule is matched.
         """
         matches = []
 
@@ -465,7 +458,7 @@ class Config:
         can match without the color codes interfering.
 
         Args:
-            data (str): String to highlight.
+            data (bytes): String to highlight.
         """
         data, inserts = Color.strip_colors(data)
         inserts = self.get_inserts(data, inserts)

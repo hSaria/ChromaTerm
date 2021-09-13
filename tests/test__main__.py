@@ -133,14 +133,14 @@ def test_get_default_config_location_default(monkeypatch):
 
 def test_get_wait_duration():
     """The delay is minimum when on normal input."""
-    wait_duration = chromaterm.__main__.get_wait_duration('')
+    wait_duration = chromaterm.__main__.get_wait_duration(b'')
     assert wait_duration == chromaterm.__main__.INPUT_WAIT_MIN
 
 
 def test_get_wait_duration_buffer_new_lines():
     """New lines in the buffer extend the wait duration."""
-    wait_duration_empty = chromaterm.__main__.get_wait_duration('')
-    wait_duration_new_line = chromaterm.__main__.get_wait_duration('\n')
+    wait_duration_empty = chromaterm.__main__.get_wait_duration(b'')
+    wait_duration_new_line = chromaterm.__main__.get_wait_duration(b'\n')
     assert wait_duration_empty < wait_duration_new_line
 
 
@@ -169,7 +169,7 @@ def test_load_rules_group():
 
     assert len(config.rules) == 1
     assert config.rules[0].description == 'group-specific'
-    assert config.rules[0].regex == re.compile(r'h(el)lo (world)')
+    assert config.rules[0].regex == re.compile(br'h(el)lo (world)')
     assert config.rules[0].colors[0].color == 'bold'
     assert config.rules[0].colors[1].color == 'b#fffaaa'
     assert config.rules[0].colors[2].color == 'f#123123'
@@ -305,17 +305,6 @@ def test_process_input_blocking_stdout():
     assert os.get_blocking(sys.stdout.fileno())
 
 
-def test_process_input_decode_error(capsys):
-    """Attempt to decode a character that is not UTF-8."""
-    pipe_r, pipe_w = os.pipe()
-    config = chromaterm.__main__.Config()
-
-    os.write(pipe_w, b'\x80')
-    chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
-
-    assert capsys.readouterr().out == '�'
-
-
 def test_process_input_empty(capsys):
     """Input processing of empty input."""
     pipe_r, _ = os.pipe()
@@ -324,6 +313,20 @@ def test_process_input_empty(capsys):
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
 
     assert capsys.readouterr().out == ''
+
+
+def test_process_input_multibyte_character(capsys, monkeypatch):
+    """A multibyte character shouldn't be split when it falls at the boundary of
+    the READ_SIZE."""
+    monkeypatch.setattr(chromaterm.__main__, 'READ_SIZE', 2)
+
+    pipe_r, pipe_w = os.pipe()
+    config = chromaterm.__main__.Config()
+
+    os.write(pipe_w, '😀'.encode())
+    chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
+
+    assert capsys.readouterr().out == '😀'
 
 
 def test_process_input_multiline(capsys):
@@ -453,68 +456,41 @@ def test_read_ready_timeout_input():
     assert after - before < 0.1
 
 
-def test_split_buffer_new_line_r():
-    """Split based on \\r"""
-    data = 'Hello \rWorld'
-    expected = (('Hello ', '\r'), ('World', ''))
+def test_split_buffer_printer_commands():
+    """Split based on new lines (\\r, \\n, \\r\\n), vertical space (\\v), and
+    form feed (\\f)."""
+    for printer_command in [b'\r', b'\n', b'\r\n', b'\v', b'\f']:
+        data = b'Hello ' + printer_command + b'World'
+        expected = ((b'Hello ', printer_command), (b'World', b''))
 
-    assert repr(chromaterm.__main__.split_buffer(data)) == repr(expected)
-
-
-def test_split_buffer_new_line_r_n():
-    """Split based on \\r\\n"""
-    data = 'Hello \r\n World'
-    expected = (('Hello ', '\r\n'), (' World', ''))
-
-    assert repr(chromaterm.__main__.split_buffer(data)) == repr(expected)
-
-
-def test_split_buffer_new_line_n():
-    """Split based on \\n"""
-    data = 'Hello \n World'
-    expected = (('Hello ', '\n'), (' World', ''))
-
-    assert repr(chromaterm.__main__.split_buffer(data)) == repr(expected)
-
-
-def test_split_buffer_vertical_space():
-    """Split based on \\v"""
-    data = 'Hello \v World'
-    expected = (('Hello ', '\v'), (' World', ''))
-
-    assert repr(chromaterm.__main__.split_buffer(data)) == repr(expected)
-
-
-def test_split_buffer_form_feed():
-    """Split based on \\f"""
-    data = 'Hello \f World'
-    expected = (('Hello ', '\f'), (' World', ''))
-
-    assert repr(chromaterm.__main__.split_buffer(data)) == repr(expected)
+        assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_split_buffer_c1_set():
     """Split based on the ECMA-048 C1 set, excluding CSI and OSC."""
     c1_except_csi_and_osc = itertools.chain(
         range(int('40', 16), int('5b', 16)),
-        [int('5c', 16), int('5e', 16),
-         int('5f', 16)],
+        [
+            int('5c', 16),
+            int('5e', 16),
+            int('5f', 16),
+        ],
     )
 
     for char_id in c1_except_csi_and_osc:
-        data = 'Hello \x1b{} World'.format(chr(char_id))
-        expected = (('Hello ', '\x1b' + chr(char_id)), (' World', ''))
+        data = b'Hello \x1b%c World' % char_id
+        expected = ((b'Hello ', b'\x1b%c' % char_id), (b' World', b''))
 
-        assert repr(chromaterm.__main__.split_buffer(data)) == repr(expected)
+        assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_split_buffer_csi_exclude_sgr():
     """Fail to split based on the ECMA-048 C1 CSI SGR. Added some intermediate
     characters to prevent matching other CSI codes; strictly checking empty SGR."""
-    data = 'Hello \x1b[!0World'
-    expected = (('Hello \x1b[!0World', ''), )
+    data = b'Hello \x1b[!0World'
+    expected = ((b'Hello \x1b[!0World', b''), )
 
-    assert repr(chromaterm.__main__.split_buffer(data)) == repr(expected)
+    assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_split_buffer_csi_no_parameter_no_intermediate():
@@ -523,10 +499,10 @@ def test_split_buffer_csi_no_parameter_no_intermediate():
     csi_above_sgr = range(int('6e', 16), int('7f', 16))
 
     for char_id in itertools.chain(csi_up_to_sgr, csi_above_sgr):
-        data = 'Hello \x1b[{} World'.format(chr(char_id))
-        expected = (('Hello ', '\x1b[' + chr(char_id)), (' World', ''))
+        data = b'Hello \x1b[%c World' % char_id
+        expected = ((b'Hello ', b'\x1b[%c' % char_id), (b' World', b''))
 
-        assert repr(chromaterm.__main__.split_buffer(data)) == repr(expected)
+        assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_split_buffer_csi_no_parameter_intermediate():
@@ -537,12 +513,11 @@ def test_split_buffer_csi_no_parameter_intermediate():
     for char_id in itertools.chain(csi_up_to_sgr, csi_above_sgr):
         for intermediate in range(int('20', 16), int('30', 16)):
             for count in range(1, 4):
-                code = chr(intermediate) * count + chr(char_id)
-                data = 'Hello \x1b[{} World'.format(code)
-                expected = (('Hello ', '\x1b[' + code), (' World', ''))
+                code = (b'%c' % intermediate) * count + b'%c' % char_id
+                data = b'Hello \x1b[' + code + b' World'
+                expected = ((b'Hello ', b'\x1b[' + code), (b' World', b''))
 
-                assert repr(
-                    chromaterm.__main__.split_buffer(data)) == repr(expected)
+                assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_split_buffer_csi_parameter_intermediate():
@@ -555,13 +530,12 @@ def test_split_buffer_csi_parameter_intermediate():
         for parameter in range(int('30', 16), int('40', 16)):
             for intermediate in range(int('20', 16), int('30', 16)):
                 for count in range(1, 4):
-                    code = chr(parameter) * count + chr(
-                        intermediate) * count + chr(char_id)
-                    data = 'Hello \x1b[{} World'.format(code)
-                    expected = (('Hello ', '\x1b[' + code), (' World', ''))
+                    code = ((b'%c' % parameter) * count +
+                            (b'%c' % intermediate) * count + b'%c' % char_id)
+                    data = b'Hello \x1b[' + code + b' World'
+                    expected = ((b'Hello ', b'\x1b[' + code), (b' World', b''))
 
-                    assert repr(chromaterm.__main__.split_buffer(
-                        data)) == repr(expected)
+                    assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_split_buffer_csi_parameter_no_intermediate():
@@ -573,38 +547,36 @@ def test_split_buffer_csi_parameter_no_intermediate():
     for char_id in itertools.chain(csi_up_to_sgr, csi_above_sgr):
         for parameter in range(int('30', 16), int('40', 16)):
             for count in range(1, 4):
-                code = chr(parameter) * count + chr(char_id)
-                data = 'Hello \x1b[{} World'.format(code)
-                expected = (('Hello ', '\x1b[' + code), (' World', ''))
+                code = (b'%c' % parameter) * count + b'%c' % char_id
+                data = b'Hello \x1b[' + code + b' World'
+                expected = ((b'Hello ', b'\x1b[' + code), (b' World', b''))
 
-                assert repr(
-                    chromaterm.__main__.split_buffer(data)) == repr(expected)
+                assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_split_buffer_osc_title():
     """Operating System Command (OSC) can supply arbitrary commands within the
     visible character set."""
-    for end in ['\x07', '\x1b\x5c']:
-        osc = '\x1b]Ignored{}'.format(end)
-        data = '{}Hello world'.format(osc)
-        expected = (('', osc), ('Hello world', ''))
+    for end in [b'\x07', b'\x1b\x5c']:
+        osc = b'\x1b]Ignored' + end
+        data = osc + b'Hello world'
+        expected = ((b'', osc), (b'Hello world', b''))
 
-        assert repr(chromaterm.__main__.split_buffer(data)) == repr(expected)
+        assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_split_buffer_scs():
     """Select Character Set (SCS) is used to change the terminal character set."""
-    g_sets = ['\x28', '\x29', '\x2a', '\x2b', '\x2d', '\x2e', '\x2f']
-    char_sets = map(chr, range(int('20', 16), int('7e', 16)))
+    g_sets = [b'\x28', b'\x29', b'\x2a', b'\x2b', b'\x2d', b'\x2e', b'\x2f']
+    char_sets = range(int('20', 16), int('7e', 16))
 
     for g_set in g_sets:
         for char_set in char_sets:
-            code = '\x1b{}{}'.format(g_set, char_set)
-            data = 'Hello {} World'.format(code)
-            expected = (('Hello ', code), (' World', ''))
+            code = b'\x1b%c%c' % (g_set, char_set)
+            data = b'Hello ' + code + b' World'
+            expected = ((b'Hello ', code), (b' World', b''))
 
-            assert repr(
-                chromaterm.__main__.split_buffer(data)) == repr(expected)
+            assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_main_broken_pipe():

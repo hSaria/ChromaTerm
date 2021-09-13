@@ -10,6 +10,11 @@ RESET_BOLD = chromaterm.COLOR_TYPES['bold']['reset']
 RESET_ITALIC = chromaterm.COLOR_TYPES['italic']['reset']
 
 
+def make_sgr(*code_id):
+    """Returns byte-array for an SGR of `code_id` (multiple are concatenated)."""
+    return b''.join(b'\x1b[' + x + b'm' for x in code_id)
+
+
 def test_color_known_colors():
     """Random known-good color codes."""
     colors = [
@@ -19,15 +24,15 @@ def test_color_known_colors():
         'f#e002d7', 'f#f56726'
     ]
     codes = [
-        '48;5;33m', '48;5;140m', '48;5;32m', '48;5;35m', '48;5;101m',
-        '48;5;156m', '48;5;179m', '48;5;226m', '38;5;117m', '38;5;101m',
-        '38;5;102m', '38;5;41m', '38;5;87m', '38;5;70m', '38;5;38m',
-        '38;5;190m', '38;5;182m', '38;5;228m', '38;5;201m', '38;5;208m'
+        b'48;5;33', b'48;5;140', b'48;5;32', b'48;5;35', b'48;5;101',
+        b'48;5;156', b'48;5;179', b'48;5;226', b'38;5;117', b'38;5;101',
+        b'38;5;102', b'38;5;41', b'38;5;87', b'38;5;70', b'38;5;38',
+        b'38;5;190', b'38;5;182', b'38;5;228', b'38;5;201', b'38;5;208'
     ]
 
     for color_str, color_code in zip(colors, codes):
         color = chromaterm.Color(color_str, rgb=False)
-        assert repr(color.color_code) == repr('\x1b[' + color_code)
+        assert color.color_code == make_sgr(color_code)
 
 
 def test_color_known_grayscale():
@@ -38,137 +43,139 @@ def test_color_known_grayscale():
         'f#4c4c4c', 'f#4d4d4d', 'f#9d9d9d', 'f#808080'
     ]
     codes = [
-        '48;5;232m', '48;5;240m', '48;5;237m', '48;5;250m', '48;5;251m',
-        '48;5;252m', '48;5;252m', '48;5;255m', '38;5;233m', '38;5;232m',
-        '38;5;236m', '38;5;236m', '38;5;239m', '38;5;239m', '38;5;246m',
-        '38;5;244m'
+        b'48;5;232', b'48;5;240', b'48;5;237', b'48;5;250', b'48;5;251',
+        b'48;5;252', b'48;5;252', b'48;5;255', b'38;5;233', b'38;5;232',
+        b'38;5;236', b'38;5;236', b'38;5;239', b'38;5;239', b'38;5;246',
+        b'38;5;244'
     ]
 
     for color_str, color_code in zip(colors, codes):
         color = chromaterm.Color(color_str, rgb=False)
-        assert repr(color.color_code) == repr('\x1b[' + color_code)
+        assert color.color_code == make_sgr(color_code)
 
 
 def test_color_decode_sgr_bg():
     """Background colors and reset are being detected."""
-    for code in ['\x1b[48;5;12m', '\x1b[48;2;1;1;1m', '\x1b[49m', '\x1b[101m']:
-        colors = chromaterm.Color.decode_sgr(code)
+    for code in [b'48;5;12', b'48;2;1;1;1', b'49', b'101']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 
         for color_code, _, color_type in colors:
-            assert repr(color_code) == repr(code)
+            assert color_code == make_sgr(code)
             assert color_type == 'bg'
 
 
 def test_color_decode_sgr_fg():
     """Foreground colors and reset are being detected."""
-    for code in ['\x1b[38;5;12m', '\x1b[38;2;1;1;1m', '\x1b[39m', '\x1b[91m']:
-        colors = chromaterm.Color.decode_sgr(code)
+    for code in [b'38;5;12', b'38;2;1;1;1', b'39', b'91']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 
         for color_code, _, color_type in colors:
-            assert repr(color_code) == repr(code)
+            assert color_code == make_sgr(code)
             assert color_type == 'fg'
 
 
 def test_color_decode_sgr_styles_blink():
     """Blink and its reset are being detected."""
-    for code in ['\x1b[5m', '\x1b[25m']:
-        colors = chromaterm.Color.decode_sgr(code)
+    for code in [b'5', b'25']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 
         for color_code, _, color_type in colors:
-            assert repr(color_code) == repr(code)
+            assert color_code == make_sgr(code)
             assert color_type == 'blink'
 
 
 def test_color_decode_sgr_styles_bold():
     """Bold and its reset are being detected."""
-    for code in ['\x1b[1m', '\x1b[2m', '\x1b[22m']:
-        colors = chromaterm.Color.decode_sgr(code)
+    for code in [b'1', b'2', b'22']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 
         for color_code, _, color_type in colors:
-            assert repr(color_code) == repr(code)
+            assert color_code == make_sgr(code)
             assert color_type == 'bold'
 
 
 def test_color_decode_sgr_styles_italic():
     """Italic and its reset are being detected."""
-    for code in ['\x1b[3m', '\x1b[23m']:
-        colors = chromaterm.Color.decode_sgr(code)
+    for code in [b'3', b'23']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 
         for color_code, _, color_type in colors:
-            assert repr(color_code) == repr(code)
+            assert color_code == make_sgr(code)
             assert color_type == 'italic'
 
 
 def test_color_decode_sgr_styles_strike():
     """Strike and its reset are being detected."""
-    for code in ['\x1b[9m', '\x1b[29m']:
-        colors = chromaterm.Color.decode_sgr(code)
+    for code in [b'9', b'29']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 
         for color_code, _, color_type in colors:
-            assert repr(color_code) == repr(code)
+            assert color_code == make_sgr(code)
             assert color_type == 'strike'
 
 
 def test_color_decode_sgr_styles_underline():
     """Underline and its reset are being detected."""
-    for code in ['\x1b[4m', '\x1b[24m']:
-        colors = chromaterm.Color.decode_sgr(code)
+    for code in [b'4', b'24']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 
         for color_code, _, color_type in colors:
-            assert repr(color_code) == repr(code)
+            assert color_code == make_sgr(code)
             assert color_type == 'underline'
 
 
 def test_color_decode_sgr_full_reset():
     """Full reset detection."""
-    for code in ['\x1b[00m', '\x1b[0m', '\x1b[m']:
-        colors = chromaterm.Color.decode_sgr(code)
+    for code in [b'00', b'0', b'']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 
         for color_code, color_reset, color_type in colors:
-            assert repr(color_code) == repr(code)
+            assert color_code == make_sgr(b'0')
             assert color_reset is True
             assert color_type is None
 
 
 def test_color_decode_sgr_malformed():
     """Malformed colors."""
-    for code in ['\x1b[38;5m', '\x1b[38;2;1;1m', '\x1b[38;5;123;38;2;1;1m']:
-        colors = chromaterm.Color.decode_sgr(code)
+    for code in [b'38;5', b'38;2;1;1', b'38;5;123;38;2;1;1']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 
         for color_code, color_reset, color_type in colors:
-            assert repr(color_code) == repr(code)
+            assert color_code == make_sgr(code)
             assert color_reset is False
             assert color_type is None
 
 
 def test_color_decode_sgr_split_compound():
     """Split the a compound SGR into discrete SGR's."""
-    colors = chromaterm.Color.decode_sgr('\x1b[1;33;40m')
-    codes = ['\x1b[1m', '\x1b[33m', '\x1b[40m']
+    codes = [b'1', b'33', b'40']
     types = ['bold', 'fg', 'bg']
 
-    for color, color_code, color_type in zip(colors, codes, types):
-        assert repr(color_code) == repr(color[0])
-        assert color[1] is False
-        assert color_type == color[2]
+    colors = chromaterm.Color.decode_sgr(make_sgr(b'1;33;40'))
+    assert len(colors) == 3
+
+    for index, (color_code, is_reset, color_type) in enumerate(colors):
+        assert color_code == make_sgr(codes[index])
+        assert is_reset is False
+        assert color_type == types[index]
 
 
 def test_color_decode_sgr_unrecognized():
     """An SGR that's valid, but the type isn't recognized during decoding."""
-    colors = chromaterm.Color.decode_sgr('\x1b[7m')
+    colors = chromaterm.Color.decode_sgr(make_sgr(b'7'))
     assert len(colors) == 1
 
     for color_code, color_reset, color_type in colors:
-        assert repr(color_code) == repr('\x1b[7m')
+        assert color_code == make_sgr(b'7')
         assert color_reset is False
         assert color_type is None
 
@@ -193,9 +200,9 @@ def test_color_format_color_background():
     color = chromaterm.Color('b#123123', rgb=False)
 
     assert color.color == 'b#123123'
-    assert color.color_code == '\x1b[48;5;22m'
-    assert color.color_reset == '\x1b[49m'
-    assert color.color_types == [('bg', '\x1b[48;5;22m')]
+    assert color.color_code == make_sgr(b'48;5;22')
+    assert color.color_reset == make_sgr(b'49')
+    assert color.color_types == [('bg', make_sgr(b'48;5;22'))]
     assert color.rgb is False
 
 
@@ -204,9 +211,9 @@ def test_color_format_color_foreground():
     color = chromaterm.Color('f#123123', rgb=False)
 
     assert color.color == 'f#123123'
-    assert color.color_code == '\x1b[38;5;22m'
-    assert color.color_reset == '\x1b[39m'
-    assert color.color_types == [('fg', '\x1b[38;5;22m')]
+    assert color.color_code == make_sgr(b'38;5;22')
+    assert color.color_reset == make_sgr(b'39')
+    assert color.color_types == [('fg', make_sgr(b'38;5;22'))]
     assert color.rgb is False
 
 
@@ -215,12 +222,12 @@ def test_color_format_color_multiple():
     color = chromaterm.Color('f#123123 b#aBCDef bOLd', rgb=False)
 
     assert color.color == 'f#123123 b#abcdef bold'
-    assert color.color_code == '\x1b[38;5;22m\x1b[48;5;189m\x1b[1m'
-    assert color.color_reset == '\x1b[22m\x1b[49m\x1b[39m'
+    assert color.color_code == make_sgr(b'38;5;22', b'48;5;189', b'1')
+    assert color.color_reset == make_sgr(b'22', b'49', b'39')
     assert color.color_types == [
-        ('fg', '\x1b[38;5;22m'),
-        ('bg', '\x1b[48;5;189m'),
-        ('bold', '\x1b[1m'),
+        ('fg', make_sgr(b'38;5;22')),
+        ('bg', make_sgr(b'48;5;189')),
+        ('bold', make_sgr(b'1')),
     ]
     assert color.rgb is False
 
@@ -230,9 +237,9 @@ def test_color_format_color_rgb():
     color = chromaterm.Color('b#123123', rgb=True)
 
     assert color.color == 'b#123123'
-    assert color.color_code == '\x1b[48;2;18;49;35m'
-    assert color.color_reset == '\x1b[49m'
-    assert color.color_types == [('bg', '\x1b[48;2;18;49;35m')]
+    assert color.color_code == make_sgr(b'48;2;18;49;35')
+    assert color.color_reset == make_sgr(b'49')
+    assert color.color_types == [('bg', make_sgr(b'48;2;18;49;35'))]
     assert color.rgb is True
 
 
@@ -312,7 +319,7 @@ def test_rule_get_matches():
     color = chromaterm.Color('bold')
     rule = chromaterm.Rule('hello|world', color=color)
 
-    data = 'hello world'
+    data = b'hello world'
     expected = [(0, 5, color), (6, 11, color)]
 
     assert rule.get_matches(data) == expected
@@ -327,7 +334,7 @@ def test_rule_get_matches_groups():
     rule.set_color(color2, group=1)
     rule.set_color(color3, group=2)
 
-    data = 'hello world'
+    data = b'hello world'
     expected = [(0, 11, color1), (0, 5, color2), (6, 11, color3)]
 
     assert rule.get_matches(data) == expected
@@ -340,12 +347,12 @@ def test_rule_get_matches_groups_optional_not_matches():
     rule = chromaterm.Rule('hello(,)? world')
     rule.set_color(color, group=1)
 
-    data = 'hello, world'
+    data = b'hello, world'
     expected = [(5, 6, color)]
 
     assert rule.get_matches(data) == expected
 
-    data = 'hello world'
+    data = b'hello world'
     expected = []
 
     assert rule.get_matches(data) == expected
@@ -353,7 +360,7 @@ def test_rule_get_matches_groups_optional_not_matches():
 
 def test_rule_get_matches_no_colors():
     """Get matches of rule that has no colors – nothing is changed."""
-    assert chromaterm.Rule('hello').get_matches('hello') == []
+    assert chromaterm.Rule('hello').get_matches(b'hello') == []
 
 
 def test_rule_get_matches_zero_length_match():
@@ -362,7 +369,7 @@ def test_rule_get_matches_zero_length_match():
     rule = chromaterm.Rule('hello() world')
     rule.set_color(color, group=1)
 
-    assert rule.get_matches('hello world') == []
+    assert rule.get_matches(b'hello world') == []
 
 
 def test_rule_set_color_clear_existing():
@@ -462,12 +469,12 @@ def test_config_highlight():
     rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
     config.rules.append(rule)
 
-    data = 'hello world'
+    data = b'hello world'
     expected = [
-        rule.color.color_code, 'hello', rule.color.color_reset, ' world'
+        rule.color.color_code, b'hello', rule.color.color_reset, b' world'
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_adjoin_type_different():
@@ -483,18 +490,18 @@ def test_config_highlight_adjoin_type_different():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, 'he', rule1.color.color_reset,
-        rule2.color.color_code, 'llo', rule2.color.color_reset
+        rule1.color.color_code, b'he', rule1.color.color_reset,
+        rule2.color.color_code, b'llo', rule2.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.append(rule1)
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_adjoin_type_mixed():
@@ -510,18 +517,18 @@ def test_config_highlight_adjoin_type_mixed():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, 'he', rule1.color.color_reset,
-        rule2.color.color_code, 'llo', rule2.color.color_reset
+        rule1.color.color_code, b'he', rule1.color.color_reset,
+        rule2.color.color_code, b'llo', rule2.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.append(rule1)
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_adjoin_type_same():
@@ -536,18 +543,18 @@ def test_config_highlight_adjoin_type_same():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, 'he', rule1.color.color_reset,
-        rule2.color.color_code, 'llo', rule2.color.color_reset
+        rule1.color.color_code, b'he', rule1.color.color_reset,
+        rule2.color.color_code, b'llo', rule2.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.append(rule1)
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_common_beginning_type_different():
@@ -562,13 +569,13 @@ def test_config_highlight_common_beginning_type_different():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, rule2.color.color_code, 'he',
-        rule2.color.color_reset, 'llo', rule1.color.color_reset
+        rule1.color.color_code, rule2.color.color_code, b'he',
+        rule2.color.color_reset, b'llo', rule1.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.append(rule1)
@@ -576,7 +583,7 @@ def test_config_highlight_common_beginning_type_different():
     # Flip start color
     expected[0], expected[1] = expected[1], expected[0]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_common_beginning_type_mixed():
@@ -591,13 +598,13 @@ def test_config_highlight_common_beginning_type_mixed():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, rule2.color.color_code, 'he', RESET_BOLD,
-        rule1.color.color_types[0][1], 'llo', rule1.color.color_reset
+        rule1.color.color_code, rule2.color.color_code, b'he', RESET_BOLD,
+        rule1.color.color_types[0][1], b'llo', rule1.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_common_beginning_type_same():
@@ -612,13 +619,13 @@ def test_config_highlight_common_beginning_type_same():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, rule2.color.color_code, 'he',
-        rule1.color.color_code, 'llo', rule1.color.color_reset
+        rule1.color.color_code, rule2.color.color_code, b'he',
+        rule1.color.color_code, b'llo', rule1.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_common_end_type_different():
@@ -633,13 +640,13 @@ def test_config_highlight_common_end_type_different():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, 'he', rule2.color.color_code, 'llo',
+        rule1.color.color_code, b'he', rule2.color.color_code, b'llo',
         rule2.color.color_reset, rule1.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.append(rule1)
@@ -647,7 +654,7 @@ def test_config_highlight_common_end_type_different():
     # Flip end color
     expected[-1], expected[-2] = expected[-2], expected[-1]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_common_end_type_mixed():
@@ -662,13 +669,13 @@ def test_config_highlight_common_end_type_mixed():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, 'he', rule2.color.color_code, 'llo',
+        rule1.color.color_code, b'he', rule2.color.color_code, b'llo',
         RESET_BOLD, rule1.color.color_types[0][1], rule1.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_common_end_type_same():
@@ -683,13 +690,13 @@ def test_config_highlight_common_end_type_same():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, 'he', rule2.color.color_code, 'llo',
+        rule1.color.color_code, b'he', rule2.color.color_code, b'llo',
         rule1.color.color_code, rule1.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_encapsulate_type_different():
@@ -708,21 +715,21 @@ def test_config_highlight_encapsulate_type_different():
     config.rules.append(rule2)
     config.rules.append(rule3)
 
-    data = 'hello world'
+    data = b'hello world'
     expected = [
-        rule3.color.color_code, 'he', rule2.color.color_code, 'l',
-        rule1.color.color_code, 'lo wo', rule1.color.color_reset, 'r',
-        rule2.color.color_reset, 'ld', rule3.color.color_reset
+        rule3.color.color_code, b'he', rule2.color.color_code, b'l',
+        rule1.color.color_code, b'lo wo', rule1.color.color_reset, b'r',
+        rule2.color.color_reset, b'ld', rule3.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.remove(rule2)
     config.rules.append(rule2)
     config.rules.append(rule1)
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_encapsulate_type_mixed():
@@ -742,23 +749,23 @@ def test_config_highlight_encapsulate_type_mixed():
     config.rules.append(rule2)
     config.rules.append(rule3)
 
-    data = 'hello world'
+    data = b'hello world'
     expected = [
-        rule3.color.color_code, 'he', rule2.color.color_code, 'l',
-        rule1.color.color_code, 'lo wo', RESET_ITALIC,
-        rule2.color.color_types[0][1], 'r', rule2.color.color_types[1][1],
-        chromaterm.COLOR_TYPES[rule2.color.color_types[0][0]]['reset'], 'ld',
+        rule3.color.color_code, b'he', rule2.color.color_code, b'l',
+        rule1.color.color_code, b'lo wo', RESET_ITALIC,
+        rule2.color.color_types[0][1], b'r', rule2.color.color_types[1][1],
+        chromaterm.COLOR_TYPES[rule2.color.color_types[0][0]]['reset'], b'ld',
         rule3.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.remove(rule2)
     config.rules.append(rule2)
     config.rules.append(rule1)
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_encapsulate_type_same():
@@ -779,21 +786,21 @@ def test_config_highlight_encapsulate_type_same():
     config.rules.append(rule2)
     config.rules.append(rule3)
 
-    data = 'hello world'
+    data = b'hello world'
     expected = [
-        rule3.color.color_code, 'he', rule2.color.color_code, 'l',
-        rule1.color.color_code, 'lo wo', rule2.color.color_code, 'r',
-        rule3.color.color_code, 'ld', rule3.color.color_reset
+        rule3.color.color_code, b'he', rule2.color.color_code, b'l',
+        rule1.color.color_code, b'lo wo', rule2.color.color_code, b'r',
+        rule3.color.color_code, b'ld', rule3.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.remove(rule2)
     config.rules.append(rule2)
     config.rules.append(rule1)
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_overlap_full_type_different():
@@ -809,13 +816,13 @@ def test_config_highlight_overlap_full_type_different():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, rule2.color.color_code, 'hello',
+        rule1.color.color_code, rule2.color.color_code, b'hello',
         rule2.color.color_reset, rule1.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_overlap_full_type_mixed():
@@ -831,14 +838,14 @@ def test_config_highlight_overlap_full_type_mixed():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
 
     expected = [
-        rule1.color.color_code, rule2.color.color_code, 'hello', RESET_ITALIC,
+        rule1.color.color_code, rule2.color.color_code, b'hello', RESET_ITALIC,
         rule1.color.color_types[0][1], rule1.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_overlap_full_type_same():
@@ -854,13 +861,13 @@ def test_config_highlight_overlap_full_type_same():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, rule2.color.color_code, 'hello',
+        rule1.color.color_code, rule2.color.color_code, b'hello',
         rule1.color.color_code, rule1.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_overlap_partial_type_different():
@@ -875,18 +882,18 @@ def test_config_highlight_overlap_partial_type_different():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, 'he', rule2.color.color_code, 'll',
-        rule1.color.color_reset, 'o', rule2.color.color_reset
+        rule1.color.color_code, b'he', rule2.color.color_code, b'll',
+        rule1.color.color_reset, b'o', rule2.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.append(rule1)
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_overlap_partial_type_mixed():
@@ -903,18 +910,19 @@ def test_config_highlight_overlap_partial_type_mixed():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, 'he', rule2.color.color_code, 'll', RESET_BOLD,
-        rule2.color.color_types[0][1], 'o', rule2.color.color_reset
+        rule1.color.color_code, b'he', rule2.color.color_code, b'll',
+        RESET_BOLD, rule2.color.color_types[0][1], b'o',
+        rule2.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.append(rule1)
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_overlap_partial_type_same():
@@ -931,24 +939,24 @@ def test_config_highlight_overlap_partial_type_same():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = 'hello'
+    data = b'hello'
     expected = [
-        rule1.color.color_code, 'he', rule2.color.color_code, 'll',
-        rule2.color.color_code, 'o', rule2.color.color_reset
+        rule1.color.color_code, b'he', rule2.color.color_code, b'll',
+        rule2.color.color_code, b'o', rule2.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
     config.rules.append(rule1)
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_no_rules():
     """Highlight with config that has no rules – nothing is changed."""
     config = chromaterm.Config()
-    assert repr(config.highlight('hello world')) == repr('hello world')
+    assert config.highlight(b'hello world') == b'hello world'
 
 
 def test_config_highlight_tracking_common_beginning_type_different():
@@ -961,12 +969,12 @@ def test_config_highlight_tracking_common_beginning_type_different():
     rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
     config.rules.append(rule)
 
-    data = '\x1b[33mhello'
+    data = b'\x1b[33mhello'
     expected = [
-        '\x1b[33m', rule.color.color_code, 'hello', rule.color.color_reset
+        b'\x1b[33m', rule.color.color_code, b'hello', rule.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_common_beginning_type_same():
@@ -979,10 +987,10 @@ def test_config_highlight_tracking_common_beginning_type_same():
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
     config.rules.append(rule)
 
-    data = '\x1b[33mhello'
-    expected = ['\x1b[33m', rule.color.color_code, 'hello', '\x1b[33m']
+    data = b'\x1b[33mhello'
+    expected = [b'\x1b[33m', rule.color.color_code, b'hello', b'\x1b[33m']
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_common_end_type_different():
@@ -995,12 +1003,12 @@ def test_config_highlight_tracking_common_end_type_different():
     rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
     config.rules.append(rule)
 
-    data = 'hello\x1b[33m'
+    data = b'hello\x1b[33m'
     expected = [
-        rule.color.color_code, 'hello', rule.color.color_reset, '\x1b[33m'
+        rule.color.color_code, b'hello', rule.color.color_reset, b'\x1b[33m'
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_common_end_type_same():
@@ -1013,12 +1021,12 @@ def test_config_highlight_tracking_common_end_type_same():
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
     config.rules.append(rule)
 
-    data = 'hello\x1b[33m'
+    data = b'hello\x1b[33m'
     expected = [
-        rule.color.color_code, 'hello', rule.color.color_reset, '\x1b[33m'
+        rule.color.color_code, b'hello', rule.color.color_reset, b'\x1b[33m'
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_full_reset_beginning():
@@ -1031,13 +1039,13 @@ def test_config_highlight_tracking_full_reset_beginning():
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
     config.rules.append(rule)
 
-    data = '\x1b[mhello'
+    data = b'\x1b[0mhello'
     expected = [
-        '\x1b[m', rule.color.color_code, 'hello',
+        b'\x1b[0m', rule.color.color_code, b'hello',
         chromaterm.COLOR_TYPES[rule.color.color_types[0][0]]['reset']
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_full_reset_end():
@@ -1050,13 +1058,14 @@ def test_config_highlight_tracking_full_reset_end():
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
     config.rules.append(rule)
 
-    data = 'hello\x1b[m'
+    data = b'hello\x1b[0m'
     expected = [
-        rule.color.color_code, 'hello',
-        chromaterm.COLOR_TYPES[rule.color.color_types[0][0]]['reset'], '\x1b[m'
+        rule.color.color_code, b'hello',
+        chromaterm.COLOR_TYPES[rule.color.color_types[0][0]]['reset'],
+        b'\x1b[0m'
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_full_reset_middle():
@@ -1069,12 +1078,12 @@ def test_config_highlight_tracking_full_reset_middle():
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
     config.rules.append(rule)
 
-    data = 'hel\x1b[mlo'
+    data = b'hel\x1b[0mlo'
     expected = [
-        rule.color.color_code, 'hel', rule.color.color_code, 'lo', '\x1b[m'
+        rule.color.color_code, b'hel', rule.color.color_code, b'lo', b'\x1b[0m'
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_malformed():
@@ -1087,13 +1096,13 @@ def test_config_highlight_tracking_malformed():
     rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
     config.rules.append(rule)
 
-    data = 'he\x1b[38;5mllo'
+    data = b'he\x1b[38;5mllo'
     expected = [
-        rule.color.color_code, 'he', '\x1b[38;5m', 'llo',
+        rule.color.color_code, b'he', b'\x1b[38;5m', b'llo',
         rule.color.color_reset
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_mixed_full_reset():
@@ -1106,24 +1115,24 @@ def test_config_highlight_tracking_mixed_full_reset():
     config.rules.append(rule1)
     config.rules.append(rule2)
 
-    data = '\x1b[33mhello\x1b[m there \x1b[43mworld'
+    data = b'\x1b[33mhello\x1b[0m there \x1b[43mworld'
     expected = [
-        '\x1b[33m', rule1.color.color_code, 'hello', '\x1b[33m', '\x1b[m',
-        ' there ', '\x1b[43m', rule2.color.color_code, 'world', '\x1b[43m'
+        b'\x1b[33m', rule1.color.color_code, b'hello', b'\x1b[33m', b'\x1b[0m',
+        b' there ', b'\x1b[43m', rule2.color.color_code, b'world', b'\x1b[43m'
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
     # The color of rule1 was reset to its default because a full reset came after
     # it, but the color of rule2 was already updated so it wasn't affected by the
     # full reset
-    data = 'hello there world'
+    data = b'hello there world'
     expected = [
-        rule1.color.color_code, 'hello', rule1.color.color_reset, ' there ',
-        rule2.color.color_code, 'world', '\x1b[43m'
+        rule1.color.color_code, b'hello', rule1.color.color_reset, b' there ',
+        rule2.color.color_code, b'world', b'\x1b[43m'
     ]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_multiline_type_different():
@@ -1135,12 +1144,12 @@ def test_config_highlight_tracking_multiline_type_different():
     config.rules.append(rule)
 
     # Inject a foreground color to have it tracked
-    assert repr(config.highlight('\x1b[33m')) == repr('\x1b[33m')
+    assert config.highlight(b'\x1b[33m') == b'\x1b[33m'
 
-    data = 'hello'
-    expected = [rule.color.color_code, 'hello', rule.color.color_reset]
+    data = b'hello'
+    expected = [rule.color.color_code, b'hello', rule.color.color_reset]
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)
 
 
 def test_config_highlight_tracking_multiline_type_same():
@@ -1152,9 +1161,9 @@ def test_config_highlight_tracking_multiline_type_same():
     config.rules.append(rule)
 
     # Inject a foreground color to have it tracked
-    assert repr(config.highlight('\x1b[33m')) == repr('\x1b[33m')
+    assert config.highlight(b'\x1b[33m') == b'\x1b[33m'
 
-    data = 'hello'
-    expected = [rule.color.color_code, 'hello', '\x1b[33m']
+    data = b'hello'
+    expected = [rule.color.color_code, b'hello', b'\x1b[33m']
 
-    assert repr(config.highlight(data)) == repr(''.join(expected))
+    assert config.highlight(data) == b''.join(expected)

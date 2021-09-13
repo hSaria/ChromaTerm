@@ -10,10 +10,12 @@ def assert_matches(positives, negatives, rule):
         output = []
 
         for entry in data if isinstance(data, list) else [data]:
+            entry = entry.encode()
+
             output.append(entry)  # Plain entry
-            output.append('hello ' + entry)  # Start changed
-            output.append(entry + ' world')  # End changed
-            output.append('hello ' + entry + ' world')  # Start and end changed
+            output.append(b'hello ' + entry)  # Start changed
+            output.append(entry + b' world')  # End changed
+            output.append(b'hello ' + entry + b' world')  # Both changed
 
         return output
 

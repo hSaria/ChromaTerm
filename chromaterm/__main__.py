@@ -41,10 +41,10 @@ READ_SIZE = 4096  # 4 KiB
 # Sequences upon which ct will split during processing. This includes new lines,
 # vertical spaces, form feeds, C1 set (ECMA-048), SCS (G0 through G3 sets),
 # CSI (excluding SGR), and OSC.
-SPLIT_RE = re.compile(r'(\r\n?|\n|\v|\f|\x1b[\x40-\x5a\x5c\x5e\x5f]|'
-                      r'\x1b[\x28-\x2b\x2d-\x2f][\x20-\x7e]|'
-                      r'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
-                      r'\x1b\x5d[\x08-\x0d\x20-\x7e]*(?:\x07|\x1b\x5c))')
+SPLIT_RE = re.compile(br'(\r\n?|\n|\v|\f|\x1b[\x40-\x5a\x5c\x5e\x5f]|'
+                      br'\x1b[\x28-\x2b\x2d-\x2f][\x20-\x7e]|'
+                      br'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
+                      br'\x1b\x5d[\x08-\x0d\x20-\x7e]*(?:\x07|\x1b\x5c))')
 
 
 def args_init(args=None):
@@ -115,7 +115,7 @@ def get_wait_duration(buffer):
         buffer (str): The incoming data that was processed
     """
     # New lines indicate long output; relax the wait duration
-    if '\n' in buffer:
+    if b'\n' in buffer:
         return INPUT_WAIT_MAX
 
     return INPUT_WAIT_MIN
@@ -140,7 +140,6 @@ def load_rules(config, data, rgb=False):
         data (str): A string containg YAML data.
         rgb (bool): Whether the terminal is RGB-capable or not.
     """
-    # Load the YAML configuration file
     try:
         data = yaml.safe_load(data) or {}
     except yaml.YAMLError as exception:
@@ -157,7 +156,6 @@ def load_rules(config, data, rgb=False):
         eprint('Parse error: "rules" is not a list')
         return
 
-    # Clear existing rules
     config.rules.clear()
 
     for rule in rules:
@@ -236,7 +234,7 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
         pass
 
     fds = [data_fd] if forward_fd is None else [data_fd, forward_fd]
-    buffer = ''
+    buffer = b''
 
     ready_fds = read_ready(*fds, timeout=max_wait)
 
@@ -256,7 +254,7 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             except OSError:
                 data_read = b''
 
-            buffer += data_read.decode(encoding='utf-8', errors='replace')
+            buffer += data_read
 
             # Buffer was processed empty and data fd hit EOF
             if not buffer:
@@ -266,21 +264,21 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
 
             # Process chunks except for the last one as it might've been cut off
             for data, separator in chunks[:-1]:
-                sys.stdout.write(config.highlight(data) + separator)
+                sys.stdout.buffer.write(config.highlight(data) + separator)
 
             data, separator = chunks[-1]
             wait_duration = get_wait_duration(buffer)
 
             # Zero or one characters indicates keyboard typing; don't highlight
             if len(data) < 2:
-                sys.stdout.write(data + separator)
-                buffer = ''
+                sys.stdout.buffer.write(data + separator)
+                buffer = b''
             # Data was read and there's more to come; wait before highlighting
             elif data_read and read_ready(data_fd, timeout=wait_duration):
                 buffer = data + separator
             else:
-                sys.stdout.write(config.highlight(data) + separator)
-                buffer = ''
+                sys.stdout.buffer.write(config.highlight(data) + separator)
+                buffer = b''
 
             # Flush as the last chunk might not end with a new line
             sys.stdout.flush()
@@ -433,7 +431,7 @@ def split_buffer(buffer):
     chunks = SPLIT_RE.split(buffer)
 
     # Append an empty separator in case of no chunks or no separator at the end
-    chunks.append('')
+    chunks.append(b'')
 
     # Group all chunks into format of (data, separator)
     return tuple(zip(chunks[0::2], chunks[1::2]))
@@ -455,7 +453,7 @@ def main(args=None, max_wait=None, write_default=True):
     args = args_init(args)
 
     if args.reload:
-        return 'Processes reloaded: ' + str(reload_chromaterm_instances())
+        return 'Processes reloaded: {}'.format(reload_chromaterm_instances())
 
     # Config file wasn't overridden; use default file
     if not args.config:
