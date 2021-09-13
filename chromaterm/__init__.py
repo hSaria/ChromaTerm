@@ -48,13 +48,12 @@ SGR_RE = re.compile(r'\x1b\[[0-9;]*m')
 
 
 class Color:
-    """A color that highlights strings for terminals."""
+    """A color and its ANSI escape codes."""
     def __init__(self, color, rgb=None):
         """Constructor.
 
         Args:
-            color (str): A string which must contain
-
+            color (str): A string which must contain:
                 * one foreground color (hex color prefixed with `f#`),
                 * one background color (hex color prefixed with `b#`),
                 * at least one style (blink, bold, italic, strike, underline), or
@@ -126,27 +125,9 @@ class Color:
             color_types.append((style, COLOR_TYPES[style]['code']))
 
         self._color = ' '.join(re.split(r'\s+', value.strip().lower()))
-        self._color_code = color_code
-        self._color_reset = color_reset
-        self._color_types = color_types
-
-    @property
-    def color_code(self):
-        """ANSI escape sequence that instructs a terminal to color output.
-        Updated when `self.color` is changed."""
-        return self._color_code
-
-    @property
-    def color_reset(self):
-        """ANSI escape sequence that instructs a terminal to revert to the
-        default color. Updated when `self.color` is changed."""
-        return self._color_reset
-
-    @property
-    def color_types(self):
-        """List of tuples for each color type in this instance and its value. The
-        types correspond to `COLOR_TYPES`. Updated when `self.color` is changed."""
-        return self._color_types.copy()
+        self.color_code = color_code
+        self.color_reset = color_reset
+        self.color_types = color_types
 
     @property
     def rgb(self):
@@ -166,14 +147,12 @@ class Color:
 
     @staticmethod
     def decode_sgr(source_color_code):
-        """Decodes an SGR, splitting it into discrete colors. Each color is a list
-        that contains:
-            * color code (str),
-            * is reset (bool), and
-            * color type (str) which corresponds to `chromaterm.COLOR_TYPES`.
+        """Decodes an SGR, splitting it into a list of colors, each being a list
+        containing color code (str), is reset (bool), and color type (str) which
+        corresponds to `COLOR_TYPES`.
 
         Args:
-            source_color_code (str): The string to be split into individual codes.
+            source_color_code (str): String to be split into individual colors.
         """
         def make_sgr(code_id):
             return '\x1b[' + str(code_id) + 'm'
@@ -268,7 +247,7 @@ class Color:
 
 
 class Rule:
-    """A rule that highlights parts of strings which match a regular expression."""
+    """A rule that defines a regex and colors corresponds to regex's groups."""
     def __init__(self, regex, color=None, description=None):
         """Constructor.
 
@@ -279,11 +258,17 @@ class Rule:
 
         Raises:
             TypeError: If `regex` is not a string. If `color` is not an instance
-                of `Color` or not `None`. If `description` is not a string.
+                of `Color` or not `None`. If `description` is not a string or None.
         """
-        self._colors = {}
-        self.regex = regex
+        if description is not None and not isinstance(description, str):
+            raise TypeError('description must be a string')
+
+        if not isinstance(regex, str):
+            raise TypeError('regex must be a string')
+
+        self.colors = {}
         self.description = description
+        self.regex = re.compile(regex)
 
         self.set_color(color)
 
@@ -296,51 +281,13 @@ class Rule:
     def color(self, value):
         self.set_color(value)
 
-    @property
-    def colors(self):
-        """Colors of the rule. It is dictionary where the keys are integers
-        corresponding to the groups in `self.regex` and the values are instances
-        `Color` which are used for highlighting."""
-        # Return a copy of the dictionary to prevent modification of shallow
-        # values; modifying the content of the values, like colors[0].rgb = True
-        # is fine as it doesn't change the object type.
-        return self._colors.copy()
-
-    @property
-    def description(self):
-        """Description for the rule."""
-        return self._description
-
-    @description.setter
-    def description(self, value):
-        if value is not None and not isinstance(value, str):
-            raise TypeError('description must be a string')
-
-        self._description = value
-
-    @property
-    def regex(self):
-        """Regular expression used for matching the input when highlighting."""
-        return self._regex
-
-    @regex.setter
-    def regex(self, value):
-        if not isinstance(value, str):
-            raise TypeError('regex must be a string')
-
-        self._regex = re.compile(value)
-
     def get_matches(self, data):
-        """Returns a list of tuples, each of which containing a start index, an
-        end index, and the `Color` object for that match. Only regex
-        groups associated with a color are included.
+        """Returns a list of tuples, each containing a start index, an end index,
+        and the `Color` object for that match.
 
         Args:
             data (str): A string to match regex against.
         """
-        if not self.colors:
-            return []
-
         matches = []
 
         for match in self.regex.finditer(data):
@@ -374,7 +321,7 @@ class Rule:
             raise TypeError('group must be an integer')
 
         if color is None:
-            self._colors.pop(group, None)
+            self.colors.pop(group, None)
             return
 
         if not isinstance(color, Color):
@@ -384,57 +331,20 @@ class Rule:
             raise ValueError('regex only has {} group(s); {} is '
                              'invalid'.format(self.regex.groups, group))
 
-        self._colors[group] = color
+        self.colors[group] = color
 
         # Sort the colors according to the group number to ensure deterministic
         # highlighting
-        self._colors = {k: self._colors[k] for k in sorted(self._colors)}
+        self.colors = {k: self.colors[k] for k in sorted(self.colors)}
 
 
 class Config:
-    """An aggregation of multiple rules which provides improved highlighting by
-    performing the regular expression matching of the rules before any colors
-    are added to the string."""
+    """An aggregation of multiple rules which highlights by performing the regex
+    matching of the rules before any colors are added to the string."""
     def __init__(self):
         """Constructor."""
         self._reset_codes = {k: v['reset'] for k, v in COLOR_TYPES.items()}
-        self._rules = []
-
-    @property
-    def rules(self):
-        """List of `Rule objects used during highlighting."""
-        # Return a copy of the list to prevent modification, like extending it.
-        # Modifying the content of the items is fine as it doesn't change the
-        # object type.
-        return self._rules.copy()
-
-    def add_rule(self, rule):
-        """Adds `rule` to the `self.rules` list.
-
-        Args:
-            rule (chromaterm.Rule): The rule to be added to the list of rules.
-
-        Raises:
-            TypeError: If `rule` is not an instance of `Rule`.
-        """
-        if not isinstance(rule, Rule):
-            raise TypeError('rule must be a chromaterm.Rule')
-
-        self._rules.append(rule)
-
-    def remove_rule(self, rule):
-        """Removes rule from `self.rules`.
-
-        Args:
-            rule (chromaterm.Rule): The rule to be removed from the list of rules.
-
-        Raises:
-            TypeError: If `rule` is not an instance of `Rule`.
-        """
-        if not isinstance(rule, Rule):
-            raise TypeError('rule must be a chromaterm.Rule')
-
-        return self._rules.remove(rule)
+        self.rules = []
 
     @staticmethod
     def get_insert_index(start, end, inserts):
@@ -473,28 +383,21 @@ class Config:
 
         return start_index, end_index
 
-    def get_inserts(self, data, inserts=None):
+    def get_inserts(self, data, inserts):
         """Returns a list containing the inserts for the color codes relative to
-        data. An insert is a list containing:
-
-            * A position (index relative to data),
-            * The code to be inserted,
-            * A boolean indicating if its a reset code or not, and
-            * The color type which corresponds to COLOR_TYPES, or None if it's a
-                full SGR reset.
+        data. An insert is a list containing a position (index relative to data),
+        the code to be inserted, a boolean indicating if its a reset code or not,
+        and The color type which corresponds to COLOR_TYPES or `None` if it's a
+        full SGR reset.
 
         The list of inserts is ordered in descending order based on the position
         of each insert relative to the data. This makes them easy to insert into
-        data without calculating any index offset.
+        data without calculating index offsetes.
 
         Args:
             data (str): The string for which the matches are gathered.
-            inserts (list): If this list is provided, the inserts are added to it.
-                Any existing inserts are respected during processing, but ensure
-                that they are sorted in descending order based on their position.
+            inserts (list): Any pre-existing inserts to be added to it.
         """
-        inserts = [] if not isinstance(inserts, list) else inserts
-
         # A lot of the code here is difficult to comprehend directly, because the
         # intent might not be immediately visible. You may find it easier to take
         # a test-driven approach by looking at the test_config_highlight_* tests
@@ -562,12 +465,9 @@ class Config:
         can match without the color codes interfering.
 
         Args:
-            data (str): A string to highlight. `__str__` of `data` is called.
+            data (str): String to highlight.
         """
-        if not self.rules:
-            return str(data)
-
-        data, inserts = Color.strip_colors(str(data))
+        data, inserts = Color.strip_colors(data)
         inserts = self.get_inserts(data, inserts)
 
         resets_to_update = list(self._reset_codes)

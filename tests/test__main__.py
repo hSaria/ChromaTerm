@@ -137,20 +137,11 @@ def test_get_wait_duration():
     assert wait_duration == chromaterm.__main__.INPUT_WAIT_MIN
 
 
-def test_get_wait_duration_bounds(monkeypatch):
-    """Ensure the wait duration cannot exceed the upper bound."""
-    monkeypatch.setattr(chromaterm.__main__, 'INPUT_WAIT_MIN', 10)
-
-    wait_duration = chromaterm.__main__.get_wait_duration('')
-    assert wait_duration == chromaterm.__main__.INPUT_WAIT_MAX
-
-
 def test_get_wait_duration_buffer_new_lines():
     """New lines in the buffer extend the wait duration."""
-    wait_duration_0 = chromaterm.__main__.get_wait_duration('\n' * 0)
-    wait_duration_1 = chromaterm.__main__.get_wait_duration('\n' * 1)
-    wait_duration_2 = chromaterm.__main__.get_wait_duration('\n' * 2)
-    assert wait_duration_0 < wait_duration_1 < wait_duration_2
+    wait_duration_empty = chromaterm.__main__.get_wait_duration('')
+    wait_duration_new_line = chromaterm.__main__.get_wait_duration('\n')
+    assert wait_duration_empty < wait_duration_new_line
 
 
 def test_load_rules_simple():
@@ -341,7 +332,7 @@ def test_process_input_multiline(capsys):
     config = chromaterm.__main__.Config()
 
     rule = chromaterm.Rule('hello world', color=chromaterm.Color('bold'))
-    config.add_rule(rule)
+    config.rules.append(rule)
 
     os.write(pipe_w, b'\nt hello world t\n' * 2)
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
@@ -356,7 +347,7 @@ def test_process_input_read_size(capsys):
     write_size = chromaterm.__main__.READ_SIZE + 1
 
     rule = chromaterm.Rule('x' * write_size, color=chromaterm.Color('bold'))
-    config.add_rule(rule)
+    config.rules.append(rule)
 
     os.write(pipe_w, b'x' * write_size)
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
@@ -372,7 +363,7 @@ def test_process_input_single_character(capsys):
     config = chromaterm.__main__.Config()
 
     rule = chromaterm.Rule('.', color=chromaterm.Color('bold'))
-    config.add_rule(rule)
+    config.rules.append(rule)
 
     os.write(pipe_w, b'x')
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
@@ -387,7 +378,7 @@ def test_process_input_trailing_chunk(capsys):
     config = chromaterm.__main__.Config()
 
     rule = chromaterm.Rule('hello world', color=chromaterm.Color('bold'))
-    config.add_rule(rule)
+    config.rules.append(rule)
 
     worker = threading.Thread(target=chromaterm.__main__.process_input,
                               args=(config, pipe_r))

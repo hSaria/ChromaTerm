@@ -114,13 +114,11 @@ def get_wait_duration(buffer):
     Args:
         buffer (str): The incoming data that was processed
     """
-    wait_duration = INPUT_WAIT_MIN
-
     # New lines indicate long output; relax the wait duration
-    wait_duration += 1 / 16 * buffer.count('\n')
+    if '\n' in buffer:
+        return INPUT_WAIT_MAX
 
-    # Ensure it falls within bounds of the wait duration
-    return min(INPUT_WAIT_MAX, max(INPUT_WAIT_MIN, wait_duration))
+    return INPUT_WAIT_MIN
 
 
 def load_rules(config, data, rgb=False):
@@ -160,14 +158,13 @@ def load_rules(config, data, rgb=False):
         return
 
     # Clear existing rules
-    for rule in config.rules:
-        config.remove_rule(rule)
+    config.rules.clear()
 
     for rule in rules:
         rule = parse_rule(rule, rgb=rgb)
 
         if isinstance(rule, Rule):
-            config.add_rule(rule)
+            config.rules.append(rule)
         else:
             eprint(rule)
 
