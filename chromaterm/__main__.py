@@ -112,7 +112,7 @@ def get_wait_duration(buffer):
     of the received data can be processed independently.
 
     Args:
-        buffer (str): The incoming data that was processed
+        buffer (bytes): The incoming data that was processed
     """
     # New lines indicate long output; relax the wait duration
     if b'\n' in buffer:
@@ -426,7 +426,7 @@ def split_buffer(buffer):
     be highlighted while separator should be printed, unchanged, after data.
 
     Args:
-        buffer (str): A string to split using `SPLIT_RE`.
+        buffer (bytes): Data to split using `SPLIT_RE`.
     """
     chunks = SPLIT_RE.split(buffer)
 

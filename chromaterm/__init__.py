@@ -242,7 +242,7 @@ class Color:
 
 
 class Rule:
-    """A rule that defines a regex and colors corresponds to regex's groups."""
+    """A rule containing a regex and colors corresponding to the regex's groups."""
     def __init__(self, regex, color=None, description=None):
         """Constructor.
 
@@ -333,7 +333,7 @@ class Rule:
 
 class Config:
     """An aggregation of multiple rules which highlights by performing the regex
-    matching of the rules before any colors are added to the string."""
+    matching of the rules before any colors are added."""
     def __init__(self):
         """Constructor."""
         self._reset_codes = {k: v['reset'] for k, v in COLOR_TYPES.items()}
@@ -453,12 +453,12 @@ class Config:
         return matches
 
     def highlight(self, data):
-        """Returns a highlighted string of `data`. The matches from the rules
+        """Returns a highlighted bytes of `data`. The matches from the rules
         are gathered prior to inserting any color codes, making it so the rules
         can match without the color codes interfering.
 
         Args:
-            data (bytes): String to highlight.
+            data (bytes): Bytes to highlight.
         """
         data, inserts = Color.strip_colors(data)
         inserts = self.get_inserts(data, inserts)
