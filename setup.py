@@ -24,5 +24,5 @@ setup(
     packages=['chromaterm'],
     python_requires='>=3.5.0',
     url='https://github.com/hSaria/ChromaTerm',
-    version='0.7.6',
+    version='0.7.7-dev',
 )
