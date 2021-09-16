@@ -182,9 +182,9 @@ def parse_rule(rule, rgb=False):
     regex = rule.get('regex')
 
     if description:
-        rule_repr = f'Rule({regex=}, {description=})'
+        rule_repr = f'Rule(regex={repr(regex)}, description={repr(description)})'
     else:
-        rule_repr = f'Rule({regex=})'
+        rule_repr = f'Rule(regex={repr(regex)})'
 
     try:
         parsed_rule = Rule(regex, description=description)

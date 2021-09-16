@@ -22,7 +22,7 @@ CLI = sys.executable + ' -m chromaterm'
 CODE_ISATTY = '''import os, sys
 stdin = os.isatty(sys.stdin.fileno())
 stdout = os.isatty(sys.stdout.fileno())
-print(f'{stdin=}, {stdout=}')'''
+print(f'stdin={stdin}, stdout={stdout}')'''
 
 CODE_TTYNAME = '''import os, sys
 print(os.ttyname(sys.stdin.fileno()) if os.isatty(sys.stdin.fileno()) else None)'''
