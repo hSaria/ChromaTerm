@@ -22,7 +22,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     packages=['chromaterm'],
-    python_requires='>=3.5.0',
+    python_requires='>=3.6.0',
     url='https://github.com/hSaria/ChromaTerm',
-    version='0.7.7-dev',
+    version='0.8.0-dev',
 )
