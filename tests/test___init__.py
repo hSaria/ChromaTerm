@@ -311,7 +311,7 @@ def test_color_invalid_value_duplicate_style():
 
     for style in styles:
         with pytest.raises(ValueError, match='duplicate styles'):
-            chromaterm.Color('{0} {0}'.format(style))
+            chromaterm.Color(f'{style} {style}')
 
 
 def test_rule_get_matches():

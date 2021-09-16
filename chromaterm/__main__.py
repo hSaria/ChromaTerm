@@ -176,38 +176,36 @@ def parse_rule(rule, rgb=False):
             `chromaterm.__main__.load_rules`.
     """
     if not isinstance(rule, dict):
-        return 'Rule {} not a dictionary'.format(repr(rule))
+        return f'Rule {repr(rule)} not a dictionary'
 
     description = rule.get('description')
     regex = rule.get('regex')
 
     if description:
-        rule_repr = 'Rule(regex={}, description={})'.format(
-            repr(regex), repr(description))
+        rule_repr = f'Rule({regex=}, {description=})'
     else:
-        rule_repr = 'Rule(regex={})'.format(repr(regex))
+        rule_repr = f'Rule({regex=})'
 
     try:
         parsed_rule = Rule(regex, description=description)
     except TypeError as exception:
-        return 'Error on {}: {}'.format(rule_repr, exception)
+        return f'Error on {rule_repr}: {exception}'
     except re.error as exception:
-        return 'Error on {}: re.error: {}'.format(rule_repr, exception)
+        return f'Error on {rule_repr}: re.error: {exception}'
 
     color = rule.get('color')
 
     if isinstance(color, str):
         color = {0: color}
     elif not isinstance(color, dict):
-        return 'Error on {}: color {} is not a string'.format(
-            rule_repr, repr(color))
+        return f'Error on {rule_repr}: color {repr(color)} is not a string'
 
     try:
         for group in color:
             parsed_color = Color(color[group], rgb=rgb)
             parsed_rule.set_color(parsed_color, group=group)
     except (TypeError, ValueError) as exception:
-        return 'Error on {}: {}'.format(rule_repr, exception)
+        return f'Error on {rule_repr}: {exception}'
 
     return parsed_rule
 
@@ -453,7 +451,7 @@ def main(args=None, max_wait=None, write_default=True):
     args = args_init(args)
 
     if args.reload:
-        return 'Processes reloaded: {}'.format(reload_chromaterm_instances())
+        return f'Processes reloaded: {reload_chromaterm_instances()}'
 
     # Config file wasn't overridden; use default file
     if not args.config:

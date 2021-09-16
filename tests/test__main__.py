@@ -22,7 +22,7 @@ CLI = sys.executable + ' -m chromaterm'
 CODE_ISATTY = """import os, sys
 stdin = os.isatty(sys.stdin.fileno())
 stdout = os.isatty(sys.stdout.fileno())
-print('stdin={}, stdout={}'.format(stdin, stdout))"""
+print(f'{stdin=}, {stdout=}')"""
 
 CODE_TTYNAME = """import os, sys
 print(os.ttyname(sys.stdin.fileno()) if os.isatty(sys.stdin.fileno()) else None)"""
@@ -30,7 +30,7 @@ print(os.ttyname(sys.stdin.fileno()) if os.isatty(sys.stdin.fileno()) else None)
 
 def get_python_command(code):
     """Returns the python shell command that runs `code`."""
-    return sys.executable + ' -c "{}"'.format('; '.join(code.splitlines()))
+    return sys.executable + f''' -c "{'; '.join(code.splitlines())}"'''
 
 
 def test_baseline_tty_test_code_no_pipe():

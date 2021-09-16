@@ -88,7 +88,7 @@ class Color:
         color_types = []
 
         if not re.search(color_re, value):
-            raise ValueError('invalid color format {}'.format(repr(value)))
+            raise ValueError(f'invalid color format {repr(value)}')
 
         # Colors
         for target, hex_code in re.findall(r'(b|f)#([0-9a-f]{6})', value):
@@ -321,8 +321,8 @@ class Rule:
             raise TypeError('color must be a chromaterm.Color')
 
         if group > self.regex.groups:
-            raise ValueError('regex only has {} group(s); {} is '
-                             'invalid'.format(self.regex.groups, group))
+            raise ValueError(f'regex only has {self.regex.groups} group(s); '
+                             f'{group} is invalid')
 
         self.colors[group] = color
 

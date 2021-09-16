@@ -69,11 +69,6 @@ RULE_GENERIC_GOOD = Rule(
 def generate_default_rules_yaml():
     """Returns a string describing the default configuration in YAML."""
     data = 'rules:'
-    rule_format = """
-- description: {}
-  regex: {}
-  color: {}
-    """
 
     for rule in [
             RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_DATE, RULE_TIME,
@@ -81,8 +76,11 @@ def generate_default_rules_yaml():
             RULE_GENERIC_NOT_TOO_BAD, RULE_GENERIC_AMBIGIOUS_GOOD,
             RULE_GENERIC_GOOD
     ]:
-        data += rule_format.format(rule.description, rule.regex.pattern,
-                                   rule.color.color)
+        data += f"""
+- description: {rule.description}
+  regex: {rule.regex.pattern}
+  color: {rule.color.color}
+"""
 
     return data
 
