@@ -55,7 +55,7 @@ rules:
 ChromaTerm will look in the following locations for the config file and use the
 first one it finds:
 
- * `~/.chromaterm.yml`
+ * `$HOME/.chromaterm.yml`
  * `$XDG_CONFIG_HOME/chromaterm/chromaterm.yml` (if `$XDG_CONFIG_HOME` is not set,
  it defaults to `~/config`)
  * `/etc/chromaterm/chromaterm.yml`
