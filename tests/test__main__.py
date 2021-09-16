@@ -1,4 +1,4 @@
-"""chromaterm.__main__ tests"""
+'''chromaterm.__main__ tests'''
 import itertools
 import os
 import re
@@ -19,22 +19,22 @@ import chromaterm.__main__
 
 CLI = sys.executable + ' -m chromaterm'
 
-CODE_ISATTY = """import os, sys
+CODE_ISATTY = '''import os, sys
 stdin = os.isatty(sys.stdin.fileno())
 stdout = os.isatty(sys.stdout.fileno())
-print(f'{stdin=}, {stdout=}')"""
+print(f'{stdin=}, {stdout=}')'''
 
-CODE_TTYNAME = """import os, sys
-print(os.ttyname(sys.stdin.fileno()) if os.isatty(sys.stdin.fileno()) else None)"""
+CODE_TTYNAME = '''import os, sys
+print(os.ttyname(sys.stdin.fileno()) if os.isatty(sys.stdin.fileno()) else None)'''
 
 
 def get_python_command(code):
-    """Returns the python shell command that runs `code`."""
+    '''Returns the python shell command that runs `code`.'''
     return sys.executable + f''' -c "{'; '.join(code.splitlines())}"'''
 
 
 def test_baseline_tty_test_code_no_pipe():
-    """Baseline the test code with no pipes on stdin or stdout."""
+    '''Baseline the test code with no pipes on stdin or stdout.'''
     master, slave = os.openpty()
     subprocess.run(get_python_command(CODE_ISATTY),
                    check=True,
@@ -46,7 +46,7 @@ def test_baseline_tty_test_code_no_pipe():
 
 
 def test_baseline_tty_test_code_in_pipe():
-    """Baseline the test code with a pipe on stdin."""
+    '''Baseline the test code with a pipe on stdin.'''
     master, slave = os.openpty()
     subprocess.run(get_python_command(CODE_ISATTY),
                    check=True,
@@ -58,7 +58,7 @@ def test_baseline_tty_test_code_in_pipe():
 
 
 def test_baseline_tty_test_code_out_pipe():
-    """Baseline the test code with a pipe on stdout."""
+    '''Baseline the test code with a pipe on stdout.'''
     _, slave = os.openpty()
     result = subprocess.run(get_python_command(CODE_ISATTY),
                             check=True,
@@ -70,7 +70,7 @@ def test_baseline_tty_test_code_out_pipe():
 
 
 def test_baseline_tty_test_code_in_out_pipe():
-    """Baseline the test code with pipes on stdin and stdout."""
+    '''Baseline the test code with pipes on stdin and stdout.'''
     result = subprocess.run(get_python_command(CODE_ISATTY),
                             check=True,
                             shell=True,
@@ -81,7 +81,7 @@ def test_baseline_tty_test_code_in_out_pipe():
 
 
 def test_baseline_tty_test_code_ttyname_same():
-    """Baseline the ttyname code, ensuring it detects matching ttys."""
+    '''Baseline the ttyname code, ensuring it detects matching ttys.'''
     master, slave = os.openpty()
 
     subprocess.run(get_python_command(CODE_TTYNAME),
@@ -94,7 +94,7 @@ def test_baseline_tty_test_code_ttyname_same():
 
 
 def test_baseline_tty_test_code_ttyname_different():
-    """Baseline the ttyname code, ensuring it detects different ttys."""
+    '''Baseline the ttyname code, ensuring it detects different ttys.'''
     master, slave = os.openpty()
     _, another_slave = os.openpty()
 
@@ -108,14 +108,14 @@ def test_baseline_tty_test_code_ttyname_different():
 
 
 def test_eprint(capsys):
-    """Print a message to stderr."""
+    '''Print a message to stderr.'''
     msg = 'Some random error message'
     chromaterm.__main__.eprint(msg)
     assert msg in capsys.readouterr().err
 
 
 def test_get_default_config_location(monkeypatch):
-    """Assert that, if no file is found, the most-specific location is returned."""
+    '''Assert that, if no file is found, the most-specific location is returned.'''
     monkeypatch.setattr(chromaterm.__main__, 'CONFIG_LOCATIONS', ['1', '2'])
     open('2.yml', 'a', encoding='utf-8').close()
 
@@ -126,26 +126,26 @@ def test_get_default_config_location(monkeypatch):
 
 
 def test_get_default_config_location_default(monkeypatch):
-    """Assert that, if no file is found, the most-specific location is returned."""
+    '''Assert that, if no file is found, the most-specific location is returned.'''
     monkeypatch.setattr(chromaterm.__main__, 'CONFIG_LOCATIONS', ['1', '2'])
     assert chromaterm.__main__.get_default_config_location() == '1.yml'
 
 
 def test_get_wait_duration():
-    """The delay is minimum when on normal input."""
+    '''The delay is minimum when on normal input.'''
     wait_duration = chromaterm.__main__.get_wait_duration(b'')
     assert wait_duration == chromaterm.__main__.INPUT_WAIT_MIN
 
 
 def test_get_wait_duration_buffer_new_lines():
-    """New lines in the buffer extend the wait duration."""
+    '''New lines in the buffer extend the wait duration.'''
     wait_duration_empty = chromaterm.__main__.get_wait_duration(b'')
     wait_duration_new_line = chromaterm.__main__.get_wait_duration(b'\n')
     assert wait_duration_empty < wait_duration_new_line
 
 
 def test_load_rules_simple():
-    """Parse config with a simple rule."""
+    '''Parse config with a simple rule.'''
     config = chromaterm.__main__.Config()
     chromaterm.__main__.load_rules(
         config, '''rules:
@@ -156,7 +156,7 @@ def test_load_rules_simple():
 
 
 def test_load_rules_group():
-    """Parse config with a group-specific rule."""
+    '''Parse config with a group-specific rule.'''
     config = chromaterm.__main__.Config()
     chromaterm.__main__.load_rules(
         config, '''rules:
@@ -176,7 +176,7 @@ def test_load_rules_group():
 
 
 def test_load_rules_multiple_colors():
-    """Parse config with a multi-color rule."""
+    '''Parse config with a multi-color rule.'''
     config = chromaterm.__main__.Config()
     chromaterm.__main__.load_rules(
         config, '''rules:
@@ -188,7 +188,7 @@ def test_load_rules_multiple_colors():
 
 
 def test_load_rules_missing(capsys):
-    """Parse a config file with the `rules` list missing."""
+    '''Parse a config file with the `rules` list missing.'''
     config = chromaterm.__main__.Config()
     chromaterm.__main__.load_rules(config, '')
 
@@ -196,7 +196,7 @@ def test_load_rules_missing(capsys):
 
 
 def test_load_rules_format_error(capsys):
-    """Parse a config file with a syntax problem."""
+    '''Parse a config file with a syntax problem.'''
     config = chromaterm.__main__.Config()
     chromaterm.__main__.load_rules(config, '''rules:
     - 1''')
@@ -209,7 +209,7 @@ def test_load_rules_format_error(capsys):
 
 
 def test_load_rules_yaml_format_error(capsys):
-    """Parse an incorrect YAML file."""
+    '''Parse an incorrect YAML file.'''
     config = chromaterm.__main__.Config()
     chromaterm.__main__.load_rules(config, '-x-\nhi:')
 
@@ -217,7 +217,7 @@ def test_load_rules_yaml_format_error(capsys):
 
 
 def test_parse_rule_regex_missing():
-    """Parse a rule without a `regex` key."""
+    '''Parse a rule without a `regex` key.'''
     msg = 'regex must be a string'
 
     rule = {'color': 'b#fffaaa'}
@@ -225,7 +225,7 @@ def test_parse_rule_regex_missing():
 
 
 def test_parse_rule_regex_type_error():
-    """Parse a rule with an incorrect `regex` value type."""
+    '''Parse a rule with an incorrect `regex` value type.'''
     msg = 'regex must be a string'
 
     rule = {'regex': ['hi'], 'color': 'b#fffaaa'}
@@ -236,7 +236,7 @@ def test_parse_rule_regex_type_error():
 
 
 def test_parse_rule_regex_invalid():
-    """Parse a rule with an invalid `regex`."""
+    '''Parse a rule with an invalid `regex`.'''
     msg = 're.error: '
 
     rule = {'regex': '+', 'color': 'b#fffaaa'}
@@ -244,7 +244,7 @@ def test_parse_rule_regex_invalid():
 
 
 def test_parse_rule_color_missing():
-    """Parse a rule without a `color` key."""
+    '''Parse a rule without a `color` key.'''
     msg_re = r'color .* is not a string'
 
     rule = {'regex': 'x(y)z'}
@@ -252,7 +252,7 @@ def test_parse_rule_color_missing():
 
 
 def test_parse_rule_color_type_error():
-    """Parse a rule with an incorrect `color` value type."""
+    '''Parse a rule with an incorrect `color` value type.'''
     msg_re = r'color .* is not a string'
 
     rule = {'regex': 'x(y)z', 'color': ['hi']}
@@ -260,7 +260,7 @@ def test_parse_rule_color_type_error():
 
 
 def test_parse_rule_color_format_error():
-    """Parse a rule with an incorrect `color` format."""
+    '''Parse a rule with an incorrect `color` format.'''
     msg = 'invalid color format'
 
     rule = {'regex': 'x(y)z', 'color': 'b#xyzxyz'}
@@ -277,7 +277,7 @@ def test_parse_rule_color_format_error():
 
 
 def test_parse_rule_group_type_error():
-    """Parse a rule with an incorrect `group` value type."""
+    '''Parse a rule with an incorrect `group` value type.'''
     msg = 'group must be an integer'
 
     rule = {'regex': 'x(y)z', 'color': {'1': 'b#fffaaa'}}
@@ -285,7 +285,7 @@ def test_parse_rule_group_type_error():
 
 
 def test_parse_rule_group_out_of_bounds():
-    """Parse a rule with `group` number not in the regex."""
+    '''Parse a rule with `group` number not in the regex.'''
     msg_re = r'regex only has .* group\(s\); .* is invalid'
 
     rule = {'regex': 'x(y)z', 'color': {2: 'b#fffaaa'}}
@@ -293,8 +293,8 @@ def test_parse_rule_group_out_of_bounds():
 
 
 def test_process_input_blocking_stdout():
-    """Ensure that `stdout` is put into a blocking state. Otherwise, it triggers
-    a `BlockingIOError` if it is not ready to be written to. chromaterm#93."""
+    '''Ensure that `stdout` is put into a blocking state. Otherwise, it triggers
+    a `BlockingIOError` if it is not ready to be written to. chromaterm#93.'''
     pipe_r, _ = os.pipe()
     config = chromaterm.__main__.Config()
 
@@ -306,7 +306,7 @@ def test_process_input_blocking_stdout():
 
 
 def test_process_input_empty(capsys):
-    """Input processing of empty input."""
+    '''Input processing of empty input.'''
     pipe_r, _ = os.pipe()
     config = chromaterm.__main__.Config()
 
@@ -316,8 +316,8 @@ def test_process_input_empty(capsys):
 
 
 def test_process_input_multibyte_character(capsys, monkeypatch):
-    """A multibyte character shouldn't be split when it falls at the boundary of
-    the READ_SIZE."""
+    '''A multibyte character shouldn't be split when it falls at the boundary of
+    the READ_SIZE.'''
     monkeypatch.setattr(chromaterm.__main__, 'READ_SIZE', 2)
 
     pipe_r, pipe_w = os.pipe()
@@ -330,7 +330,7 @@ def test_process_input_multibyte_character(capsys, monkeypatch):
 
 
 def test_process_input_multiline(capsys):
-    """Input processing with multiple lines of data."""
+    '''Input processing with multiple lines of data.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
 
@@ -344,7 +344,7 @@ def test_process_input_multiline(capsys):
 
 
 def test_process_input_read_size(capsys):
-    """Input longer than READ_SIZE should not break highlighting."""
+    '''Input longer than READ_SIZE should not break highlighting.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
     write_size = chromaterm.__main__.READ_SIZE + 1
@@ -359,9 +359,9 @@ def test_process_input_read_size(capsys):
 
 
 def test_process_input_single_character(capsys):
-    """Input processing for a single character. Even with a rule that matches
+    '''Input processing for a single character. Even with a rule that matches
     single character, the output should not be highlighted as it is typically
-    just keyboard input."""
+    just keyboard input.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
 
@@ -375,8 +375,8 @@ def test_process_input_single_character(capsys):
 
 
 def test_process_input_trailing_chunk(capsys):
-    """Ensure that a trailing chunk is joined with the next chunk if the latter
-    arrives in time."""
+    '''Ensure that a trailing chunk is joined with the next chunk if the latter
+    arrives in time.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
 
@@ -400,21 +400,21 @@ def test_process_input_trailing_chunk(capsys):
 
 
 def test_read_file():
-    """Read the default configuration file."""
+    '''Read the default configuration file.'''
     file = os.path.join(os.path.expanduser('~'), '.chromaterm.yml')
     assert chromaterm.__main__.read_file(file) is not None
 
 
 def test_read_file_no_file(capsys):
-    """Read a non-existent file."""
+    '''Read a non-existent file.'''
     msg = 'Configuration file ' + __name__ + '1' + ' not found\n'
     chromaterm.__main__.read_file(__name__ + '1')
     assert msg in capsys.readouterr().err
 
 
 def test_read_file_no_permission(capsys):
-    """Create a file with no permissions and attempt to read it. Delete the file
-    once done with it."""
+    '''Create a file with no permissions and attempt to read it. Delete the file
+    once done with it.'''
     msg = 'Cannot read configuration file ' + __name__ + '2' + ' (permission)\n'
 
     os.close(os.open(__name__ + '2', os.O_CREAT | os.O_WRONLY, 0o0000))
@@ -426,7 +426,7 @@ def test_read_file_no_permission(capsys):
 
 
 def test_read_ready_input():
-    """Immediate ready when there is input buffered."""
+    '''Immediate ready when there is input buffered.'''
     pipe_r, pipe_w = os.pipe()
 
     os.write(pipe_w, b'Hello world')
@@ -434,7 +434,7 @@ def test_read_ready_input():
 
 
 def test_read_ready_timeout_empty():
-    """Wait with no input."""
+    '''Wait with no input.'''
     pipe_r, _ = os.pipe()
 
     before = time.time()
@@ -445,7 +445,7 @@ def test_read_ready_timeout_empty():
 
 
 def test_read_ready_timeout_input():
-    """Immediate ready with timeout when there is input buffered."""
+    '''Immediate ready with timeout when there is input buffered.'''
     pipe_r, pipe_w = os.pipe()
 
     os.write(pipe_w, b'Hello world')
@@ -457,8 +457,8 @@ def test_read_ready_timeout_input():
 
 
 def test_split_buffer_printer_commands():
-    """Split based on new lines (\\r, \\n, \\r\\n), vertical space (\\v), and
-    form feed (\\f)."""
+    '''Split based on new lines (\\r, \\n, \\r\\n), vertical space (\\v), and
+    form feed (\\f).'''
     for printer_command in [b'\r', b'\n', b'\r\n', b'\v', b'\f']:
         data = b'Hello ' + printer_command + b'World'
         expected = ((b'Hello ', printer_command), (b'World', b''))
@@ -467,7 +467,7 @@ def test_split_buffer_printer_commands():
 
 
 def test_split_buffer_c1_set():
-    """Split based on the ECMA-048 C1 set, excluding CSI and OSC."""
+    '''Split based on the ECMA-048 C1 set, excluding CSI and OSC.'''
     c1_except_csi_and_osc = itertools.chain(
         range(int('40', 16), int('5b', 16)),
         [
@@ -485,8 +485,8 @@ def test_split_buffer_c1_set():
 
 
 def test_split_buffer_csi_exclude_sgr():
-    """Fail to split based on the ECMA-048 C1 CSI SGR. Added some intermediate
-    characters to prevent matching other CSI codes; strictly checking empty SGR."""
+    '''Fail to split based on the ECMA-048 C1 CSI SGR. Added some intermediate
+    characters to prevent matching other CSI codes; strictly checking empty SGR.'''
     data = b'Hello \x1b[!0World'
     expected = ((b'Hello \x1b[!0World', b''), )
 
@@ -494,7 +494,7 @@ def test_split_buffer_csi_exclude_sgr():
 
 
 def test_split_buffer_csi_no_parameter_no_intermediate():
-    """Split based on CSI with no parameter or intermediate bytes."""
+    '''Split based on CSI with no parameter or intermediate bytes.'''
     csi_up_to_sgr = range(int('40', 16), int('6d', 16))
     csi_above_sgr = range(int('6e', 16), int('7f', 16))
 
@@ -506,7 +506,7 @@ def test_split_buffer_csi_no_parameter_no_intermediate():
 
 
 def test_split_buffer_csi_no_parameter_intermediate():
-    """Split based on CSI with intermediate bytes but no parameter bytes."""
+    '''Split based on CSI with intermediate bytes but no parameter bytes.'''
     csi_up_to_sgr = range(int('40', 16), int('6d', 16))
     csi_above_sgr = range(int('6e', 16), int('7f', 16))
 
@@ -521,8 +521,8 @@ def test_split_buffer_csi_no_parameter_intermediate():
 
 
 def test_split_buffer_csi_parameter_intermediate():
-    """Split based on CSI with parameter and intermediate bytes. Up to 3 bytes
-    each."""
+    '''Split based on CSI with parameter and intermediate bytes. Up to 3 bytes
+    each.'''
     csi_up_to_sgr = range(int('40', 16), int('6d', 16))
     csi_above_sgr = range(int('6e', 16), int('7f', 16))
 
@@ -539,8 +539,8 @@ def test_split_buffer_csi_parameter_intermediate():
 
 
 def test_split_buffer_csi_parameter_no_intermediate():
-    """Split based on CSI with parameters bytes but no intermediate bytes. Up to
-    3 bytes."""
+    '''Split based on CSI with parameters bytes but no intermediate bytes. Up to
+    3 bytes.'''
     csi_up_to_sgr = range(int('40', 16), int('6d', 16))
     csi_above_sgr = range(int('6e', 16), int('7f', 16))
 
@@ -555,8 +555,8 @@ def test_split_buffer_csi_parameter_no_intermediate():
 
 
 def test_split_buffer_osc_title():
-    """Operating System Command (OSC) can supply arbitrary commands within the
-    visible character set."""
+    '''Operating System Command (OSC) can supply arbitrary commands within the
+    visible character set.'''
     for end in [b'\x07', b'\x1b\x5c']:
         osc = b'\x1b]Ignored' + end
         data = osc + b'Hello world'
@@ -566,7 +566,7 @@ def test_split_buffer_osc_title():
 
 
 def test_split_buffer_scs():
-    """Select Character Set (SCS) is used to change the terminal character set."""
+    '''Select Character Set (SCS) is used to change the terminal character set.'''
     g_sets = [b'\x28', b'\x29', b'\x2a', b'\x2b', b'\x2d', b'\x2e', b'\x2f']
     char_sets = range(int('20', 16), int('7e', 16))
 
@@ -580,8 +580,8 @@ def test_split_buffer_scs():
 
 
 def test_main_broken_pipe():
-    """Break a pipe while CT is trying to write to it. The echo at the end will
-    close before CT has had the chance to write to the pipe."""
+    '''Break a pipe while CT is trying to write to it. The echo at the end will
+    close before CT has had the chance to write to the pipe.'''
     result = subprocess.run('echo | ' + CLI + ' | echo',
                             check=False,
                             shell=True,
@@ -591,7 +591,7 @@ def test_main_broken_pipe():
 
 
 def test_main_buffer_close_time():
-    """Confirm that the program exists as soon as stdin closes."""
+    '''Confirm that the program exists as soon as stdin closes.'''
     before = time.time()
     subprocess.run('echo hi | ' + CLI, check=True, shell=True)
     after = time.time()
@@ -602,10 +602,10 @@ def test_main_buffer_close_time():
 @pytest.mark.skipif(sys.platform != 'darwin',
                     reason='Not all CI environments support tracking')
 def test_main_cwd_tracking():
-    """The `cwd` of ChromaTerm should match that of the spawned process."""
-    test_script = """import os, time
+    '''The `cwd` of ChromaTerm should match that of the spawned process.'''
+    test_script = '''import os, time
     os.chdir('../')
-    time.sleep(2)"""
+    time.sleep(2)'''
     command = CLI + ' ' + get_python_command(test_script)
 
     with subprocess.Popen(command, shell=True) as process:
@@ -614,7 +614,7 @@ def test_main_cwd_tracking():
 
 
 def test_main_reload_config():
-    """Reload the configuration while the program is running."""
+    '''Reload the configuration while the program is running.'''
     try:
         # The initial configuration file
         with open(__name__ + '3', 'w', encoding='utf-8') as file:
@@ -666,7 +666,7 @@ def test_main_reload_config():
 
 
 def test_main_reload_processes():
-    """Reload all other CT processes."""
+    '''Reload all other CT processes.'''
     processes = [
         subprocess.Popen('sleep 1 | ' + CLI, shell=True) for _ in range(3)
     ]
@@ -683,7 +683,7 @@ def test_main_reload_processes():
 
 
 def test_main_run_child_ttyname():
-    """Ensure that CT spawns the child in a pseudo-terminal."""
+    '''Ensure that CT spawns the child in a pseudo-terminal.'''
     master, slave = os.openpty()
     subprocess.run(CLI + ' ' + get_python_command(CODE_TTYNAME),
                    check=True,
@@ -695,7 +695,7 @@ def test_main_run_child_ttyname():
 
 
 def test_main_run_no_file_found():
-    """Have CT run with an unavailable command."""
+    '''Have CT run with an unavailable command.'''
     result = subprocess.run(CLI + ' plz-no-work',
                             check=False,
                             shell=True,
@@ -706,7 +706,7 @@ def test_main_run_no_file_found():
 
 
 def test_main_run_no_pipe():
-    """Have CT run the tty test code with no pipes."""
+    '''Have CT run the tty test code with no pipes.'''
     master, slave = os.openpty()
     subprocess.run(CLI + ' ' + get_python_command(CODE_ISATTY),
                    check=True,
@@ -718,7 +718,7 @@ def test_main_run_no_pipe():
 
 
 def test_main_run_pipe_in():
-    """Have CT run the tty test code with a pipe on stdin."""
+    '''Have CT run the tty test code with a pipe on stdin.'''
     master, slave = os.openpty()
     subprocess.run(CLI + ' ' + get_python_command(CODE_ISATTY),
                    check=True,
@@ -730,7 +730,7 @@ def test_main_run_pipe_in():
 
 
 def test_main_run_pipe_in_out():
-    """Have CT run the tty test code with pipes on stdin and stdout."""
+    '''Have CT run the tty test code with pipes on stdin and stdout.'''
     result = subprocess.run(CLI + ' ' + get_python_command(CODE_ISATTY),
                             check=True,
                             shell=True,
@@ -741,7 +741,7 @@ def test_main_run_pipe_in_out():
 
 
 def test_main_run_pipe_out():
-    """Have CT run the tty test code with a pipe on stdout."""
+    '''Have CT run the tty test code with a pipe on stdout.'''
     _, slave = os.openpty()
     result = subprocess.run(CLI + ' ' + get_python_command(CODE_ISATTY),
                             check=True,

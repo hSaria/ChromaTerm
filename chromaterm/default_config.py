@@ -1,4 +1,4 @@
-"""A store for the default rules of ChromaTerm"""
+'''A store for the default rules of ChromaTerm'''
 import os
 
 from chromaterm import Color, Rule
@@ -67,7 +67,7 @@ RULE_GENERIC_GOOD = Rule(
 
 
 def generate_default_rules_yaml():
-    """Returns a string describing the default configuration in YAML."""
+    '''Returns a string describing the default configuration in YAML.'''
     data = 'rules:'
 
     for rule in [
@@ -76,24 +76,24 @@ def generate_default_rules_yaml():
             RULE_GENERIC_NOT_TOO_BAD, RULE_GENERIC_AMBIGIOUS_GOOD,
             RULE_GENERIC_GOOD
     ]:
-        data += f"""
+        data += f'''
 - description: {rule.description}
   regex: {rule.regex.pattern}
   color: {rule.color.color}
-"""
+'''
 
     return data
 
 
 def write_default_config(path):
-    """Writes a default config file if it doesn't exist.
+    '''Writes a default config file if it doesn't exist.
 
     Args:
         path (str): The location to which the default config file is written.
 
     Returns:
         True if the file did not exist and was written. False otherwise.
-    """
+    '''
     # Already exists
     if os.access(path, os.F_OK):
         return False

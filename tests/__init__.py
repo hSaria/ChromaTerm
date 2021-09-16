@@ -1,4 +1,4 @@
-"""chromaterm tests"""
+'''chromaterm tests'''
 import sys
 
 # Simulate that stdout is natively a tty during tests

@@ -1,4 +1,4 @@
-"""Color your output to terminal"""
+'''Color your output to terminal'''
 import os
 import re
 
@@ -48,9 +48,9 @@ SGR_RE = re.compile(br'\x1b\[[0-9;]*m')
 
 
 class Color:
-    """A color and its ANSI escape codes."""
+    '''A color and its ANSI escape codes.'''
     def __init__(self, color, rgb=None):
-        """Constructor.
+        '''Constructor.
 
         Args:
             color (str): A string which must contain:
@@ -67,13 +67,13 @@ class Color:
         Raises:
             TypeError: If `color` is not a string. If `rgb` is not a boolean.
             ValueError: If the format of `color` is invalid.
-        """
+        '''
         self.rgb = rgb
         self.color = color
 
     @property
     def color(self):
-        """String that represents the color."""
+        '''String that represents the color.'''
         return self._color
 
     @color.setter
@@ -131,7 +131,7 @@ class Color:
 
     @property
     def rgb(self):
-        """Flag for RGB-support. When changed, updates `self.color`."""
+        '''Flag for RGB-support. When changed, updates `self.color`.'''
         return self._rgb
 
     @rgb.setter
@@ -147,13 +147,13 @@ class Color:
 
     @staticmethod
     def decode_sgr(source_color_code):
-        """Decodes an SGR, splitting it into a list of colors, each being a list
+        '''Decodes an SGR, splitting it into a list of colors, each being a list
         containing color code (bytes), is reset (bool), and color type (bytes)
         which corresponds to `COLOR_TYPES`.
 
         Args:
             source_color_code (bytes): Bytes to be split into individual colors.
-        """
+        '''
         def make_sgr(code_id):
             return b'\x1b[' + code_id + b'm'
 
@@ -205,7 +205,7 @@ class Color:
 
     @staticmethod
     def rgb_to_8bit(_r, _g, _b):
-        """Downscale from 24-bit RGB to 8-bit ANSI."""
+        '''Downscale from 24-bit RGB to 8-bit ANSI.'''
         def downscale(value, base=6):
             return int(value / 256 * base)
 
@@ -217,13 +217,13 @@ class Color:
 
     @staticmethod
     def strip_colors(data):
-        """Returns data after stripping the existing colors and a list of inserts
+        '''Returns data after stripping the existing colors and a list of inserts
         containing the stripped colors. The format of the insert is that of
         `Config.get_inserts`.
 
         Args:
             data (bytes): Bytes from which the colors should be stripped.
-        """
+        '''
         inserts = []
         match = SGR_RE.search(data)
 
@@ -242,9 +242,9 @@ class Color:
 
 
 class Rule:
-    """A rule containing a regex and colors corresponding to the regex's groups."""
+    '''A rule containing a regex and colors corresponding to the regex's groups.'''
     def __init__(self, regex, color=None, description=None):
-        """Constructor.
+        '''Constructor.
 
         Args:
             regex (str): Regular expression for getting matches in data.
@@ -254,7 +254,7 @@ class Rule:
         Raises:
             TypeError: If `regex` is not a string. If `color` is not an instance
                 of `Color` or not `None`. If `description` is not a string or None.
-        """
+        '''
         if description is not None and not isinstance(description, str):
             raise TypeError('description must be a string')
 
@@ -269,7 +269,7 @@ class Rule:
 
     @property
     def color(self):
-        """Color used for highlight the full match (group 0) of regex."""
+        '''Color used for highlight the full match (group 0) of regex.'''
         return self.colors.get(0)
 
     @color.setter
@@ -277,12 +277,12 @@ class Rule:
         self.set_color(value)
 
     def get_matches(self, data):
-        """Returns a list of tuples, each containing a start index, an end index,
+        '''Returns a list of tuples, each containing a start index, an end index,
         and the `Color` object for that match.
 
         Args:
             data (bytes): Bytes to match regex against.
-        """
+        '''
         matches = []
 
         for match in self.regex.finditer(data):
@@ -296,7 +296,7 @@ class Rule:
         return matches
 
     def set_color(self, color, group=0):
-        """Sets a color to be used when highlighting. The group can be used to
+        '''Sets a color to be used when highlighting. The group can be used to
         limit the parts of the match which are highlighted. Group 0 (the default)
         will highlight the entire match. If a color already exists for the group,
         it is overwritten. If `color` is None, the color of `group` is cleared.
@@ -309,7 +309,7 @@ class Rule:
             TypeError: If `color` is not an instance of `Color` or None. If
                 `group` is not an integer.
             ValueError: If `group` does not exist in the regular expression.
-        """
+        '''
         if not isinstance(group, int):
             raise TypeError('group must be an integer')
 
@@ -332,16 +332,16 @@ class Rule:
 
 
 class Config:
-    """An aggregation of multiple rules which highlights by performing the regex
-    matching of the rules before any colors are added."""
+    '''An aggregation of multiple rules which highlights by performing the regex
+    matching of the rules before any colors are added.'''
     def __init__(self):
-        """Constructor."""
+        '''Constructor.'''
         self._reset_codes = {k: v['reset'] for k, v in COLOR_TYPES.items()}
         self.rules = []
 
     @staticmethod
     def get_insert_index(start, end, inserts):
-        """Returns a tuple containing the start and end indexes for where they
+        '''Returns a tuple containing the start and end indexes for where they
         should be inserted into the inserts list in order to maintain the
         position-based descending (reverse) order.
 
@@ -350,7 +350,7 @@ class Config:
             end (int): The end position of a match.
             inserts (list): A list of inserts, where the first item of each insert
                 is the position.
-        """
+        '''
         start_index = end_index = None
         index = -1
 
@@ -377,7 +377,7 @@ class Config:
         return start_index, end_index
 
     def get_inserts(self, data, inserts):
-        """Returns a list containing the inserts for the color codes relative to
+        '''Returns a list containing the inserts for the color codes relative to
         data. An insert is a list containing a position (index relative to data),
         the code to be inserted, a boolean indicating if its a reset code or not,
         and The color type which corresponds to COLOR_TYPES or `None` if it's a
@@ -390,7 +390,7 @@ class Config:
         Args:
             data (bytes): Bytes from which the inserts are gathered.
             inserts (list): Any pre-existing inserts to be added to it.
-        """
+        '''
         # A lot of the code here is difficult to comprehend directly, because the
         # intent might not be immediately visible. You may find it easier to take
         # a test-driven approach by looking at the test_config_highlight_* tests
@@ -438,13 +438,13 @@ class Config:
         return inserts
 
     def get_matches(self, data):
-        """Returns a list of tuples, each of which containing a start index, an
+        '''Returns a list of tuples, each of which containing a start index, an
         end index, and the `Color` object for that match. The tuples of the
         latter rules are towards the end of the list.
 
         Args:
             data (bytes): Bytes against which each rule is matched.
-        """
+        '''
         matches = []
 
         for rule in self.rules:
@@ -453,13 +453,13 @@ class Config:
         return matches
 
     def highlight(self, data):
-        """Returns a highlighted bytes of `data`. The matches from the rules
+        '''Returns a highlighted bytes of `data`. The matches from the rules
         are gathered prior to inserting any color codes, making it so the rules
         can match without the color codes interfering.
 
         Args:
             data (bytes): Bytes to highlight.
-        """
+        '''
         data, inserts = Color.strip_colors(data)
         inserts = self.get_inserts(data, inserts)
 

@@ -1,4 +1,4 @@
-"""The command line utility for ChromaTerm"""
+'''The command line utility for ChromaTerm'''
 import argparse
 import io
 import os
@@ -48,11 +48,11 @@ SPLIT_RE = re.compile(br'(\r\n?|\n|\v|\f|\x1b[\x40-\x5a\x5c\x5e\x5f]|'
 
 
 def args_init(args=None):
-    """Returns the parsed arguments (an instance of argparse.Namespace).
+    '''Returns the parsed arguments (an instance of argparse.Namespace).
 
     Args:
         args (list): A list of program arguments, Defaults to sys.argv.
-    """
+    '''
     parser = argparse.ArgumentParser()
 
     parser.add_argument('program',
@@ -86,14 +86,14 @@ def args_init(args=None):
 
 
 def eprint(*args, **kwargs):
-    """Prints a message to stderr."""
+    '''Prints a message to stderr.'''
     print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
 
 
 def get_default_config_location():
-    """Returns the first location in `CONFIG_LOCATIONS` that points to a file,
+    '''Returns the first location in `CONFIG_LOCATIONS` that points to a file,
     defaulting to the first item in the list.
-    """
+    '''
     resolve = lambda x: os.path.expanduser(os.path.expandvars(x))
 
     for location in CONFIG_LOCATIONS:
@@ -108,12 +108,12 @@ def get_default_config_location():
 
 
 def get_wait_duration(buffer):
-    """Returns the duration (float) to wait for more data before the last chunk
+    '''Returns the duration (float) to wait for more data before the last chunk
     of the received data can be processed independently.
 
     Args:
         buffer (bytes): The incoming data that was processed
-    """
+    '''
     # New lines indicate long output; relax the wait duration
     if b'\n' in buffer:
         return INPUT_WAIT_MAX
@@ -122,7 +122,7 @@ def get_wait_duration(buffer):
 
 
 def load_rules(config, data, rgb=False):
-    """Reads rules from a YAML-based string, formatted like so:
+    '''Reads rules from a YAML-based string, formatted like so:
     rules:
     - description: My first rule
         regex: Hello
@@ -139,7 +139,7 @@ def load_rules(config, data, rgb=False):
         config (chromaterm.Config): The config into which the rules are loaded.
         data (str): A string containg YAML data.
         rgb (bool): Whether the terminal is RGB-capable or not.
-    """
+    '''
     try:
         data = yaml.safe_load(data) or {}
     except yaml.YAMLError as exception:
@@ -168,13 +168,13 @@ def load_rules(config, data, rgb=False):
 
 
 def parse_rule(rule, rgb=False):
-    """Returns an instance of chromaterm.Rule if parsed correctly. Otherwise, a
+    '''Returns an instance of chromaterm.Rule if parsed correctly. Otherwise, a
     string with the error message is returned.
 
     Args:
         rule (dict): A dictionary representing the rule, formatted according to
             `chromaterm.__main__.load_rules`.
-    """
+    '''
     if not isinstance(rule, dict):
         return f'Rule {repr(rule)} not a dictionary'
 
@@ -211,7 +211,7 @@ def parse_rule(rule, rgb=False):
 
 
 def process_input(config, data_fd, forward_fd=None, max_wait=None):
-    """Processes input by reading from data_fd, highlighting it using config,
+    '''Processes input by reading from data_fd, highlighting it using config,
     then printing it to sys.stdout. If forward_fd is not None, any data it has
     will be written (forwarded) into data_fd.
 
@@ -223,7 +223,7 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             required.
         max_wait (float): The maximum time to wait with no data on either of the
             file descriptors. None will block until at least one ready to be read.
-    """
+    '''
     # Avoid BlockingIOError when output to non-blocking stdout is too fast
     try:
         os.set_blocking(sys.stdout.fileno(), True)
@@ -285,12 +285,12 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
 
 
 def read_file(location):
-    """Returns the contents of a file or `None` on error. The error is printed
+    '''Returns the contents of a file or `None` on error. The error is printed
     to stderr.
 
     Args:
         location (str): The location of the file to be read.
-    """
+    '''
     if not os.access(location, os.F_OK):
         eprint('Configuration file', location, 'not found')
         return None
@@ -304,23 +304,23 @@ def read_file(location):
 
 
 def read_ready(*read_fds, timeout=None):
-    """Returns a list of file descriptors that are ready to be read.
+    '''Returns a list of file descriptors that are ready to be read.
 
     Args:
         *read_fds (int): Integers that refer to the file descriptors.
         timeout (float): A timeout before returning an empty list if no file
             descriptor is ready. None waits until at least one file descriptor
             is ready.
-    """
+    '''
     return [] if not read_fds else select.select(read_fds, [], [], timeout)[0]
 
 
 def reload_chromaterm_instances():
-    """Reloads other ChromaTerm CLI instances by sending them signal.SIGUSR1.
+    '''Reloads other ChromaTerm CLI instances by sending them signal.SIGUSR1.
 
     Returns:
         The number of processes reloaded.
-    """
+    '''
     import psutil
 
     count = 0
@@ -344,7 +344,7 @@ def reload_chromaterm_instances():
 
 
 def run_program(program_args):
-    """Spawns a program in a pty fork to emulate a controlling terminal.
+    '''Spawns a program in a pty fork to emulate a controlling terminal.
 
     Args:
         program_args (list): A list of program arguments. The first argument is
@@ -352,7 +352,7 @@ def run_program(program_args):
 
     Returns:
         A file descriptor (int) of the mater end of the pty fork.
-    """
+    '''
     import atexit
     import fcntl
     import pty
@@ -420,12 +420,12 @@ def run_program(program_args):
 
 
 def split_buffer(buffer):
-    """Returns a tuple of tuples in the format of (data, separator). data should
+    '''Returns a tuple of tuples in the format of (data, separator). data should
     be highlighted while separator should be printed, unchanged, after data.
 
     Args:
         buffer (bytes): Data to split using `SPLIT_RE`.
-    """
+    '''
     chunks = SPLIT_RE.split(buffer)
 
     # Append an empty separator in case of no chunks or no separator at the end
@@ -436,7 +436,7 @@ def split_buffer(buffer):
 
 
 def main(args=None, max_wait=None, write_default=True):
-    """Command line utility entry point.
+    '''Command line utility entry point.
 
     Args:
         args (list): A list of program arguments. Defaults to sys.argv.
@@ -447,7 +447,7 @@ def main(args=None, max_wait=None, write_default=True):
 
     Returns:
         A string indicating status/error. Otherwise, returns None.
-    """
+    '''
     args = args_init(args)
 
     if args.reload:

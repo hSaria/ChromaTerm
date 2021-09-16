@@ -1,4 +1,4 @@
-"""chromaterm tests"""
+'''chromaterm tests'''
 import pytest
 
 import chromaterm
@@ -11,12 +11,12 @@ RESET_ITALIC = chromaterm.COLOR_TYPES['italic']['reset']
 
 
 def make_sgr(*code_id):
-    """Returns byte-array for an SGR of `code_id` (multiple are concatenated)."""
+    '''Returns byte-array for an SGR of `code_id` (multiple are concatenated).'''
     return b''.join(b'\x1b[' + x + b'm' for x in code_id)
 
 
 def test_color_known_colors():
-    """Random known-good color codes."""
+    '''Random known-good color codes.'''
     colors = [
         'b#0973d8', 'b#8b6dd3', 'b#2867c7', 'b#18923a', 'b#636836', 'b#a0da5e',
         'b#b99153', 'b#fafb19', 'f#6cb0d7', 'f#6f5e3a', 'f#7d6256', 'f#15c93d',
@@ -36,7 +36,7 @@ def test_color_known_colors():
 
 
 def test_color_known_grayscale():
-    """Random known-good grayscale codes."""
+    '''Random known-good grayscale codes.'''
     colors = [
         'b#000000', 'b#5d5d5d', 'b#373737', 'b#c8c8c8', 'b#cecece', 'b#d7d7d7',
         'b#d8d8d8', 'b#fcfcfc', 'f#0b0b0b', 'f#000000', 'f#2b2b2b', 'f#2f2f2f',
@@ -55,7 +55,7 @@ def test_color_known_grayscale():
 
 
 def test_color_decode_sgr_bg():
-    """Background colors and reset are being detected."""
+    '''Background colors and reset are being detected.'''
     for code in [b'48;5;12', b'48;2;1;1;1', b'49', b'101']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
@@ -66,7 +66,7 @@ def test_color_decode_sgr_bg():
 
 
 def test_color_decode_sgr_fg():
-    """Foreground colors and reset are being detected."""
+    '''Foreground colors and reset are being detected.'''
     for code in [b'38;5;12', b'38;2;1;1;1', b'39', b'91']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
@@ -77,7 +77,7 @@ def test_color_decode_sgr_fg():
 
 
 def test_color_decode_sgr_styles_blink():
-    """Blink and its reset are being detected."""
+    '''Blink and its reset are being detected.'''
     for code in [b'5', b'25']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
@@ -88,7 +88,7 @@ def test_color_decode_sgr_styles_blink():
 
 
 def test_color_decode_sgr_styles_bold():
-    """Bold and its reset are being detected."""
+    '''Bold and its reset are being detected.'''
     for code in [b'1', b'2', b'22']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
@@ -99,7 +99,7 @@ def test_color_decode_sgr_styles_bold():
 
 
 def test_color_decode_sgr_styles_italic():
-    """Italic and its reset are being detected."""
+    '''Italic and its reset are being detected.'''
     for code in [b'3', b'23']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
@@ -110,7 +110,7 @@ def test_color_decode_sgr_styles_italic():
 
 
 def test_color_decode_sgr_styles_strike():
-    """Strike and its reset are being detected."""
+    '''Strike and its reset are being detected.'''
     for code in [b'9', b'29']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
@@ -121,7 +121,7 @@ def test_color_decode_sgr_styles_strike():
 
 
 def test_color_decode_sgr_styles_underline():
-    """Underline and its reset are being detected."""
+    '''Underline and its reset are being detected.'''
     for code in [b'4', b'24']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
@@ -132,7 +132,7 @@ def test_color_decode_sgr_styles_underline():
 
 
 def test_color_decode_sgr_full_reset():
-    """Full reset detection."""
+    '''Full reset detection.'''
     for code in [b'00', b'0', b'']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
@@ -144,7 +144,7 @@ def test_color_decode_sgr_full_reset():
 
 
 def test_color_decode_sgr_malformed():
-    """Malformed colors."""
+    '''Malformed colors.'''
     for code in [b'38;5', b'38;2;1;1', b'38;5;123;38;2;1;1']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
@@ -156,7 +156,7 @@ def test_color_decode_sgr_malformed():
 
 
 def test_color_decode_sgr_split_compound():
-    """Split the a compound SGR into discrete SGR's."""
+    '''Split the a compound SGR into discrete SGR's.'''
     codes = [b'1', b'33', b'40']
     types = ['bold', 'fg', 'bg']
 
@@ -170,7 +170,7 @@ def test_color_decode_sgr_split_compound():
 
 
 def test_color_decode_sgr_unrecognized():
-    """An SGR that's valid, but the type isn't recognized during decoding."""
+    '''An SGR that's valid, but the type isn't recognized during decoding.'''
     colors = chromaterm.Color.decode_sgr(make_sgr(b'7'))
     assert len(colors) == 1
 
@@ -181,7 +181,7 @@ def test_color_decode_sgr_unrecognized():
 
 
 def test_color_change_color():
-    """Confirm that the color_code is updated when the color or rgb is changed."""
+    '''Confirm that the color_code is updated when the color or rgb is changed.'''
     color = chromaterm.Color('b#123123', rgb=False)
 
     # Change from background to foreground
@@ -196,7 +196,7 @@ def test_color_change_color():
 
 
 def test_color_format_color_background():
-    """Background color."""
+    '''Background color.'''
     color = chromaterm.Color('b#123123', rgb=False)
 
     assert color.color == 'b#123123'
@@ -207,7 +207,7 @@ def test_color_format_color_background():
 
 
 def test_color_format_color_foreground():
-    """Foreground color."""
+    '''Foreground color.'''
     color = chromaterm.Color('f#123123', rgb=False)
 
     assert color.color == 'f#123123'
@@ -218,7 +218,7 @@ def test_color_format_color_foreground():
 
 
 def test_color_format_color_multiple():
-    """Multiple different color types. Also tests case insensitivity"""
+    '''Multiple different color types. Also tests case insensitivity'''
     color = chromaterm.Color('f#123123 b#aBCDef bOLd', rgb=False)
 
     assert color.color == 'f#123123 b#abcdef bold'
@@ -233,7 +233,7 @@ def test_color_format_color_multiple():
 
 
 def test_color_format_color_rgb():
-    """RGB color."""
+    '''RGB color.'''
     color = chromaterm.Color('b#123123', rgb=True)
 
     assert color.color == 'b#123123'
@@ -244,7 +244,7 @@ def test_color_format_color_rgb():
 
 
 def test_color_format_color_style():
-    """Style color."""
+    '''Style color.'''
     styles = {k: v for k, v in chromaterm.COLOR_TYPES.items() if v.get('code')}
 
     for style in styles:
@@ -258,19 +258,19 @@ def test_color_format_color_style():
 
 
 def test_color_invalid_type_color():
-    """Color with an int for color."""
+    '''Color with an int for color.'''
     with pytest.raises(TypeError, match='color must be a string'):
         chromaterm.Color(123)
 
 
 def test_color_invalid_type_rgb():
-    """Color with an int for rgb."""
+    '''Color with an int for rgb.'''
     with pytest.raises(TypeError, match='rgb must be a boolean'):
         chromaterm.Color('bold', rgb=1)
 
 
 def test_color_invalid_value_background():
-    """Color with an incorrect background color."""
+    '''Color with an incorrect background color.'''
     with pytest.raises(ValueError, match='invalid color format'):
         chromaterm.Color('b#12312')
 
@@ -279,7 +279,7 @@ def test_color_invalid_value_background():
 
 
 def test_color_invalid_value_foreground():
-    """Color with an incorrect foreground color."""
+    '''Color with an incorrect foreground color.'''
     with pytest.raises(ValueError, match='invalid color format'):
         chromaterm.Color('f#12312')
 
@@ -288,25 +288,25 @@ def test_color_invalid_value_foreground():
 
 
 def test_color_invalid_value_style():
-    """Color with an incorrect style."""
+    '''Color with an incorrect style.'''
     with pytest.raises(ValueError, match='invalid color format'):
         chromaterm.Color('something')
 
 
 def test_color_invalid_value_duplicate_background():
-    """Color with multiple background colors."""
+    '''Color with multiple background colors.'''
     with pytest.raises(ValueError, match='one foreground and one background'):
         chromaterm.Color('b#123123 b#321321')
 
 
 def test_color_invalid_value_duplicate_foreground():
-    """Color with multiple background colors."""
+    '''Color with multiple background colors.'''
     with pytest.raises(ValueError, match='one foreground and one background'):
         chromaterm.Color('f#123123 f#321321')
 
 
 def test_color_invalid_value_duplicate_style():
-    """Color with multiple background colors."""
+    '''Color with multiple background colors.'''
     styles = (k for k, v in chromaterm.COLOR_TYPES.items() if v.get('code'))
 
     for style in styles:
@@ -315,7 +315,7 @@ def test_color_invalid_value_duplicate_style():
 
 
 def test_rule_get_matches():
-    """Get matches of rule that only colors the default regex group."""
+    '''Get matches of rule that only colors the default regex group.'''
     color = chromaterm.Color('bold')
     rule = chromaterm.Rule('hello|world', color=color)
 
@@ -326,7 +326,7 @@ def test_rule_get_matches():
 
 
 def test_rule_get_matches_groups():
-    """Get matches of rule that colors default and specific regex groups."""
+    '''Get matches of rule that colors default and specific regex groups.'''
     color1 = chromaterm.Color('bold')
     color2 = chromaterm.Color('b#123123')
     color3 = chromaterm.Color('f#321321')
@@ -341,8 +341,8 @@ def test_rule_get_matches_groups():
 
 
 def test_rule_get_matches_groups_optional_not_matches():
-    """Get matches of rule that has a specific regex group that is optional. When
-    the optional group is not in the match, the color should not be inserted."""
+    '''Get matches of rule that has a specific regex group that is optional. When
+    the optional group is not in the match, the color should not be inserted.'''
     color = chromaterm.Color('bold')
     rule = chromaterm.Rule('hello(,)? world')
     rule.set_color(color, group=1)
@@ -359,12 +359,12 @@ def test_rule_get_matches_groups_optional_not_matches():
 
 
 def test_rule_get_matches_no_colors():
-    """Get matches of rule that has no colors – nothing is changed."""
+    '''Get matches of rule that has no colors – nothing is changed.'''
     assert chromaterm.Rule('hello').get_matches(b'hello') == []
 
 
 def test_rule_get_matches_zero_length_match():
-    """Get matches of rule that has a regex that matches zero-length data."""
+    '''Get matches of rule that has a regex that matches zero-length data.'''
     color = chromaterm.Color('bold')
     rule = chromaterm.Rule('hello() world')
     rule.set_color(color, group=1)
@@ -373,7 +373,7 @@ def test_rule_get_matches_zero_length_match():
 
 
 def test_rule_set_color_clear_existing():
-    """Clear the color of a rule by setting it to None."""
+    '''Clear the color of a rule by setting it to None.'''
     color = chromaterm.Color('bold')
     rule = chromaterm.Rule('(hello|world)')
 
@@ -386,7 +386,7 @@ def test_rule_set_color_clear_existing():
 
 
 def test_rule_set_color_default_group():
-    """Add to a rule a color to the default regex group (0)."""
+    '''Add to a rule a color to the default regex group (0).'''
     rule = chromaterm.Rule('hello')
     assert rule.color is None
 
@@ -397,8 +397,8 @@ def test_rule_set_color_default_group():
 
 
 def test_rule_set_color_specific_group():
-    """Add to a rule a color to a specific regex group. Additionally, ensure
-    that the dict keys are ordered according to the group number."""
+    '''Add to a rule a color to a specific regex group. Additionally, ensure
+    that the dict keys are ordered according to the group number.'''
     rule = chromaterm.Rule('he(llo)')
     assert rule.color is None
 
@@ -412,7 +412,7 @@ def test_rule_set_color_specific_group():
 
 
 def test_rule_set_color_invalid_type_color():
-    """Add to a rule a color with invalid group type."""
+    '''Add to a rule a color with invalid group type.'''
     rule = chromaterm.Rule('hello')
 
     with pytest.raises(TypeError, match='color must be a chromaterm.Color'):
@@ -420,7 +420,7 @@ def test_rule_set_color_invalid_type_color():
 
 
 def test_rule_set_color_invalid_type_group():
-    """Add to a rule a color with invalid color type."""
+    '''Add to a rule a color with invalid color type.'''
     rule = chromaterm.Rule('hello')
 
     with pytest.raises(TypeError, match='group must be an integer'):
@@ -428,7 +428,7 @@ def test_rule_set_color_invalid_type_group():
 
 
 def test_rule_set_color_invalid_value_group():
-    """Add to a rule a color with invalid group value."""
+    '''Add to a rule a color with invalid group value.'''
     rule = chromaterm.Rule('hello')
 
     with pytest.raises(ValueError, match='regex only has 0 group'):
@@ -436,7 +436,7 @@ def test_rule_set_color_invalid_value_group():
 
 
 def test_rule_change_color():
-    """Confirm that a color change overrides the old one."""
+    '''Confirm that a color change overrides the old one.'''
     rule = chromaterm.Rule('hello', color=chromaterm.Color('bold'))
 
     old_color = rule.color
@@ -445,25 +445,25 @@ def test_rule_change_color():
 
 
 def test_rule_invalid_type_color():
-    """Rule with an invalid color type."""
+    '''Rule with an invalid color type.'''
     with pytest.raises(TypeError, match='color must be a chromaterm.Color'):
         chromaterm.Rule('hello', color=True)
 
 
 def test_rule_invalid_type_description():
-    """Rule with an invalid description type."""
+    '''Rule with an invalid description type.'''
     with pytest.raises(TypeError, match='description must be a string'):
         chromaterm.Rule('hello', description=True)
 
 
 def test_rule_invalid_type_regex():
-    """Rule with an invalid regex type."""
+    '''Rule with an invalid regex type.'''
     with pytest.raises(TypeError, match='regex must be a string'):
         chromaterm.Rule(True)
 
 
 def test_config_highlight():
-    """Highlight with one rule."""
+    '''Highlight with one rule.'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -478,11 +478,11 @@ def test_config_highlight():
 
 
 def test_config_highlight_adjoin_type_different():
-    """Two rules with different color types, and one ending where the other
+    '''Two rules with different color types, and one ending where the other
     starts. Both are applied without any overlap in the codes, independent of the
     order.
     1: -------
-    2:        -------"""
+    2:        -------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('he', color=chromaterm.Color('b#123123'))
@@ -505,11 +505,11 @@ def test_config_highlight_adjoin_type_different():
 
 
 def test_config_highlight_adjoin_type_mixed():
-    """Two rules with mixed color types, with one ending where the other starts.
+    '''Two rules with mixed color types, with one ending where the other starts.
     Both are applied without any overlap in the codes, independent of the
     order.
     1: -------
-    2:        -------"""
+    2:        -------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('he', color=chromaterm.Color('b#123123 italic'))
@@ -532,10 +532,10 @@ def test_config_highlight_adjoin_type_mixed():
 
 
 def test_config_highlight_adjoin_type_same():
-    """Two rules with same color type, with one ending where the other starts.
+    '''Two rules with same color type, with one ending where the other starts.
     Both are applied without any overlap in the codes, independent of the order.
     1: -------
-    2:        -------"""
+    2:        -------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('he', color=chromaterm.Color('b#123123'))
@@ -558,10 +558,10 @@ def test_config_highlight_adjoin_type_same():
 
 
 def test_config_highlight_common_beginning_type_different():
-    """Two rules with different color types, and both sharing the same start of
+    '''Two rules with different color types, and both sharing the same start of
     a match. The most recent rule will be closer to the match's start.
     1: --------------
-    2: -------"""
+    2: -------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -587,10 +587,10 @@ def test_config_highlight_common_beginning_type_different():
 
 
 def test_config_highlight_common_beginning_type_mixed():
-    """Two rules with different color types, and both sharing the same start of
+    '''Two rules with different color types, and both sharing the same start of
     a match. The most recent rule will be closer to the match's start.
     1: --------------
-    2: -------"""
+    2: -------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123 italic'))
@@ -608,10 +608,10 @@ def test_config_highlight_common_beginning_type_mixed():
 
 
 def test_config_highlight_common_beginning_type_same():
-    """Two rules with same color type, and both sharing the same start of a
+    '''Two rules with same color type, and both sharing the same start of a
     match. The most recent rule will be closer to the match's start.
     1: --------------
-    2: -------"""
+    2: -------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -629,10 +629,10 @@ def test_config_highlight_common_beginning_type_same():
 
 
 def test_config_highlight_common_end_type_different():
-    """Two rules with different color types, and both sharing the same end of a
+    '''Two rules with different color types, and both sharing the same end of a
     match. The most recent rule will be closer to the match's end.
     1: --------------
-    2:        -------"""
+    2:        -------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -658,10 +658,10 @@ def test_config_highlight_common_end_type_different():
 
 
 def test_config_highlight_common_end_type_mixed():
-    """Two rules with different color types, and both sharing the same end of a
+    '''Two rules with different color types, and both sharing the same end of a
     match. The most recent rule will be closer to the match's end.
     1: --------------
-    2:        -------"""
+    2:        -------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123 italic'))
@@ -679,10 +679,10 @@ def test_config_highlight_common_end_type_mixed():
 
 
 def test_config_highlight_common_end_type_same():
-    """Two rules with same color type, and both sharing the same end of a
+    '''Two rules with same color type, and both sharing the same end of a
     match. The most recent rule will be closer to the match's end.
     1: --------------
-    2:        -------"""
+    2:        -------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -700,12 +700,12 @@ def test_config_highlight_common_end_type_same():
 
 
 def test_config_highlight_encapsulate_type_different():
-    """Three rules, with matches that encapsulate each other, different color
+    '''Three rules, with matches that encapsulate each other, different color
     types. None of them should affect the rest as they are of different types. The
     order in which the rules are applied should not matter.
     1:     --
     2:   ------
-    3: ----------"""
+    3: ----------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('lo wo', color=chromaterm.Color('b#123123'))
@@ -733,13 +733,13 @@ def test_config_highlight_encapsulate_type_different():
 
 
 def test_config_highlight_encapsulate_type_mixed():
-    """Three rules, with matches that encapsulate each other, mixed color types.
+    '''Three rules, with matches that encapsulate each other, mixed color types.
     The colors that are different should not affect each other, but those that
     are the same should correctly track each others colors and update their
     resets appropriately.
     1:     --
     2:   ------
-    3: ----------"""
+    3: ----------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('lo wo', color=chromaterm.Color('b#123123 italic'))
@@ -769,14 +769,14 @@ def test_config_highlight_encapsulate_type_mixed():
 
 
 def test_config_highlight_encapsulate_type_same():
-    """Three rules, with matches that encapsulate each other, same color type.
+    '''Three rules, with matches that encapsulate each other, same color type.
     The reset of a match would be updated to the color of the encapsulating one.
     Once the second match updates the reset of the first one to a color, it is no
     longer considered a reset, and therefore the third match would not update it
     to its own color. The order in which the rules are applied should not matter.
     1:     --
     2:   ------
-    3: ----------"""
+    3: ----------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('lo wo', color=chromaterm.Color('b#123123'))
@@ -804,11 +804,11 @@ def test_config_highlight_encapsulate_type_same():
 
 
 def test_config_highlight_overlap_full_type_different():
-    """Two rules, fully overlapping matches, different color types. Should not
+    '''Two rules, fully overlapping matches, different color types. Should not
     affect each other as they have different types. Most recent rule should be
     closest to the match.
     1: ----------
-    2: ----------"""
+    2: ----------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -826,11 +826,11 @@ def test_config_highlight_overlap_full_type_different():
 
 
 def test_config_highlight_overlap_full_type_mixed():
-    """Two rules, fully overlapping matches, mixed color types. The different
+    '''Two rules, fully overlapping matches, mixed color types. The different
     color types should not affect each other, but those that are the same should
     update the oldest reset with the most recent rule's color code.
     1: ----------
-    2: ----------"""
+    2: ----------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123 bold'))
@@ -849,11 +849,11 @@ def test_config_highlight_overlap_full_type_mixed():
 
 
 def test_config_highlight_overlap_full_type_same():
-    """Two rules, fully overlapping matches, same color type. The reset of the
+    '''Two rules, fully overlapping matches, same color type. The reset of the
     first rule should be replaced with the color code of the second (most recent)
     rule to prevent the reset from interrupting the color.
     1: ----------
-    2: ----------"""
+    2: ----------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -871,10 +871,10 @@ def test_config_highlight_overlap_full_type_same():
 
 
 def test_config_highlight_overlap_partial_type_different():
-    """Two rules, partially overlapping matches, different color types. The rules
+    '''Two rules, partially overlapping matches, different color types. The rules
     should not affect each other. Tested in reverse order, too.
     1: ----------
-    2:     ----------"""
+    2:     ----------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hell', color=chromaterm.Color('b#123123'))
@@ -897,12 +897,12 @@ def test_config_highlight_overlap_partial_type_different():
 
 
 def test_config_highlight_overlap_partial_type_mixed():
-    """Two rules, partially overlapping matches, mixed color types. The different
+    '''Two rules, partially overlapping matches, mixed color types. The different
     color types should not affect each other, but those that are the same should
     correctly update the reset that is in the middle of the other match to that
     of the match's color. Order of rules should not matter.
     1: ----------
-    2:     ----------"""
+    2:     ----------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hell', color=chromaterm.Color('b#123123 bold'))
@@ -926,12 +926,12 @@ def test_config_highlight_overlap_partial_type_mixed():
 
 
 def test_config_highlight_overlap_partial_type_same():
-    """Two rules, partially overlapping matches, same color type. The reset of
+    '''Two rules, partially overlapping matches, same color type. The reset of
     the first rule should be replaced with the color code of the second (most
     recent) rule to prevent the reset from interrupting the color. The behavior
     should be consistent regardless of the order of the rules.
     1: ----------
-    2:     ----------"""
+    2:     ----------'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hell', color=chromaterm.Color('b#123123'))
@@ -954,16 +954,16 @@ def test_config_highlight_overlap_partial_type_same():
 
 
 def test_config_highlight_no_rules():
-    """Highlight with config that has no rules – nothing is changed."""
+    '''Highlight with config that has no rules – nothing is changed.'''
     config = chromaterm.Config()
     assert config.highlight(b'hello world') == b'hello world'
 
 
 def test_config_highlight_tracking_common_beginning_type_different():
-    """A rule with a match that has a color of a different type just before its
+    '''A rule with a match that has a color of a different type just before its
     start. The rule's color is closer to the match and the reset is unaffected by
     the existing color.
-    1: x-------------"""
+    1: x-------------'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -978,10 +978,10 @@ def test_config_highlight_tracking_common_beginning_type_different():
 
 
 def test_config_highlight_tracking_common_beginning_type_same():
-    """A rule with a match that has a color of the same type just before its
+    '''A rule with a match that has a color of the same type just before its
     start. The rule's color is closer to the match and the reset used is the
     existing color.
-    1: x-------------"""
+    1: x-------------'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
@@ -994,10 +994,10 @@ def test_config_highlight_tracking_common_beginning_type_same():
 
 
 def test_config_highlight_tracking_common_end_type_different():
-    """A rule with a match that has a color of a different type just after its
+    '''A rule with a match that has a color of a different type just after its
     end. The rule's reset is closer to the match and the reset is unaffected by
     the existing color.
-    1: -------------x"""
+    1: -------------x'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -1012,10 +1012,10 @@ def test_config_highlight_tracking_common_end_type_different():
 
 
 def test_config_highlight_tracking_common_end_type_same():
-    """A rule with a match that has a color of the same type just after its end.
+    '''A rule with a match that has a color of the same type just after its end.
     The rule's reset is closer to the match and is unaffected by the existing
     color.
-    1: -------------x"""
+    1: -------------x'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
@@ -1030,10 +1030,10 @@ def test_config_highlight_tracking_common_end_type_same():
 
 
 def test_config_highlight_tracking_full_reset_beginning():
-    """A rule with a match that has a full reset just before the start of the
+    '''A rule with a match that has a full reset just before the start of the
     match. The rule's color is closer to the match and the reset used is the
     default for that color type.
-    1: R-------------"""
+    1: R-------------'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
@@ -1049,10 +1049,10 @@ def test_config_highlight_tracking_full_reset_beginning():
 
 
 def test_config_highlight_tracking_full_reset_end():
-    """A rule with a match that has a full reset just after the end of the match.
+    '''A rule with a match that has a full reset just after the end of the match.
     The rule's reset is closer to the match and the reset used is the default for
     that color type.
-    1: -------------R"""
+    1: -------------R'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
@@ -1069,10 +1069,10 @@ def test_config_highlight_tracking_full_reset_end():
 
 
 def test_config_highlight_tracking_full_reset_middle():
-    """A rule with a match that has a full reset in the middle of it. The full
+    '''A rule with a match that has a full reset in the middle of it. The full
     reset is changed to the color code of the match and the reset of the match
     is changed to a full reset.
-    1: ------R-------"""
+    1: ------R-------'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
@@ -1087,10 +1087,10 @@ def test_config_highlight_tracking_full_reset_middle():
 
 
 def test_config_highlight_tracking_malformed():
-    """A rule with a match that has a malformed SGR in the middle. It should be
+    '''A rule with a match that has a malformed SGR in the middle. It should be
     ignored and inserted back into the match. Highlighting from the rule should
     still go through.
-    1: x-------------"""
+    1: x-------------'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -1106,8 +1106,8 @@ def test_config_highlight_tracking_malformed():
 
 
 def test_config_highlight_tracking_mixed_full_reset():
-    """Track multiple color types and ensure a full reset only defaults the types
-    that were not updated by other colors in the data."""
+    '''Track multiple color types and ensure a full reset only defaults the types
+    that were not updated by other colors in the data.'''
     config = chromaterm.Config()
 
     rule1 = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
@@ -1136,8 +1136,8 @@ def test_config_highlight_tracking_mixed_full_reset():
 
 
 def test_config_highlight_tracking_multiline_type_different():
-    """Ensure that data with an existing color is tracked across highlights and
-    does not affect the reset of a color of a different type."""
+    '''Ensure that data with an existing color is tracked across highlights and
+    does not affect the reset of a color of a different type.'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
@@ -1153,8 +1153,8 @@ def test_config_highlight_tracking_multiline_type_different():
 
 
 def test_config_highlight_tracking_multiline_type_same():
-    """Ensure that data with an existing color is tracked across highlights and
-    affects the reset of a color of the same type."""
+    '''Ensure that data with an existing color is tracked across highlights and
+    affects the reset of a color of the same type.'''
     config = chromaterm.Config()
 
     rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))

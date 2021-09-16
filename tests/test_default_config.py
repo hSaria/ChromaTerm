@@ -1,11 +1,11 @@
-"""chromaterm.default_config tests"""
+'''chromaterm.default_config tests'''
 import os
 
 import chromaterm.default_config
 
 
 def assert_matches(positives, negatives, rule):
-    """Assert that all positives are matched while negatives are not."""
+    '''Assert that all positives are matched while negatives are not.'''
     def permutate_data(data):
         output = []
 
@@ -27,7 +27,7 @@ def assert_matches(positives, negatives, rule):
 
 
 def test_rule_ipv4():
-    """Default rule: IPv4 addresses."""
+    '''Default rule: IPv4 addresses.'''
     positives = ['192.168.2.1', '255.255.255.255', '=240.3.2.1', '1.2.3.4/32']
     negatives = ['192.168.2.1.', '1.2.3.4.5', '256.255.255.255', '1.2.3']
     rule = chromaterm.default_config.RULE_IPV4
@@ -36,7 +36,7 @@ def test_rule_ipv4():
 
 
 def test_rule_ipv6():
-    """Default rule: IPv6 addresses."""
+    '''Default rule: IPv6 addresses.'''
     positives = [
         'A:b:3:4:5:6:7:8', 'A::', 'A:b:3:4:5:6:7::', 'A::8', '::b:3:4:5:6:7:8',
         '::8', 'A:b:3:4:5:6::8', 'A:b:3:4:5::7:8', 'A:b:3:4::6:7:8', '::',
@@ -56,7 +56,7 @@ def test_rule_ipv6():
 
 
 def test_rule_mac():
-    """Default rule: MAC addresses."""
+    '''Default rule: MAC addresses.'''
     positives = ['0A:23:45:67:89:AB', '0a:23:45:67:89:ab', '0a23.4567.89ab']
     negatives = [
         '0A:23:45:67:89', '0A:23:45:67:89:AB:', '0A23.4567.89.AB',
@@ -68,7 +68,7 @@ def test_rule_mac():
 
 
 def test_rule_date():
-    """Default rule: Date."""
+    '''Default rule: Date.'''
     positives = [
         '2019-12-31', '2019-12-31', 'jan 2019', 'feb 2019', 'Mar 2019',
         'apr 2019', 'MAY 2019', 'Jun 2019', 'jul 2019', 'AUG 19', 'sep 20',
@@ -84,7 +84,7 @@ def test_rule_date():
 
 
 def test_rule_time():
-    """Default rule: Time."""
+    '''Default rule: Time.'''
     positives = ['23:59', '23:01', '23:01:01', '23:01:01.123']
     negatives = ['24:59', '23:60', '23:1', '23:01:1', '23:01:01:']
     rule = chromaterm.default_config.RULE_TIME
@@ -93,7 +93,7 @@ def test_rule_time():
 
 
 def test_write_default_config():
-    """Write config file."""
+    '''Write config file.'''
     path = __name__ + '1'
     assert chromaterm.default_config.write_default_config(path)
     assert os.access(path, os.F_OK)
@@ -101,7 +101,7 @@ def test_write_default_config():
 
 
 def test_write_default_config_exists():
-    """Config file already exists."""
+    '''Config file already exists.'''
     path = __name__ + '2'
     with open(path, 'w', encoding='utf-8'):
         assert not chromaterm.default_config.write_default_config(path)
@@ -109,7 +109,7 @@ def test_write_default_config_exists():
 
 
 def test_write_default_config_no_permission():
-    """No write permission on directory."""
+    '''No write permission on directory.'''
     path = __name__ + '3' + '/hi.yml'
     os.mkdir(os.path.dirname(path), mode=0o444)
     assert not chromaterm.default_config.write_default_config(path + '/hi')
