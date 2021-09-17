@@ -78,7 +78,7 @@ def generate_default_rules_yaml():
     ]:
         data += f'''
 - description: {rule.description}
-  regex: {rule.regex.pattern}
+  regex: {rule.regex.pattern.decode()}
   color: {rule.color.color}
 '''
 
