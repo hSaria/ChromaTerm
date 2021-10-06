@@ -87,6 +87,7 @@ though some terminals ignore them:
 
  * Blink
  * Bold
+ * Invert
  * Italic
  * Strike
  * Underline

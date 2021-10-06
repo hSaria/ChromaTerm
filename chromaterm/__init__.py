@@ -23,6 +23,11 @@ COLOR_TYPES = {
         'reset': b'\x1b[22m',  # Normal intensity
         're': re.compile(br'\x1b\[(?:1|2?2)m')  # Any intensity type
     },
+    'invert': {
+        'code': b'\x1b[7m',
+        'reset': b'\x1b[27m',
+        're': re.compile(br'\x1b\[2?7m')
+    },
     'italic': {
         'code': b'\x1b[3m',
         'reset': b'\x1b[23m',
@@ -56,7 +61,8 @@ class Color:
             color (str): A string which must contain:
                 * one foreground color (hex color prefixed with `f#`),
                 * one background color (hex color prefixed with `b#`),
-                * at least one style (blink, bold, italic, strike, underline), or
+                * at least one style (blink, bold, invert, italic, strike,
+                    underline), or
                 * a combination of the above, seperated by spaces.
 
                 Example: `"b#123123 bold"`

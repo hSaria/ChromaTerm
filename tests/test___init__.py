@@ -98,6 +98,17 @@ def test_color_decode_sgr_styles_bold():
             assert color_type == 'bold'
 
 
+def test_color_decode_sgr_styles_invert():
+    '''Invert and its reset are being detected.'''
+    for code in [b'7', b'27']:
+        colors = chromaterm.Color.decode_sgr(make_sgr(code))
+        assert len(colors) == 1
+
+        for color_code, _, color_type in colors:
+            assert color_code == make_sgr(code)
+            assert color_type == 'invert'
+
+
 def test_color_decode_sgr_styles_italic():
     '''Italic and its reset are being detected.'''
     for code in [b'3', b'23']:
@@ -171,11 +182,11 @@ def test_color_decode_sgr_split_compound():
 
 def test_color_decode_sgr_unrecognized():
     '''An SGR that's valid, but the type isn't recognized during decoding.'''
-    colors = chromaterm.Color.decode_sgr(make_sgr(b'7'))
+    colors = chromaterm.Color.decode_sgr(make_sgr(b'60'))
     assert len(colors) == 1
 
     for color_code, color_reset, color_type in colors:
-        assert color_code == make_sgr(b'7')
+        assert color_code == make_sgr(b'60')
         assert color_reset is False
         assert color_type is None
 
