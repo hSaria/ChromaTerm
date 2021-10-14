@@ -514,5 +514,6 @@ class Config:
                                    key=lambda x: x[1],
                                    reverse=descending):
             rule = rule.description or repr(rule.regex.pattern.decode())
+            fraction = f'{result / total:^7.2%}'
 
-            print(f'{result / total:^7.2%} {rule}', file=sys.stderr)
+            print(f'{fraction} {result:.3f}s  {rule}', file=sys.stderr)
