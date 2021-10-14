@@ -155,6 +155,30 @@ def test_load_rules_simple():
     assert len(config.rules) == 1
 
 
+def test_load_rules_exclusive_order():
+    '''Ensure exclusive rules are sorted to top of the list.'''
+    config = chromaterm.__main__.Config()
+    chromaterm.__main__.load_rules(
+        config, '''rules:
+    - regex: r1
+      color: bold
+    - regex: r2
+      color: bold
+      exclusive: True
+    - regex: r3
+      color: bold
+    - regex: r4
+      color: bold
+      exclusive: True
+    ''')
+
+    assert len(config.rules) == 4
+    assert config.rules[0].regex.pattern == b'r2'
+    assert config.rules[1].regex.pattern == b'r4'
+    assert config.rules[2].regex.pattern == b'r1'
+    assert config.rules[3].regex.pattern == b'r3'
+
+
 def test_load_rules_group():
     '''Parse config with a group-specific rule.'''
     config = chromaterm.__main__.Config()
@@ -274,6 +298,14 @@ def test_parse_rule_color_format_error():
 
     rule = {'regex': 'x(y)z', 'color': 'b#fffaaa-f#fffaaa'}
     assert msg in chromaterm.__main__.parse_rule(rule)
+
+
+def test_parse_rule_exclusive_type_error():
+    '''Parse a rule with an incorrect `exclusive` value type.'''
+    msg_re = r'exclusive .* is not a boolean'
+
+    rule = {'regex': 'x(y)z', 'color': 'bold', 'exclusive': 'hi'}
+    assert re.search(msg_re, chromaterm.__main__.parse_rule(rule))
 
 
 def test_parse_rule_group_type_error():

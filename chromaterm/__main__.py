@@ -169,6 +169,9 @@ def load_rules(config, data, rgb=False):
         else:
             eprint(rule)
 
+    # Put the non-overlapping (exclusive=True) rules are at the top
+    config.rules = sorted(config.rules, key=lambda x: not x.exclusive)
+
 
 def parse_rule(rule, rgb=False):
     '''Returns an instance of chromaterm.Rule if parsed correctly. Otherwise, a
@@ -182,6 +185,7 @@ def parse_rule(rule, rgb=False):
         return f'Rule {repr(rule)} not a dictionary'
 
     description = rule.get('description')
+    exclusive = rule.get('exclusive', False)
     regex = rule.get('regex')
 
     if description:
@@ -189,8 +193,11 @@ def parse_rule(rule, rgb=False):
     else:
         rule_repr = f'Rule(regex={repr(regex)})'
 
+    if not isinstance(exclusive, bool):
+        return f'Error on {rule_repr}: exclusive {repr(exclusive)} is not a boolean'
+
     try:
-        parsed_rule = Rule(regex, description=description)
+        parsed_rule = Rule(regex, description=description, exclusive=exclusive)
     except TypeError as exception:
         return f'Error on {rule_repr}: {exception}'
     except re.error as exception:

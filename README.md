@@ -94,8 +94,23 @@ though some terminals ignore them:
 
 ### Group
 
-A color can be applied per RegEx group (see the 2nd example rule). Any group in
-the regular expression can be referenced.
+Colors can be applied per RegEx group (see the 2nd example rule). Any group in
+the RegEx can be referenced, even group `0` (entire match).
+
+### Exclusive
+
+When multiple rules match the same text, ChromaTerm highlights the text with all
+of the colors of the matching rules. If you want the text to be highlighted only
+by the first rule that matches it, use the `exclusive` flag on the rule, like so:
+
+```yaml
+- regex: hello
+  color: bold
+  exclusive: True
+```
+
+In the code above, no other rule will highlight "hello", unless it comes first
+and has the `exclusive` flag set to `True`.
 
 ## Help
 

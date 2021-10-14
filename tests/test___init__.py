@@ -785,10 +785,26 @@ def test_config_highlight_encapsulate_type_same():
     config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
-    config.rules.remove(rule1)
-    config.rules.remove(rule2)
-    config.rules.append(rule2)
+
+def test_config_highlight_exclusive():
+    '''Two exclusive rules, partially overlapping matches. The first rule should
+    color the
+    1:     ----------
+    2: ----------'''
+    config = chromaterm.Config()
+
+    rule1 = chromaterm.Rule('llo', chromaterm.Color('bold'), exclusive=True)
+    rule2 = chromaterm.Rule('hell', chromaterm.Color('italic'), exclusive=True)
     config.rules.append(rule1)
+    config.rules.append(rule2)
+
+    data = b'hello'
+    expected = [b'he', rule1.color.color_code, b'llo', rule1.color.color_reset]
+
+    assert config.highlight(data) == b''.join(expected)
+
+    config.rules.reverse()
+    expected = [rule2.color.color_code, b'hell', rule2.color.color_reset, b'o']
 
     assert config.highlight(data) == b''.join(expected)
 

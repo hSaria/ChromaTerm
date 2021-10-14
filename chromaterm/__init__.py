@@ -251,17 +251,17 @@ class Color:
 
 class Rule:
     '''A rule containing a regex and colors corresponding to the regex's groups.'''
-    def __init__(self, regex, color=None, description=None):
+    def __init__(self, regex, color=None, description=None, exclusive=False):
         '''Constructor.
 
         Args:
             regex (str): Regular expression for getting matches in data.
             color (chromaterm.Color): Color used to highlight the entire match.
             description (str): String to help identify the rule.
+            exclusive (bool): Whether other rules should overlap with this one
 
         Raises:
-            TypeError: If `regex` is not a string. If `color` is not an instance
-                of `Color` or not `None`. If `description` is not a string or None.
+            TypeError: If `color` is not an instance of `Color` or not `None`.
         '''
         if description is not None and not isinstance(description, str):
             raise TypeError('description must be a string')
@@ -271,6 +271,7 @@ class Rule:
 
         self.colors = {}
         self.description = description
+        self.exclusive = bool(exclusive)
         self.regex = re.compile(regex.encode(encoding='utf-8'))
 
         self.set_color(color)
@@ -460,13 +461,21 @@ class Config:
         for rule in self.rules:
             if self.benchmark:
                 checkpoint = time.perf_counter()
-                matches += rule.get_matches(data)
+                rule_matches = rule.get_matches(data)
                 result = time.perf_counter() - checkpoint
 
                 total = self.benchmark_results.get(rule, 0) + result
                 self.benchmark_results[rule] = total
             else:
-                matches += rule.get_matches(data)
+                rule_matches = rule.get_matches(data)
+
+            # If overlap is not allowed, replace any matches with \n to prevent
+            # overlap while maintaining correct indexes on other rules' matches
+            if rule.exclusive:
+                for start, end, _ in reversed(rule_matches):
+                    data = data[:start] + b'\n' * (end - start) + data[end:]
+
+            matches += rule_matches
 
         return matches
 
