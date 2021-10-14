@@ -1,5 +1,6 @@
 '''The command line utility for ChromaTerm'''
 import argparse
+import atexit
 import io
 import os
 import re
@@ -64,6 +65,11 @@ def args_init(args=None):
     parser.add_argument('arguments',
                         nargs=argparse.REMAINDER,
                         help=argparse.SUPPRESS)
+
+    parser.add_argument('--benchmark',
+                        action='store_true',
+                        help='at exit, print percentage of time spent while '
+                        'matching each rule')
 
     parser.add_argument('--config',
                         metavar='FILE',
@@ -349,7 +355,6 @@ def run_program(program_args):
     Returns:
         A file descriptor (int) of the mater end of the pty fork.
     '''
-    import atexit
     import fcntl
     import pty
     import termios
@@ -457,7 +462,11 @@ def main(args=None, max_wait=None, write_default=True):
         if write_default:
             write_default_config(args.config)
 
-    config = Config()
+    config = Config(benchmark=args.benchmark)
+
+    # Print benchmark after cleanup in `run_program`
+    if args.benchmark:
+        atexit.register(config.print_benchmark_results)
 
     # Create the signal handler to trigger reloading the config
     def reload_config_handler(*_):
@@ -484,7 +493,7 @@ def main(args=None, max_wait=None, write_default=True):
     signal.signal(signal.SIGUSR1, reload_config_handler)
 
     try:
-    # Begin processing the data (blocking operation)
+        # Begin processing the data (blocking operation)
         process_input(config, data_fd, forward_fd, max_wait)
     except BrokenPipeError:
         # Surpress the implicit flush that Python runs on exit

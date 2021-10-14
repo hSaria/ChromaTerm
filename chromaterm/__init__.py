@@ -1,6 +1,8 @@
 '''Color your output to terminal'''
 import os
 import re
+import sys
+import time
 
 # Color types, their color codes if it's style, their default reset codes, and
 # RegEx's for detecting their color type.
@@ -340,9 +342,11 @@ class Rule:
 class Config:
     '''An aggregation of multiple rules which highlights by performing the regex
     matching of the rules before any colors are added.'''
-    def __init__(self):
+    def __init__(self, benchmark=False):
         '''Constructor.'''
         self._reset_codes = {k: v['reset'] for k, v in COLOR_TYPES.items()}
+        self.benchmark = benchmark
+        self.benchmark_results = {}
         self.rules = []
 
     @staticmethod
@@ -454,7 +458,15 @@ class Config:
         matches = []
 
         for rule in self.rules:
-            matches += rule.get_matches(data)
+            if self.benchmark:
+                checkpoint = time.perf_counter()
+                matches += rule.get_matches(data)
+                result = time.perf_counter() - checkpoint
+
+                total = self.benchmark_results.get(rule, 0) + result
+                self.benchmark_results[rule] = total
+            else:
+                matches += rule.get_matches(data)
 
         return matches
 
@@ -486,3 +498,21 @@ class Config:
                     resets_to_update.remove(color_type)
 
         return data
+
+    def print_benchmark_results(self, descending=True):
+        """Prints the benchmark results to stderr, sorted by usage.
+
+        Args:
+            descending (bool): Ordering of the results.
+        """
+        total = sum(self.benchmark_results.values())
+
+        if self.benchmark_results:
+            print('Rule benchmark results:', file=sys.stderr)
+
+        for rule, result in sorted(self.benchmark_results.items(),
+                                   key=lambda x: x[1],
+                                   reverse=descending):
+            rule = rule.description or repr(rule.regex.pattern.decode())
+
+            print(f'{result / total:^7.2%} {rule}', file=sys.stderr)

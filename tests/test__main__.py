@@ -579,6 +579,16 @@ def test_split_buffer_scs():
             assert chromaterm.__main__.split_buffer(data) == expected
 
 
+def test_main_benchmark():
+    '''Ensure the benchmark table is printed to stderr.'''
+    result = subprocess.run(CLI + ' --benchmark echo hello',
+                            check=False,
+                            shell=True,
+                            stderr=subprocess.PIPE)
+
+    assert b'benchmark results' in result.stderr
+
+
 def test_main_broken_pipe():
     '''Break a pipe while CT is trying to write to it. The echo at the end will
     close before CT has had the chance to write to the pipe.'''
