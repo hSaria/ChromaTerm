@@ -479,13 +479,16 @@ def main(args=None, max_wait=None, write_default=True):
         data_fd = sys.stdin.fileno()
         forward_fd = None
 
-    # Ignore SIGPIPE (broken pipe) and SIGINT (CTRL+C), and attach reload handler
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    # Ignore SIGINT (CTRL+C) and attach reload handler
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     signal.signal(signal.SIGUSR1, reload_config_handler)
 
+    try:
     # Begin processing the data (blocking operation)
-    process_input(config, data_fd, forward_fd=forward_fd, max_wait=max_wait)
+        process_input(config, data_fd, forward_fd, max_wait)
+    except BrokenPipeError:
+        # Surpress the implicit flush that Python runs on exit
+        sys.stdout.flush = lambda: None
 
     return None
 
