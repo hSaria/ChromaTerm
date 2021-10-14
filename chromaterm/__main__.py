@@ -55,6 +55,7 @@ def args_init(args=None):
         args (list): A list of program arguments, Defaults to sys.argv.
     '''
     parser = argparse.ArgumentParser()
+    parser.epilog = 'For more info, go to https://github.com/hSaria/ChromaTerm.'
 
     parser.add_argument('program',
                         metavar='program ...',
