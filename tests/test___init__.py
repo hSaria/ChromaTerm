@@ -508,10 +508,7 @@ def test_config_highlight_adjoin_type_different():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.append(rule1)
-
+    config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
 
@@ -535,10 +532,7 @@ def test_config_highlight_adjoin_type_mixed():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.append(rule1)
-
+    config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
 
@@ -561,10 +555,7 @@ def test_config_highlight_adjoin_type_same():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.append(rule1)
-
+    config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
 
@@ -587,9 +578,7 @@ def test_config_highlight_common_beginning_type_different():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.append(rule1)
+    config.rules.reverse()
 
     # Flip start color
     expected[0], expected[1] = expected[1], expected[0]
@@ -658,9 +647,7 @@ def test_config_highlight_common_end_type_different():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.append(rule1)
+    config.rules.reverse()
 
     # Flip end color
     expected[-1], expected[-2] = expected[-2], expected[-1]
@@ -734,12 +721,7 @@ def test_config_highlight_encapsulate_type_different():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.remove(rule2)
-    config.rules.append(rule2)
-    config.rules.append(rule1)
-
+    config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
 
@@ -770,12 +752,7 @@ def test_config_highlight_encapsulate_type_mixed():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.remove(rule2)
-    config.rules.append(rule2)
-    config.rules.append(rule1)
-
+    config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
 
@@ -804,6 +781,8 @@ def test_config_highlight_encapsulate_type_same():
         rule3.color.color_code, b'ld', rule3.color.color_reset
     ]
 
+    assert config.highlight(data) == b''.join(expected)
+    config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
     config.rules.remove(rule1)
@@ -900,10 +879,7 @@ def test_config_highlight_overlap_partial_type_different():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.append(rule1)
-
+    config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
 
@@ -929,10 +905,7 @@ def test_config_highlight_overlap_partial_type_mixed():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.append(rule1)
-
+    config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
 
@@ -957,10 +930,7 @@ def test_config_highlight_overlap_partial_type_same():
     ]
 
     assert config.highlight(data) == b''.join(expected)
-
-    config.rules.remove(rule1)
-    config.rules.append(rule1)
-
+    config.rules.reverse()
     assert config.highlight(data) == b''.join(expected)
 
 
