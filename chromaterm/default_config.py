@@ -5,6 +5,12 @@ from chromaterm import Color, Rule
 
 # pylint: disable=line-too-long
 
+RULE_NUMBERS = Rule(
+    r'\b(?<!\.)\d+(\.\d+)?(?!\.)\b',
+    Color('f#91490a'),
+    'Numbers',
+)
+
 RULE_IPV4 = Rule(
     r'\b(?<!\.)((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)(/\d+)?(?!\.)\b',
     Color('f#00ffff'),
@@ -13,7 +19,7 @@ RULE_IPV4 = Rule(
 )
 
 RULE_IPV6 = Rule(
-    r'(?i)((?<=[\W])|^)(?<!:)(([\da-f]{1,4}:){7}[\da-f]{1,4}|([\da-f]{1,4}:){1,1}(:[\da-f]{1,4}){1,6}|([\da-f]{1,4}:){1,2}(:[\da-f]{1,4}){1,5}|([\da-f]{1,4}:){1,3}(:[\da-f]{1,4}){1,4}|([\da-f]{1,4}:){1,4}(:[\da-f]{1,4}){1,3}|([\da-f]{1,4}:){1,5}(:[\da-f]{1,4}){1,2}|([\da-f]{1,4}:){1,6}(:[\da-f]{1,4})|([\da-f]{1,4}:){1,7}:|:((:[\da-f]{1,4}){1,7}|:)|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|([\da-f]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))(%[\da-z]+)?(/\d+)?(?!:)((?=[\W])|$)',
+    r'(?i)(?<![\w:])(([\da-f]{1,4}:){7}[\da-f]{1,4}|[\da-f]{1,4}:(:[\da-f]{1,4}){1,6}|([\da-f]{1,4}:){1,2}(:[\da-f]{1,4}){1,5}|([\da-f]{1,4}:){1,3}(:[\da-f]{1,4}){1,4}|([\da-f]{1,4}:){1,4}(:[\da-f]{1,4}){1,3}|([\da-f]{1,4}:){1,5}(:[\da-f]{1,4}){1,2}|([\da-f]{1,4}:){1,6}:[\da-f]{1,4}|([\da-f]{1,4}:){1,7}:|:((:[\da-f]{1,4}){1,7}|:)|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|([\da-f]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))(%[\da-z]+)?(/\d+)?(?![\w:])',
     Color('f#ff00ff'),
     'IPv6 (boundaries don\'t work here as they can be in the start or end of the match, so using lookaheads and lookbehinds instead)',
     exclusive=True,
@@ -27,16 +33,16 @@ RULE_MAC = Rule(
 )
 
 RULE_DATE = Rule(
-    r'(?i)((?<=[\W])|^)((\d{2}|\d{4})\-((0)?[1-9]|1[0-2])\-(3[0-1]|([1-2]\d)|(0)?[1-9])|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s(\d{4}|\s\d|(3[0-1]|([0-2]\d)))|((\d|(3[0-1]|([0-2]\d)))\s(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(\s\d{4})?))((?=[\WT_])|$)',
+    r'(?i)((?<=\W)|^)((\d{2}|\d{4})\-(0?[1-9]|1[0-2])\-(3[0-1]|([1-2]\d)|0?[1-9])|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{4}|(3[0-1]|([1-2]\d)|0?[1-9]))|((3[0-1]|([1-2]\d)|0?[1-9])\s(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(\s+\d{4})?))((?=[\WT_])|$)',
     Color('b#af5f00'),
     'Date in YYYY-MM-DD, YY-MM-DD, MMM (YYYY|DD), or DD MMM (YYYY)? formats',
     exclusive=True,
 )
 
 RULE_TIME = Rule(
-    r'\b((?<!:)((2[0-3])|[0-1]\d):[0-5]\d(:[0-5]\d)?((\.|,)\d{3,6})?(?!:))\b',
+    r'(\b|(?<=T))(?<![\.:])((2[0-3])|[0-1]\d):[0-5]\d(:[0-5]\d([\.,]\d{3,6})?)?([\-\+](\d{2}|\d{4}))?(?![\.:])\b',
     Color('b#af5f00'),
-    'Time in hh:mm:ss.SSSSSS format (sec, msec, and nsec optional)',
+    'Time in hh:mm:ss.SSSSSS-ZZZZ format (sec, msec, nsec, and timezone offset optional)',
     exclusive=True,
 )
 
@@ -76,7 +82,7 @@ def generate_default_rules_yaml():
     data = 'rules:'
 
     for rule in [
-            RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_DATE, RULE_TIME,
+            RULE_NUMBERS, RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_DATE, RULE_TIME,
             RULE_GENERIC_BAD, RULE_GENERIC_AMBIGIOUS_BAD,
             RULE_GENERIC_NOT_TOO_BAD, RULE_GENERIC_AMBIGIOUS_GOOD,
             RULE_GENERIC_GOOD

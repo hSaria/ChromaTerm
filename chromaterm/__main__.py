@@ -181,6 +181,7 @@ def parse_rule(rule, rgb=False):
         rule (dict): A dictionary representing the rule, formatted according to
             `chromaterm.__main__.load_rules`.
     '''
+    # pylint: disable=too-many-return-statements
     if not isinstance(rule, dict):
         return f'Rule {repr(rule)} not a dictionary'
 

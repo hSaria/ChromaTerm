@@ -26,6 +26,15 @@ def assert_matches(positives, negatives, rule):
         assert len(rule.get_matches(data)) == 0
 
 
+def test_rule_numbers():
+    '''Default rule: Numbers.'''
+    positives = ['1', '123', '123.123']
+    negatives = ['1.1.', '.1.1', '1.2.3']
+    rule = chromaterm.default_config.RULE_NUMBERS
+
+    assert_matches(positives, negatives, rule)
+
+
 def test_rule_ipv4():
     '''Default rule: IPv4 addresses.'''
     positives = ['192.168.2.1', '255.255.255.255', '=240.3.2.1', '1.2.3.4/32']
@@ -71,7 +80,7 @@ def test_rule_date():
     '''Default rule: Date.'''
     positives = [
         '2019-12-31', '2019-12-31', 'jan 2019', 'feb 2019', 'Mar 2019',
-        'apr 2019', 'MAY 2019', 'Jun 2019', 'jul 2019', 'AUG 19', 'sep 20',
+        'apr 2019', 'MAY 2019', 'Jun 2019', 'jul  2019', 'AUG 19', 'sep 20',
         'oct 21', 'nov 22', 'dec 23', '24 jan', '25 feb 2019'
     ]
     negatives = [
@@ -85,8 +94,8 @@ def test_rule_date():
 
 def test_rule_time():
     '''Default rule: Time.'''
-    positives = ['23:59', '23:01', '23:01:01', '23:01:01.123']
-    negatives = ['24:59', '23:60', '23:1', '23:01:1', '23:01:01:']
+    positives = ['23:59', '23:01', '23:01:01', '23:01:01.123', '23:01:01-0800']
+    negatives = ['24:59', '23:60', '23:1', '23:01:1', '23:01:01:', '23:01.123']
     rule = chromaterm.default_config.RULE_TIME
 
     assert_matches(positives, negatives, rule)
