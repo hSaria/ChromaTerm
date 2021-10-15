@@ -4,14 +4,17 @@
 - description: IP-address:nn RD or RT
   regex: \b(RT:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d):(?:[1-9]|\d{2,5})\b
   color: f#0000ff
+  exclusive: True
 
 - description: VPNv4 Addresses
   regex: \b((\d{1,10}:){2}((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d):\d{1,10}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))\b
   color: f#00ffff
+  exclusive: True
 
 - description: VPNv6 Addresses
-  regex: (?i)\[(\d{1,10}|\d{1,3}(\.\d{1,3}){3}):\d{1,10}\](([\da-f]{1,4}:){7}[\da-f]{1,4}|([\da-f]{1,4}:){1,1}(:[\da-f]{1,4}){1,6}|([\da-f]{1,4}:){1,2}(:[\da-f]{1,4}){1,5}|([\da-f]{1,4}:){1,3}(:[\da-f]{1,4}){1,4}|([\da-f]{1,4}:){1,4}(:[\da-f]{1,4}){1,3}|([\da-f]{1,4}:){1,5}(:[\da-f]{1,4}){1,2}|([\da-f]{1,4}:){1,6}(:[\da-f]{1,4})|([\da-f]{1,4}:){1,7}:|:((:[\da-f]{1,4}){1,7}|:)|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|([\da-f]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))(?![:.\w])
+  regex: (?i)\[(\d{1,10}|\d{1,3}(\.\d{1,3}){3}):\d{1,10}\](([\da-f]{1,4}:){7}[\da-f]{1,4}|[\da-f]{1,4}:(:[\da-f]{1,4}){1,6}|([\da-f]{1,4}:){1,2}(:[\da-f]{1,4}){1,5}|([\da-f]{1,4}:){1,3}(:[\da-f]{1,4}){1,4}|([\da-f]{1,4}:){1,4}(:[\da-f]{1,4}){1,3}|([\da-f]{1,4}:){1,5}(:[\da-f]{1,4}){1,2}|([\da-f]{1,4}:){1,6}:[\da-f]{1,4}|([\da-f]{1,4}:){1,7}:|:((:[\da-f]{1,4}){1,7}|:)|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|([\da-f]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))(?![:.\w])
   color: f#00ffff
+  exclusive: True
 
 - description: Days and hours, like 3650d23h
   regex: \b(\d{3,4}d\d{2}h)\b
@@ -20,6 +23,7 @@
 - description: Interfaces
   regex: (?i)\b(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Eth|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|(B|N)VI)((\d*/){0,2}\d*)(\.\d*)?\b
   color: f#f07a7c
+  exclusive: True
 
 - description: Bad responses
   regex: \b(administratively|down|Down|DOWN|fail|failed|not|not active|not activated|bad|never|BLK|fddi|n\-isl|isl|notconnect|blocking|\(tdp\)|tdp|TDP|denied|invalid|err\-disabled|disabled|unusable|DENIED|err\-disable|infinity|inaccessible|wrong|cannot|MM_NO_STATE|MM_KEY_EXCH|UP\-NO\-IKE|K[13]=(\d{2,3}|[02-9])|K[245]=(\d{2,3}|[1-9]))\b
