@@ -618,7 +618,7 @@ def test_main_benchmark():
                             shell=True,
                             stderr=subprocess.PIPE)
 
-    assert b'benchmark results' in result.stderr
+    assert b'Benchmark results' in result.stderr
 
 
 def test_main_broken_pipe():

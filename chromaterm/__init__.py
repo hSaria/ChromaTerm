@@ -460,12 +460,13 @@ class Config:
 
         for rule in self.rules:
             if self.benchmark:
+                duration, count = self.benchmark_results.get(rule, (0, 0))
                 checkpoint = time.perf_counter()
                 rule_matches = rule.get_matches(data)
-                result = time.perf_counter() - checkpoint
+                duration += time.perf_counter() - checkpoint
+                count += len(rule_matches)
 
-                total = self.benchmark_results.get(rule, 0) + result
-                self.benchmark_results[rule] = total
+                self.benchmark_results[rule] = (duration, count)
             else:
                 rule_matches = rule.get_matches(data)
 
@@ -508,21 +509,23 @@ class Config:
 
         return data
 
-    def print_benchmark_results(self, descending=True):
-        """Prints the benchmark results to stderr, sorted by usage.
+    def print_benchmark_results(self, descending=True, file=sys.stderr):
+        """Prints the benchmark results, sorted by time spent.
 
         Args:
             descending (bool): Ordering of the results.
+            file (object): The file to which the results are printed.
         """
-        total = sum(self.benchmark_results.values())
+        total = sum(x[0] for x in self.benchmark_results.values())
 
         if self.benchmark_results:
-            print('Rule benchmark results:', file=sys.stderr)
+            print('Benchmark results (time spent, match count):', file=file)
 
-        for rule, result in sorted(self.benchmark_results.items(),
-                                   key=lambda x: x[1],
-                                   reverse=descending):
-            rule = rule.description or repr(rule.regex.pattern.decode())
-            fraction = f'{result / total:^7.2%}'
-
-            print(f'{fraction} {result:.3f}s  {rule}', file=sys.stderr)
+        for rule, (duration, count) in sorted(self.benchmark_results.items(),
+                                              key=lambda x: x[1],
+                                              reverse=descending):
+            print(
+                f'{duration / total:^7.2%} {duration:.3f}s  {count:<7}  '
+                f'{rule.description or repr(rule.regex.pattern.decode())}',
+                file=file,
+            )
