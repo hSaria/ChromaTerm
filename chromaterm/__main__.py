@@ -69,8 +69,7 @@ def args_init(args=None):
 
     parser.add_argument('--benchmark',
                         action='store_true',
-                        help='at exit, print percentage of time spent while '
-                        'matching each rule')
+                        help='at exit, print rule usage statistics')
 
     parser.add_argument('--config',
                         metavar='FILE',
@@ -314,16 +313,16 @@ def read_file(location):
         return None
 
 
-def read_ready(*read_fds, timeout=None):
+def read_ready(*fds, timeout=None):
     '''Returns a list of file descriptors that are ready to be read.
 
     Args:
-        *read_fds (int): Integers that refer to the file descriptors.
+        *fds (int): Integers that refer to the file descriptors.
         timeout (float): A timeout before returning an empty list if no file
             descriptor is ready. None waits until at least one file descriptor
             is ready.
     '''
-    return [] if not read_fds else select.select(read_fds, [], [], timeout)[0]
+    return [] if not fds else select.select(fds, [], [], timeout)[0]
 
 
 def reload_chromaterm_instances():
@@ -338,7 +337,8 @@ def reload_chromaterm_instances():
     current_process = psutil.Process()
 
     for process in psutil.process_iter():
-        if process.pid == current_process.pid:  # Skip the current process
+        # Don't reload the current process
+        if process.pid == current_process.pid:
             continue
 
         try:
@@ -346,8 +346,7 @@ def reload_chromaterm_instances():
             if process.cmdline()[:2] == current_process.cmdline()[:2]:
                 os.kill(process.pid, signal.SIGUSR1)
                 count += 1
-        # As per the documentation, expect those errors when accessing the
-        # methods of a process
+        # As per the docs, expect those errors when accessing the process methods
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             pass
 
@@ -372,12 +371,11 @@ def run_program(program_args):
     import tty
 
     try:
+        # Set to raw as the pty will be handling any processing; restore at exit
         attributes = termios.tcgetattr(sys.stdin.fileno())
-
-        # Set to raw as the pty will be handling any processing
-        tty.setraw(sys.stdin.fileno())
         atexit.register(termios.tcsetattr, sys.stdin.fileno(), termios.TCSANOW,
                         attributes)
+        tty.setraw(sys.stdin.fileno())
     except termios.error:
         attributes = None
 
@@ -392,7 +390,7 @@ def run_program(program_args):
         try:
             os.execvp(program_args[0], program_args)
         except FileNotFoundError:
-            eprint(program_args[0] + ': command not found')
+            eprint(f'{program_args[0]}: command not found')
 
         # exec replaces the fork's process; only hit on exception
         sys.exit(1)

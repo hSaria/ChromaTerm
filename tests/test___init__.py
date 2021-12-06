@@ -371,7 +371,7 @@ def test_rule_get_matches_groups_optional_not_matches():
 
 def test_rule_get_matches_no_colors():
     '''Get matches of rule that has no colors – nothing is changed.'''
-    assert chromaterm.Rule('hello').get_matches(b'hello') == []
+    assert not chromaterm.Rule('hello').get_matches(b'hello')
 
 
 def test_rule_get_matches_zero_length_match():
@@ -380,7 +380,7 @@ def test_rule_get_matches_zero_length_match():
     rule = chromaterm.Rule('hello() world')
     rule.set_color(color, group=1)
 
-    assert rule.get_matches(b'hello world') == []
+    assert not rule.get_matches(b'hello world')
 
 
 def test_rule_set_color_clear_existing():

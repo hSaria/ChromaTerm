@@ -344,7 +344,11 @@ class Config:
     '''An aggregation of multiple rules which highlights by performing the regex
     matching of the rules before any colors are added.'''
     def __init__(self, benchmark=False):
-        '''Constructor.'''
+        '''Constructor.
+
+        Args:
+            Benchmark (bool): Measure usage (duration, match count) of the rules.
+        '''
         self._reset_codes = {k: v['reset'] for k, v in COLOR_TYPES.items()}
         self.benchmark = benchmark
         self.benchmark_results = {}
@@ -352,7 +356,7 @@ class Config:
 
     @staticmethod
     def get_insert_index(start, end, inserts):
-        '''Returns a tuple containing the start and end indexes for where they
+        '''Returns a tuple containing the start and end indices for where they
         should be inserted into the inserts list in order to maintain the
         position-based descending (reverse) order.
 
@@ -465,15 +469,14 @@ class Config:
                 rule_matches = rule.get_matches(data)
                 duration += time.perf_counter() - checkpoint
                 count += len(rule_matches)
-
                 self.benchmark_results[rule] = (duration, count)
             else:
                 rule_matches = rule.get_matches(data)
 
             # If overlap is not allowed, replace any matches with \n to prevent
-            # overlap while maintaining correct indexes on other rules' matches
+            # overlap while maintaining correct indices on other rules' matches
             if rule.exclusive:
-                for start, end, _ in reversed(rule_matches):
+                for start, end, _ in rule_matches:
                     data = data[:start] + b'\n' * (end - start) + data[end:]
 
             matches += rule_matches
