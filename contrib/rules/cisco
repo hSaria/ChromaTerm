@@ -34,7 +34,7 @@
   color: f#00ff00
 
 - description: Possible warning and other things that deserve attention
-  regex: '(?<!\w)(Total output drops: [1-9][0-9]*|[1-9][0-9]* ((input |output )?errors|runts|CRC|(late )?collisions|unknown protocol drops)|err(or(s)?)?|reset|act\/unsup|dhcp|DHCP|mismatch|notconnect|dropped|LRN|learning|listening|LIS|unsynchronized|Peer\(STP\)|Shr|Edge|pvst|ieee|Bound\(PVST\)|TFTP|Mbgp|LAPB|l2ckt\(\d{1,10}\)|DCE|DTE|passive|r |RIB\-failure|discriminator|Standby|aggregate(d|\/\w+)|atomic\-aggregate|\(global\)|tag|key-chain|md5|backup\/repair|repair|v2\/D|v2\/SD|Condition\-map|Advertise\-map|no\-advertise|no\-export|local\-AS|internet)(?!\w)'
+  regex: '(?<!\w)(Total output drops: [1-9][0-9]*|[1-9][0-9]* ((input |output )?errors|runts|CRC|(late )?collisions|unknown protocol drops)|err(ors?)?|reset|act\/unsup|dhcp|DHCP|mismatch|notconnect|dropped|LRN|learning|listening|LIS|unsynchronized|Peer\(STP\)|Shr|Edge|pvst|ieee|Bound\(PVST\)|TFTP|Mbgp|LAPB|l2ckt\(\d{1,10}\)|DCE|DTE|passive|r |RIB\-failure|discriminator|Standby|aggregate(d|\/\w+)|atomic\-aggregate|\(global\)|tag|key-chain|md5|backup\/repair|repair|v2\/D|v2\/SD|Condition\-map|Advertise\-map|no\-advertise|no\-export|local\-AS|internet)(?!\w)'
   color: f#ffff00
 
 - description: Syslog facilities - Emergency to error

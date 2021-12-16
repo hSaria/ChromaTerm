@@ -12,14 +12,14 @@ RULE_NUMBERS = Rule(
 )
 
 RULE_IPV4 = Rule(
-    r'\b(?<!\.)((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)(/\d+)?(?!\.)\b',
+    r'\b(?<!\.)((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)(/\d+)?\b',
     Color('f#00ffff'),
     'IPv4',
     exclusive=True,
 )
 
 RULE_IPV6 = Rule(
-    r'(?i)(?<![\w:])(([\da-f]{1,4}:){7}[\da-f]{1,4}|[\da-f]{1,4}:(:[\da-f]{1,4}){1,6}|([\da-f]{1,4}:){1,2}(:[\da-f]{1,4}){1,5}|([\da-f]{1,4}:){1,3}(:[\da-f]{1,4}){1,4}|([\da-f]{1,4}:){1,4}(:[\da-f]{1,4}){1,3}|([\da-f]{1,4}:){1,5}(:[\da-f]{1,4}){1,2}|([\da-f]{1,4}:){1,6}:[\da-f]{1,4}|([\da-f]{1,4}:){1,7}:|:((:[\da-f]{1,4}){1,7}|:)|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|([\da-f]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))(%[\da-z]+)?(/\d+)?(?![\w:])',
+    r'(?i)(?<![\w:])(([\da-f]{1,4}:){7}[\da-f]{1,4}|[\da-f]{1,4}:(:[\da-f]{1,4}){1,6}|([\da-f]{1,4}:){1,2}(:[\da-f]{1,4}){1,5}|([\da-f]{1,4}:){1,3}(:[\da-f]{1,4}){1,4}|([\da-f]{1,4}:){1,4}(:[\da-f]{1,4}){1,3}|([\da-f]{1,4}:){1,5}(:[\da-f]{1,4}){1,2}|([\da-f]{1,4}:){1,6}:[\da-f]{1,4}|([\da-f]{1,4}:){1,7}:|:((:[\da-f]{1,4}){1,7}|:)|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|([\da-f]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))(%[\da-z]+)?(/\d+)?(?!:?\w)',
     Color('f#ff00ff'),
     'IPv6 (boundaries don\'t work here as they can be in the start or end of the match, so using lookaheads and lookbehinds instead)',
     exclusive=True,
@@ -47,31 +47,31 @@ RULE_TIME = Rule(
 )
 
 RULE_GENERIC_BAD = Rule(
-    r'(?i)\b(password|abnormal(ly)?|down|los(t|s|ing)|err(or(s)?)?|(den(y|ies|ied)?)|reject(ing|ed)?|drop(ped|s)?|(err\-)?disable(d)?|(time(d)?(\-)?out)|fail(s|ed|iure)?|disconnect(ed)?|unreachable|invalid|bad|notconnect|unusable|block(ing|ed)?|blk|inaccessible|wrong|collision(s)?|unsynchronized|mismatch|runts|CRC)\b',
+    r'(?i)\b(password|abnormal(ly)?|down|los(t|s|ing)|err(ors?)?|(den(y|ies|ied)?)|reject(ing|ed)?|drop(ped|s)?|(err\-)?disabled?|(timed?\-?out)|fail(s|ed|iure)?|disconnect(ed)?|unreachable|invalid|bad|notconnect|unusable|block(ing|ed)?|blk|inaccessible|wrong|collisions?|unsynchronized|mismatch|runts|CRC)\b',
     Color('f#ff0000'),
     'Generics - Bad',
 )
 
 RULE_GENERIC_AMBIGIOUS_BAD = Rule(
-    r"(?i)\b(no(t|pe)?|exit(ed)?|reset((t)?ing)?|discard(ed|ing)?|filter(ed)?|stop(p(ed|ing))?|never|can((')?t|not))\b",
+    r"(?i)\b(no(t|pe)?|exit(ed)?|reset(t?ing)?|discard(ed|ing)?|filter(ed)?|stop(p(ed|ing))?|never|can('?t|not))\b",
     Color('f#865e12'),
     'Generics - Ambigious bad',
 )
 
 RULE_GENERIC_NOT_TOO_BAD = Rule(
-    r'(?i)\b(warning(s)?)\b',
+    r'(?i)\b(warnings?)\b',
     Color('f#ffff00'),
     'Generics - Not too bad',
 )
 
 RULE_GENERIC_AMBIGIOUS_GOOD = Rule(
-    r'(?i)\b(ye(s|a(h)?|p)?|started|running|can)\b',
+    r'(?i)\b(ye(s|ah?|p)?|started|running|can)\b',
     Color('f#085e0b'),
     'Generics - Ambigious good',
 )
 
 RULE_GENERIC_GOOD = Rule(
-    r'(?i)\b(up|ok(ay)?|permit(ed|s)?|accept(s|ed)?|enable(d)?|online|succe((ss(ful|fully)?)|ed(ed)?)?|connect(ed)?|reachable|valid|forwarding|synchronized)\b',
+    r'(?i)\b(up|ok(ay)?|permit(ed|s)?|accept(s|ed)?|enabled?|online|succe((ss(ful|fully)?)|ed(ed)?)?|connect(ed)?|reachable|valid|forwarding|synchronized)\b',
     Color('f#00ff00'),
     'Generics - Good',
 )
