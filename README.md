@@ -25,11 +25,20 @@ Think of `ct` like `grep`; just pipe data into it, like `ssh somewhere | ct`.
 echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
 ```
 
-If you want to always highlight a program, you can set up a function in your
-`.bash_profile`. For instance, here's one for `ssh`:
+To always highlight a program, you can set up a function in your `.bash_profile`.
+For instance, here's one for `ssh`:
 ```shell
 ssh() { /usr/bin/ssh "$@" | ct; }
 ```
+
+If you want to highlight all programs, have ChromaTerm spawn your shell by
+modifying the shell command in your terminal's settings to:
+
+```shell
+/usr/local/bin/ct /bin/bash --login
+```
+
+> Replace `/bin/bash` with your shell of choice.
 
 Some programs behave differently when piped, like `less`. In that case, `ct` can
 hide the pipe by spawning your program. You just have to prefix the command with
