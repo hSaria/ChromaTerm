@@ -191,6 +191,19 @@ def test_color_decode_sgr_unrecognized():
         assert color_type is None
 
 
+def test_color_decode_sgr_is_reset():
+    '''Colors and styles with `is_reset=True` should always be marked as resets.'''
+    for style, code in zip(['fg', 'bg', 'bold'],
+                           [b'38;5;12', b'48;5;12', b'1']):
+        colors = chromaterm.Color.decode_sgr(make_sgr(code), is_reset=True)
+        assert len(colors) == 1
+
+        for color_code, color_reset, color_type in colors:
+            assert color_code == make_sgr(code)
+            assert color_reset
+            assert color_type == style
+
+
 def test_color_change_color():
     '''Confirm that the color_code is updated when the color or rgb is changed.'''
     color = chromaterm.Color('b#123123', rgb=False)

@@ -154,13 +154,14 @@ class Color:
             self.color = self._color
 
     @staticmethod
-    def decode_sgr(source_color_code):
+    def decode_sgr(source_color_code, is_reset=False):
         '''Decodes an SGR, splitting it into a list of colors, each being a list
         containing color code (bytes), is reset (bool), and color type (bytes)
         which corresponds to `COLOR_TYPES`.
 
         Args:
             source_color_code (bytes): Bytes to be split into individual colors.
+            is_reset (bool): Consider all identified colors as resets.
         '''
         def make_sgr(code_id):
             return b'\x1b[' + code_id + b'm'
@@ -194,14 +195,14 @@ class Color:
                 else:
                     return [[source_color_code, False, None]]
 
-                colors.append([make_sgr(code), False, color_type])
+                colors.append([make_sgr(code), False or is_reset, color_type])
             # Single-code SGR
             else:
                 color = [make_sgr(b'%d' % int(code)), False, None]
 
                 for name, color_type in COLOR_TYPES.items():
                     if color_type['re'].search(color[0]):
-                        color[1] = color[0] == color_type['reset']
+                        color[1] = color[0] == color_type['reset'] or is_reset
                         color[2] = name
 
                         # Types don't overlap; only one can match
@@ -238,7 +239,9 @@ class Color:
         while match:
             start, end = match.span()
 
-            for color in Color.decode_sgr(match.group()):
+            # Existing colors are marked as resets to indicate that they can be
+            # updated if ChromaTerm already matched the same data
+            for color in Color.decode_sgr(match.group(), is_reset=True):
                 color.insert(0, start)
                 inserts.insert(0, color)
 
