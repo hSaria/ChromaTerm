@@ -17,41 +17,44 @@ def make_sgr(*code_id):
 
 def test_color_known_colors():
     '''Random known-good color codes.'''
-    colors = [
-        'b#0973d8', 'b#8b6dd3', 'b#2867c7', 'b#18923a', 'b#636836', 'b#a0da5e',
-        'b#b99153', 'b#fafb19', 'f#6cb0d7', 'f#6f5e3a', 'f#7d6256', 'f#15c93d',
-        'f#45f2d7', 'f#50a910', 'f#1589b3', 'f#b8df23', 'f#d5a3bf', 'f#d7e764',
-        'f#e002d7', 'f#f56726'
-    ]
-    codes = [
-        b'48;5;33', b'48;5;140', b'48;5;32', b'48;5;35', b'48;5;101',
-        b'48;5;156', b'48;5;179', b'48;5;226', b'38;5;117', b'38;5;101',
-        b'38;5;102', b'38;5;41', b'38;5;87', b'38;5;70', b'38;5;38',
-        b'38;5;190', b'38;5;182', b'38;5;228', b'38;5;201', b'38;5;208'
-    ]
+    known_colors = [('644db0', 61), ('18ce9f', 43), ('7318d8', 56),
+                    ('5c96f6', 69), ('1ca4c3', 37), ('d9dcc1', 187),
+                    ('8bfe8c', 120), ('33f743', 83), ('36d840', 77),
+                    ('5baf98', 72), ('e5a667', 179), ('255bfe', 27),
+                    ('53e7b4', 79), ('7126d5', 56), ('60c51c', 76),
+                    ('bb9465', 137), ('15f502', 46), ('673f0b', 58),
+                    ('818fbb', 103), ('38fad2', 86), ('7ba6f1', 111),
+                    ('b6bffb', 147), ('cdf107', 190), ('4340ad', 61),
+                    ('c9b248', 179), ('903a02', 94), ('084bef', 27),
+                    ('a7dca2', 151), ('bf9a28', 136), ('20ca8e', 42),
+                    ('670f41', 53), ('94b8e9', 110), ('2c2d27', 235),
+                    ('d56561', 167), ('042e6b', 17), ('e7122a', 160),
+                    ('3420d6', 56), ('eae8fb', 255), ('04cc5e', 41),
+                    ('6a0577', 54), ('6c6e1f', 58), ('aa1ff2', 129),
+                    ('8d33db', 98), ('85f7c2', 121), ('b55896', 132),
+                    ('254118', 235), ('9c6c95', 132), ('a877ab', 139),
+                    ('7e4739', 95), ('4e8867', 65), ('7fbe9a', 108),
+                    ('e6da8e', 186), ('c355d7', 134), ('582017', 52),
+                    ('93051d', 88), ('3ac6a4', 79), ('fae310', 220),
+                    ('08f2d7', 50), ('09fbf1', 51), ('1ab465', 35),
+                    ('cf4341', 167), ('042ba4', 19), ('5310e0', 56),
+                    ('6d732e', 58), ('6d7cec', 69), ('c428d9', 164),
+                    ('4fd7f4', 81), ('09de3e', 41), ('410cfd', 57),
+                    ('e41749', 161), ('dc4578', 168), ('ebf705', 190),
+                    ('ce22b2', 163), ('ccf0ba', 193), ('a2a315', 142),
+                    ('db3a0e', 166), ('8ff3dd', 122), ('866a61', 95),
+                    ('25b6b4', 37), ('adbbb1', 249), ('d8272a', 160),
+                    ('2c72d8', 26), ('e401df', 164), ('10081b', 233),
+                    ('b3bf40', 143), ('0b572e', 22), ('d3a6de', 182),
+                    ('71659e', 61), ('260ff7', 21), ('81bb90', 108),
+                    ('8d7b5e', 101), ('ebf324', 190), ('1d6925', 22),
+                    ('e966c9', 170), ('f0e172', 221), ('7b2f0f', 88),
+                    ('fea6d8', 218), ('065694', 24), ('1e2e82', 18),
+                    ('ab4e33', 131)]
 
-    for color_str, color_code in zip(colors, codes):
-        color = chromaterm.Color(color_str, rgb=False)
-        assert color.color_code == make_sgr(color_code)
-
-
-def test_color_known_grayscale():
-    '''Random known-good grayscale codes.'''
-    colors = [
-        'b#000000', 'b#5d5d5d', 'b#373737', 'b#c8c8c8', 'b#cecece', 'b#d7d7d7',
-        'b#d8d8d8', 'b#fcfcfc', 'f#0b0b0b', 'f#000000', 'f#2b2b2b', 'f#2f2f2f',
-        'f#4c4c4c', 'f#4d4d4d', 'f#9d9d9d', 'f#808080'
-    ]
-    codes = [
-        b'48;5;232', b'48;5;240', b'48;5;237', b'48;5;250', b'48;5;251',
-        b'48;5;252', b'48;5;252', b'48;5;255', b'38;5;233', b'38;5;232',
-        b'38;5;236', b'38;5;236', b'38;5;239', b'38;5;239', b'38;5;246',
-        b'38;5;244'
-    ]
-
-    for color_str, color_code in zip(colors, codes):
-        color = chromaterm.Color(color_str, rgb=False)
-        assert color.color_code == make_sgr(color_code)
+    for hex_code, xterm256_code in known_colors:
+        color = chromaterm.Color(f'f#{hex_code}', rgb=False)
+        assert color.color_code == make_sgr(b'38;5;%d' % xterm256_code)
 
 
 def test_color_decode_sgr_bg():
@@ -224,9 +227,9 @@ def test_color_format_color_background():
     color = chromaterm.Color('b#123123', rgb=False)
 
     assert color.color == 'b#123123'
-    assert color.color_code == make_sgr(b'48;5;22')
+    assert color.color_code == make_sgr(b'48;5;235')
     assert color.color_reset == make_sgr(b'49')
-    assert color.color_types == [('bg', make_sgr(b'48;5;22'))]
+    assert color.color_types == [('bg', make_sgr(b'48;5;235'))]
     assert color.rgb is False
 
 
@@ -235,9 +238,9 @@ def test_color_format_color_foreground():
     color = chromaterm.Color('f#123123', rgb=False)
 
     assert color.color == 'f#123123'
-    assert color.color_code == make_sgr(b'38;5;22')
+    assert color.color_code == make_sgr(b'38;5;235')
     assert color.color_reset == make_sgr(b'39')
-    assert color.color_types == [('fg', make_sgr(b'38;5;22'))]
+    assert color.color_types == [('fg', make_sgr(b'38;5;235'))]
     assert color.rgb is False
 
 
@@ -246,11 +249,11 @@ def test_color_format_color_multiple():
     color = chromaterm.Color('f#123123 b#aBCDef bOLd', rgb=False)
 
     assert color.color == 'f#123123 b#abcdef bold'
-    assert color.color_code == make_sgr(b'38;5;22', b'48;5;189', b'1')
+    assert color.color_code == make_sgr(b'38;5;235', b'48;5;153', b'1')
     assert color.color_reset == make_sgr(b'22', b'49', b'39')
     assert color.color_types == [
-        ('fg', make_sgr(b'38;5;22')),
-        ('bg', make_sgr(b'48;5;189')),
+        ('fg', make_sgr(b'38;5;235')),
+        ('bg', make_sgr(b'48;5;153')),
         ('bold', make_sgr(b'1')),
     ]
     assert color.rgb is False

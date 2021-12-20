@@ -117,7 +117,7 @@ class Color:
                 color_id = b'%d;%d;%d' % tuple(rgb_int)
             else:
                 target += b'5;'
-                color_id = b'%d' % self.rgb_to_8bit(*rgb_int)
+                color_id = b'%d' % self.rgb_to_xterm256(*rgb_int)
 
             color_code = color_code + target + color_id + b'm'
             color_reset = COLOR_TYPES[color_type]['reset'] + color_reset
@@ -213,16 +213,30 @@ class Color:
         return colors
 
     @staticmethod
-    def rgb_to_8bit(_r, _g, _b):
-        '''Downscale from 24-bit RGB to 8-bit ANSI.'''
-        def downscale(value, base=6):
-            return int(value / 256 * base)
+    def rgb_to_xterm256(_r, _g, _b):
+        '''Downscale from 24-bit RGB to xterm-256.'''
+        def index(value, steps):
+            '''Get the index of the closest level.'''
+            return steps.index(min(steps, key=lambda x: abs(x - value)))
 
-        # Use the 24 shades of the grayscale
-        if _r == _g == _b:
-            return 232 + downscale(_r, base=24)
+        def distance(new_r, new_g, new_b):
+            '''Magnify the differences (like stdev, but avg/sqrt not needed).'''
+            return (new_r - _r)**2 + (new_g - _g)**2 + (new_b - _b)**2
 
-        return 16 + (36 * downscale(_r)) + (6 * downscale(_g)) + downscale(_b)
+        # Steps between 2 shades https://www.ditig.com/256-colors-cheat-sheet,
+        # the index of the closest step, and the distance to the input color
+        rgb_steps = (0, 95, 135, 175, 215, 255)
+        rgb_index = [index(x, rgb_steps) for x in (_r, _g, _b)]
+        rgb_distance = distance(*[rgb_steps[x] for x in rgb_index])
+
+        gray_steps = tuple(range(8, 239, 10))
+        gray_index = index((_r + _g + _b) // 3, gray_steps)
+        gray_distance = distance(*[gray_steps[gray_index]] * 3)
+
+        if gray_distance < rgb_distance:
+            return 232 + gray_index
+
+        return 16 + (36 * rgb_index[0]) + (6 * rgb_index[1]) + rgb_index[2]
 
     @staticmethod
     def strip_colors(data):

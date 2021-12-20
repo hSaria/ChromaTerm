@@ -7,7 +7,7 @@ from chromaterm import Color, Rule
 
 RULE_NUMBERS = Rule(
     r'\b(?<!\.)\d+(\.\d+)?(?!\.)\b',
-    Color('f#91490a'),
+    Color('f#af5f00'),
     'Numbers',
 )
 
@@ -54,7 +54,7 @@ RULE_GENERIC_BAD = Rule(
 
 RULE_GENERIC_AMBIGIOUS_BAD = Rule(
     r"(?i)\b(no(t|pe)?|exit(ed)?|reset(t?ing)?|discard(ed|ing)?|filter(ed)?|stop(p(ed|ing))?|never|can('?t|not))\b",
-    Color('f#865e12'),
+    Color('f#afaf5f'),
     'Generics - Ambigious bad',
 )
 
@@ -66,7 +66,7 @@ RULE_GENERIC_NOT_TOO_BAD = Rule(
 
 RULE_GENERIC_AMBIGIOUS_GOOD = Rule(
     r'(?i)\b(ye(s|ah?|p)?|started|running|can)\b',
-    Color('f#085e0b'),
+    Color('f#5f8700'),
     'Generics - Ambigious good',
 )
 
