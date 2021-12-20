@@ -468,6 +468,16 @@ def test_rule_change_color():
     assert old_color is not rule.color
 
 
+def test_rule_format_color_dict():
+    '''Accept a dictionary of groups and colors.'''
+    color1 = chromaterm.Color('bold')
+    color2 = chromaterm.Color('italic')
+    rule = chromaterm.Rule('h(e)(llo)', color={1: color1, 2: color2})
+
+    assert rule.colors[1] is color1
+    assert rule.colors[2] is color2
+
+
 def test_rule_invalid_type_color():
     '''Rule with an invalid color type.'''
     with pytest.raises(TypeError, match='color must be a chromaterm.Color'):

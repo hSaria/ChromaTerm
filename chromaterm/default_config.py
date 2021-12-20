@@ -90,8 +90,15 @@ def generate_default_rules_yaml():
         data += f'''
 - description: {rule.description}
   regex: {rule.regex.pattern.decode()}
-  color: {rule.color.color}
 '''
+
+        if len(rule.colors) > 1:
+            data += f'  color:\n'
+
+            for group, color in rule.colors.items():
+                data += f'    {group}: {color.color}\n'
+        else:
+            data += f'  color: {rule.color.color}\n'
 
         if rule.exclusive:
             data += f'  exclusive: {rule.exclusive}\n'

@@ -259,7 +259,8 @@ class Rule:
 
         Args:
             regex (str): Regular expression for getting matches in data.
-            color (chromaterm.Color): Color used to highlight the entire match.
+            color (chromaterm.Color, dict): Color used to highlight the entire
+                match. Can be a dictionary of {group:  color} format.
             description (str): String to help identify the rule.
             exclusive (bool): Whether other rules should overlap with this one
 
@@ -277,7 +278,11 @@ class Rule:
         self.exclusive = bool(exclusive)
         self.regex = re.compile(regex.encode(encoding='utf-8'))
 
-        self.set_color(color)
+        if not isinstance(color, dict):
+            color = {0: color}
+
+        for group, value in color.items():
+            self.set_color(value, group)
 
     @property
     def color(self):
