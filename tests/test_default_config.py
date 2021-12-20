@@ -81,7 +81,7 @@ def test_rule_date():
     positives = [
         '2019-12-31', '2019-12-31', 'jan 2019', 'feb 2019', 'Mar 2019',
         'apr 2019', 'MAY 2019', 'Jun 2019', 'jul  2019', 'AUG 19', 'sep 20',
-        'oct 21', 'nov 22', 'dec 23', '24 jan', '25 feb 2019'
+        'oct 21', 'dec 23', 'AUG 19 2021', '24 jan', '25 feb 2019'
     ]
     negatives = [
         '201-12-31', '2019-13-31', '2019-12-32', 'xyz 2019', 'Jun 201',

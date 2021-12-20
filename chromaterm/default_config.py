@@ -33,9 +33,9 @@ RULE_MAC = Rule(
 )
 
 RULE_DATE = Rule(
-    r'(?i)((?<=\W)|^)((\d{2}|\d{4})\-(0?[1-9]|1[0-2])\-(3[0-1]|([1-2]\d)|0?[1-9])|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{4}|(3[0-1]|([1-2]\d)|0?[1-9]))|((3[0-1]|([1-2]\d)|0?[1-9])\s(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(\s+\d{4})?))((?=[\WT_])|$)',
+    r'(?i)((?<=\W)|^)((\d{2}|\d{4})\-(0?[1-9]|1[0-2])\-(3[0-1]|[1-2]\d|0?[1-9])|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+((3[0-1]|[1-2]\d|0?[1-9])(\s+\d{4})?|\d{4})|((3[0-1]|[1-2]\d|0?[1-9])\s(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(\s+\d{4})?))((?=[\WT_])|$)',
     Color('b#af5f00'),
-    'Date in YYYY-MM-DD, YY-MM-DD, MMM (YYYY|DD), or DD MMM (YYYY)? formats',
+    'Date in YYYY-MM-DD, YY-MM-DD, MMM (DD( YYYY)?|YYYY), or DD MMM (YYYY)? formats',
     exclusive=True,
 )
 
