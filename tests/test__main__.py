@@ -590,7 +590,8 @@ def test_split_buffer_osc_title():
     '''Operating System Command (OSC) can supply arbitrary commands within the
     visible character set.'''
     for end in [b'\x07', b'\x1b\x5c']:
-        osc = b'\x1b]Ignored' + end
+        # Includes a smiley-face
+        osc = b'\x1b]Ignored\xf0\x9f\x98\x80' + end
         data = osc + b'Hello world'
         expected = ((b'', osc), (b'Hello world', b''))
 

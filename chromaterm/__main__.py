@@ -45,7 +45,7 @@ READ_SIZE = 4096  # 4 KiB
 SPLIT_RE = re.compile(br'(\r\n?|\n|\v|\f|\x1b[\x40-\x5a\x5c\x5e\x5f]|'
                       br'\x1b[\x28-\x2b\x2d-\x2f][\x20-\x7e]|'
                       br'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
-                      br'\x1b\x5d[\x08-\x0d\x20-\x7e]*(?:\x07|\x1b\x5c))')
+                      br'\x1b\x5d[^\x07\x1b]*(?:\x07|\x1b\x5c))')
 
 
 def args_init(args=None):
