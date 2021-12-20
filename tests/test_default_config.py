@@ -4,7 +4,7 @@ import os
 import chromaterm.default_config
 
 
-def assert_matches(positives, negatives, rule):
+def assert_matches(positives, negatives, rule, match_count=1):
     '''Assert that all positives are matched while negatives are not.'''
     def permutate_data(data):
         output = []
@@ -20,7 +20,7 @@ def assert_matches(positives, negatives, rule):
         return output
 
     for data in permutate_data(positives):
-        assert len(rule.get_matches(data)) == 1
+        assert len(rule.get_matches(data)) == match_count
 
     for data in permutate_data(negatives):
         assert len(rule.get_matches(data)) == 0
@@ -74,6 +74,18 @@ def test_rule_mac():
     rule = chromaterm.default_config.RULE_MAC
 
     assert_matches(positives, negatives, rule)
+
+
+def test_rule_size():
+    '''Default rule: Size.'''
+    positives = [
+        '100b', '1kb', '1kib', '1Kb', '1kbps', '1.1kb', '1mb', '1gb', '1tb',
+        '1pb', '1eb', '1zb', '1yb'
+    ]
+    negatives = ['100', '1kg', '1kic', '1kbpm', '1kibb', '1.1.kb', '100wb']
+    rule = chromaterm.default_config.RULE_SIZE
+
+    assert_matches(positives, negatives, rule, match_count=2)
 
 
 def test_rule_date():

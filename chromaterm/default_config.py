@@ -46,6 +46,16 @@ RULE_TIME = Rule(
     exclusive=True,
 )
 
+RULE_SIZE = Rule(
+    r'(?i)\b\d+(\.\d+)?\s?((([KMGTPEZY](i?B)?)|B)(ps)?)\b',
+    {
+        0: Color('f#875fd7'),
+        2: Color('bold'),
+    },
+    'Size, like 123G 123Gb 123Gib 1.23G 123Gbps',
+    exclusive=True,
+)
+
 RULE_GENERIC_BAD = Rule(
     r'(?i)\b(password|abnormal(ly)?|down|los(t|s|ing)|err(ors?)?|(den(y|ies|ied)?)|reject(ing|ed)?|drop(ped|s)?|(err\-)?disabled?|(timed?\-?out)|fail(s|ed|iure)?|disconnect(ed)?|unreachable|invalid|bad|notconnect|unusable|block(ing|ed)?|blk|inaccessible|wrong|collisions?|unsynchronized|mismatch|runts|CRC)\b',
     Color('f#ff0000'),
@@ -83,7 +93,7 @@ def generate_default_rules_yaml():
 
     for rule in [
             RULE_NUMBERS, RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_DATE, RULE_TIME,
-            RULE_GENERIC_BAD, RULE_GENERIC_AMBIGIOUS_BAD,
+            RULE_SIZE, RULE_GENERIC_BAD, RULE_GENERIC_AMBIGIOUS_BAD,
             RULE_GENERIC_NOT_TOO_BAD, RULE_GENERIC_AMBIGIOUS_GOOD,
             RULE_GENERIC_GOOD
     ]:
