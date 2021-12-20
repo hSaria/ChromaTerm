@@ -278,7 +278,8 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             wait_duration = get_wait_duration(buffer)
 
             # Zero or one characters indicates keyboard typing; don't highlight
-            if len(data) < 2:
+            # Account for the backspaces added by some shells, like zsh
+            if len(data) < 2 + data.count(b'\b') * 2:
                 sys.stdout.buffer.write(data + separator)
                 buffer = b''
             # Data was read and there's more to come; wait before highlighting

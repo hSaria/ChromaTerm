@@ -406,6 +406,21 @@ def test_process_input_single_character(capsys):
     assert capsys.readouterr().out == 'x'
 
 
+def test_process_input_backspaces(capsys):
+    '''Backspaces in the input should be accounted for when determining if typing
+    is in progress.'''
+    pipe_r, pipe_w = os.pipe()
+    config = chromaterm.__main__.Config()
+
+    rule = chromaterm.Rule('.', color=chromaterm.Color('bold'))
+    config.rules.append(rule)
+
+    os.write(pipe_w, b'\b\bxyz')
+    chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
+
+    assert capsys.readouterr().out == '\b\bxyz'
+
+
 def test_process_input_trailing_chunk(capsys):
     '''Ensure that a trailing chunk is joined with the next chunk if the latter
     arrives in time.'''
