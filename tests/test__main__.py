@@ -760,7 +760,7 @@ def test_main_run_no_file_found():
                             stdout=subprocess.PIPE)
 
     output = re.sub(br'\x1b\[[\d;]+?m', b'', result.stdout)
-    assert b'plz-no-work: command not found' in output
+    assert b'command not found: plz-no-work' in output
 
 
 def test_main_run_no_pipe():

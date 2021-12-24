@@ -422,7 +422,7 @@ class Config:
 
         The list of inserts is ordered in descending order based on the position
         of each insert relative to the data. This makes them easy to insert into
-        data without calculating index offsetes.
+        data without calculating index offsets.
 
         Args:
             data (bytes): Bytes from which the inserts are gathered.
@@ -515,7 +515,6 @@ class Config:
         '''
         data, inserts = Color.strip_colors(data)
         inserts = self.get_inserts(data, inserts)
-
         resets_to_update = list(self._reset_codes)
 
         for position, color_code, is_reset, color_type in inserts:

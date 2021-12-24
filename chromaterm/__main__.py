@@ -29,7 +29,7 @@ CWD_UPDATE_INTERVAL = 1 / 4
 
 # ChromaTerm cannot determine if it's processing data faster than input rate or
 # if the input has finished. Therefore, ChromaTerm waits before processing the
-# last chunk in the buffer. The waiting is stopped if data becomes ready.
+# last chunk in the buffer. The waiting is cancelled if data becomes available.
 # Bounds for `get_wait_duration`. 1/256 is smaller (shorter) than the fastest key
 # repeat (1/255 second). 1/8th of a second is generally enough to account for
 # the latency of command processing or a remote connection.
@@ -168,7 +168,7 @@ def load_rules(config, data, rgb=False):
         else:
             eprint(rule)
 
-    # Put the non-overlapping (exclusive=True) rules are at the top
+    # Put the non-overlapping (exclusive=True) rules at the top
     config.rules = sorted(config.rules, key=lambda x: not x.exclusive)
 
 
@@ -187,6 +187,7 @@ def parse_rule(rule, rgb=False):
     description = rule.get('description')
     exclusive = rule.get('exclusive', False)
     regex = rule.get('regex')
+    color = rule.get('color')
 
     if description:
         rule_repr = f'Rule(regex={repr(regex)}, description={repr(description)})'
@@ -203,8 +204,6 @@ def parse_rule(rule, rgb=False):
     except re.error as exception:
         return f'Error on {rule_repr}: re.error: {exception}'
 
-    color = rule.get('color')
-
     if isinstance(color, str):
         color = {0: color}
     elif not isinstance(color, dict):
@@ -212,8 +211,7 @@ def parse_rule(rule, rgb=False):
 
     try:
         for group in color:
-            parsed_color = Color(color[group], rgb=rgb)
-            parsed_rule.set_color(parsed_color, group=group)
+            parsed_rule.set_color(Color(color[group], rgb=rgb), group=group)
     except (TypeError, ValueError) as exception:
         return f'Error on {rule_repr}: {exception}'
 
@@ -391,7 +389,7 @@ def run_program(program_args):
         try:
             os.execvp(program_args[0], program_args)
         except FileNotFoundError:
-            eprint(f'{program_args[0]}: command not found')
+            eprint(f'command not found: {program_args[0]}')
 
         # exec replaces the fork's process; only hit on exception
         sys.exit(1)

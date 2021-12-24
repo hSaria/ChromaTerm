@@ -103,7 +103,7 @@ def generate_default_rules_yaml():
 '''
 
         if len(rule.colors) > 1:
-            data += f'  color:\n'
+            data += '  color:\n'
 
             for group, color in rule.colors.items():
                 data += f'    {group}: {color.color}\n'
