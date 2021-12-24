@@ -27,7 +27,7 @@ RULE_IPV6 = Rule(
 
 RULE_MAC = Rule(
     r'(?i)\b((?<!:)([\da-f]{1,2}:){5}[\da-f]{1,2}(?!:)|(?<!\.)([\da-f]{4}\.){2}[\da-f]{4}(?!\.))\b',
-    Color('f#5f61ad'),
+    Color('f#99a8ff'),
     'MAC addresses',
     exclusive=True,
 )
