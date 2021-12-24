@@ -45,7 +45,7 @@ READ_SIZE = 4096  # 4 KiB
 SPLIT_RE = re.compile(br'(\r\n?|\n|\v|\f|\x1b[\x40-\x5a\x5c\x5e\x5f]|'
                       br'\x1b[\x28-\x2b\x2d-\x2f][\x20-\x7e]|'
                       br'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
-                      br'\x1b\x5d[^\x07\x1b]*(?:\x07|\x1b\x5c))')
+                      br'\x1b\x5d[^\x07\x1b]*(?:\x07|\x1b\x5c)?)')
 
 
 def args_init(args=None):
@@ -275,12 +275,15 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             data, separator = chunks[-1]
             wait_duration = get_wait_duration(buffer)
 
+            # Separator is an incomplete OSC; wait for a bit
+            if data_read and separator.startswith(b'\x1b\x5d'):
+                buffer = data + separator
             # Zero or one characters indicates keyboard typing; don't highlight
             # Account for the backspaces added by some shells, like zsh
-            if len(data) < 2 + data.count(b'\b') * 2:
+            elif len(data) < 2 + data.count(b'\b') * 2:
                 sys.stdout.buffer.write(data + separator)
                 buffer = b''
-            # Data was read and there's more to come; wait before highlighting
+            # There's more data; wait before highlighting
             elif data_read and read_ready(data_fd, timeout=wait_duration):
                 buffer = data + separator
             else:
@@ -435,8 +438,9 @@ def split_buffer(buffer):
     '''
     chunks = SPLIT_RE.split(buffer)
 
-    # Append an empty separator in case of no chunks or no separator at the end
-    chunks.append(b'')
+    # Append an empty separator when chunks end with data
+    if chunks[-1]:
+        chunks.append(b'')
 
     # Group all chunks into format of (data, separator)
     return tuple(zip(chunks[0::2], chunks[1::2]))

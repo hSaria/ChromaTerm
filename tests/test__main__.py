@@ -375,6 +375,49 @@ def test_process_input_multiline(capsys):
     assert capsys.readouterr().out == '\nt \x1b[1mhello world\x1b[22m t\n' * 2
 
 
+def test_process_input_partial_osc(capsys, monkeypatch):
+    '''An incomplete OSC should not be printed.'''
+    pipe_r, pipe_w = os.pipe()
+    config = chromaterm.__main__.Config()
+    event = threading.Event()
+
+    def patched_read_ready(*_1, timeout=None):
+        # If timeout is used, then it's the call to check for more data
+        if timeout:
+            return []
+
+        event.set()
+        return [pipe_r]
+
+    monkeypatch.setattr(chromaterm.__main__, 'read_ready', patched_read_ready)
+
+    worker = threading.Thread(target=chromaterm.__main__.process_input,
+                              args=(config, pipe_r))
+    worker.start()
+
+    try:
+        # Data (printed), followed by the first part of the OSC (not printed)
+        event.clear()
+        os.write(pipe_w, b'hello\n\x1b\x5dp1')
+        event.wait()
+        assert capsys.readouterr().out == 'hello\n'
+
+        # Second part of the OSC (not printed)
+        event.clear()
+        os.write(pipe_w, 'p2'.encode())
+        event.wait()
+        assert capsys.readouterr().out == ''
+
+        # Final part of the OSC (printed) and some data (printed)
+        event.clear()
+        os.write(pipe_w, 'p3\x07world'.encode())
+        event.wait()
+        assert capsys.readouterr().out == '\x1b\x5dp1p2p3\x07world'
+    finally:
+        os.close(pipe_w)
+        worker.join()
+
+
 def test_process_input_read_size(capsys):
     '''Input longer than READ_SIZE should not break highlighting.'''
     pipe_r, pipe_w = os.pipe()
