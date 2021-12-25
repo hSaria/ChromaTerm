@@ -272,6 +272,9 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             for data, separator in chunks[:-1]:
                 sys.stdout.buffer.write(config.highlight(data) + separator)
 
+            # Flush as `read_ready` might delay the flush at the bottom
+            sys.stdout.flush()
+
             data, separator = chunks[-1]
             wait_duration = get_wait_duration(buffer)
 
