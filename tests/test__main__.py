@@ -223,6 +223,12 @@ def test_load_config_format_error(capsys):
     '''Parse a config file with format problems.'''
     config = chromaterm.__main__.Config()
 
+    chromaterm.__main__.load_config(config, 'palette: 1')
+    assert '"palette" is not a dictionary' in capsys.readouterr().err
+
+    chromaterm.__main__.load_config(config, 'palette:\n  1: 1')
+    assert 'Error on palette color' in capsys.readouterr().err
+
     chromaterm.__main__.load_config(config, 'rules: 1')
     assert '"rules" is not a list' in capsys.readouterr().err
 
@@ -236,6 +242,26 @@ def test_load_config_yaml_format_error(capsys):
 
     chromaterm.__main__.load_config(config, '-x-\nhi:')
     assert 'Parse error:' in capsys.readouterr().err
+
+
+def test_parse_palette():
+    '''Parse a palette.'''
+    palette = chromaterm.__main__.parse_palette({
+        'red': '#ff0000',
+        'blue': '#0000ff'
+    })
+
+    assert len(palette.colors) == 2
+    assert palette.colors['red'] == '#ff0000'
+    assert palette.colors['blue'] == '#0000ff'
+
+
+def test_parse_palette_invalid_colors():
+    '''Parse a palette with invalid colors.'''
+    msg = 'Error on palette color 1: 1:'
+
+    palette = {1: 1, 2: 2}
+    assert msg in chromaterm.__main__.parse_palette(palette)
 
 
 def test_parse_rule():

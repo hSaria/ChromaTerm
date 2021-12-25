@@ -234,6 +234,26 @@ def test_color_duplicate_style():
             assert color.color_reset == color_type['reset']
 
 
+def test_color_palette():
+    '''Use a palette color.'''
+    palette = chromaterm.Palette()
+    palette.add_color('red', '#ff0000')
+
+    color = chromaterm.Color('b.red bold', palette=palette, rgb=False)
+
+    assert color.color == 'b.red bold'
+    assert color.color_code == make_sgr(b'48;5;196', b'1')
+    assert color.color_reset == make_sgr(b'22', b'49')
+    assert color.color_types == [('bg', make_sgr(b'48;5;196')),
+                                 ('bold', make_sgr(b'1'))]
+
+
+def test_color_invalid_value_palette_missing():
+    '''Use a palette color, but don't specify a pleatte.'''
+    with pytest.raises(ValueError, match='no palette specified'):
+        chromaterm.Color('b.red bold')
+
+
 def test_color_format_color_background():
     '''Background color.'''
     color = chromaterm.Color('b#123123', rgb=False)
@@ -342,6 +362,80 @@ def test_color_invalid_value_duplicate_foreground():
     '''Color with multiple background colors.'''
     with pytest.raises(ValueError, match='one foreground and one background'):
         chromaterm.Color('f#123123 f#321321')
+
+
+def test_palette_add_color():
+    '''Confirm a color and its value are added to the palette.'''
+    palette = chromaterm.Palette()
+    palette.add_color('red', '#ff0000')
+
+    assert palette.colors['red'] == '#ff0000'
+
+
+def test_palette_add_color_invalid_type_name():
+    '''Add a color with an invalid name type.'''
+    with pytest.raises(TypeError, match='color name must be a string'):
+        chromaterm.Palette().add_color(1, '#ff0000')
+
+
+def test_palette_add_color_invalid_type_value():
+    '''Add a color with an invalid value type.'''
+    with pytest.raises(TypeError, match='color value must be a string'):
+        chromaterm.Palette().add_color('red', 1)
+
+
+def test_palette_add_color_invalid_value_name():
+    '''Add a color with an invalid name value.'''
+    with pytest.raises(ValueError, match='name accepts alphanumerics, dashes'):
+        chromaterm.Palette().add_color('red$', '#ff0000')
+
+
+def test_palette_add_color_invalid_value_name_duplicate():
+    '''Add a color with a name that's already in use.'''
+    palette = chromaterm.Palette()
+    palette.add_color('red', '#ff0000')
+
+    with pytest.raises(ValueError, match='same name already exists'):
+        palette.add_color('red', '#ff0000')
+
+
+def test_palette_add_color_invalid_value_name_reserved():
+    '''Add a color with a reserved name.'''
+    for color_type in chromaterm.COLOR_TYPES:
+        with pytest.raises(ValueError, match='color name is reserved'):
+            chromaterm.Palette().add_color(color_type, '#ff0000')
+
+
+def test_palette_add_color_invalid_value_value():
+    '''Add a color with an invalid value value.'''
+    with pytest.raises(ValueError, match='must be in the format of `#123abc`'):
+        chromaterm.Palette().add_color('red', 'h#ff0000')
+
+
+def test_palette_resolve():
+    '''Resolve a color name using a palette'''
+    palette = chromaterm.Palette()
+    palette.add_color('red', '#ff0000')
+    palette.add_color('green', '#00ff00')
+    palette.add_color('blue', '#0000ff')
+
+    assert palette.resolve('b.red') == 'b#ff0000'
+    assert palette.resolve('f.green bold') == 'f#00ff00 bold'
+    assert palette.resolve('123 f.blue italic') == '123 f#0000ff italic'
+    assert palette.resolve('f#0000ff bold') == 'f#0000ff bold'
+    assert palette.resolve('random') == 'random'
+
+
+def test_palette_resolve_invalid_type_name():
+    '''Resolve a color name with the wrong type.'''
+    with pytest.raises(TypeError, match='color must be a string'):
+        chromaterm.Palette().resolve(False)
+
+
+def test_palette_resolve_invalid_value_name_not_in_palette():
+    '''Resolve a color name that isn't in the palette.'''
+    with pytest.raises(ValueError, match='not in palette'):
+        chromaterm.Palette().resolve('b.red')
 
 
 def test_rule_get_matches():

@@ -47,6 +47,9 @@ COLOR_TYPES = {
     }
 }
 
+# The format of a palette color
+PALETTE_COLOR_RE = re.compile(r'\b([bf])\.([a-z0-9-_]+)\b')
+
 # Detect rgb support
 RGB_SUPPORTED = os.getenv('COLORTERM') in ('truecolor', '24bit')
 
@@ -56,7 +59,9 @@ SGR_RE = re.compile(br'\x1b\[[0-9;]*m')
 
 class Color:
     '''A color and its ANSI escape codes.'''
-    def __init__(self, color, rgb=None):
+
+    # pylint: disable=too-many-instance-attributes
+    def __init__(self, color, palette=None, rgb=None):
         '''Constructor.
 
         Args:
@@ -68,14 +73,17 @@ class Color:
                 * a combination of the above, seperated by spaces.
 
                 Example: `"b#123123 bold"`
+            palette (chromaterm.Palette): Palette to resolve palette colors.
             rgb (bool): Whether the color is meant for RGB-enabled terminals or
                 not. `False` will downscale the RGB colors to xterm-256. `None`
                 will detect support for RGB and fallback to xterm-256.
 
         Raises:
             TypeError: If `color` is not a string. If `rgb` is not a boolean.
-            ValueError: If the format of `color` is invalid.
+            ValueError: If the format of `color` is invalid. If palette color is
+                used with `palette=None`.
         '''
+        self.palette = palette
         self.rgb = rgb
         self.color = color
 
@@ -94,6 +102,13 @@ class Color:
         color_re = r'(([bf]#[0-9a-f]{6}|' + '|'.join(styles) + r')(\s+|$))+'
         color_code = color_reset = b''
         color_types = []
+
+        if PALETTE_COLOR_RE.search(value):
+            if not self.palette:
+                raise ValueError(
+                    'palette color name present, but no palette specified')
+
+            value = self.palette.resolve(value)
 
         if not re.fullmatch(color_re, value):
             raise ValueError(f'invalid color format {repr(value)}')
@@ -261,6 +276,77 @@ class Color:
             match = SGR_RE.search(data)
 
         return data, inserts
+
+
+class Palette:
+    '''A color palette that maps names to RGB hex codes.'''
+    def __init__(self):
+        '''Constructor.'''
+        self.colors = {}
+
+    def add_color(self, name, value):
+        '''Adds a color to the palette.
+
+        Args:
+            name (str): The color name to be referenced. Accepts `[a-z0-9-_]+`.
+            value (str): A hex color, like `#123abc`.
+
+        Raises:
+            ValueError: If `name` is reserved, already exists, or uses invalid
+                characters. If `value` uses invalid characters.
+            TypeError: If `name` or `value` are not strings.
+        '''
+        if not isinstance(name, str):
+            raise TypeError('color name must be a string')
+
+        if not isinstance(value, str):
+            raise TypeError('color value must be a string')
+
+        name = name.lower().strip()
+        value = value.lower().strip()
+
+        if name in COLOR_TYPES:
+            raise ValueError('color name is reserved')
+
+        if name in self.colors:
+            raise ValueError('a color with the same name already exists')
+
+        if not re.fullmatch(r'[a-z0-9-_]+', name):
+            raise ValueError('name accepts alphanumerics, dashes, and '
+                             'underscores only.')
+
+        if not re.fullmatch(r'#[0-9a-f]{6}', value):
+            raise ValueError('color value must be in the format of `#123abc`')
+
+        self.colors[name] = value
+
+    def resolve(self, color):
+        '''Returns `color` after resolving palette colors to their appropriate
+        values (e.g. `b.color_name` to `b#123abc`).
+
+        Args:
+            color (str): the string that describes a color.
+
+        Raises:
+            TypeError: If `color` is not a string.
+            ValueError: If a color is not found in the palette.
+        '''
+        if not isinstance(color, str):
+            raise TypeError('color must be a string')
+
+        color = color.lower().strip()
+
+        for match in reversed(list(PALETTE_COLOR_RE.finditer(color))):
+            start, end = match.span()
+            target = match.group(1)
+            name = match.group(2)
+
+            if name not in self.colors:
+                raise ValueError(f'color {repr(name)} not in palette')
+
+            color = color[:start] + f'{target}{self.colors[name]}' + color[end:]
+
+        return color
 
 
 class Rule:

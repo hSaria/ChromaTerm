@@ -1,9 +1,11 @@
 '''A store for the default rules of ChromaTerm'''
 import os
 
-from chromaterm import Color, Rule
+from chromaterm import Color, Palette, Rule
 
 # pylint: disable=line-too-long
+
+PALETTE = Palette()
 
 RULE_NUMBERS = Rule(
     r'\b(?<!\.)\d+(\.\d+)?(?!\.)\b',
@@ -89,6 +91,12 @@ RULE_GENERIC_GOOD = Rule(
 
 def generate_default_rules_yaml():
     '''Returns a YAML string of the default configuration.'''
+    data = 'palette:'
+
+    for name, color in PALETTE.colors.items():
+        data += f'\n  {name}: "{color}"'
+
+    data += '\n\nrules:'
 
     for rule in [
             RULE_NUMBERS, RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_DATE, RULE_TIME,

@@ -10,7 +10,7 @@ import sys
 
 import yaml
 
-from chromaterm import Color, Config, Rule
+from chromaterm import Color, Config, Palette, Rule
 from chromaterm.default_config import write_default_config
 
 # Some sections are rarely used, so avoid unnecessary imports to speed up launch
@@ -125,10 +125,14 @@ def get_wait_duration(buffer):
 
 def load_config(config, data, rgb=False):
     '''Reads configuration from a YAML-based string, formatted like so:
+    palette:
+      red: "#ff0000"
+      blue: "#0000ff"
+
     rules:
     - description: My first rule
         regex: Hello
-        color: b#123123
+        color: b.red
     - description: My second rule is specfic to groups
         regex: W(or)ld
         color:
@@ -148,7 +152,19 @@ def load_config(config, data, rgb=False):
         eprint('Parse error:', exception)
         return
 
+    palette = data.get('palette') if isinstance(data, dict) else None
     rules = data.get('rules') if isinstance(data, dict) else None
+
+    if palette is not None:
+        if not isinstance(palette, dict):
+            eprint('Parse error: "palette" is not a dictionary')
+            return
+
+        palette = parse_palette(palette)
+
+        if not isinstance(palette, Palette):
+            eprint(palette)
+            return
 
     if rules is None:
         eprint('Parse error: "rules" list not found in configuration')
@@ -161,7 +177,7 @@ def load_config(config, data, rgb=False):
     config.rules.clear()
 
     for rule in rules:
-        rule = parse_rule(rule, rgb=rgb)
+        rule = parse_rule(rule, palette=palette, rgb=rgb)
 
         if isinstance(rule, Rule):
             config.rules.append(rule)
@@ -172,6 +188,25 @@ def load_config(config, data, rgb=False):
     config.rules = sorted(config.rules, key=lambda x: not x.exclusive)
 
 
+def parse_palette(data):
+    '''Returns an instance of chromaterm.Palette if parsed correctly. Otherwise,
+    a string with the error message is returned.
+
+    Args:
+        data (dict): A dictionary representing the color palette, formatted
+            according to `chromaterm.__main__.load_config`.
+    '''
+    palette = Palette()
+
+    try:
+        for name, value in data.items():
+            palette.add_color(name, value)
+    except (TypeError, ValueError) as exception:
+        return f'Error on palette color {repr(name)}: {repr(value)}: {exception}'
+
+    return palette
+
+
 def parse_rule(data, palette=None, rgb=False):
     '''Returns an instance of chromaterm.Rule if parsed correctly. Otherwise, a
     string with the error message is returned.
@@ -179,6 +214,7 @@ def parse_rule(data, palette=None, rgb=False):
     Args:
         data (dict): A dictionary representing the rule, formatted according to
             `chromaterm.__main__.load_config`.
+        palette (chromaterm.Palette): A palette to resolve colors.
         rgb (bool): Whether the terminal is RGB-capable or not.
     '''
     if not isinstance(data, dict):
@@ -201,7 +237,7 @@ def parse_rule(data, palette=None, rgb=False):
         rule = Rule(regex, description=description, exclusive=exclusive)
 
         for group, value in color.items():
-            rule.set_color(Color(value, rgb=rgb), group=group)
+            rule.set_color(Color(value, palette=palette, rgb=rgb), group=group)
 
         return rule
     except (TypeError, ValueError) as exception:
