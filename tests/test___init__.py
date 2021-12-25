@@ -222,6 +222,18 @@ def test_color_change_color():
     assert color.color_code != old_color_code
 
 
+def test_color_duplicate_style():
+    '''Duplicate styles are ignored as opposed to added multiple times.'''
+    for name, color_type in chromaterm.COLOR_TYPES.items():
+        # Only styles have a 'code' key
+        if color_type.get('code'):
+            color = chromaterm.Color(f'{name} {name}')
+
+            assert color.color == name
+            assert color.color_code == color_type['code']
+            assert color.color_reset == color_type['reset']
+
+
 def test_color_format_color_background():
     '''Background color.'''
     color = chromaterm.Color('b#123123', rgb=False)
@@ -330,15 +342,6 @@ def test_color_invalid_value_duplicate_foreground():
     '''Color with multiple background colors.'''
     with pytest.raises(ValueError, match='one foreground and one background'):
         chromaterm.Color('f#123123 f#321321')
-
-
-def test_color_invalid_value_duplicate_style():
-    '''Color with multiple background colors.'''
-    styles = (k for k, v in chromaterm.COLOR_TYPES.items() if v.get('code'))
-
-    for style in styles:
-        with pytest.raises(ValueError, match='duplicate styles'):
-            chromaterm.Color(f'{style} {style}')
 
 
 def test_rule_get_matches():

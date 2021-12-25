@@ -88,8 +88,7 @@ RULE_GENERIC_GOOD = Rule(
 
 
 def generate_default_rules_yaml():
-    '''Returns a string describing the default configuration in YAML.'''
-    data = 'rules:'
+    '''Returns a YAML string of the default configuration.'''
 
     for rule in [
             RULE_NUMBERS, RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_DATE, RULE_TIME,

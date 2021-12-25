@@ -123,8 +123,8 @@ def get_wait_duration(buffer):
     return INPUT_WAIT_MIN
 
 
-def load_rules(config, data, rgb=False):
-    '''Reads rules from a YAML-based string, formatted like so:
+def load_config(config, data, rgb=False):
+    '''Reads configuration from a YAML-based string, formatted like so:
     rules:
     - description: My first rule
         regex: Hello
@@ -138,7 +138,7 @@ def load_rules(config, data, rgb=False):
     Any errors are printed to stderr.
 
     Args:
-        config (chromaterm.Config): The config into which the rules are loaded.
+        config (chromaterm.Config): The instance to which data is loaded.
         data (str): A string containg YAML data.
         rgb (bool): Whether the terminal is RGB-capable or not.
     '''
@@ -172,50 +172,42 @@ def load_rules(config, data, rgb=False):
     config.rules = sorted(config.rules, key=lambda x: not x.exclusive)
 
 
-def parse_rule(rule, rgb=False):
+def parse_rule(data, palette=None, rgb=False):
     '''Returns an instance of chromaterm.Rule if parsed correctly. Otherwise, a
     string with the error message is returned.
 
     Args:
-        rule (dict): A dictionary representing the rule, formatted according to
-            `chromaterm.__main__.load_rules`.
+        data (dict): A dictionary representing the rule, formatted according to
+            `chromaterm.__main__.load_config`.
+        rgb (bool): Whether the terminal is RGB-capable or not.
     '''
-    # pylint: disable=too-many-return-statements
-    if not isinstance(rule, dict):
-        return f'Rule {repr(rule)} not a dictionary'
+    if not isinstance(data, dict):
+        return f'Rule {repr(data)} not a dictionary'
 
-    description = rule.get('description')
-    exclusive = rule.get('exclusive', False)
-    regex = rule.get('regex')
-    color = rule.get('color')
+    description = data.get('description')
+    exclusive = data.get('exclusive', False)
+    regex = data.get('regex')
+    color = data.get('color')
 
     if description:
         rule_repr = f'Rule(regex={repr(regex)}, description={repr(description)})'
     else:
         rule_repr = f'Rule(regex={repr(regex)})'
 
-    if not isinstance(exclusive, bool):
-        return f'Error on {rule_repr}: exclusive {repr(exclusive)} is not a boolean'
+    if not isinstance(color, dict):
+        color = {0: color}
 
     try:
-        parsed_rule = Rule(regex, description=description, exclusive=exclusive)
-    except TypeError as exception:
+        rule = Rule(regex, description=description, exclusive=exclusive)
+
+        for group, value in color.items():
+            rule.set_color(Color(value, rgb=rgb), group=group)
+
+        return rule
+    except (TypeError, ValueError) as exception:
         return f'Error on {rule_repr}: {exception}'
     except re.error as exception:
         return f'Error on {rule_repr}: re.error: {exception}'
-
-    if isinstance(color, str):
-        color = {0: color}
-    elif not isinstance(color, dict):
-        return f'Error on {rule_repr}: color {repr(color)} is not a string'
-
-    try:
-        for group in color:
-            parsed_rule.set_color(Color(color[group], rgb=rgb), group=group)
-    except (TypeError, ValueError) as exception:
-        return f'Error on {rule_repr}: {exception}'
-
-    return parsed_rule
 
 
 def process_input(config, data_fd, forward_fd=None, max_wait=None):
@@ -486,7 +478,7 @@ def main(args=None, max_wait=None, write_default=True):
         config_data = read_file(args.config)
 
         if config_data:
-            load_rules(config, config_data, rgb=args.rgb or None)
+            load_config(config, config_data, rgb=args.rgb or None)
 
     # Trigger the initial loading
     reload_config_handler()

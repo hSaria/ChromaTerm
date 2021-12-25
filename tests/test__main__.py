@@ -144,10 +144,10 @@ def test_get_wait_duration_buffer_new_lines():
     assert wait_duration_empty < wait_duration_new_line
 
 
-def test_load_rules_simple():
+def test_load_config_simple():
     '''Parse config with a simple rule.'''
     config = chromaterm.__main__.Config()
-    chromaterm.__main__.load_rules(
+    chromaterm.__main__.load_config(
         config, '''rules:
     - regex: hello world
       color: f#fffaaa''')
@@ -155,10 +155,10 @@ def test_load_rules_simple():
     assert len(config.rules) == 1
 
 
-def test_load_rules_exclusive_order():
+def test_load_config_exclusive_order():
     '''Ensure exclusive rules are sorted to top of the list.'''
     config = chromaterm.__main__.Config()
-    chromaterm.__main__.load_rules(
+    chromaterm.__main__.load_config(
         config, '''rules:
     - regex: r1
       color: bold
@@ -179,10 +179,10 @@ def test_load_rules_exclusive_order():
     assert config.rules[3].regex.pattern == b'r3'
 
 
-def test_load_rules_group():
+def test_load_config_group():
     '''Parse config with a group-specific rule.'''
     config = chromaterm.__main__.Config()
-    chromaterm.__main__.load_rules(
+    chromaterm.__main__.load_config(
         config, '''rules:
     - description: group-specific
       regex: h(el)lo (world)
@@ -199,10 +199,10 @@ def test_load_rules_group():
     assert config.rules[0].colors[2].color == 'f#123123'
 
 
-def test_load_rules_multiple_colors():
+def test_load_config_multiple_colors():
     '''Parse config with a multi-color rule.'''
     config = chromaterm.__main__.Config()
-    chromaterm.__main__.load_rules(
+    chromaterm.__main__.load_config(
         config, '''rules:
     - regex: hello (world)
       color: b#fffaaa f#aaafff''')
@@ -211,33 +211,46 @@ def test_load_rules_multiple_colors():
     assert config.rules[0].color.color == 'b#fffaaa f#aaafff'
 
 
-def test_load_rules_missing(capsys):
+def test_load_config_missing_rules(capsys):
     '''Parse a config file with the `rules` list missing.'''
     config = chromaterm.__main__.Config()
-    chromaterm.__main__.load_rules(config, '')
 
+    chromaterm.__main__.load_config(config, '')
     assert '"rules" list not found' in capsys.readouterr().err
 
 
-def test_load_rules_format_error(capsys):
-    '''Parse a config file with a syntax problem.'''
+def test_load_config_format_error(capsys):
+    '''Parse a config file with format problems.'''
     config = chromaterm.__main__.Config()
-    chromaterm.__main__.load_rules(config, '''rules:
-    - 1''')
 
-    assert 'Rule 1 not a dictionary' in capsys.readouterr().err
-
-    chromaterm.__main__.load_rules(config, 'rules: 1')
-
+    chromaterm.__main__.load_config(config, 'rules: 1')
     assert '"rules" is not a list' in capsys.readouterr().err
 
+    chromaterm.__main__.load_config(config, 'rules:\n- 1')
+    assert 'Rule 1 not a dictionary' in capsys.readouterr().err
 
-def test_load_rules_yaml_format_error(capsys):
+
+def test_load_config_yaml_format_error(capsys):
     '''Parse an incorrect YAML file.'''
     config = chromaterm.__main__.Config()
-    chromaterm.__main__.load_rules(config, '-x-\nhi:')
 
+    chromaterm.__main__.load_config(config, '-x-\nhi:')
     assert 'Parse error:' in capsys.readouterr().err
+
+
+def test_parse_rule():
+    '''Parse a rule.'''
+    rule = chromaterm.__main__.parse_rule({
+        'description': 'hello',
+        'regex': 'hello world',
+        'color': 'b#fffaaa',
+        'exclusive': True
+    })
+
+    assert rule.description == 'hello'
+    assert rule.regex.pattern == b'hello world'
+    assert rule.color.color == 'b#fffaaa'
+    assert rule.exclusive
 
 
 def test_parse_rule_regex_missing():
@@ -269,18 +282,18 @@ def test_parse_rule_regex_invalid():
 
 def test_parse_rule_color_missing():
     '''Parse a rule without a `color` key.'''
-    msg_re = r'color .* is not a string'
+    msg = 'color must be a string'
 
     rule = {'regex': 'x(y)z'}
-    assert re.search(msg_re, chromaterm.__main__.parse_rule(rule))
+    assert msg in chromaterm.__main__.parse_rule(rule)
 
 
 def test_parse_rule_color_type_error():
     '''Parse a rule with an incorrect `color` value type.'''
-    msg_re = r'color .* is not a string'
+    msg = 'color must be a string'
 
     rule = {'regex': 'x(y)z', 'color': ['hi']}
-    assert re.search(msg_re, chromaterm.__main__.parse_rule(rule))
+    assert msg in chromaterm.__main__.parse_rule(rule)
 
 
 def test_parse_rule_color_format_error():
@@ -302,10 +315,10 @@ def test_parse_rule_color_format_error():
 
 def test_parse_rule_exclusive_type_error():
     '''Parse a rule with an incorrect `exclusive` value type.'''
-    msg_re = r'exclusive .* is not a boolean'
+    msg = r'exclusive must be a boolean'
 
     rule = {'regex': 'x(y)z', 'color': 'bold', 'exclusive': 'hi'}
-    assert re.search(msg_re, chromaterm.__main__.parse_rule(rule))
+    assert msg in chromaterm.__main__.parse_rule(rule)
 
 
 def test_parse_rule_group_type_error():

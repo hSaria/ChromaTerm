@@ -89,25 +89,25 @@ class Color:
         if not isinstance(value, str):
             raise TypeError('color must be a string')
 
-        value = value.lower().strip()
+        color = value = value.lower().strip()
         styles = tuple(k for k, v in COLOR_TYPES.items() if v.get('code'))
-        color_re = r'^(((b|f)#[0-9a-f]{6}|' + '|'.join(styles) + r')(\s+|$))+$'
+        color_re = r'(([bf]#[0-9a-f]{6}|' + '|'.join(styles) + r')(\s+|$))+'
         color_code = color_reset = b''
         color_types = []
 
-        if not re.search(color_re, value):
+        if not re.fullmatch(color_re, value):
             raise ValueError(f'invalid color format {repr(value)}')
 
         # Colors
-        for target, hex_code in re.findall(r'(b|f)#([0-9a-f]{6})', value):
+        for target, hex_code in re.findall(r'([bf])#([0-9a-f]{6})', value):
             if target == 'f':
                 target, color_type = b'\x1b[38;', 'fg'
             else:
                 target, color_type = b'\x1b[48;', 'bg'
 
             if color_type in [x[0] for x in color_types]:
-                raise ValueError('color accepts exactly one foreground and one'
-                                 ' background colors')
+                raise ValueError('color accepts one foreground and one '
+                                 'background colors')
 
             # Break down hex color to RGB integers
             rgb_int = [int(hex_code[i:i + 2], 16) for i in (0, 2, 4)]
@@ -124,15 +124,12 @@ class Color:
             color_types.append((color_type, target + color_id + b'm'))
 
         # Styles
-        for style in re.findall('|'.join(styles), value):
-            if style in [x[0] for x in color_types]:
-                raise ValueError('color does not accept duplicate styles')
-
+        for style in dict.fromkeys(re.findall('|'.join(styles), value)):
             color_code = color_code + COLOR_TYPES[style]['code']
             color_reset = COLOR_TYPES[style]['reset'] + color_reset
             color_types.append((style, COLOR_TYPES[style]['code']))
 
-        self._color = ' '.join(re.split(r'\s+', value.strip().lower()))
+        self._color = ' '.join(dict.fromkeys(color.lower().split()))
         self.color_code = color_code
         self.color_reset = color_reset
         self.color_types = color_types
@@ -287,9 +284,12 @@ class Rule:
         if not isinstance(regex, str):
             raise TypeError('regex must be a string')
 
+        if not isinstance(exclusive, bool):
+            raise TypeError('exclusive must be a boolean')
+
         self.colors = {}
         self.description = description
-        self.exclusive = bool(exclusive)
+        self.exclusive = exclusive
         self.regex = re.compile(regex.encode(encoding='utf-8'))
 
         if not isinstance(color, dict):
@@ -357,8 +357,7 @@ class Rule:
 
         self.colors[group] = color
 
-        # Sort the colors according to the group number to ensure deterministic
-        # highlighting
+        # Sort by group number to ensure deterministic highlighting
         self.colors = {k: self.colors[k] for k in sorted(self.colors)}
 
 
