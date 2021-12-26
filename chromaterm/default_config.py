@@ -1,6 +1,8 @@
 '''A store for the default rules of ChromaTerm'''
 import os
 
+import yaml
+
 from chromaterm import Color, Palette, Rule
 
 # pylint: disable=line-too-long
@@ -39,16 +41,35 @@ RULE_IPV4 = Rule(
 )
 
 RULE_IPV6 = Rule(
-    r'(?i)(?<![\w:])(([\da-f]{1,4}:){7}[\da-f]{1,4}|[\da-f]{1,4}:(:[\da-f]{1,4}){1,6}|([\da-f]{1,4}:){1,2}(:[\da-f]{1,4}){1,5}|([\da-f]{1,4}:){1,3}(:[\da-f]{1,4}){1,4}|([\da-f]{1,4}:){1,4}(:[\da-f]{1,4}){1,3}|([\da-f]{1,4}:){1,5}(:[\da-f]{1,4}){1,2}|([\da-f]{1,4}:){1,6}:[\da-f]{1,4}|([\da-f]{1,4}:){1,7}:|:((:[\da-f]{1,4}){1,7}|:)|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|([\da-f]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d))(%[\da-z]+)?(/\d+)?(?!:?\w)',
+    r'''(?ix)(?<![\w:])(
+    ([\da-f]{1,4}:){7}[\da-f]{1,4}|  # 1:2:3:4:5:6:7:8
+    [\da-f]{1,4}:(:[\da-f]{1,4}){1,6}|  # 1::3:4:5:6:7:8
+    ([\da-f]{1,4}:){1,2}(:[\da-f]{1,4}){1,5}|  # 1:2::4:5:6:7:8
+    ([\da-f]{1,4}:){1,3}(:[\da-f]{1,4}){1,4}|  # 1:2:3::5:6:7:8
+    ([\da-f]{1,4}:){1,4}(:[\da-f]{1,4}){1,3}|  # 1:2:3:4::6:7:8
+    ([\da-f]{1,4}:){1,5}(:[\da-f]{1,4}){1,2}|  # 1:2:3:4:5::7:8
+    ([\da-f]{1,4}:){1,6}:[\da-f]{1,4}|  # 1:2:3:4:5:6::8
+    ([\da-f]{1,4}:){1,7}:|  # 1:2:3:4:5:6:7::
+    :((:[\da-f]{1,4}){1,7}|:)|  # ::2:3:4:5:6:7:8
+    ::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)|  # ::ffff:0:192.168.0.1
+    ([\da-f]{1,4}:){1,4}:((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)  # 64:ff9b::192.168.0.1 (rfc6052)
+)(%[\da-z]+)?  # Zone index
+(/\d+)?  # Prefix length
+(?!:?\w)
+''',
     Color('f.type-3', palette=PALETTE),
-    'IPv6 (boundaries don\'t work here as they can be in the start or end of the match, so using lookaheads and lookbehinds instead)',
+    'IPv6',
     exclusive=True,
 )
 
 RULE_MAC = Rule(
-    r'(?i)\b((?<!:)([\da-f]{1,2}:){5}[\da-f]{1,2}(?!:)|(?<!\.)([\da-f]{4}\.){2}[\da-f]{4}(?!\.))\b',
+    r'''(?ix)\b(
+    (?<!:)([\da-f]{1,2}:){5}[\da-f]{1,2}(?!:)|  # 11:22:33:aa:bb:cc
+    (?<!\.)([\da-f]{4}\.){2}[\da-f]{4}(?!\.)  # 1122.33aa.bbcc
+)\b
+''',
     Color('f.type-4', palette=PALETTE),
-    'MAC addresses',
+    'MAC address',
     exclusive=True,
 )
 
@@ -63,16 +84,27 @@ RULE_SIZE = Rule(
 )
 
 RULE_DATE = Rule(
-    r'(?i)((?<=\W)|^)((\d{2}|\d{4})\-(0?[1-9]|1[0-2])\-(3[0-1]|[1-2]\d|0?[1-9])|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+((3[0-1]|[1-2]\d|0?[1-9])(\s+\d{4})?|\d{4})|((3[0-1]|[1-2]\d|0?[1-9])\s(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(\s+\d{4})?))((?=[\WT_])|$)',
+    r'''(?ix)\b(
+    (\d{2}|\d{4})\-(0?[1-9]|1[0-2])\-(3[0-1]|[1-2]\d|0?[1-9])|  # YYYY-MM-DD, YY-MM-DD
+    (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(  # MMM
+        (3[0-1]|[1-2]\d|0?[1-9])(\s+\d{4})?|\d{4}  # DD (YYYY)?, YYYY
+    )|(3[0-1]|[1-2]\d|0?[1-9])\s(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(\s+\d{4})?  # DD MMM (YYYY)?
+)((?=[\WT_])|$)
+''',
     Color('b.type-6', palette=PALETTE),
-    'Date in YYYY-MM-DD, YY-MM-DD, MMM (DD( YYYY)?|YYYY), or DD MMM (YYYY)? formats',
+    'Date',
     exclusive=True,
 )
 
 RULE_TIME = Rule(
-    r'(\b|(?<=T))(?<![\.:])((2[0-3])|[0-1]\d):[0-5]\d(:[0-5]\d([\.,]\d{3,6})?)?([\-\+](\d{2}|\d{4}))?(?![\.:])\b',
+    r'''(?ix)(?<![\.:])(\b|(?<=T))
+    (2[0-3]|[0-1]\d):[0-5]\d  # Hours and minutes
+    (:[0-5]\d([\.,]\d{3,6})?)?  # (Seconds (sub-seconds, 3 to 6 decimal places)?)?
+    ([\-\+](\d{2}|\d{4}))?  # (Timezone)?
+(?![\.:])\b
+''',
     Color('b.type-6', palette=PALETTE),
-    'Time in hh:mm:ss.SSSSSS-ZZZZ format (sec, msec, nsec, and timezone offset optional)',
+    'Time',
     exclusive=True,
 )
 
@@ -83,7 +115,7 @@ RULE_GENERIC_BAD = Rule(
 )
 
 RULE_GENERIC_AMBIGIOUS_BAD = Rule(
-    r"(?i)\b(no(t|pe)?|exit(ed)?|reset(t?ing)?|discard(ed|ing)?|filter(ed)?|stop(p(ed|ing))?|never|can('?t|not))\b",
+    r"(?i)\b(no(t|pe)?|exit(ed)?|reset(t?ing)?|discard(ed|ing)?|filter(ed)?|stop(p(ed|ing))?|never)\b",
     Color('f.status-3', palette=PALETTE),
     'Generics - Ambigious bad',
 )
@@ -95,7 +127,7 @@ RULE_GENERIC_NOT_TOO_BAD = Rule(
 )
 
 RULE_GENERIC_AMBIGIOUS_GOOD = Rule(
-    r'(?i)\b(ye(s|ah?|p)?|started|running|can)\b',
+    r'(?i)\b(ye(s|ah?|p)?|started|running)\b',
     Color('f.status-5', palette=PALETTE),
     'Generics - Ambigious good',
 )
@@ -109,12 +141,8 @@ RULE_GENERIC_GOOD = Rule(
 
 def generate_default_rules_yaml():
     '''Returns a YAML string of the default configuration.'''
-    data = 'palette:'
-
-    for name, color in PALETTE.colors.items():
-        data += f'\n  {name}: "{color}"'
-
-    data += '\n\nrules:'
+    data = yaml.dump({'palette': PALETTE.colors}, sort_keys=False) + '\n'
+    data += 'rules:\n'
 
     for rule in [
             RULE_NUMBERS, RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_SIZE, RULE_DATE,
@@ -122,21 +150,17 @@ def generate_default_rules_yaml():
             RULE_GENERIC_NOT_TOO_BAD, RULE_GENERIC_AMBIGIOUS_GOOD,
             RULE_GENERIC_GOOD
     ]:
-        data += f'''
-- description: {rule.description}
-  regex: {rule.regex}
-'''
+        rule_dict = {'description': rule.description, 'regex': rule.regex}
 
-        if len(rule.colors) > 1:
-            data += '  color:\n'
-
-            for group, color in rule.colors.items():
-                data += f'    {group}: {color.color}\n'
+        if list(rule.colors) == [0]:
+            rule_dict['color'] = rule.color.color
         else:
-            data += f'  color: {rule.color.color}\n'
+            rule_dict['color'] = {k: v.color for k, v in rule.colors.items()}
 
         if rule.exclusive:
-            data += f'  exclusive: {rule.exclusive}\n'
+            rule_dict['exclusive'] = True
+
+        data += yaml.dump([rule_dict], sort_keys=False) + '\n'
 
     return data
 
@@ -162,3 +186,12 @@ def write_default_config(path):
         file.write(generate_default_rules_yaml())
 
     return True
+
+
+def yaml_str_presenter(dumper, data):
+    '''YAML string representer that uses the `|` style when data is multiline.'''
+    style = '|' if len(data.splitlines()) > 1 else None
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style=style)
+
+
+yaml.add_representer(str, yaml_str_presenter)
