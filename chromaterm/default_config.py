@@ -106,7 +106,7 @@ def generate_default_rules_yaml():
     ]:
         data += f'''
 - description: {rule.description}
-  regex: {rule.regex.pattern.decode()}
+  regex: {rule.regex}
 '''
 
         if len(rule.colors) > 1:

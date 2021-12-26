@@ -235,12 +235,10 @@ def parse_rule(data, palette=None, rgb=False):
         color = {0: color}
 
     try:
-        rule = Rule(regex, description=description, exclusive=exclusive)
-
         for group, value in color.items():
-            rule.set_color(Color(value, palette=palette, rgb=rgb), group=group)
+            color[group] = Color(value, palette=palette, rgb=rgb)
 
-        return rule
+        return Rule(regex, color, description, exclusive)
     except (TypeError, ValueError) as exception:
         return f'Error on {rule_repr}: {exception}'
     except re.error as exception:

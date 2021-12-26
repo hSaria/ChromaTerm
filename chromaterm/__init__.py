@@ -4,6 +4,9 @@ import re
 import sys
 import time
 
+# Find the start of every capturing group
+CAPTURING_GROUP_RE = re.compile(br'(?<!\\)\((?!\?)')
+
 # Color types, their color codes if it's style, their default reset codes, and
 # RegEx's for detecting their color type.
 COLOR_TYPES = {
@@ -373,13 +376,15 @@ class Rule:
         if not isinstance(exclusive, bool):
             raise TypeError('exclusive must be a boolean')
 
+        self.regex = regex
         self.colors = {}
         self.description = description
         self.exclusive = exclusive
-        self.regex = re.compile(regex.encode(encoding='utf-8'))
 
         if not isinstance(color, dict):
             color = {0: color}
+
+        self._regex = self.compile_regex(regex.encode(encoding='utf-8'), color)
 
         for group, value in color.items():
             self.set_color(value, group)
@@ -393,6 +398,23 @@ class Rule:
     def color(self, value):
         self.set_color(value)
 
+    @staticmethod
+    def compile_regex(pattern, referenced_groups):
+        '''Returns an instance of `re.Pattern` after performing any optimizations
+
+        Args:
+            pattern (bytes): The pattern to compile.
+            referenced_groups (list): The regex group numbers referenced.
+        '''
+        # Only the full match group (0) is used; convert groups to non-caputuring
+        if list(referenced_groups) == [0]:
+            try:
+                return re.compile(CAPTURING_GROUP_RE.sub(b'(?:', pattern))
+            except re.error:
+                pass
+
+        return re.compile(pattern)
+
     def get_matches(self, data):
         '''Returns a list of tuples, each containing a start index, an end index,
         and the `Color` object for that match.
@@ -402,7 +424,7 @@ class Rule:
         '''
         matches = []
 
-        for match in self.regex.finditer(data):
+        for match in self._regex.finditer(data):
             for group in self.colors:
                 start, end = match.span(group)
 
@@ -437,8 +459,8 @@ class Rule:
         if not isinstance(color, Color):
             raise TypeError('color must be a chromaterm.Color')
 
-        if group > self.regex.groups:
-            raise ValueError(f'regex only has {self.regex.groups} group(s); '
+        if group > self._regex.groups:
+            raise ValueError(f'regex only has {self._regex.groups} group(s); '
                              f'{group} is invalid')
 
         self.colors[group] = color
@@ -635,6 +657,6 @@ class Config:
                                               reverse=descending):
             print(
                 f'{duration / total:^7.2%} {duration:.3f}s  {count:<7}  '
-                f'{rule.description or repr(rule.regex.pattern.decode())}',
+                f'{rule.description or repr(rule.regex)}',
                 file=file,
             )

@@ -1,4 +1,6 @@
 '''chromaterm tests'''
+import re
+
 import pytest
 
 import chromaterm
@@ -438,6 +440,28 @@ def test_palette_resolve_invalid_value_name_not_in_palette():
         chromaterm.Palette().resolve('b.red')
 
 
+def test_rule_compile_regex():
+    '''Compile a pattern, replacing the capturing groups with non-capturing ones.'''
+    regex = chromaterm.Rule.compile_regex(b'(p)', {0: None})
+    assert regex.pattern == b'(?:p)'
+
+
+def test_rule_compile_regex_groups_referenced():
+    '''Compile a pattern with a group being referenced; optimization is skipped.'''
+    regex = chromaterm.Rule.compile_regex(b'(p)', {1: None})
+    assert regex.pattern == b'(p)'
+
+
+def test_rule_compile_regex_failed_optimization():
+    '''Ensure the pattern optimization falls-back if it runs into an error.'''
+    # Confirm it normally fails
+    with pytest.raises(re.error, match='invalid group reference'):
+        re.compile(chromaterm.CAPTURING_GROUP_RE.sub(b'(?:', br'(p)\1'))
+
+    regex = chromaterm.Rule.compile_regex(br'(p)\1', {1: None})
+    assert regex.pattern == br'(p)\1'
+
+
 def test_rule_get_matches():
     '''Get matches of rule that only colors the default regex group.'''
     color = chromaterm.Color('bold')
@@ -451,25 +475,22 @@ def test_rule_get_matches():
 
 def test_rule_get_matches_groups():
     '''Get matches of rule that colors default and specific regex groups.'''
-    color1 = chromaterm.Color('bold')
-    color2 = chromaterm.Color('b#123123')
-    color3 = chromaterm.Color('f#321321')
-    rule = chromaterm.Rule('(hello) (world)', color=color1)
-    rule.set_color(color2, group=1)
-    rule.set_color(color3, group=2)
+    color0 = chromaterm.Color('bold')
+    color1 = chromaterm.Color('b#123123')
+    color2 = chromaterm.Color('f#321321')
+    rule = chromaterm.Rule('(h)(i)', color={0: color0, 1: color1, 2: color2})
 
-    data = b'hello world'
-    expected = [(0, 11, color1), (0, 5, color2), (6, 11, color3)]
+    data = b'hi'
+    expected = [(0, 2, color0), (0, 1, color1), (1, 2, color2)]
 
     assert rule.get_matches(data) == expected
 
 
-def test_rule_get_matches_groups_optional_not_matches():
+def test_rule_get_matches_groups_optional_no_matches():
     '''Get matches of rule that has a specific regex group that is optional. When
     the optional group is not in the match, the color should not be inserted.'''
     color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('hello(,)? world')
-    rule.set_color(color, group=1)
+    rule = chromaterm.Rule('hello(,)? world', color={1: color})
 
     data = b'hello, world'
     expected = [(5, 6, color)]
@@ -490,8 +511,7 @@ def test_rule_get_matches_no_colors():
 def test_rule_get_matches_zero_length_match():
     '''Get matches of rule that has a regex that matches zero-length data.'''
     color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('hello() world')
-    rule.set_color(color, group=1)
+    rule = chromaterm.Rule('hello() world', color={1: color})
 
     assert not rule.get_matches(b'hello world')
 
@@ -499,12 +519,9 @@ def test_rule_get_matches_zero_length_match():
 def test_rule_set_color_clear_existing():
     '''Clear the color of a rule by setting it to None.'''
     color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('(hello|world)')
+    rule = chromaterm.Rule('(hello|world)', color={0: color, 1: color})
 
-    rule.set_color(color, group=0)
-    rule.set_color(color, group=1)
     assert list(rule.colors) == [0, 1]
-
     rule.set_color(None, group=0)
     assert list(rule.colors) == [1]
 
@@ -523,7 +540,7 @@ def test_rule_set_color_default_group():
 def test_rule_set_color_specific_group():
     '''Add to a rule a color to a specific regex group. Additionally, ensure
     that the dict keys are ordered according to the group number.'''
-    rule = chromaterm.Rule('he(llo)')
+    rule = chromaterm.Rule(r'he(llo)\1')
     assert rule.color is None
 
     color = chromaterm.Color('bold')

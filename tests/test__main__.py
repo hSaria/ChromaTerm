@@ -146,6 +146,7 @@ def test_get_wait_duration_buffer_new_lines():
 
 def test_load_config_simple():
     '''Parse config with a simple rule.'''
+    # pylint: disable=protected-access
     config = chromaterm.__main__.Config()
     chromaterm.__main__.load_config(
         config, '''rules:
@@ -153,6 +154,9 @@ def test_load_config_simple():
       color: f#fffaaa''')
 
     assert len(config.rules) == 1
+    assert config.rules[0].regex == 'hello world'
+    assert config.rules[0]._regex.pattern == b'hello world'
+    assert config.rules[0].color.color == 'f#fffaaa'
 
 
 def test_load_config_exclusive_order():
@@ -173,10 +177,10 @@ def test_load_config_exclusive_order():
     ''')
 
     assert len(config.rules) == 4
-    assert config.rules[0].regex.pattern == b'r2'
-    assert config.rules[1].regex.pattern == b'r4'
-    assert config.rules[2].regex.pattern == b'r1'
-    assert config.rules[3].regex.pattern == b'r3'
+    assert config.rules[0].regex == 'r2'
+    assert config.rules[1].regex == 'r4'
+    assert config.rules[2].regex == 'r1'
+    assert config.rules[3].regex == 'r3'
 
 
 def test_load_config_group():
@@ -193,7 +197,7 @@ def test_load_config_group():
 
     assert len(config.rules) == 1
     assert config.rules[0].description == 'group-specific'
-    assert config.rules[0].regex == re.compile(br'h(el)lo (world)')
+    assert config.rules[0].regex == 'h(el)lo (world)'
     assert config.rules[0].colors[0].color == 'bold'
     assert config.rules[0].colors[1].color == 'b#fffaaa'
     assert config.rules[0].colors[2].color == 'f#123123'
@@ -274,7 +278,7 @@ def test_parse_rule():
     })
 
     assert rule.description == 'hello'
-    assert rule.regex.pattern == b'hello world'
+    assert rule.regex == 'hello world'
     assert rule.color.color == 'b#fffaaa'
     assert rule.exclusive
 
