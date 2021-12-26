@@ -446,6 +446,12 @@ def test_rule_compile_regex():
     assert regex.pattern == b'(?:p)'
 
 
+def test_rule_compile_regex_group_in_set():
+    '''Compile a pattern, containing parenthesis in a set.'''
+    regex = chromaterm.Rule.compile_regex(b'[a(b)c]', {0: None})
+    assert regex.pattern == b'[a(b)c]'
+
+
 def test_rule_compile_regex_groups_referenced():
     '''Compile a pattern with a group being referenced; optimization is skipped.'''
     regex = chromaterm.Rule.compile_regex(b'(p)', {1: None})
@@ -456,7 +462,7 @@ def test_rule_compile_regex_failed_optimization():
     '''Ensure the pattern optimization falls-back if it runs into an error.'''
     # Confirm it normally fails
     with pytest.raises(re.error, match='invalid group reference'):
-        re.compile(chromaterm.CAPTURING_GROUP_RE.sub(b'(?:', br'(p)\1'))
+        re.compile(br'(?:p)\1')
 
     regex = chromaterm.Rule.compile_regex(br'(p)\1', {1: None})
     assert regex.pattern == br'(p)\1'

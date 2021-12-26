@@ -1,11 +1,9 @@
 '''Color your output to terminal'''
 import os
 import re
+import sre_parse
 import sys
 import time
-
-# Find the start of every capturing group
-CAPTURING_GROUP_RE = re.compile(br'(?<!\\)\((?!\?)')
 
 # Color types, their color codes if it's style, their default reset codes, and
 # RegEx's for detecting their color type.
@@ -406,14 +404,34 @@ class Rule:
             pattern (bytes): The pattern to compile.
             referenced_groups (list): The regex group numbers referenced.
         '''
-        # Only the full match group (0) is used; convert groups to non-caputuring
-        if list(referenced_groups) == [0]:
-            try:
-                return re.compile(CAPTURING_GROUP_RE.sub(b'(?:', pattern))
-            except re.error:
-                pass
+        # pylint: disable=protected-access
+        original_parse_sub = sre_parse._parse_sub
+        groups = []
+        regex = None
 
-        return re.compile(pattern)
+        try:
+            if list(referenced_groups) != [0]:
+                raise re.error('Cannot optimize; groups are referenced')
+
+            def _parse_sub(source, *args, **kwargs):
+                # Note the start of a subpattern (i.e. group). Add in reverse
+                # to avoid calculating an index offset
+                groups.insert(0, source.tell())
+                return original_parse_sub(source, *args, **kwargs)
+
+            sre_parse._parse_sub = _parse_sub
+            regex = re.compile(pattern)
+
+            for group in groups:
+                # Group is not 0 and not a special group
+                if group and pattern[group - 1] == 40:  # b'('
+                    pattern = pattern[:group - 1] + b'(?:' + pattern[group:]
+
+            return regex if len(groups) < 2 else re.compile(pattern)
+        except (AttributeError, TypeError, re.error):
+            return regex or re.compile(pattern)
+        finally:
+            sre_parse._parse_sub = original_parse_sub
 
     def get_matches(self, data):
         '''Returns a list of tuples, each containing a start index, an end index,
