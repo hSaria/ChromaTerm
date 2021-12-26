@@ -1,0 +1,11 @@
+---
+name: Question or Suggestion
+description: Got ideas to improve ChromaTerm or wondering how to get it working with a particular setup?
+labels: question
+body:
+  - type: textarea
+    attributes:
+      label: What's on your mind?
+      description: Try to provide context, like what you are trying to achieve.
+    validations:
+      required: true

@@ -1,0 +1,30 @@
+---
+name: Bug
+description: Report erroneous behavior that happens only when ChromaTerm is running.
+labels: bug
+body:
+  - type: input
+    attributes:
+      label: ChromaTerm version
+      description: Run `pip3 show chromaterm` to get that info.
+      placeholder: v0.9.0
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Terminal
+      description: Which terminal are you using?
+      placeholder: macOS built-in Terminal
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What's happening?
+      description: >
+        Describe the issue and provide any details that helps recreate it.
+      placeholder: >
+        While running `ct tmux`, I connected to a Cisco ASA and saw the following
+        random characters that only appears when I was using ChromaTerm. Here's a
+        picture and I attached `.chromaterm.yml.zip` as I have some custom rules.
+    validations:
+      required: true
