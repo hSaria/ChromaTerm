@@ -11,7 +11,6 @@ import sys
 import yaml
 
 from chromaterm import Color, Config, Palette, Rule
-from chromaterm.default_config import write_default_config
 
 # Some sections are rarely used, so avoid unnecessary imports to speed up launch
 # pylint: disable=import-outside-toplevel
@@ -499,7 +498,8 @@ def main(args=None, max_wait=None, write_default=True):
         args.config = get_default_config_location()
 
         # Write default config if not there
-        if write_default:
+        if write_default and not os.access(args.config, os.F_OK):
+            from chromaterm.default_config import write_default_config
             write_default_config(args.config)
 
     config = Config(benchmark=args.benchmark)
