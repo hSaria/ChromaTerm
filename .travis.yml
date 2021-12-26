@@ -15,6 +15,5 @@ install:
   - python3 setup.py install
 
 script:
-  - echo hi | ct
   - pytest --cov chromaterm/ --cov tests/ --cov-report term-missing
   - pylint chromaterm/ tests/

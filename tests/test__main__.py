@@ -533,9 +533,14 @@ def test_process_input_trailing_chunk(capsys):
 
 
 def test_read_file():
-    '''Read the default configuration file.'''
-    file = os.path.join(os.path.expanduser('~'), '.chromaterm.yml')
-    assert chromaterm.__main__.read_file(file) is not None
+    '''Read a file.'''
+    with open(__name__ + '4', mode='a', encoding='utf-8') as file:
+        file.write('hello world')
+
+    try:
+        assert chromaterm.__main__.read_file(__name__ + '4') == 'hello world'
+    finally:
+        os.remove(__name__ + '4')
 
 
 def test_read_file_no_file(capsys):

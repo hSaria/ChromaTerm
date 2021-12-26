@@ -32,9 +32,6 @@ jobs:
       - name: Install ChromaTerm
         run: python3 setup.py install
 
-      - name: Basic run test
-        run: echo hi | ct
-
       - name: PyTest
         run: pytest --cov chromaterm/ --cov tests/ --cov-report term-missing
 
