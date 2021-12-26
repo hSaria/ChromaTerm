@@ -1,5 +1,5 @@
 - description: Half-duplex
-  regex: (?i)\b(half\-?duplex)\b
+  regex: (?i)\bhalf\-?duplex\b
   color: f#ff0000
 
 - description: Spanning tree - Problematic states

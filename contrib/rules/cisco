@@ -2,7 +2,7 @@
 # Translated to YAML in https://github.com/hSaria/ChromaTerm/pull/79
 
 - description: IP-address:nn RD or RT
-  regex: \b(RT:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d):(?:[1-9]|\d{2,5})\b
+  regex: \b(RT:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d):[1-9]\d{,4}\b
   color: f#0000ff
   exclusive: True
 
@@ -16,17 +16,17 @@
   color: f#00ffff
   exclusive: True
 
-- description: Days and hours, like 3650d23h
-  regex: \b(\d{3,4}d\d{2}h)\b
-  color: f#af5f00
+- description: Uptime, like 10d23h 5w3d
+  regex: \b(\d+w\dd|\d+d\d{1,2}h)\b
+  color: b#a35a00
 
 - description: Interfaces
-  regex: (?i)\b(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Eth|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|(B|N)VI)((\d*/){0,2}\d*)(\.\d*)?\b
+  regex: (?i)\b(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Eth|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|[BN]VI)(\d+/){,2}\d+(\.\d+)?\b
   color: f#f07a7c
   exclusive: True
 
 - description: Bad responses
-  regex: \b(administratively|down|Down|DOWN|fail|failed|not|not active|not activated|bad|never|BLK|fddi|n\-isl|isl|notconnect|blocking|\(tdp\)|tdp|TDP|denied|invalid|err\-disabled|disabled|unusable|DENIED|err\-disable|infinity|inaccessible|wrong|cannot|MM_NO_STATE|MM_KEY_EXCH|UP\-NO\-IKE|K[13]=(\d{2,3}|[02-9])|K[245]=(\d{2,3}|[1-9]))\b
+  regex: \b(administratively|down|Down|DOWN|fail|failed|not|not active|not activated|bad|never|BLK|fddi|n\-isl|isl|notconnect|blocking|\(tdp\)|tdp|TDP|denied|invalid|err\-disabled|disabled|unusable|DENIED|err\-disable|infinity|inaccessible|wrong|cannot|MM_NO_STATE|MM_KEY_EXCH|UP\-NO\-IKE|K[13]=(\d{2,3}|[02-9])|K[245]=[1-9]\d{,2})\b
   color: f#ff0000
 
 - description: Good responses
@@ -34,27 +34,27 @@
   color: f#00ff00
 
 - description: Possible warning and other things that deserve attention
-  regex: '(?<!\w)(Total output drops: [1-9][0-9]*|[1-9][0-9]* ((input |output )?errors|runts|CRC|(late )?collisions|unknown protocol drops)|err(ors?)?|reset|act\/unsup|dhcp|DHCP|mismatch|notconnect|dropped|LRN|learning|listening|LIS|unsynchronized|Peer\(STP\)|Shr|Edge|pvst|ieee|Bound\(PVST\)|TFTP|Mbgp|LAPB|l2ckt\(\d{1,10}\)|DCE|DTE|passive|r |RIB\-failure|discriminator|Standby|aggregate(d|\/\w+)|atomic\-aggregate|\(global\)|tag|key-chain|md5|backup\/repair|repair|v2\/D|v2\/SD|Condition\-map|Advertise\-map|no\-advertise|no\-export|local\-AS|internet)(?!\w)'
+  regex: \b(Total output drops:\s[1-9]\d*|[1-9]\d* ((input |output )?errors|runts|CRC|(late )?collisions|unknown protocol drops)|err(ors?)?|reset|act\/unsup|dhcp|DHCP|mismatch|notconnect|dropped|LRN|learning|listening|LIS|unsynchronized|Peer\(STP\)|Shr|Edge|pvst|ieee|Bound\(PVST\)|TFTP|Mbgp|LAPB|l2ckt\(\d{1,10}\)|D[CT]E|passive|r |RIB\-failure|discriminator|Standby|aggregate(d|\/\w+)|atomic\-aggregate|\(global\)|tag|key-chain|md5|backup\/repair|repair|v2\/S?D|Condition\-map|Advertise\-map|no\-advertise|no\-export|local\-AS|internet)\b
   color: f#ffff00
 
 - description: Syslog facilities - Emergency to error
-  regex: \b(%\w+\-[0-3]\-\w+)\b
+  regex: \b%\w+\-[0-3]\-\w+\b
   color: f#ff0000
 
 - description: Syslog facilities - Warning to notice
-  regex: \b(%\w+\-[4-5]\-\w+)\b
+  regex: \b%\w+\-[4-5]\-\w+\b
   color: f#ffff00
 
 - description: Syslog facilities - Info to debug
-  regex: \b(%\w+\-[6-7]\-\w+)\b
+  regex: \b%\w+\-[6-7]\-\w+\b
   color: f#65d7fd
 
 - description: BGP
-  regex: \b((Cost:pre\-bestpath|0x880\d):\d{1,10}:\d{1,10})\b
+  regex: \b(Cost:pre\-bestpath|0x880\d):\d{1,10}:\d{1,10}\b
   color: f#c0c0c0
 
 - description: BGP Part 2
-  regex: \b(%(BGP|BGP_SESSION)\-\d\-\w+|bgp|BGP|B|IGP|incomplete|\d{2,7}\/nolabel\(\w+\)|RR\-client|Originator|cluster\-id|Cluster\-id|Cluster|Route\-Reflector)\b
+  regex: \b(%BGP(_SESSION)?\-\d\-\w+|bgp|BGP|B|IGP|incomplete|\d{2,7}\/nolabel\(\w+\)|RR\-client|Originator|cluster\-id|Cluster\-id|Cluster|Route\-Reflector)\b
   color: f#0000ff
 
 - description: OSPFv2 and OSPFv3
@@ -66,7 +66,7 @@
   color: f#008080
 
 - description: RIP
-  regex: \b((rip|RIP|R))\b
+  regex: \b(rip|R(IP)?)\b
   color: f#ff0000
 
 - description: Multicast
@@ -74,22 +74,22 @@
   color: f#ff00ff
 
 - description: Routing table metrics
-  regex: \b(\[\d{1,3}\/\d{1,12}\])
+  regex: \b\[\d{1,3}\/\d{1,12}\]\b
   color: f#ffff00
 
 - description: EIGRP topology table metrics and ping responses
-  regex: \b(\(\d{1,12}\/\d{1,12}\))
+  regex: \b\(\d{1,12}\/\d{1,12}\)\b
   color: f#ffff00
 
 - description: LDP
-  regex: \b(%(LDP|LSD)\-\d\-\w+)\b
+  regex: \b%(LDP|LSD)\-\d\-\w+\b
   color: f#ff00ff
 
 - description: IPv6 Neighbor Discovery
-  regex: \b(%IPV6_ND\-\d\-\w+)\b
+  regex: \b%IPV6_ND\-\d\-\w+\b
   color: f#00ffff
 
 - description: Prompt
-  regex: ^([^$#(]+)(\$|#|\([^)]+\)#)
-  color: f#ffffff
+  regex: ^[\w-]+(\(\w+\))?[$#>]
+  color: f#87d700
 

@@ -1,5 +1,5 @@
 - description: Interfaces
-  regex: (?i)\b(((fe|ge|xe|et|gr|ip|lt|lsq|mt|sp|vcp)\-\d*/\d*/\d*)|((b?me|em|fab|fxp|fti|lo|pp(d|e)?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pimd|pime|tap|vlan|vme|vtep)|((ae|reth)\d*))(\.\d*)?\b
+  regex: (?i)\b(([fgx]e|et|gr|ip|[lm]t|lsq|sp|vcp)\-\d+/\d+/\d+|((b?me|em|fab|fxp|fti|lo|pp[de]?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pim[de]|tap|vlan|vme|vtep)|(ae|reth)\d*)(\.\d+)?\b
   color: f#f07a7c
   exclusive: True
 
