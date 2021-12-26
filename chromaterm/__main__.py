@@ -89,7 +89,8 @@ def args_init(args=None):
 
 def eprint(*args, **kwargs):
     '''Prints a message to stderr.'''
-    print(sys.argv[0] + ':', *args, file=sys.stderr, **kwargs)
+    # Use \r\n to move to beginning of the new line in raw mode
+    print('ct:', *args, end='\r\n', file=sys.stderr, **kwargs)
 
 
 def get_default_config_location():
