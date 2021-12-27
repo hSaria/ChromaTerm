@@ -9,14 +9,14 @@ from chromaterm import Color, Palette, Rule
 
 PALETTE = Palette()
 
-# https://coolors.co/f67b65-00e0d1-ef2e9f-5698c8-df99f0-a35a00-057650
-PALETTE.add_color('type-1', '#f67b65')
+# https://coolors.co/c68c6c-00e0d1-ef2e9f-5698c8-a35a00-df99f0-03d28d
+PALETTE.add_color('type-1', '#c68c6c')
 PALETTE.add_color('type-2', '#00e0d1')
 PALETTE.add_color('type-3', '#ef2e9f')
 PALETTE.add_color('type-4', '#5698c8')
-PALETTE.add_color('type-5', '#df99f0')
-PALETTE.add_color('type-6', '#a35a00')
-PALETTE.add_color('type-7', '#057650')
+PALETTE.add_color('type-5', '#a35a00')
+PALETTE.add_color('type-6', '#df99f0')
+PALETTE.add_color('type-7', '#03d28d')
 
 # https://coolors.co/c71800-c96901-ca9102-cab902-a2bc02-79bf02-28c501
 PALETTE.add_color('status-1', '#c71800')
@@ -72,16 +72,6 @@ RULE_MAC = Rule(
     exclusive=True,
 )
 
-RULE_SIZE = Rule(
-    r'(?i)\b\d+(\.\d+)?\s?((([KMGTPEZY](i?B)?)|B)(ps)?)\b',
-    {
-        0: Color('f.type-5', palette=PALETTE),
-        2: Color('bold'),
-    },
-    'Size, like 123G 123Gb 123Gib 1.23G 123Gbps',
-    exclusive=True,
-)
-
 RULE_DATE = Rule(
     r'''(?ix)\b(
     (\d{2}|\d{4})\-(0?[1-9]|1[0-2])\-(3[0-1]|[1-2]\d|0?[1-9])|  # YYYY-MM-DD, YY-MM-DD
@@ -90,7 +80,7 @@ RULE_DATE = Rule(
     )|(3[0-1]|[1-2]\d|0?[1-9])\s(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(\s+\d{4})?  # DD MMM (YYYY)?
 )((?=[\WT_])|$)
 ''',
-    Color('b.type-6', palette=PALETTE),
+    Color('b.type-5', palette=PALETTE),
     'Date',
     exclusive=True,
 )
@@ -102,39 +92,49 @@ RULE_TIME = Rule(
     ([\-\+](\d{2}|\d{4}))?  # (Timezone)?
 (?![\.:])\b
 ''',
-    Color('b.type-6', palette=PALETTE),
+    Color('b.type-5', palette=PALETTE),
     'Time',
+    exclusive=True,
+)
+
+RULE_SIZE = Rule(
+    r'(?i)\b\d+(\.\d+)?\s?((([KMGTPEZY](i?B)?)|B)(ps)?)\b',
+    {
+        0: Color('f.type-6', palette=PALETTE),
+        2: Color('bold'),
+    },
+    'Size, like 123G 123Gb 123Gib 1.23G 123Gbps',
     exclusive=True,
 )
 
 RULE_GENERIC_BAD = Rule(
     r'(?i)\b(password|abnormal(ly)?|down|los(t|s|ing)|err(ors?)?|(den(y|ies|ied)?)|reject(ing|ed)?|drop(ped|s)?|(err\-)?disabled?|(timed?\-?out)|fail(s|ed|iure)?|disconnect(ed)?|unreachable|invalid|bad|notconnect|unusable|block(ing|ed)?|blk|inaccessible|wrong|collisions?|unsynchronized|mismatch|runts|CRC)\b',
     Color('f.status-1', palette=PALETTE),
-    'Generics - Bad',
+    'Generic - Bad',
 )
 
 RULE_GENERIC_AMBIGIOUS_BAD = Rule(
     r"(?i)\b(no(t|pe)?|exit(ed)?|reset(t?ing)?|discard(ed|ing)?|filter(ed)?|stop(p(ed|ing))?|never)\b",
     Color('f.status-3', palette=PALETTE),
-    'Generics - Ambigious bad',
+    'Generic - Ambigious bad',
 )
 
 RULE_GENERIC_NOT_TOO_BAD = Rule(
     r'(?i)\b(warnings?)\b',
     Color('f.status-4', palette=PALETTE),
-    'Generics - Not too bad',
+    'Generic - Not too bad',
 )
 
 RULE_GENERIC_AMBIGIOUS_GOOD = Rule(
     r'(?i)\b(ye(s|ah?|p)?|started|running)\b',
     Color('f.status-5', palette=PALETTE),
-    'Generics - Ambigious good',
+    'Generic - Ambigious good',
 )
 
 RULE_GENERIC_GOOD = Rule(
     r'(?i)\b(up|ok(ay)?|permit(ed|s)?|accept(s|ed)?|enabled?|online|succe((ss(ful|fully)?)|ed(ed)?)?|connect(ed)?|reachable|valid|forwarding|synchronized)\b',
     Color('f.status-7', palette=PALETTE),
-    'Generics - Good',
+    'Generic - Good',
 )
 
 
