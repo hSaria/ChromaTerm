@@ -67,13 +67,13 @@ class Color:
 
         Args:
             color (str): A string which must contain:
-                * one foreground color (hex color prefixed with `f#`),
-                * one background color (hex color prefixed with `b#`),
+                * one foreground color (hex color `f#` or palette color `f.`),
+                * one background color (hex color `b#` or palette color `b.`),
                 * at least one style (blink, bold, invert, italic, strike,
                     underline), or
                 * a combination of the above, seperated by spaces.
 
-                Example: `"b#123123 bold"`
+                Example: `"b#123123 f.status-1 bold"`
             palette (chromaterm.Palette): Palette to resolve palette colors.
             rgb (bool): Whether the color is meant for RGB-enabled terminals or
                 not. `False` will downscale the RGB colors to xterm-256. `None`
