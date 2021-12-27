@@ -1,5 +1,0 @@
-- description: Fortinet edit IDs
-  regex: (?:^|\s)edit\s(\d+)$
-  color:
-    1: f#078ba6
-

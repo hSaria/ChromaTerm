@@ -1,5 +1,5 @@
 - description: Interfaces
   regex: (?i)\b(([fgx]e|et|gr|ip|[lm]t|lsq|sp|vcp)\-\d+/\d+/\d+|((b?me|em|fab|fxp|fti|lo|pp[de]?|st|swfab)[0-2]|dsc|gre|ipip|irb|jsrv|lsi|mtun|pim[de]|tap|vlan|vme|vtep)|(ae|reth)\d*)(\.\d+)?\b
-  color: f#f07a7c
-  exclusive: True
+  color: f#03d28d
+  exclusive: true
 

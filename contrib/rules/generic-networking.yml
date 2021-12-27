@@ -1,24 +1,24 @@
 - description: Half-duplex
   regex: (?i)\bhalf\-?duplex\b
-  color: f#ff0000
+  color: f#c71800
 
 - description: Spanning tree - Problematic states
   regex: \b(BKN|(LOOP|ROOT|TYPE|PVID)_Inc)\b
-  color: f#ff0000
+  color: f#c71800
 
 - description: Spanning tree - Forwarding states
   regex: \b(FWD|Root|Desg)\b
-  color: f#00ff00
+  color: f#28c501
 
 - description: OSPF - Transitional states
   regex: \b(ATTEMPT|INIT|EXCHANGE|LOADING)\b
-  color: f#ffff00
+  color: f#cab902
 
 - description: OSPF - Acceptable states
   regex: \b(2WAY|FULL)\b
-  color: f#00ff00
+  color: f#28c501
 
 - description: BGP - Transitional states
   regex: \b(Idle|Connect|Active|OpenSent|OpenConfirm)\b
-  color: f#ffff00
+  color: f#cab902
 
