@@ -676,6 +676,6 @@ class Config:
                                               reverse=descending):
             print(
                 f'{duration / total:^7.2%} {duration:.3f}s  {count:<7}  '
-                f'{rule.description or repr(rule.regex)}',
+                f'{rule.description or repr(rule.regex[:30])}',
                 file=file,
             )
