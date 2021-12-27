@@ -17,7 +17,7 @@ setup(
     ],
     description='Color your output to terminal',
     entry_points={'console_scripts': ['ct = chromaterm.__main__:main']},
-    install_requires=['psutil', 'PyYAML'],
+    install_requires=['psutil', 'PyYAML>=5.1'],
     license='MIT',
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
