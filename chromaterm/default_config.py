@@ -114,7 +114,7 @@ RULE_GENERIC_BAD = Rule(
 )
 
 RULE_GENERIC_AMBIGIOUS_BAD = Rule(
-    r"(?i)\b(no(t|pe)?|exit(ed)?|reset(t?ing)?|discard(ed|ing)?|filter(ed)?|stop(p(ed|ing))?|never)\b",
+    r"(?i)\b(no(t|pe)?|exit(ed)?|reset(t?ing)?|discard(ed|ing)?|filter(ed)?|stop(p(ed|ing))?|never|bad)\b",
     Color('f.status-3', palette=PALETTE),
     'Generic - Ambigious bad',
 )
@@ -126,8 +126,8 @@ RULE_GENERIC_NOT_TOO_BAD = Rule(
 )
 
 RULE_GENERIC_AMBIGIOUS_GOOD = Rule(
-    r'(?i)\b(ye(s|ah?|p)?|started|running)\b',
-    Color('f.status-5', palette=PALETTE),
+    r'(?i)\b(ye(s|ah?|p)?|started|running|good)\b',
+    Color('f.status-6', palette=PALETTE),
     'Generic - Ambigious good',
 )
 
