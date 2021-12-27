@@ -479,6 +479,16 @@ def test_rule_get_matches():
     assert rule.get_matches(data) == expected
 
 
+def test_rule_get_matches_new_line():
+    '''Attempt to match a new line, which shouldn't be possible as it's considered
+    as a separator (i.e. not passed to be highlighted). New lines are only used
+    to replace data matched by exclusive rules.'''
+    color = chromaterm.Color('bold')
+    rule = chromaterm.Rule(r'hell\Wo', color=color)
+
+    assert not rule.get_matches(b'hell\no')
+
+
 def test_rule_get_matches_groups():
     '''Get matches of rule that colors default and specific regex groups.'''
     color0 = chromaterm.Color('bold')
@@ -933,8 +943,8 @@ def test_config_highlight_encapsulate_type_same():
 
 
 def test_config_highlight_exclusive():
-    '''Two exclusive rules, partially overlapping matches. The first rule should
-    color the
+    '''Two exclusive rules, partially overlapping matches. The first rule to match
+    the input gets to color it.
     1:     ----------
     2: ----------'''
     config = chromaterm.Config()

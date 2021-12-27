@@ -447,7 +447,8 @@ class Rule:
                 start, end = match.span(group)
 
                 # Ignore zero-length matches, like unmatched optional groups
-                if start != end:
+                # New lines in data can only come from exclusive rules
+                if start != end and b'\n' not in data[start:end]:
                     matches.append((start, end, self.colors[group]))
 
         return matches
