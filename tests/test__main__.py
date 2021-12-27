@@ -762,6 +762,21 @@ def test_main_cwd_tracking():
         assert psutil.Process(process.pid).cwd() != os.getcwd()
 
 
+def test_main_default_config():
+    '''Generate default config file in the home directory if it doesn't exist.'''
+    env = os.environ.copy()
+    env['HOME'] = os.path.dirname(os.path.abspath(__file__))
+
+    assert not os.path.isfile(env['HOME'] + '/.chromaterm.yml')
+
+    try:
+        subprocess.run(CLI + ' echo', check=True, env=env, shell=True)
+
+        assert os.path.isfile(env['HOME'] + '/.chromaterm.yml')
+    finally:
+        os.remove(env['HOME'] + '/.chromaterm.yml')
+
+
 def test_main_reload_config():
     '''Reload the configuration while the program is running.'''
     try:
