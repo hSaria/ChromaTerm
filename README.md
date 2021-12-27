@@ -110,16 +110,38 @@ the RegEx can be referenced, even group `0` (entire match).
 
 When multiple rules match the same text, ChromaTerm highlights the text with all
 of the colors of the matching rules. If you want the text to be highlighted only
-by the first rule that matches it, use the `exclusive` flag on the rule, like so:
+by the first rule that matches it, use the `exclusive` flag.
 
 ```yaml
 - regex: hello
   color: bold
-  exclusive: True
+  exclusive: true
 ```
 
 In the code above, no other rule will highlight "hello", unless it comes first
-and has the `exclusive` flag set to `True`.
+and has the `exclusive` flag set.
+
+## Palette
+
+You can define colors in a palette and reference them by name. For instance:
+
+```yaml
+palette:
+  # Created from https://coolors.co/9140f5-bd5df6-e879f6
+  purple-1: '#9140f5'
+  purple-2: '#bd5df6'
+  purple-3: '#e879f6'
+
+rules:
+- regex: hello
+  color: f.purple-1
+
+- regex: hi
+  color: b.purple-3
+```
+
+When referencing a palette color, prefix it with `b.` for background and `f.` for
+foreground.
 
 ## Help
 
