@@ -51,7 +51,7 @@ RULE_IPV6 = Rule(
     ([\da-f]{1,4}:){1,6}:[\da-f]{1,4}|  # 1:2:3:4:5:6::8
     ([\da-f]{1,4}:){1,7}:|  # 1:2:3:4:5:6:7::
     :((:[\da-f]{1,4}){1,7}|:)  # ::2:3:4:5:6:7:8
-)(:(?=\W))? # \W is an exclusive-flag hack to color the : before an IPv4-embedded address
+)(:(?=\W))?  # \W is an exclusive-flag hack to color the : before an IPv4-embedded address
 (%[\da-z]+)?  # Zone index
 (/\d+)?  # Prefix length
 (?!:?\w)
@@ -144,8 +144,8 @@ def generate_default_rules_yaml():
     data += 'rules:\n'
 
     for rule in [
-            RULE_NUMBERS, RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_SIZE, RULE_DATE,
-            RULE_TIME, RULE_GENERIC_BAD, RULE_GENERIC_AMBIGIOUS_BAD,
+            RULE_NUMBERS, RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_DATE, RULE_TIME,
+            RULE_SIZE, RULE_GENERIC_BAD, RULE_GENERIC_AMBIGIOUS_BAD,
             RULE_GENERIC_NOT_TOO_BAD, RULE_GENERIC_AMBIGIOUS_GOOD,
             RULE_GENERIC_GOOD
     ]:
