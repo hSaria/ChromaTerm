@@ -224,11 +224,10 @@ def parse_rule(data, palette=None, rgb=False):
     exclusive = data.get('exclusive', False)
     regex = data.get('regex')
     color = data.get('color')
+    rule_repr = f'Rule(regex={repr(str(regex)[:30])})'
 
     if description:
-        rule_repr = f'Rule(regex={repr(regex)}, description={repr(description)})'
-    else:
-        rule_repr = f'Rule(regex={repr(regex)})'
+        rule_repr = rule_repr[:-1] + f', description={repr(description)})'
 
     if not isinstance(color, dict):
         color = {0: color}
