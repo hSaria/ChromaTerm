@@ -15,7 +15,7 @@ setup(
         'Programming Language :: Python :: 3', 'Topic :: Terminals',
         'Topic :: Utilities'
     ],
-    description='Color your output to terminal',
+    description='Color your Terminal with Regex!',
     entry_points={'console_scripts': ['ct = chromaterm.__main__:main']},
     install_requires=['psutil', 'PyYAML>=5.1'],
     license='MIT',
