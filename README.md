@@ -6,8 +6,8 @@
 [![Downloads](https://static.pepy.tech/personalized-badge/chromaterm?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=downloads)](https://pepy.tech/project/chromaterm)
 [![PyPI version](https://badge.fury.io/py/chromaterm.svg)](https://badge.fury.io/py/chromaterm)
 
-ChromaTerm (`ct`) is a Python script that colors your output to terminal using
-regular expressions. It works with interactive programs, like SSH.
+ChromaTerm (`ct`) is a Python script that colors your terminal's output using
+regular expressions. It even works with interactive programs, like SSH.
 
 ![alt text](https://github.com/hSaria/ChromaTerm/raw/main/.github/junos-show-interface.png "Example output")
 
@@ -65,8 +65,8 @@ ChromaTerm will look in the following locations for the config file and use the
 first one it finds:
 
  * `$HOME/.chromaterm.yml`
- * `$XDG_CONFIG_HOME/chromaterm/chromaterm.yml` (if `$XDG_CONFIG_HOME` is not set,
- it defaults to `~/config`)
+ * `$XDG_CONFIG_HOME/chromaterm/chromaterm.yml` (`$XDG_CONFIG_HOME` defaults to
+ `$HOME/config`, if not set)
  * `/etc/chromaterm/chromaterm.yml`
 
 If no file is found, a default one is created in your home directory.
@@ -91,15 +91,9 @@ The color is a hex string prefixed by `b` for background (e.g. `b#123456`) and
 
 #### Style
 
-In addition to the background and foreground, the following styles are supported,
-though some terminals ignore them:
-
- * Blink
- * Bold
- * Invert
- * Italic
- * Strike
- * Underline
+In addition to the background and foreground, you can also use `blink`, `bold`,
+`invert`, `italic`, `strike`, and `underline`. Though, not all terminals support
+those styles; you might not see their effects.
 
 ### Group
 
@@ -118,7 +112,7 @@ by the first rule that matches it, use the `exclusive` flag.
   exclusive: true
 ```
 
-In the code above, no other rule will highlight "hello", unless it comes first
+In the code above, no other rule will highlight `hello`, unless it comes first
 and has the `exclusive` flag set.
 
 ## Palette
