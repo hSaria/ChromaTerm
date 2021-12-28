@@ -660,12 +660,12 @@ class Config:
         return data
 
     def print_benchmark_results(self, descending=True, file=sys.stderr):
-        """Prints the benchmark results, sorted by time spent.
+        '''Prints the benchmark results, sorted by time spent.
 
         Args:
             descending (bool): Ordering of the results.
             file (object): The file to which the results are printed.
-        """
+        '''
         total = sum(x[0] for x in self.benchmark_results.values())
 
         if self.benchmark_results:

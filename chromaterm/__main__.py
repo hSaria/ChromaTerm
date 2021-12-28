@@ -338,14 +338,14 @@ def read_file(location):
         location (str): The location of the file to be read.
     '''
     if not os.access(location, os.F_OK):
-        eprint('Configuration file', location, 'not found')
+        eprint(f'Configuration file {repr(location)} not found')
         return None
 
     try:
         with open(location, 'r', encoding='utf-8') as file:
             return file.read()
     except PermissionError:
-        eprint('Cannot read configuration file', location, '(permission)')
+        eprint(f'Cannot read configuration file {repr(location)} (permission)')
         return None
 
 
