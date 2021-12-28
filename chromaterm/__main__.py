@@ -26,15 +26,6 @@ CONFIG_LOCATIONS = [
 # The frequency to check the child process' `cwd` and update our own
 CWD_UPDATE_INTERVAL = 1 / 4
 
-# ChromaTerm cannot determine if it's processing data faster than input rate or
-# if the input has finished. Therefore, ChromaTerm waits before processing the
-# last chunk in the buffer. The waiting is cancelled if data becomes available.
-# Bounds for `get_wait_duration`. 1/256 is smaller (shorter) than the fastest key
-# repeat (1/255 second). 1/8th of a second is generally enough to account for
-# the latency of command processing or a remote connection.
-INPUT_WAIT_MIN = 1 / 256
-INPUT_WAIT_MAX = 1 / 8
-
 # Maximum chuck size per read
 READ_SIZE = 4096  # 4 KiB
 
@@ -109,18 +100,27 @@ def get_default_config_location():
     return resolve(CONFIG_LOCATIONS[0] + '.yml')
 
 
-def get_wait_duration(buffer):
+def get_wait_duration(buffer, min_wait=1 / 256, max_wait=1 / 8):
     '''Returns the duration (float) to wait for more data before the last chunk
     of the received data can be processed independently.
 
+    ChromaTerm cannot determine if it's processing data faster than input rate or
+    if the input has finished. Therefore, ChromaTerm waits before processing the
+    last chunk in the buffer. The waiting is cancelled if data becomes available.
+    1/256 is smaller (shorter) than the fastest key repeat (1/255 second). 1/8th
+    of a second is generally enough to account for the latency of command
+    processing or a remote connection.
+
     Args:
-        buffer (bytes): The incoming data that was processed
+        buffer (bytes): The incoming data that was processed.
+        min_wait (float): Lower-bound on the returned duration.
+        max_wait (float): Upper-bound on the returned duration.
     '''
     # New lines indicate long output; relax the wait duration
     if b'\n' in buffer:
-        return INPUT_WAIT_MAX
+        return max_wait
 
-    return INPUT_WAIT_MIN
+    return min_wait
 
 
 def load_config(config, data, rgb=False):
@@ -257,6 +257,7 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
         max_wait (float): The maximum time to wait with no data on either of the
             file descriptors. None will block until at least one ready to be read.
     '''
+    # pylint: disable=too-many-branches
     # Avoid BlockingIOError when output to non-blocking stdout is too fast
     try:
         os.set_blocking(sys.stdout.fileno(), True)
@@ -300,8 +301,13 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             # Flush as `read_ready` might delay the flush at the bottom
             sys.stdout.flush()
 
+            # Wait is cancelled when the user is typing; relax the wait duration
+            if forward_fd is not None:
+                wait_duration = get_wait_duration(buffer, min_wait=1 / 64)
+            else:
+                wait_duration = get_wait_duration(buffer)
+
             data, separator = chunks[-1]
-            wait_duration = get_wait_duration(buffer)
 
             # Separator is an incomplete OSC; wait for a bit
             if data_read and separator.startswith(b'\x1b\x5d'):
@@ -311,8 +317,8 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             elif len(data) < 2 + data.count(b'\b') * 2:
                 sys.stdout.buffer.write(data + separator)
                 buffer = b''
-            # There's more data; wait before highlighting
-            elif data_read and read_ready(data_fd, timeout=wait_duration):
+            # There's more data; fetch it before highlighting
+            elif data_read and read_ready(*fds, timeout=wait_duration):
                 buffer = data + separator
             else:
                 sys.stdout.buffer.write(config.highlight(data) + separator)
@@ -348,15 +354,13 @@ def read_ready(*fds, timeout=None):
 
     Args:
         *fds (int): Integers that refer to the file descriptors.
-        timeout (float): A timeout before returning an empty list if no file
-            descriptor is ready. None waits until at least one file descriptor
-            is ready.
+        timeout (float): Passed to `select.select`.
     '''
     return [] if not fds else select.select(fds, [], [], timeout)[0]
 
 
 def reload_chromaterm_instances():
-    '''Reloads other ChromaTerm CLI instances by sending them signal.SIGUSR1.
+    '''Reloads other ChromaTerm CLI instances by sending them `signal.SIGUSR1`.
 
     Returns:
         The number of processes reloaded.

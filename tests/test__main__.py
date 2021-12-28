@@ -132,12 +132,6 @@ def test_get_default_config_location_default(monkeypatch):
 
 
 def test_get_wait_duration():
-    '''The delay is minimum when on normal input.'''
-    wait_duration = chromaterm.__main__.get_wait_duration(b'')
-    assert wait_duration == chromaterm.__main__.INPUT_WAIT_MIN
-
-
-def test_get_wait_duration_buffer_new_lines():
     '''New lines in the buffer extend the wait duration.'''
     wait_duration_empty = chromaterm.__main__.get_wait_duration(b'')
     wait_duration_new_line = chromaterm.__main__.get_wait_duration(b'\n')
@@ -367,6 +361,21 @@ def test_parse_rule_group_out_of_bounds():
     assert re.search(msg_re, chromaterm.__main__.parse_rule(rule))
 
 
+def test_process_input_backspaces(capsys):
+    '''Backspaces in the input should be accounted for when determining if typing
+    is in progress.'''
+    pipe_r, pipe_w = os.pipe()
+    config = chromaterm.__main__.Config()
+
+    rule = chromaterm.Rule('.', color=chromaterm.Color('bold'))
+    config.rules.append(rule)
+
+    os.write(pipe_w, b'\b\bxyz')
+    chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
+
+    assert capsys.readouterr().out == '\b\bxyz'
+
+
 def test_process_input_blocking_stdout():
     '''Ensure that `stdout` is put into a blocking state. Otherwise, it triggers
     a `BlockingIOError` if it is not ready to be written to. chromaterm#93.'''
@@ -388,6 +397,36 @@ def test_process_input_empty(capsys):
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
 
     assert capsys.readouterr().out == ''
+
+
+def test_process_input_forward_fd_check(monkeypatch):
+    '''If input is received on `forward_fd` while waiting for data, stop waiting.'''
+    pipe_r, pipe_w = os.pipe()
+    config = chromaterm.__main__.Config()
+    call_log = []
+
+    def patched_read_ready(*fds, timeout=None):
+        # If timeout is used, then it's the call to check for more data
+        if timeout:
+            call_log.append(fds)
+            return []
+
+        return [pipe_r]
+
+    monkeypatch.setattr(chromaterm.__main__, 'read_ready', patched_read_ready)
+
+    worker = threading.Thread(target=chromaterm.__main__.process_input,
+                              args=(config, pipe_r, 666))
+    worker.start()
+
+    try:
+        os.write(pipe_w, b'hello')
+    finally:
+        os.close(pipe_w)
+        worker.join()
+
+    assert len(call_log) == 1
+    assert call_log[0] == (pipe_r, 666)
 
 
 def test_process_input_multibyte_character(capsys, monkeypatch):
@@ -465,7 +504,7 @@ def test_process_input_read_size(capsys):
     '''Input longer than READ_SIZE should not break highlighting.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
-    write_size = chromaterm.__main__.READ_SIZE + 1
+    write_size = chromaterm.__main__.READ_SIZE + 2
 
     rule = chromaterm.Rule('x' * write_size, color=chromaterm.Color('bold'))
     config.rules.append(rule)
@@ -490,21 +529,6 @@ def test_process_input_single_character(capsys):
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
 
     assert capsys.readouterr().out == 'x'
-
-
-def test_process_input_backspaces(capsys):
-    '''Backspaces in the input should be accounted for when determining if typing
-    is in progress.'''
-    pipe_r, pipe_w = os.pipe()
-    config = chromaterm.__main__.Config()
-
-    rule = chromaterm.Rule('.', color=chromaterm.Color('bold'))
-    config.rules.append(rule)
-
-    os.write(pipe_w, b'\b\bxyz')
-    chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
-
-    assert capsys.readouterr().out == '\b\bxyz'
 
 
 def test_process_input_trailing_chunk(capsys):
