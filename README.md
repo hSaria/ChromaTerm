@@ -1,6 +1,6 @@
 # ChromaTerm
 
-[![Build status](https://img.shields.io/github/workflow/status/hSaria/ChromaTerm/CI/master)](https://github.com/hSaria/ChromaTerm/actions?query=workflow%3ACI)
+[![Build status](https://img.shields.io/github/workflow/status/hSaria/ChromaTerm/CI/main)](https://github.com/hSaria/ChromaTerm/actions?query=workflow%3ACI)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/github/hSaria/ChromaTerm)](https://lgtm.com/projects/g/hSaria/ChromaTerm/context:python)
 [![Coverage status](https://coveralls.io/repos/github/hSaria/ChromaTerm/badge.svg)](https://coveralls.io/github/hSaria/ChromaTerm)
 [![Downloads](https://static.pepy.tech/personalized-badge/chromaterm?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=downloads)](https://pepy.tech/project/chromaterm)
@@ -9,7 +9,7 @@
 ChromaTerm (`ct`) is a Python script that colors your output to terminal using
 regular expressions. It works with interactive programs, like SSH.
 
-![alt text](https://github.com/hSaria/ChromaTerm/raw/master/.github/junos-show-interface.png "Example output")
+![alt text](https://github.com/hSaria/ChromaTerm/raw/main/.github/junos-show-interface.png "Example output")
 
 ## Installation
 
@@ -71,7 +71,7 @@ first one it finds:
 
 If no file is found, a default one is created in your home directory.
 
-> Check out [`contrib/rules`](https://github.com/hSaria/ChromaTerm/tree/master/contrib/rules);
+> Check out [`contrib/rules`](https://github.com/hSaria/ChromaTerm/tree/main/contrib/rules);
 > it has some topic-specific rules that are not included in the defaults.
 
 ### Description
