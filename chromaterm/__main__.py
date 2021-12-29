@@ -63,7 +63,8 @@ def args_init(args=None):
 
     parser.add_argument('--config',
                         metavar='FILE',
-                        help='override config file location')
+                        help='override config file location (default: ~/'
+                        '.chromaterm.yml)')
 
     parser.add_argument('--reload',
                         action='store_true',
