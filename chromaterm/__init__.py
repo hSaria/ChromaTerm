@@ -176,9 +176,7 @@ class Color:
             source_color_code (bytes): Bytes to be split into individual colors.
             is_reset (bool): Consider all identified colors as resets.
         '''
-        def make_sgr(code_id):
-            return b'\x1b[' + code_id + b'm'
-
+        make_sgr = lambda code_id: b'\x1b[' + code_id + b'm'
         colors = []
         codes = source_color_code.lstrip(b'\x1b[').rstrip(b'm').split(b';')
         skip = 0
@@ -228,8 +226,9 @@ class Color:
     @staticmethod
     def rgb_to_xterm256(_r, _g, _b):
         '''Downscale from 24-bit RGB to xterm-256.'''
+
         def index(value, steps):
-            '''Get the index of the closest level.'''
+            '''Returns index of the step closest to value.'''
             return steps.index(min(steps, key=lambda x: abs(x - value)))
 
         def distance(new_r, new_g, new_b):
@@ -281,6 +280,7 @@ class Color:
 
 class Palette:
     '''A color palette that maps names to RGB hex codes.'''
+
     def __init__(self):
         '''Constructor.'''
         self.colors = {}
@@ -352,6 +352,7 @@ class Palette:
 
 class Rule:
     '''A rule containing a regex and colors corresponding to the regex's groups.'''
+
     def __init__(self, regex, color=None, description=None, exclusive=False):
         '''Constructor.
 
@@ -491,6 +492,7 @@ class Rule:
 class Config:
     '''An aggregation of multiple rules which highlights by performing the regex
     matching of the rules before any colors are added.'''
+
     def __init__(self, benchmark=False):
         '''Constructor.
 
