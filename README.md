@@ -19,30 +19,31 @@ pip3 install chromaterm
 
 ## Usage
 
-Think of `ct` like `grep`; just pipe data into it, like `ssh somewhere | ct`.
+Prefix your command with `ct`. It's that simple.
+
+```shell
+ct ssh somewhere
+```
+
+You can also pipe data into `ct`, but beware that some programs behave differently
+when piped, like `less` would output the entire file.
 
 ```shell
 echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
 ```
 
-### Program Highlighting
+### Persistence
 
-To always highlight a program, set up a function in your `.bash_profile`.
-For instance, here's one for `ssh`:
+To always highlight a program, set up an alias in your `.bash_profile`. For
+instance, here's one for `ssh`.
+
 ```shell
-ssh() { /usr/bin/ssh "$@" | ct; }
+alias ssh="ct ssh"
 ```
 
-### Terminal Highlighting
-
-If you want to highlight all programs, have ChromaTerm spawn your shell by
-modifying the shell command in your terminal's settings to `/usr/local/bin/ct /bin/bash --login`. Replace `/bin/bash` with your shell of choice.
-
-### Controlling Terminal
-
-Some programs behave differently when piped, like `less`. In that case, `ct` can
-hide the pipe by spawning your program. You just have to prefix the command with
-`ct`, like `ct less file.txt`.
+If you want to highlight your entire terminal, have ChromaTerm spawn your shell by
+modifying the shell command in your terminal's settings to `/usr/local/bin/ct /bin/bash --login`.
+Replace `/bin/bash` with your shell of choice.
 
 ## Highlight Rules
 
@@ -66,7 +67,7 @@ first one it finds:
 
  * `$HOME/.chromaterm.yml`
  * `$XDG_CONFIG_HOME/chromaterm/chromaterm.yml` (`$XDG_CONFIG_HOME` defaults to
- `$HOME/config`, if not set)
+ `$HOME/.config`)
  * `/etc/chromaterm/chromaterm.yml`
 
 If no file is found, a default one is created in your home directory.
