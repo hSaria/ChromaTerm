@@ -51,15 +51,15 @@ ChromaTerm reads highlight rules from a YAML configuration file, formatted like 
 
 ```yaml
 rules:
-- description: My first rule colors the foreground
-  regex: hello.+world
+- description: Obligatory "Hello, World"
+  regex: Hello,?\s+World
   color: f#ff0000
 
-- description: Make "there" bold and italic. Paint "buddy" red
-  regex: Hey (there), (buddy)
+- description: Spit some facts (emphasize "NOT" so they get it)
+  regex: Pineapple does (NOT) belong on pizza
   color:
-    1: bold italic
-    2: b#ff0000
+    0: bold
+    1: blink italic underline
 ```
 
 ChromaTerm will look in the following locations for the config file and use the
