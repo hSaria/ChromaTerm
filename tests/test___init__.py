@@ -553,6 +553,20 @@ def test_rule_set_color_default_group():
     assert rule.colors.get(0) is color
 
 
+def test_rule_set_color_named_group():
+    '''Reference a group by name. It should be converted to an index.'''
+    rule = chromaterm.Rule('(?P<hi>hello)')
+    assert rule.color is None
+
+    color = chromaterm.Color('bold')
+    rule.set_color(color, group='hi')
+    assert rule.color is None
+    assert rule.colors.get(1) is color
+
+    rule.set_color(color)
+    assert list(rule.colors) == [0, 1]
+
+
 def test_rule_set_color_specific_group():
     '''Add to a rule a color to a specific regex group. Additionally, ensure
     that the dict keys are ordered according to the group number.'''
@@ -580,16 +594,24 @@ def test_rule_set_color_invalid_type_group():
     '''Add to a rule a color with invalid color type.'''
     rule = chromaterm.Rule('hello')
 
-    with pytest.raises(TypeError, match='group must be an integer'):
-        rule.set_color(chromaterm.Color('bold'), group='3')
+    with pytest.raises(TypeError, match='group must be an integer or a strin'):
+        rule.set_color(chromaterm.Color('bold'), group=1.1)
 
 
-def test_rule_set_color_invalid_value_group():
-    '''Add to a rule a color with invalid group value.'''
-    rule = chromaterm.Rule('hello')
+def test_rule_set_color_invalid_value_group_index():
+    '''Reference the index of a group that doesn't exist.'''
+    rule = chromaterm.Rule(r'he(llo)\1')
 
-    with pytest.raises(ValueError, match='regex only has 0 group'):
+    with pytest.raises(ValueError, match='regex only has 1 group'):
         rule.set_color(chromaterm.Color('bold'), group=2)
+
+
+def test_rule_set_color_invalid_value_group_name():
+    '''Reference the name of a group that doesn't exist.'''
+    rule = chromaterm.Rule('(?P<hi>hello)')
+
+    with pytest.raises(ValueError, match='named group .+ not in regex'):
+        rule.set_color(chromaterm.Color('bold'), group='bla')
 
 
 def test_rule_change_color():

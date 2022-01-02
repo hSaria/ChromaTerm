@@ -263,7 +263,7 @@ def test_parse_palette_invalid_colors():
 
 
 def test_parse_rule():
-    '''Parse a rule.'''
+    '''Parse a simple rule.'''
     rule = chromaterm.__main__.parse_rule({
         'description': 'hello',
         'regex': 'hello world',
@@ -345,11 +345,36 @@ def test_parse_rule_exclusive_type_error():
     assert msg in chromaterm.__main__.parse_rule(rule)
 
 
+def test_parse_rule_group_index():
+    '''Parse a rule that reference a group by its index.'''
+    rule = chromaterm.__main__.parse_rule({
+        'regex': r'(yo) (hello) (salutations)',
+        'color': {
+            2: 'b#fffaaa'
+        }
+    })
+
+    assert rule.colors[2].color == 'b#fffaaa'
+
+
+def test_parse_rule_group_named():
+    '''Parse a rule that reference a group by its name.'''
+    rule = chromaterm.__main__.parse_rule({
+        'regex': r'(?P<sup>yo) (?P<hi>hello) (?P<greetings>salutations)',
+        'color': {
+            'hi': 'b#fffaaa'
+        }
+    })
+
+    # Name is resolved to index
+    assert rule.colors[2].color == 'b#fffaaa'
+
+
 def test_parse_rule_group_type_error():
     '''Parse a rule with an incorrect `group` value type.'''
-    msg = 'group must be an integer'
+    msg = 'group must be an integer or a string'
 
-    rule = {'regex': 'x(y)z', 'color': {'1': 'b#fffaaa'}}
+    rule = {'regex': 'x(y)z', 'color': {1.1: 'b#fffaaa'}}
     assert msg in chromaterm.__main__.parse_rule(rule)
 
 

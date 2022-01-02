@@ -99,7 +99,7 @@ those styles; you might not see their effects.
 ### Group
 
 Colors can be applied per RegEx group (see the 2nd example rule). Any group in
-the RegEx can be referenced, even group `0` (entire match).
+the RegEx can be referenced, including group `0` (entire match) and named groups.
 
 ### Exclusive
 

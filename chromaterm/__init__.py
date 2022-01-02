@@ -462,15 +462,22 @@ class Rule:
 
         Args:
             color (chromaterm.Color): A color for highlighting the matched input.
-            group (int): The regex group to be be highlighted with the color.
+            group (int, str): The regex group to be be highlighted with the color.
 
         Raises:
             TypeError: If `color` is not an instance of `Color` or None. If
-                `group` is not an integer.
+                `group` is not an integer or string.
             ValueError: If `group` does not exist in the regular expression.
         '''
-        if not isinstance(group, int):
-            raise TypeError('group must be an integer')
+        if not isinstance(group, (int, str)):
+            raise TypeError('group must be an integer or a string')
+
+        if isinstance(group, str):
+            if group not in self._regex.groupindex:
+                raise ValueError(f'named group {repr(group)} not in regex')
+
+            # Resolve the named group to its index
+            group = self._regex.groupindex[group]
 
         if color is None:
             self.colors.pop(group, None)
