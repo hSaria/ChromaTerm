@@ -6,6 +6,7 @@ import chromaterm.default_config
 
 def assert_matches(positives, negatives, rule, match_count=1):
     '''Assert that all positives are matched while negatives are not.'''
+
     def permutate_data(data):
         output = []
 
@@ -33,6 +34,32 @@ def test_rule_numbers():
     rule = chromaterm.default_config.RULE_NUMBERS
 
     assert_matches(positives, negatives, rule)
+
+
+def test_rule_url():
+    '''Default rule: URL.'''
+    positives = [
+        'http://example', 'http://example', 'https://example', 'ftp://example',
+        'ldap://example', 'ssh://example', 'telnet://example',
+        'https://www.example.com', 'http://user@example', 'http://_a.example',
+        'http://user:password@example', 'http://example/hello/',
+        'http://example/hello/world/', 'http://example/?-+=~@%&?#.:;,()\\/'
+    ]
+    negatives = [
+        'bob://example', 'http:/example', 'http://.example',
+        'http://$.com/hello', 'http://@example.com'
+    ]
+    rule = chromaterm.default_config.RULE_URL
+
+    assert_matches(positives, negatives, rule)
+
+    # Trailing characters that can be part of the URL but don't end with it
+    assert rule.get_matches(b'http://example.')[0][:2] == (0, 14)
+    assert rule.get_matches(b'http://example.html')[0][:2] == (0, 19)
+    assert rule.get_matches(b'http://example:')[0][:2] == (0, 14)
+    assert rule.get_matches(b'http://example;')[0][:2] == (0, 14)
+    assert rule.get_matches(b'http://example,')[0][:2] == (0, 14)
+    assert rule.get_matches(b'http://example)')[0][:2] == (0, 14)
 
 
 def test_rule_ipv4():

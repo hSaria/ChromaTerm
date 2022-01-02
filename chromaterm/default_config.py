@@ -33,6 +33,19 @@ RULE_NUMBERS = Rule(
     'Numbers',
 )
 
+RULE_URL = Rule(
+    r'''(?ix)\b
+    ((htt|ft|lda)ps?|telnet|ssh)://  # Scheme
+    ([-%:\w\\/]{1,256}@)?  # User info
+    [-\w]{1,63}(\.[-\w]{1,63}){,126}(:\d{1,5})?  # Host and port
+    (/[-+=~@%&?#.:;,\w\\/()]*)?  # Path, query, and fragment
+((?=[.:;,)])|\b)  # Avoid highlighting trailing path characters by matching them in a lookahead
+''',
+    Color('f.type-4', palette=PALETTE),
+    'URL',
+    exclusive=True,
+)
+
 RULE_IPV4 = Rule(
     r'\b(?<!\.)((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d)(/\d+)?\b',
     Color('f.type-2', palette=PALETTE),
@@ -108,13 +121,13 @@ RULE_SIZE = Rule(
 )
 
 RULE_GENERIC_BAD = Rule(
-    r'(?i)\b(password|abnormal(ly)?|down|los(t|s|ing)|err(ors?)?|(den(y|ies|ied)?)|reject(ing|ed)?|drop(ped|s)?|(err\-)?disabled?|(timed?\-?out)|fail(s|ed|iure)?|disconnect(ed)?|unreachable|invalid|bad|notconnect|unusable|block(ing|ed)?|blk|inaccessible|wrong|collisions?|unsynchronized|mismatch|runts|CRC)\b',
+    r'(?i)\b(password|abnormal(ly)?|down|los(t|s|ing)|err(ors?)?|(den(y|ies|ied)?)|reject(ing|ed)?|drop(ped|s)?|(err\-)?disabled?|(timed?\-?out)|fail(s|ed|iure)?|disconnect(ed)?|unreachable|invalid|bad|notconnect|unusable|blk|inaccessible|wrong|collisions?|unsynchronized|mismatch|runts)\b',
     Color('f.status-1', palette=PALETTE),
     'Generic - Bad',
 )
 
 RULE_GENERIC_AMBIGIOUS_BAD = Rule(
-    r'(?i)\b(no(t|pe)?|exit(ed)?|reset(t?ing)?|discard(ed|ing)?|filter(ed)?|stop(p(ed|ing))?|never|bad)\b',
+    r'(?i)\b(no(pe)?|exit(ed)?|reset(t?ing)?|discard(ed|ing)?|block(ed|ing)?|filter(ed|ing)?|stop(p(ed|ing))?|never|bad)\b',
     Color('f.status-3', palette=PALETTE),
     'Generic - Ambigious bad',
 )
@@ -126,7 +139,7 @@ RULE_GENERIC_NOT_TOO_BAD = Rule(
 )
 
 RULE_GENERIC_AMBIGIOUS_GOOD = Rule(
-    r'(?i)\b(ye(s|ah?|p)?|started|running|good)\b',
+    r'(?i)\b(ye(s|ah?|p)?|start(ed|ing)?|running|good)\b',
     Color('f.status-6', palette=PALETTE),
     'Generic - Ambigious good',
 )
@@ -144,8 +157,8 @@ def generate_default_rules_yaml():
     data += 'rules:\n'
 
     for rule in [
-            RULE_NUMBERS, RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_DATE, RULE_TIME,
-            RULE_SIZE, RULE_GENERIC_BAD, RULE_GENERIC_AMBIGIOUS_BAD,
+            RULE_NUMBERS, RULE_URL, RULE_IPV4, RULE_IPV6, RULE_MAC, RULE_DATE,
+            RULE_TIME, RULE_SIZE, RULE_GENERIC_BAD, RULE_GENERIC_AMBIGIOUS_BAD,
             RULE_GENERIC_NOT_TOO_BAD, RULE_GENERIC_AMBIGIOUS_GOOD,
             RULE_GENERIC_GOOD
     ]:
