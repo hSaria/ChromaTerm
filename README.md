@@ -25,8 +25,8 @@ Prefix your command with `ct`. It's that simple.
 ct ssh somewhere
 ```
 
-You can also pipe data into `ct`, but beware that some programs behave differently
-when piped, like `less` would output the entire file.
+You can also pipe data into `ct`, but some programs behave differently when piped,
+like `less` would output the entire file.
 
 ```shell
 echo "Jul 14 12:28:19  Message from 1.2.3.4: Completed successfully" | ct
@@ -62,8 +62,8 @@ rules:
     1: blink italic underline
 ```
 
-ChromaTerm will look in the following locations for the config file and use the
-first one it finds:
+The configuration file can be placed in one of the locations below. The first one
+found is used.
 
  * `$HOME/.chromaterm.yml`
  * `$XDG_CONFIG_HOME/chromaterm/chromaterm.yml` (`$XDG_CONFIG_HOME` defaults to
