@@ -30,9 +30,9 @@ CWD_UPDATE_INTERVAL = 1 / 4
 READ_SIZE = 4096  # 4 KiB
 
 # Sequences upon which ct will split during processing. This includes new lines,
-# vertical spaces, form feeds, C1 set (ECMA-048), SCS (G0 through G3 sets),
-# CSI (excluding SGR), and OSC.
-SPLIT_RE = re.compile(br'(\r\n?|\n|\v|\f|\x1b[\x40-\x5a\x5c\x5e\x5f]|'
+# vertical spaces, form feeds, private control functions (ECMA-035) and C1 set
+# (ECMA-048), SCS (G0 through G3 sets), CSI (excluding SGR), and OSC.
+SPLIT_RE = re.compile(br'(\r\n?|\n|\v|\f|\x1b[\x30-\x5a\x5c\x5e\x5f]|'
                       br'\x1b[\x28-\x2b\x2d-\x2f][\x20-\x7e]|'
                       br'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
                       br'\x1b\x5d[^\x07\x1b]*(?:\x07|\x1b\x5c)?)')

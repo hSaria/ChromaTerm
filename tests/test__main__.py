@@ -653,6 +653,15 @@ def test_split_buffer_printer_commands():
         assert chromaterm.__main__.split_buffer(data) == expected
 
 
+def test_split_buffer_private_control_functions():
+    '''Split based on the ECMA-035 private control functions.'''
+    for char_id in range(int('30', 16), int('40', 16)):
+        data = b'Hello \x1b%c World' % char_id
+        expected = ((b'Hello ', b'\x1b%c' % char_id), (b' World', b''))
+
+        assert chromaterm.__main__.split_buffer(data) == expected
+
+
 def test_split_buffer_c1_set():
     '''Split based on the ECMA-048 C1 set, excluding CSI and OSC.'''
     c1_except_csi_and_osc = itertools.chain(
