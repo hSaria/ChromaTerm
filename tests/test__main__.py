@@ -482,8 +482,8 @@ def test_process_input_multiline(capsys):
     assert capsys.readouterr().out == '\nt \x1b[1mhello world\x1b[22m t\n' * 2
 
 
-def test_process_input_partial_osc(capsys, monkeypatch):
-    '''An incomplete OSC should not be printed.'''
+def test_process_input_partial_control_string(capsys, monkeypatch):
+    '''An incomplete control string should not be printed.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
     event = threading.Event()
@@ -503,23 +503,24 @@ def test_process_input_partial_osc(capsys, monkeypatch):
     worker.start()
 
     try:
-        # Data (printed), followed by the first part of the OSC (not printed)
-        event.clear()
-        os.write(pipe_w, b'hello\n\x1b\x5dp1')
-        event.wait()
-        assert capsys.readouterr().out == 'hello\n'
+        for code in ['\x50', '\x58', '\x5d', '\x5e', '\x5f']:
+            # Data (printed), followed by the first part (not printed)
+            event.clear()
+            os.write(pipe_w, b'hello\n\x1b' + code.encode('utf-8') + b'p1')
+            event.wait()
+            assert capsys.readouterr().out == 'hello\n'
 
-        # Second part of the OSC (not printed)
-        event.clear()
-        os.write(pipe_w, 'p2'.encode())
-        event.wait()
-        assert capsys.readouterr().out == ''
+            # Second part (not printed)
+            event.clear()
+            os.write(pipe_w, 'p2'.encode())
+            event.wait()
+            assert capsys.readouterr().out == ''
 
-        # Final part of the OSC (printed) and some data (printed)
-        event.clear()
-        os.write(pipe_w, 'p3\x07world'.encode())
-        event.wait()
-        assert capsys.readouterr().out == '\x1b\x5dp1p2p3\x07world'
+            # Final part (printed) and some data (printed)
+            event.clear()
+            os.write(pipe_w, 'p3\x07world'.encode())
+            event.wait()
+            assert capsys.readouterr().out == '\x1b' + code + 'p1p2p3\x07world'
     finally:
         os.close(pipe_w)
         worker.join()
@@ -663,21 +664,28 @@ def test_split_buffer_private_control_functions():
 
 
 def test_split_buffer_c1_set():
-    '''Split based on the ECMA-048 C1 set, excluding CSI and OSC.'''
-    c1_except_csi_and_osc = itertools.chain(
-        range(int('40', 16), int('5b', 16)),
-        [
-            int('5c', 16),
-            int('5e', 16),
-            int('5f', 16),
-        ],
-    )
+    '''Split based on the ECMA-048 C1 set, excluding CSI and control strings.'''
+    c1_set = itertools.chain(range(int('40', 16), int('50', 16)),
+                             range(int('51', 16), int('58', 16)),
+                             range(int('59', 16), int('5b', 16)),
+                             (int('5c', 16), ))
 
-    for char_id in c1_except_csi_and_osc:
+    for char_id in c1_set:
         data = b'Hello \x1b%c World' % char_id
         expected = ((b'Hello ', b'\x1b%c' % char_id), (b' World', b''))
 
         assert chromaterm.__main__.split_buffer(data) == expected
+
+
+def test_split_buffer_independent_control_functions():
+    '''Split based on the ECMA-048 independent control functions.'''
+    for escape in (b'\x1b', b'\x1b\x23'):
+        for char_id in range(int('60', 16), int('7f', 16)):
+            code = escape + b'%c' % char_id
+            data = b'Hello ' + code + b' World'
+            expected = ((b'Hello ', code), (b' World', b''))
+
+            assert chromaterm.__main__.split_buffer(data) == expected
 
 
 def test_split_buffer_csi_exclude_sgr():

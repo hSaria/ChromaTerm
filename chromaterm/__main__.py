@@ -29,13 +29,22 @@ CWD_UPDATE_INTERVAL = 1 / 4
 # Maximum chuck size per read
 READ_SIZE = 4096  # 4 KiB
 
-# Sequences upon which ct will split during processing. This includes new lines,
-# vertical spaces, form feeds, private control functions (ECMA-035) and C1 set
-# (ECMA-048), SCS (G0 through G3 sets), CSI (excluding SGR), and OSC.
-SPLIT_RE = re.compile(br'(\r\n?|\n|\v|\f|\x1b[\x30-\x5a\x5c\x5e\x5f]|'
-                      br'\x1b[\x28-\x2b\x2d-\x2f][\x20-\x7e]|'
-                      br'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
-                      br'\x1b\x5d[^\x07\x1b]*(?:\x07|\x1b\x5c)?)')
+# Sequences upon which ct will split during processing (ECMA 035 and 048):
+# * new lines, vertical spaces, form feeds;
+# * private control functions, C1 set (excluding control strings);
+# * independent control functions (\e#), SCS (G0 through G3 sets);
+# * CSI (excluding SGR); and
+# * control strings (DSC, SOS, OSC, PM, APC).
+SPLIT_RE = re.compile(
+    br'(\r\n?|[\n\v\f]|'
+    br'\x1b[\x30-\x4f\x51-\x57\x59-\x5a\x5c\x60-\x7e]|'
+    br'\x1b[\x23\x28-\x2b\x2d-\x2f][\x20-\x7e]|'
+    br'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
+    br'\x1b[\x50\x58\x5d\x5e\x5f][^\x07\x1b]*(?:\x07|\x1b\x5c)?)')
+
+# The start of a control string
+SPLIT_CONTROL_STRINGS = (b'\x1b\x50', b'\x1b\x58', b'\x1b\x5d', b'\x1b\x5e',
+                         b'\x1b\x5f')
 
 
 def args_init(args=None):
@@ -310,8 +319,8 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
 
             data, separator = chunks[-1]
 
-            # Separator is an incomplete OSC; wait for a bit
-            if data_read and separator.startswith(b'\x1b\x5d'):
+            # Separator is an incomplete control strings; wait for the rest
+            if data_read and separator.startswith(SPLIT_CONTROL_STRINGS):
                 buffer = data + separator
             # Zero or one characters indicates keyboard typing; don't highlight
             # Account for the backspaces added by some shells, like zsh
