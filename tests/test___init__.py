@@ -446,6 +446,13 @@ def test_rule_compile_regex():
     assert regex.pattern == b'(?:p)'
 
 
+def test_rule_compile_regex_cache():
+    '''Ensure the regex cache is avoided when running with patched parsing.'''
+    re.compile(b'(p)')
+    regex = chromaterm.Rule.compile_regex(b'(p)', {0: None})
+    assert regex.pattern == b'(?:p)'
+
+
 def test_rule_compile_regex_group_in_set():
     '''Compile a pattern, containing parenthesis in a set.'''
     regex = chromaterm.Rule.compile_regex(b'[a(b)c]', {0: None})

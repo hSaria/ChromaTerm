@@ -1,6 +1,7 @@
 '''Color your output to terminal'''
 import os
 import re
+import sre_compile
 import sre_parse
 import sys
 import time
@@ -420,8 +421,9 @@ class Rule:
                 groups.insert(0, source.tell())
                 return original_parse_sub(source, *args, **kwargs)
 
+            # Avoid the regex cache with patched parsing
             sre_parse._parse_sub = _parse_sub
-            regex = re.compile(pattern)
+            regex = sre_compile.compile(pattern)
 
             for group in groups:
                 # Group is not 0 and not a special group
