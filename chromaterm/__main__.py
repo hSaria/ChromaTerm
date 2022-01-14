@@ -42,9 +42,10 @@ SPLIT_RE = re.compile(
     br'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*[\x40-\x6c\x6e-\x7e]|'
     br'\x1b[\x50\x58\x5d\x5e\x5f][^\x07\x1b]*(?:\x07|\x1b\x5c)?)')
 
-# The start of a control string
-SPLIT_CONTROL_STRINGS = (b'\x1b\x50', b'\x1b\x58', b'\x1b\x5d', b'\x1b\x5e',
-                         b'\x1b\x5f')
+# Control strings that have arbitrary lengths
+ANSI_CONTROL_STRINGS_START = (b'\x1b\x50', b'\x1b\x58', b'\x1b\x5d',
+                              b'\x1b\x5e', b'\x1b\x5f')
+ANSI_CONTROL_STRINGS_END = (b'\x07', b'\x1b\x5c')
 
 
 def args_init(args=None):
@@ -319,8 +320,9 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
 
             data, separator = chunks[-1]
 
-            # Separator is an incomplete control strings; wait for the rest
-            if data_read and separator.startswith(SPLIT_CONTROL_STRINGS):
+            # Separator is an incomplete control string; wait for the rest
+            if data_read and separator.startswith(ANSI_CONTROL_STRINGS_START) \
+                    and not separator.endswith(ANSI_CONTROL_STRINGS_END):
                 buffer = data + separator
             # A single character indicates keyboard typing; don't highlight
             # Account for backspaces added by some shells, like zsh

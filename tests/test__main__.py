@@ -503,24 +503,27 @@ def test_process_input_partial_control_string(capsys, monkeypatch):
     worker.start()
 
     try:
-        for code in ['\x50', '\x58', '\x5d', '\x5e', '\x5f']:
-            # Data (printed), followed by the first part (not printed)
-            event.clear()
-            os.write(pipe_w, b'hello\n\x1b' + code.encode() + b'p1')
-            event.wait()
-            assert capsys.readouterr().out == 'hello\n'
+        for end in ['\x07', '\x1b\x5c']:
+            for code in ['\x50', '\x58', '\x5d', '\x5e', '\x5f']:
+                start = '\x1b' + code
 
-            # Second part (not printed)
-            event.clear()
-            os.write(pipe_w, 'p2'.encode())
-            event.wait()
-            assert capsys.readouterr().out == ''
+                # Data (printed), followed by the first part (not printed)
+                event.clear()
+                os.write(pipe_w, b'hello\n' + start.encode() + b'p1')
+                event.wait()
+                assert capsys.readouterr().out == 'hello\n'
 
-            # Final part (printed) and some data (printed)
-            event.clear()
-            os.write(pipe_w, 'p3\x07world'.encode())
-            event.wait()
-            assert capsys.readouterr().out == '\x1b' + code + 'p1p2p3\x07world'
+                # Second part (not printed)
+                event.clear()
+                os.write(pipe_w, b'p2')
+                event.wait()
+                assert capsys.readouterr().out == ''
+
+                # Final part (printed)
+                event.clear()
+                os.write(pipe_w, b'p3' + end.encode())
+                event.wait()
+                assert capsys.readouterr().out == start + 'p1p2p3' + end
     finally:
         os.close(pipe_w)
         worker.join()
