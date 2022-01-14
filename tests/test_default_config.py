@@ -128,6 +128,9 @@ def test_rule_date():
 
     assert_matches(positives, negatives, rule)
 
+    # MMM DD takes precedence over DD MMM, if both are matched
+    assert rule.get_matches(b'12 Mar 12')[0][:2] == (3, 9)
+
 
 def test_rule_time():
     '''Default rule: Time.'''
