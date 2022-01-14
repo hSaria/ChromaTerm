@@ -506,7 +506,7 @@ def test_process_input_partial_control_string(capsys, monkeypatch):
         for code in ['\x50', '\x58', '\x5d', '\x5e', '\x5f']:
             # Data (printed), followed by the first part (not printed)
             event.clear()
-            os.write(pipe_w, b'hello\n\x1b' + code.encode('utf-8') + b'p1')
+            os.write(pipe_w, b'hello\n\x1b' + code.encode() + b'p1')
             event.wait()
             assert capsys.readouterr().out == 'hello\n'
 
@@ -548,13 +548,19 @@ def test_process_input_single_character(capsys):
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
 
-    rule = chromaterm.Rule('.', color=chromaterm.Color('bold'))
+    rule = chromaterm.Rule('x', color=chromaterm.Color('bold'))
     config.rules.append(rule)
 
     os.write(pipe_w, b'x')
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
 
     assert capsys.readouterr().out == 'x'
+
+    # A single character after a separator is not keyboard input
+    os.write(pipe_w, b'hi\nx')
+    chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
+
+    assert capsys.readouterr().out == 'hi\n\x1b[1mx\x1b[22m'
 
 
 def test_process_input_trailing_chunk(capsys):
@@ -574,6 +580,8 @@ def test_process_input_trailing_chunk(capsys):
     os.write(pipe_w, b'hello ')
     while select.select([pipe_r], [], [], 0)[0]:
         pass
+    assert capsys.readouterr().out == ''
+
     os.write(pipe_w, b'world')
 
     os.close(pipe_w)

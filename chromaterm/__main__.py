@@ -322,9 +322,9 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             # Separator is an incomplete control strings; wait for the rest
             if data_read and separator.startswith(SPLIT_CONTROL_STRINGS):
                 buffer = data + separator
-            # Zero or one characters indicates keyboard typing; don't highlight
-            # Account for the backspaces added by some shells, like zsh
-            elif len(data) < 2 + data.count(b'\b') * 2:
+            # A single character indicates keyboard typing; don't highlight
+            # Account for backspaces added by some shells, like zsh
+            elif 0 < len(data_read) < 2 + data_read.count(b'\b') * 2:
                 sys.stdout.buffer.write(data + separator)
                 buffer = b''
             # There's more data; fetch it before highlighting
