@@ -54,7 +54,8 @@ def args_init(args=None):
     Args:
         args (list): A list of program arguments, Defaults to sys.argv.
     '''
-    parser = argparse.ArgumentParser()
+    formatter = lambda prog: argparse.HelpFormatter(prog, max_help_position=30)
+    parser = argparse.ArgumentParser(formatter_class=formatter)
     parser.epilog = 'For more info, go to https://github.com/hSaria/ChromaTerm.'
 
     parser.add_argument('program',
@@ -67,20 +68,28 @@ def args_init(args=None):
                         nargs=argparse.REMAINDER,
                         help=argparse.SUPPRESS)
 
-    parser.add_argument('--benchmark',
+    parser.add_argument('-b',
+                        '--benchmark',
+                        dest='benchmark',
                         action='store_true',
                         help='at exit, print rule usage statistics')
 
-    parser.add_argument('--config',
-                        metavar='FILE',
+    parser.add_argument('-c',
+                        '--config',
+                        dest='config',
+                        metavar='file',
                         help='override config file location (default: ~/'
                         '.chromaterm.yml)')
 
-    parser.add_argument('--reload',
+    parser.add_argument('-r',
+                        '--reload',
+                        dest='reload',
                         action='store_true',
                         help='reload the config of all CT instances')
 
-    parser.add_argument('--rgb',
+    parser.add_argument('-R',
+                        '--rgb',
+                        dest='rgb',
                         action='store_true',
                         help='use RGB colors (default: detect support, '
                         'fallback to xterm-256)')
