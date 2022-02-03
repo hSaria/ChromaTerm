@@ -15,7 +15,7 @@ import pytest
 import chromaterm
 import chromaterm.__main__
 
-# pylint: disable=consider-using-with
+# pylint: disable=consider-using-with,too-many-lines
 
 CLI = sys.executable + ' -m chromaterm'
 
@@ -412,6 +412,31 @@ def test_process_input_blocking_stdout():
 
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
     assert os.get_blocking(sys.stdout.fileno())
+
+
+def test_process_input_buffer_size(capsys, monkeypatch):
+    '''Ensure a limit exists on the size of the buffer.'''
+    rule = chromaterm.Rule('heyhey', color=chromaterm.Color('bold'))
+    config = chromaterm.__main__.Config()
+    config.rules.append(rule)
+
+    patched_read_ready = lambda *_1, **_2: [pipe_r]
+    monkeypatch.setattr(chromaterm.__main__, 'read_ready', patched_read_ready)
+
+    pipe_r, pipe_w = os.pipe()
+    os.write(pipe_w, b'heyhey')
+    os.close(pipe_w)
+    chromaterm.__main__.process_input(config, pipe_r)
+    assert capsys.readouterr().out == '\x1b[1mheyhey\x1b[22m'
+
+    # Patch READ_SIZE to force the buffer to hit its cap
+    monkeypatch.setattr(chromaterm.__main__, 'READ_SIZE', 2)
+
+    pipe_r, pipe_w = os.pipe()
+    os.write(pipe_w, b'heyhey')
+    os.close(pipe_w)
+    chromaterm.__main__.process_input(config, pipe_r)
+    assert capsys.readouterr().out == 'heyhey'
 
 
 def test_process_input_empty(capsys):

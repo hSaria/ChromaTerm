@@ -27,7 +27,7 @@ CONFIG_LOCATIONS = [
 CWD_UPDATE_INTERVAL = 1 / 4
 
 # Maximum chuck size per read
-READ_SIZE = 4096  # 4 KiB
+READ_SIZE = 8192
 
 # Sequences upon which ct will split during processing (ECMA 035 and 048):
 # * new lines, vertical spaces, form feeds;
@@ -338,8 +338,9 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             elif 0 < len(data_read) < 2 + data_read.count(b'\b') * 2:
                 sys.stdout.buffer.write(data + separator)
                 buffer = b''
-            # There's more data; fetch it before highlighting
-            elif data_read and read_ready(*fds, timeout=wait_duration):
+            # There's more data; fetch it before highlighting, if buffer isn't full
+            elif data_read and len(buffer) <= READ_SIZE \
+                    and read_ready(*fds, timeout=wait_duration):
                 buffer = data + separator
             else:
                 sys.stdout.buffer.write(config.highlight(data) + separator)
