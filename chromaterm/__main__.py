@@ -564,7 +564,7 @@ def main(args=None, max_wait=None, write_default=True):
         # Surpress the implicit flush that Python runs on exit
         sys.stdout.flush = lambda: None
 
-    return None
+    return os.wait()[1] >> 8 if args.program else 0
 
 
 if __name__ == '__main__':

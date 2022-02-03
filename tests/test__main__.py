@@ -879,6 +879,13 @@ def test_main_default_config():
         os.remove(env['HOME'] + '/.chromaterm.yml')
 
 
+def test_main_exit_code():
+    '''The exit code of the child process should be the exit code of ChromaTerm.'''
+    command = CLI + ' ' + get_python_command('import sys; sys.exit(3)')
+
+    assert subprocess.run(command, check=False, shell=True).returncode == 3
+
+
 def test_main_reload_config():
     '''Reload the configuration while the program is running.'''
     try:
