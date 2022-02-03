@@ -10,7 +10,7 @@ from chromaterm import Color, Palette, Rule
 PALETTE = Palette()
 
 # https://coolors.co/c68c6c-00e0d1-ef2e9f-5698c8-a35a00-df99f0-03d28d
-PALETTE.add_color('type-1', '#c68c6c')
+PALETTE.add_color('type-1', '#dc8968')
 PALETTE.add_color('type-2', '#00e0d1')
 PALETTE.add_color('type-3', '#ef2e9f')
 PALETTE.add_color('type-4', '#5698c8')
