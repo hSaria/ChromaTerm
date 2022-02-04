@@ -1,7 +1,5 @@
 '''Color your output to terminal'''
 import re
-import sre_compile
-import sre_parse
 import sys
 import time
 
@@ -380,7 +378,7 @@ class Rule:
         if not isinstance(color, dict):
             color = {0: color}
 
-        self._regex = self.compile_regex(regex.encode(encoding='utf-8'), color)
+        self._regex = re.compile(regex.encode())
 
         for group, value in color.items():
             self.set_color(value, group)
@@ -393,44 +391,6 @@ class Rule:
     @color.setter
     def color(self, value):
         self.set_color(value)
-
-    @staticmethod
-    def compile_regex(pattern, referenced_groups):
-        '''Returns an instance of `re.Pattern` after performing any optimizations
-
-        Args:
-            pattern (bytes): The pattern to compile.
-            referenced_groups (list): The regex group numbers referenced.
-        '''
-        # pylint: disable=protected-access
-        original_parse_sub = sre_parse._parse_sub
-        groups = []
-        regex = None
-
-        try:
-            if list(referenced_groups) != [0]:
-                raise re.error('Cannot optimize; groups are referenced')
-
-            def _parse_sub(source, *args, **kwargs):
-                # Note the start of a subpattern (i.e. group). Add in reverse
-                # to avoid calculating an index offset
-                groups.insert(0, source.tell())
-                return original_parse_sub(source, *args, **kwargs)
-
-            # Avoid the regex cache with patched parsing
-            sre_parse._parse_sub = _parse_sub
-            regex = sre_compile.compile(pattern)
-
-            for group in groups:
-                # Group is not 0 and not a special group
-                if group and pattern[group - 1] == 40:  # b'('
-                    pattern = pattern[:group - 1] + b'(?:' + pattern[group:]
-
-            return regex if len(groups) < 2 else re.compile(pattern)
-        except (AttributeError, TypeError, re.error):
-            return regex or re.compile(pattern)
-        finally:
-            sre_parse._parse_sub = original_parse_sub
 
     def get_matches(self, data):
         '''Returns a list of tuples, each containing a start index, an end index,

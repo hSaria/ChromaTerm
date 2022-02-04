@@ -1,6 +1,4 @@
 '''chromaterm tests'''
-import re
-
 import pytest
 
 import chromaterm
@@ -438,41 +436,6 @@ def test_palette_resolve_invalid_value_name_not_in_palette():
     '''Resolve a color name that isn't in the palette.'''
     with pytest.raises(ValueError, match='not in palette'):
         chromaterm.Palette().resolve('b.red')
-
-
-def test_rule_compile_regex():
-    '''Compile a pattern, replacing the capturing groups with non-capturing ones.'''
-    regex = chromaterm.Rule.compile_regex(b'(p)', {0: None})
-    assert regex.pattern == b'(?:p)'
-
-
-def test_rule_compile_regex_cache():
-    '''Ensure the regex cache is avoided when running with patched parsing.'''
-    re.compile(b'(p)')
-    regex = chromaterm.Rule.compile_regex(b'(p)', {0: None})
-    assert regex.pattern == b'(?:p)'
-
-
-def test_rule_compile_regex_group_in_set():
-    '''Compile a pattern, containing parenthesis in a set.'''
-    regex = chromaterm.Rule.compile_regex(b'[a(b)c]', {0: None})
-    assert regex.pattern == b'[a(b)c]'
-
-
-def test_rule_compile_regex_groups_referenced():
-    '''Compile a pattern with a group being referenced; optimization is skipped.'''
-    regex = chromaterm.Rule.compile_regex(b'(p)', {1: None})
-    assert regex.pattern == b'(p)'
-
-
-def test_rule_compile_regex_failed_optimization():
-    '''Ensure the pattern optimization falls-back if it runs into an error.'''
-    # Confirm it normally fails
-    with pytest.raises(re.error, match='invalid group reference'):
-        re.compile(br'(?:p)\1')
-
-    regex = chromaterm.Rule.compile_regex(br'(p)\1', {1: None})
-    assert regex.pattern == br'(p)\1'
 
 
 def test_rule_get_matches():
