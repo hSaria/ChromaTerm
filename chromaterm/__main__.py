@@ -70,31 +70,32 @@ def args_init(args=None):
 
     parser.add_argument('-b',
                         '--benchmark',
-                        dest='benchmark',
                         action='store_true',
                         help='at exit, print rule usage statistics')
 
     parser.add_argument('-c',
                         '--config',
-                        dest='config',
                         metavar='file',
                         help='override config file location (default: ~/'
                         '.chromaterm.yml)')
 
     parser.add_argument('-r',
                         '--reload',
-                        dest='reload',
                         action='store_true',
                         help='reload the config of all CT instances')
 
     parser.add_argument('-R',
                         '--rgb',
-                        dest='rgb',
                         action='store_true',
                         help='use RGB colors (default: detect support, '
                         'fallback to xterm-256)')
 
-    return parser.parse_args(args=args)
+    args = parser.parse_args(args=args)
+
+    # Detect rgb support
+    args.rgb = args.rgb or os.getenv('COLORTERM') in ('truecolor', '24bit')
+
+    return args
 
 
 def eprint(*args, **kwargs):
@@ -538,7 +539,7 @@ def main(args=None, max_wait=None, write_default=True):
         config_data = read_file(args.config)
 
         if config_data:
-            load_config(config, config_data, rgb=args.rgb or None)
+            load_config(config, config_data, rgb=args.rgb)
 
     # Trigger the initial loading
     reload_config_handler()

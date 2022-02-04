@@ -1,5 +1,4 @@
 '''Color your output to terminal'''
-import os
 import re
 import sre_compile
 import sre_parse
@@ -51,9 +50,6 @@ COLOR_TYPES = {
 
 # The format of a palette color
 PALETTE_COLOR_RE = re.compile(r'\b([bf])\.([a-z0-9-_]+)\b')
-
-# Detect rgb support
-RGB_SUPPORTED = os.getenv('COLORTERM') in ('truecolor', '24bit')
 
 # Select Graphic Rendition sequence (any type)
 SGR_RE = re.compile(br'\x1b\[[0-9;]*m')
@@ -129,7 +125,7 @@ class Color:
             # Break down hex color to RGB integers
             rgb_int = [int(hex_code[i:i + 2], 16) for i in (0, 2, 4)]
 
-            if self.rgb or (self.rgb is None and RGB_SUPPORTED):
+            if self.rgb:
                 target += b'2;'
                 color_id = b'%d;%d;%d' % tuple(rgb_int)
             else:
@@ -475,7 +471,7 @@ class Rule:
             raise TypeError('group must be an integer or a string')
 
         if isinstance(group, str):
-            if group not in self._regex.groupindex:
+            if not self._regex.groupindex.get(group):
                 raise ValueError(f'named group {repr(group)} not in regex')
 
             # Resolve the named group to its index
