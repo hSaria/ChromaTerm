@@ -139,6 +139,17 @@ rules:
 When referencing a palette color, prefix it with `b.` for background and `f.` for
 foreground.
 
+## PCRE2
+
+If the `PCRE2` library is present, you can use it instead of Python's `re`
+engine. When present, an option in `ct -h` becomes available.
+
+While the performance improvement is significant (~2x), the two RegEx engines
+have a few differences; use this option only if you have a good understanding
+of their unique features.
+
+> The default rules work on both engines.
+
 ## Help
 
 If you've got any questions or suggestions, please open up an
