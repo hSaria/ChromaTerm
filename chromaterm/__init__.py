@@ -550,10 +550,9 @@ class Config:
         # a test-driven approach by looking at the test_config_highlight_* tests
         for start, end, color in self.get_matches(data):
             start_index, end_index = self.get_insert_index(start, end, inserts)
-            reset_codes = []
 
             # Each color type requires tracking of its respective type
-            for color_type, color_code in color.color_types:
+            for i, (color_type, color_code) in enumerate(color.color_types):
                 start_insert = [start, color_code, False, color_type]
                 end_insert = [
                     end, self._reset_codes[color_type], True, color_type
@@ -581,13 +580,10 @@ class Config:
 
                         insert[1:4] = color_code, False, color_type
 
-                # After all of the start inserts are added, the end ones can
-                # placed in reverse order (outward from the match).
-                inserts.insert(start_index, start_insert)
-                reset_codes.insert(0, end_insert)
-
-            for reset_code in reset_codes:
-                inserts.insert(end_index, reset_code)
+                # The inserts are added in reverse order LI-FO relative to the
+                # match; end insert intentionally pushes start insert forward.
+                inserts.insert(start_index + i, start_insert)
+                inserts.insert(end_index + i, end_insert)
 
         return inserts
 
