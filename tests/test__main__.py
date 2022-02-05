@@ -386,13 +386,13 @@ def test_parse_rule_group_out_of_bounds():
     assert re.search(msg_re, chromaterm.__main__.parse_rule(rule))
 
 
-def test_process_input_backspaces(capsys):
+def test_process_input_backspaces(capsys, pcre):
     '''Backspaces in the input should be accounted for when determining if typing
     is in progress.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
 
-    rule = chromaterm.Rule('.', color=chromaterm.Color('bold'))
+    rule = chromaterm.Rule('.', chromaterm.Color('bold'), pcre=pcre)
     config.rules.append(rule)
 
     os.write(pipe_w, b'\b\bxyz')
@@ -414,9 +414,9 @@ def test_process_input_blocking_stdout():
     assert os.get_blocking(sys.stdout.fileno())
 
 
-def test_process_input_buffer_size(capsys, monkeypatch):
+def test_process_input_buffer_size(capsys, monkeypatch, pcre):
     '''Ensure a limit exists on the size of the buffer.'''
-    rule = chromaterm.Rule('heyhey', color=chromaterm.Color('bold'))
+    rule = chromaterm.Rule('heyhey', chromaterm.Color('bold'), pcre=pcre)
     config = chromaterm.__main__.Config()
     config.rules.append(rule)
 
@@ -493,12 +493,12 @@ def test_process_input_multibyte_character(capsys, monkeypatch):
     assert capsys.readouterr().out == '😀'
 
 
-def test_process_input_multiline(capsys):
+def test_process_input_multiline(capsys, pcre):
     '''Input processing with multiple lines of data.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
 
-    rule = chromaterm.Rule('hello world', color=chromaterm.Color('bold'))
+    rule = chromaterm.Rule('hello world', chromaterm.Color('bold'), pcre=pcre)
     config.rules.append(rule)
 
     os.write(pipe_w, b'\nt hello world t\n' * 2)
@@ -554,13 +554,15 @@ def test_process_input_partial_control_string(capsys, monkeypatch):
         worker.join()
 
 
-def test_process_input_read_size(capsys):
+def test_process_input_read_size(capsys, pcre):
     '''Input longer than READ_SIZE should not break highlighting.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
     write_size = chromaterm.__main__.READ_SIZE + 2
 
-    rule = chromaterm.Rule('x' * write_size, color=chromaterm.Color('bold'))
+    rule = chromaterm.Rule('x' * write_size,
+                           chromaterm.Color('bold'),
+                           pcre=pcre)
     config.rules.append(rule)
 
     os.write(pipe_w, b'x' * write_size)
@@ -569,14 +571,14 @@ def test_process_input_read_size(capsys):
     assert capsys.readouterr().out == '\x1b[1m' + 'x' * write_size + '\x1b[22m'
 
 
-def test_process_input_single_character(capsys):
+def test_process_input_single_character(capsys, pcre):
     '''Input processing for a single character. Even with a rule that matches
     single character, the output should not be highlighted as it is typically
     just keyboard input.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
 
-    rule = chromaterm.Rule('x', color=chromaterm.Color('bold'))
+    rule = chromaterm.Rule('x', chromaterm.Color('bold'), pcre=pcre)
     config.rules.append(rule)
 
     os.write(pipe_w, b'x')
@@ -591,13 +593,13 @@ def test_process_input_single_character(capsys):
     assert capsys.readouterr().out == 'hi\n\x1b[1mx\x1b[22m'
 
 
-def test_process_input_trailing_chunk(capsys):
+def test_process_input_trailing_chunk(capsys, pcre):
     '''Ensure that a trailing chunk is joined with the next chunk if the latter
     arrives in time.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
 
-    rule = chromaterm.Rule('hello world', color=chromaterm.Color('bold'))
+    rule = chromaterm.Rule('hello world', chromaterm.Color('bold'), pcre=pcre)
     config.rules.append(rule)
 
     worker = threading.Thread(target=chromaterm.__main__.process_input,

@@ -348,7 +348,13 @@ class Palette:
 class Rule:
     '''A rule containing a regex and colors corresponding to the regex's groups.'''
 
-    def __init__(self, regex, color=None, description=None, exclusive=False):
+    # pylint: disable=import-outside-toplevel,too-many-arguments
+    def __init__(self,
+                 regex,
+                 color=None,
+                 description=None,
+                 exclusive=False,
+                 pcre=False):
         '''Constructor.
 
         Args:
@@ -356,7 +362,8 @@ class Rule:
             color (chromaterm.Color, dict): Color used to highlight the entire
                 match. Can be a dictionary of {group:  color} format.
             description (str): String to help identify the rule.
-            exclusive (bool): Whether other rules should overlap with this one
+            exclusive (bool): Whether other rules should overlap with this one.
+            pcre (bool): Whether to use PCRE2 or default to Python's RE.
 
         Raises:
             TypeError: If `color` is not an instance of `Color` or not `None`.
@@ -374,11 +381,10 @@ class Rule:
         self.colors = {}
         self.description = description
         self.exclusive = exclusive
+        self.pcre = pcre  # Compiles regex into self._regex
 
         if not isinstance(color, dict):
             color = {0: color}
-
-        self._regex = re.compile(regex.encode())
 
         for group, value in color.items():
             self.set_color(value, group)
@@ -391,6 +397,24 @@ class Rule:
     @color.setter
     def color(self, value):
         self.set_color(value)
+
+    @property
+    def pcre(self):
+        '''True when the PCRE engine is used. False means Python's RE.'''
+        return self._pcre
+
+    @pcre.setter
+    def pcre(self, value):
+        if not isinstance(value, bool):
+            raise TypeError('pcre must be a boolean')
+
+        self._pcre = value
+
+        if value:
+            import chromaterm.pcre
+            self._regex = chromaterm.pcre.Pattern(self.regex.encode())
+        else:
+            self._regex = re.compile(self.regex.encode())
 
     def get_matches(self, data):
         '''Returns a list of tuples, each containing a start index, an end index,

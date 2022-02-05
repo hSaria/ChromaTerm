@@ -7,6 +7,7 @@ import re
 import select
 import signal
 import sys
+from ctypes.util import find_library
 
 import yaml
 
@@ -90,6 +91,11 @@ def args_init(args=None):
                         help='use RGB colors (default: detect support, '
                         'fallback to xterm-256)')
 
+    parser.add_argument('--pcre',
+                        action='store_true',
+                        help="(advanced) use PCRE2 instead of Python's RE"
+                        if find_library('pcre2-8') else argparse.SUPPRESS)
+
     args = parser.parse_args(args=args)
 
     # Detect rgb support
@@ -144,7 +150,7 @@ def get_wait_duration(buffer, min_wait=1 / 256, max_wait=1 / 8):
     return min_wait
 
 
-def load_config(config, data, rgb=False):
+def load_config(config, data, rgb=False, pcre=False):
     '''Reads configuration from a YAML-based string, formatted like so:
     palette:
       red: "#ff0000"
@@ -198,7 +204,7 @@ def load_config(config, data, rgb=False):
     config.rules.clear()
 
     for rule in rules:
-        rule = parse_rule(rule, palette=palette, rgb=rgb)
+        rule = parse_rule(rule, palette=palette, rgb=rgb, pcre=pcre)
 
         if isinstance(rule, Rule):
             config.rules.append(rule)
@@ -228,7 +234,7 @@ def parse_palette(data):
     return palette
 
 
-def parse_rule(data, palette=None, rgb=False):
+def parse_rule(data, palette=None, rgb=False, pcre=False):
     '''Returns an instance of chromaterm.Rule if parsed correctly. Otherwise, a
     string with the error message is returned.
 
@@ -257,7 +263,7 @@ def parse_rule(data, palette=None, rgb=False):
         for group, value in color.items():
             color[group] = Color(value, palette=palette, rgb=rgb)
 
-        return Rule(regex, color, description, exclusive)
+        return Rule(regex, color, description, exclusive, pcre)
     except (TypeError, ValueError) as exception:
         return f'Error on {rule_repr}: {exception}'
     except re.error as exception:
@@ -539,7 +545,7 @@ def main(args=None, max_wait=None, write_default=True):
         config_data = read_file(args.config)
 
         if config_data:
-            load_config(config, config_data, rgb=args.rgb)
+            load_config(config, config_data, rgb=args.rgb, pcre=args.pcre)
 
     # Trigger the initial loading
     reload_config_handler()

@@ -27,16 +27,17 @@ def assert_matches(positives, negatives, rule, match_count=1):
         assert len(rule.get_matches(data)) == 0
 
 
-def test_rule_numbers():
+def test_rule_numbers(pcre):
     '''Default rule: Numbers.'''
     positives = ['1', '123', '123.123']
     negatives = ['1.1.', '.1.1', '1.2.3']
     rule = chromaterm.default_config.RULE_NUMBERS
+    rule.pcre = pcre
 
     assert_matches(positives, negatives, rule)
 
 
-def test_rule_url():
+def test_rule_url(pcre):
     '''Default rule: URL.'''
     positives = [
         'http://example', 'http://example', 'https://example', 'ftp://example',
@@ -50,6 +51,7 @@ def test_rule_url():
         'http://$.com/hello', 'http://@example.com'
     ]
     rule = chromaterm.default_config.RULE_URL
+    rule.pcre = pcre
 
     assert_matches(positives, negatives, rule)
 
@@ -62,16 +64,17 @@ def test_rule_url():
     assert rule.get_matches(b'http://example)')[0][:2] == (0, 14)
 
 
-def test_rule_ipv4():
+def test_rule_ipv4(pcre):
     '''Default rule: IPv4 addresses.'''
     positives = ['192.168.2.1', '255.255.255.255', '=240.3.2.1', '1.2.3.4/32']
     negatives = ['256.255.255.255', '1.2.3']
     rule = chromaterm.default_config.RULE_IPV4
+    rule.pcre = pcre
 
     assert_matches(positives, negatives, rule)
 
 
-def test_rule_ipv6():
+def test_rule_ipv6(pcre):
     '''Default rule: IPv6 addresses.'''
     positives = [
         'A:b:3:4:5:6:7:8', 'A::', 'A:b:3:4:5:6:7::', 'A::8', '::b:3:4:5:6:7:8',
@@ -85,11 +88,12 @@ def test_rule_ipv6():
         '1:2:3:4:5:6:7:8:9', '1:2:3:4:5:6:7::8', 'abcd:xyz::1', 'fe80:1%tun'
     ]
     rule = chromaterm.default_config.RULE_IPV6
+    rule.pcre = pcre
 
     assert_matches(positives, negatives, rule)
 
 
-def test_rule_mac():
+def test_rule_mac(pcre):
     '''Default rule: MAC addresses.'''
     positives = ['0A:23:45:67:89:AB', '0a:23:45:67:89:ab', '0a23.4567.89ab']
     negatives = [
@@ -97,11 +101,12 @@ def test_rule_mac():
         '0a23.4567.89ab.', '0a:23:45:67:xy:zx', '0a23.4567.xyzx'
     ]
     rule = chromaterm.default_config.RULE_MAC
+    rule.pcre = pcre
 
     assert_matches(positives, negatives, rule)
 
 
-def test_rule_size():
+def test_rule_size(pcre):
     '''Default rule: Size.'''
     positives = [
         '100b', '1kb', '1kib', '1Kb', '1kbps', '1.1kb', '1mb', '1gb', '1tb',
@@ -109,11 +114,12 @@ def test_rule_size():
     ]
     negatives = ['100', '1kg', '1kic', '1kbpm', '1kibb', '1.1.kb', '100wb']
     rule = chromaterm.default_config.RULE_SIZE
+    rule.pcre = pcre
 
     assert_matches(positives, negatives, rule, match_count=2)
 
 
-def test_rule_date():
+def test_rule_date(pcre):
     '''Default rule: Date.'''
     positives = [
         '2019-12-31', '2019-12-31', 'jan 2019', 'feb 2019', 'Mar 2019',
@@ -125,6 +131,7 @@ def test_rule_date():
         'xyz 26', 'jun 32', '32 jun'
     ]
     rule = chromaterm.default_config.RULE_DATE
+    rule.pcre = pcre
 
     assert_matches(positives, negatives, rule)
 
@@ -135,11 +142,12 @@ def test_rule_date():
     assert rule.get_matches(b'12 Mar  13:59')[0][:2] == (0, 6)
 
 
-def test_rule_time():
+def test_rule_time(pcre):
     '''Default rule: Time.'''
     positives = ['23:59', '23:01', '23:01:01', '23:01:01.123', '23:01:01-0800']
     negatives = ['24:59', '23:60', '23:1', '23:01:1', '23:01:01:', '23:01.123']
     rule = chromaterm.default_config.RULE_TIME
+    rule.pcre = pcre
 
     assert_matches(positives, negatives, rule)
 

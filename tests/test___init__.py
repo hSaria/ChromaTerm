@@ -438,10 +438,10 @@ def test_palette_resolve_invalid_value_name_not_in_palette():
         chromaterm.Palette().resolve('b.red')
 
 
-def test_rule_get_matches():
+def test_rule_get_matches(pcre):
     '''Get matches of rule that only colors the default regex group.'''
     color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('hello|world', color=color)
+    rule = chromaterm.Rule('hello|world', color, pcre=pcre)
 
     data = b'hello world'
     expected = [(0, 5, color), (6, 11, color)]
@@ -449,34 +449,35 @@ def test_rule_get_matches():
     assert rule.get_matches(data) == expected
 
 
-def test_rule_get_matches_new_line():
+def test_rule_get_matches_new_line(pcre):
     '''Attempt to match a new line, which shouldn't be possible as it's considered
     as a separator (i.e. not passed to be highlighted). New lines are only used
     to replace data matched by exclusive rules.'''
-    color = chromaterm.Color('bold')
-    rule = chromaterm.Rule(r'hell\Wo', color=color)
+    rule = chromaterm.Rule(r'hell\Wo', chromaterm.Color('bold'), pcre=pcre)
 
     assert not rule.get_matches(b'hell\no')
 
 
-def test_rule_get_matches_groups():
+def test_rule_get_matches_groups(pcre):
     '''Get matches of rule that colors default and specific regex groups.'''
-    color0 = chromaterm.Color('bold')
-    color1 = chromaterm.Color('b#123123')
-    color2 = chromaterm.Color('f#321321')
-    rule = chromaterm.Rule('(h)(i)', color={0: color0, 1: color1, 2: color2})
+    colors = {
+        0: chromaterm.Color('bold'),
+        1: chromaterm.Color('b#123123'),
+        2: chromaterm.Color('f#321321')
+    }
+    rule = chromaterm.Rule('(h)(i)', colors, pcre=pcre)
 
     data = b'hi'
-    expected = [(0, 2, color0), (0, 1, color1), (1, 2, color2)]
+    expected = [(0, 2, colors[0]), (0, 1, colors[1]), (1, 2, colors[2])]
 
     assert rule.get_matches(data) == expected
 
 
-def test_rule_get_matches_groups_optional_no_matches():
+def test_rule_get_matches_groups_optional_no_matches(pcre):
     '''Get matches of rule that has a specific regex group that is optional. When
     the optional group is not in the match, the color should not be inserted.'''
     color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('hello(,)? world', color={1: color})
+    rule = chromaterm.Rule('hello(,)? world', {1: color}, pcre=pcre)
 
     data = b'hello, world'
     expected = [(5, 6, color)]
@@ -489,32 +490,33 @@ def test_rule_get_matches_groups_optional_no_matches():
     assert rule.get_matches(data) == expected
 
 
-def test_rule_get_matches_no_colors():
+def test_rule_get_matches_no_colors(pcre):
     '''Get matches of rule that has no colors – nothing is changed.'''
-    assert not chromaterm.Rule('hello').get_matches(b'hello')
+    assert not chromaterm.Rule('hello', pcre=pcre).get_matches(b'hello')
 
 
-def test_rule_get_matches_zero_length_match():
+def test_rule_get_matches_zero_length_match(pcre):
     '''Get matches of rule that has a regex that matches zero-length data.'''
     color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('hello() world', color={1: color})
+    rule = chromaterm.Rule('hello() world', {1: color}, pcre=pcre)
 
     assert not rule.get_matches(b'hello world')
 
 
-def test_rule_set_color_clear_existing():
+def test_rule_set_color_clear_existing(pcre):
     '''Clear the color of a rule by setting it to None.'''
     color = chromaterm.Color('bold')
-    rule = chromaterm.Rule('(hello|world)', color={0: color, 1: color})
+    colors = {0: color, 1: color}
+    rule = chromaterm.Rule('(hello|world)', colors, pcre=pcre)
 
     assert list(rule.colors) == [0, 1]
     rule.set_color(None, group=0)
     assert list(rule.colors) == [1]
 
 
-def test_rule_set_color_default_group():
+def test_rule_set_color_default_group(pcre):
     '''Add to a rule a color to the default regex group (0).'''
-    rule = chromaterm.Rule('hello')
+    rule = chromaterm.Rule('hello', pcre=pcre)
     assert rule.color is None
 
     color = chromaterm.Color('bold')
@@ -523,9 +525,9 @@ def test_rule_set_color_default_group():
     assert rule.colors.get(0) is color
 
 
-def test_rule_set_color_named_group():
+def test_rule_set_color_named_group(pcre):
     '''Reference a group by name. It should be converted to an index.'''
-    rule = chromaterm.Rule('(?P<hi>hello)')
+    rule = chromaterm.Rule('(?P<hi>hello)', pcre=pcre)
     assert rule.color is None
 
     color = chromaterm.Color('bold')
@@ -537,10 +539,10 @@ def test_rule_set_color_named_group():
     assert list(rule.colors) == [0, 1]
 
 
-def test_rule_set_color_specific_group():
+def test_rule_set_color_specific_group(pcre):
     '''Add to a rule a color to a specific regex group. Additionally, ensure
     that the dict keys are ordered according to the group number.'''
-    rule = chromaterm.Rule(r'he(llo)\1')
+    rule = chromaterm.Rule(r'he(llo)\1', pcre=pcre)
     assert rule.color is None
 
     color = chromaterm.Color('bold')
@@ -552,80 +554,101 @@ def test_rule_set_color_specific_group():
     assert list(rule.colors) == [0, 1]
 
 
-def test_rule_set_color_invalid_type_color():
+def test_rule_set_color_invalid_type_color(pcre):
     '''Add to a rule a color with invalid group type.'''
-    rule = chromaterm.Rule('hello')
+    rule = chromaterm.Rule('hello', pcre=pcre)
 
     with pytest.raises(TypeError, match='color must be a chromaterm.Color'):
         rule.set_color(True)
 
 
-def test_rule_set_color_invalid_type_group():
+def test_rule_set_color_invalid_type_group(pcre):
     '''Add to a rule a color with invalid color type.'''
-    rule = chromaterm.Rule('hello')
+    rule = chromaterm.Rule('hello', pcre=pcre)
 
     with pytest.raises(TypeError, match='group must be an integer or a strin'):
         rule.set_color(chromaterm.Color('bold'), group=1.1)
 
 
-def test_rule_set_color_invalid_value_group_index():
+def test_rule_set_color_invalid_value_group_index(pcre):
     '''Reference the index of a group that doesn't exist.'''
-    rule = chromaterm.Rule(r'he(llo)\1')
+    rule = chromaterm.Rule(r'he(llo)\1', pcre=pcre)
 
     with pytest.raises(ValueError, match='regex only has 1 group'):
         rule.set_color(chromaterm.Color('bold'), group=2)
 
 
-def test_rule_set_color_invalid_value_group_name():
+def test_rule_set_color_invalid_value_group_name(pcre):
     '''Reference the name of a group that doesn't exist.'''
-    rule = chromaterm.Rule('(?P<hi>hello)')
+    rule = chromaterm.Rule('(?P<hi>hello)', pcre=pcre)
 
     with pytest.raises(ValueError, match='named group .+ not in regex'):
         rule.set_color(chromaterm.Color('bold'), group='bla')
 
 
-def test_rule_change_color():
+def test_rule_change_color(pcre):
     '''Confirm that a color change overrides the old one.'''
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('bold'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('bold'), pcre=pcre)
 
     old_color = rule.color
     rule.color = chromaterm.Color('b#123123')
     assert old_color is not rule.color
 
 
-def test_rule_format_color_dict():
+def test_rule_change_pcre(pcre):
+    '''Confirm that a change in the PCRE flag recompiles the regex.'''
+    # pylint: disable=protected-access
+    rule = chromaterm.Rule('hello', chromaterm.Color('bold'), pcre=pcre)
+
+    old_regex = rule._regex
+    rule.pcre = not rule.pcre
+    assert old_regex is not rule._regex
+
+
+def test_rule_format_color_dict(pcre):
     '''Accept a dictionary of groups and colors.'''
-    color1 = chromaterm.Color('bold')
-    color2 = chromaterm.Color('italic')
-    rule = chromaterm.Rule('h(e)(llo)', color={1: color1, 2: color2})
+    colors = {1: chromaterm.Color('bold'), 2: chromaterm.Color('italic')}
+    rule = chromaterm.Rule('h(e)(llo)', colors, pcre=pcre)
 
-    assert rule.colors[1] is color1
-    assert rule.colors[2] is color2
+    assert rule.colors[1] is colors[1]
+    assert rule.colors[2] is colors[2]
 
 
-def test_rule_invalid_type_color():
+def test_rule_invalid_type_color(pcre):
     '''Rule with an invalid color type.'''
     with pytest.raises(TypeError, match='color must be a chromaterm.Color'):
-        chromaterm.Rule('hello', color=True)
+        chromaterm.Rule('hello', True, pcre=pcre)
 
 
-def test_rule_invalid_type_description():
+def test_rule_invalid_type_description(pcre):
     '''Rule with an invalid description type.'''
     with pytest.raises(TypeError, match='description must be a string'):
-        chromaterm.Rule('hello', description=True)
+        chromaterm.Rule('hello', description=True, pcre=pcre)
 
 
-def test_rule_invalid_type_regex():
+def test_rule_invalid_type_exclusive(pcre):
+    '''Rule with an invalid exclusive type.'''
+    with pytest.raises(TypeError, match='exclusive must be a boolean'):
+        chromaterm.Rule('hello', exclusive='', pcre=pcre)
+
+
+def test_rule_invalid_type_pcre():
+    '''Rule with an invalid pcre type.'''
+    with pytest.raises(TypeError, match='pcre must be a boolean'):
+        chromaterm.Rule('hello', pcre='')
+
+
+def test_rule_invalid_type_regex(pcre):
     '''Rule with an invalid regex type.'''
     with pytest.raises(TypeError, match='regex must be a string'):
-        chromaterm.Rule(True)
+        chromaterm.Rule(True, pcre=pcre)
 
 
-def test_config_highlight():
+def test_config_highlight(pcre):
     '''Highlight with one rule.'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
     config.rules.append(rule)
 
     data = b'hello world'
@@ -636,7 +659,7 @@ def test_config_highlight():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_adjoin_type_different():
+def test_config_highlight_adjoin_type_different(pcre):
     '''Two rules with different color types, and one ending where the other
     starts. Both are applied without any overlap in the codes, independent of the
     order.
@@ -644,8 +667,8 @@ def test_config_highlight_adjoin_type_different():
     2:        -------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('he', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('llo', color=chromaterm.Color('f#321321'))
+    rule1 = chromaterm.Rule('he', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('llo', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -660,7 +683,7 @@ def test_config_highlight_adjoin_type_different():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_adjoin_type_mixed():
+def test_config_highlight_adjoin_type_mixed(pcre):
     '''Two rules with mixed color types, with one ending where the other starts.
     Both are applied without any overlap in the codes, independent of the
     order.
@@ -668,8 +691,12 @@ def test_config_highlight_adjoin_type_mixed():
     2:        -------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('he', color=chromaterm.Color('b#123123 italic'))
-    rule2 = chromaterm.Rule('llo', color=chromaterm.Color('b#321321 bold'))
+    rule1 = chromaterm.Rule('he',
+                            chromaterm.Color('b#123123 blink'),
+                            pcre=pcre)
+    rule2 = chromaterm.Rule('llo',
+                            chromaterm.Color('b#321321 bold'),
+                            pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -684,15 +711,15 @@ def test_config_highlight_adjoin_type_mixed():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_adjoin_type_same():
+def test_config_highlight_adjoin_type_same(pcre):
     '''Two rules with same color type, with one ending where the other starts.
     Both are applied without any overlap in the codes, independent of the order.
     1: -------
     2:        -------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('he', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('llo', color=chromaterm.Color('b#321321'))
+    rule1 = chromaterm.Rule('he', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('llo', chromaterm.Color('b#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -707,15 +734,15 @@ def test_config_highlight_adjoin_type_same():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_common_beginning_type_different():
+def test_config_highlight_common_beginning_type_different(pcre):
     '''Two rules with different color types, and both sharing the same start of
     a match. The most recent rule will be closer to the match's start.
     1: --------------
     2: -------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('he', color=chromaterm.Color('f#321321'))
+    rule1 = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('he', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -734,15 +761,17 @@ def test_config_highlight_common_beginning_type_different():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_common_beginning_type_mixed():
+def test_config_highlight_common_beginning_type_mixed(pcre):
     '''Two rules with different color types, and both sharing the same start of
     a match. The most recent rule will be closer to the match's start.
     1: --------------
     2: -------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123 italic'))
-    rule2 = chromaterm.Rule('he', color=chromaterm.Color('b#321321 bold'))
+    rule1 = chromaterm.Rule('hello',
+                            chromaterm.Color('b#123123 italic'),
+                            pcre=pcre)
+    rule2 = chromaterm.Rule('he', chromaterm.Color('b#321321 bold'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -755,15 +784,15 @@ def test_config_highlight_common_beginning_type_mixed():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_common_beginning_type_same():
+def test_config_highlight_common_beginning_type_same(pcre):
     '''Two rules with same color type, and both sharing the same start of a
     match. The most recent rule will be closer to the match's start.
     1: --------------
     2: -------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('he', color=chromaterm.Color('b#321321'))
+    rule1 = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('he', chromaterm.Color('b#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -776,15 +805,15 @@ def test_config_highlight_common_beginning_type_same():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_common_end_type_different():
+def test_config_highlight_common_end_type_different(pcre):
     '''Two rules with different color types, and both sharing the same end of a
     match. The most recent rule will be closer to the match's end.
     1: --------------
     2:        -------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('llo', color=chromaterm.Color('f#321321'))
+    rule1 = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('llo', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -803,15 +832,19 @@ def test_config_highlight_common_end_type_different():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_common_end_type_mixed():
+def test_config_highlight_common_end_type_mixed(pcre):
     '''Two rules with different color types, and both sharing the same end of a
     match. The most recent rule will be closer to the match's end.
     1: --------------
     2:        -------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123 italic'))
-    rule2 = chromaterm.Rule('llo', color=chromaterm.Color('b#321321 bold'))
+    rule1 = chromaterm.Rule('hello',
+                            chromaterm.Color('b#123123 italic'),
+                            pcre=pcre)
+    rule2 = chromaterm.Rule('llo',
+                            chromaterm.Color('b#321321 bold'),
+                            pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -824,15 +857,15 @@ def test_config_highlight_common_end_type_mixed():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_common_end_type_same():
+def test_config_highlight_common_end_type_same(pcre):
     '''Two rules with same color type, and both sharing the same end of a
     match. The most recent rule will be closer to the match's end.
     1: --------------
     2:        -------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('llo', color=chromaterm.Color('b#321321'))
+    rule1 = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('llo', chromaterm.Color('b#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -845,7 +878,7 @@ def test_config_highlight_common_end_type_same():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_encapsulate_type_different():
+def test_config_highlight_encapsulate_type_different(pcre):
     '''Three rules, with matches that encapsulate each other, different color
     types. None of them should affect the rest as they are of different types. The
     order in which the rules are applied should not matter.
@@ -854,9 +887,9 @@ def test_config_highlight_encapsulate_type_different():
     3: ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('lo wo', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('llo wor', color=chromaterm.Color('f#321321'))
-    rule3 = chromaterm.Rule('hello world', color=chromaterm.Color('bold'))
+    rule1 = chromaterm.Rule('lo wo', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('llo wor', chromaterm.Color('f#321321'), pcre=pcre)
+    rule3 = chromaterm.Rule('hello world', chromaterm.Color('bold'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
     config.rules.append(rule3)
@@ -873,7 +906,7 @@ def test_config_highlight_encapsulate_type_different():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_encapsulate_type_mixed():
+def test_config_highlight_encapsulate_type_mixed(pcre):
     '''Three rules, with matches that encapsulate each other, mixed color types.
     The colors that are different should not affect each other, but those that
     are the same should correctly track each others colors and update their
@@ -883,9 +916,13 @@ def test_config_highlight_encapsulate_type_mixed():
     3: ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('lo wo', color=chromaterm.Color('b#123123 italic'))
-    rule2 = chromaterm.Rule('llo wor', color=chromaterm.Color('b#321321 bold'))
-    rule3 = chromaterm.Rule('hello world', color=chromaterm.Color('bold'))
+    rule1 = chromaterm.Rule('lo wo',
+                            chromaterm.Color('b#123123 italic'),
+                            pcre=pcre)
+    rule2 = chromaterm.Rule('llo wor',
+                            chromaterm.Color('b#321321 bold'),
+                            pcre=pcre)
+    rule3 = chromaterm.Rule('hello world', chromaterm.Color('bold'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
     config.rules.append(rule3)
@@ -904,7 +941,7 @@ def test_config_highlight_encapsulate_type_mixed():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_encapsulate_type_same():
+def test_config_highlight_encapsulate_type_same(pcre):
     '''Three rules, with matches that encapsulate each other, same color type.
     The reset of a match would be updated to the color of the encapsulating one.
     Once the second match updates the reset of the first one to a color, it is no
@@ -915,9 +952,11 @@ def test_config_highlight_encapsulate_type_same():
     3: ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('lo wo', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('llo wor', color=chromaterm.Color('b#321321'))
-    rule3 = chromaterm.Rule('hello world', color=chromaterm.Color('b#abcabc'))
+    rule1 = chromaterm.Rule('lo wo', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('llo wor', chromaterm.Color('b#321321'), pcre=pcre)
+    rule3 = chromaterm.Rule('hello world',
+                            chromaterm.Color('b#abcabc'),
+                            pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
     config.rules.append(rule3)
@@ -934,15 +973,21 @@ def test_config_highlight_encapsulate_type_same():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_exclusive():
+def test_config_highlight_exclusive(pcre):
     '''Two exclusive rules, partially overlapping matches. The first rule to match
     the input gets to color it.
     1:     ----------
     2: ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('llo', chromaterm.Color('bold'), exclusive=True)
-    rule2 = chromaterm.Rule('hell', chromaterm.Color('italic'), exclusive=True)
+    rule1 = chromaterm.Rule('llo',
+                            chromaterm.Color('bold'),
+                            exclusive=True,
+                            pcre=pcre)
+    rule2 = chromaterm.Rule('hell',
+                            chromaterm.Color('italic'),
+                            exclusive=True,
+                            pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -957,7 +1002,7 @@ def test_config_highlight_exclusive():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_overlap_full_type_different():
+def test_config_highlight_overlap_full_type_different(pcre):
     '''Two rules, fully overlapping matches, different color types. Should not
     affect each other as they have different types. Most recent rule should be
     closest to the match.
@@ -965,8 +1010,8 @@ def test_config_highlight_overlap_full_type_different():
     2: ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    rule1 = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('hello', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -979,7 +1024,7 @@ def test_config_highlight_overlap_full_type_different():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_overlap_full_type_mixed():
+def test_config_highlight_overlap_full_type_mixed(pcre):
     '''Two rules, fully overlapping matches, mixed color types. The different
     color types should not affect each other, but those that are the same should
     update the oldest reset with the most recent rule's color code.
@@ -987,8 +1032,12 @@ def test_config_highlight_overlap_full_type_mixed():
     2: ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123 bold'))
-    rule2 = chromaterm.Rule('hello', color=chromaterm.Color('b#321321 italic'))
+    rule1 = chromaterm.Rule('hello',
+                            chromaterm.Color('b#123123 bold'),
+                            pcre=pcre)
+    rule2 = chromaterm.Rule('hello',
+                            chromaterm.Color('b#321321 italic'),
+                            pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -1002,7 +1051,7 @@ def test_config_highlight_overlap_full_type_mixed():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_overlap_full_type_same():
+def test_config_highlight_overlap_full_type_same(pcre):
     '''Two rules, fully overlapping matches, same color type. The reset of the
     first rule should be replaced with the color code of the second (most recent)
     rule to prevent the reset from interrupting the color.
@@ -1010,8 +1059,8 @@ def test_config_highlight_overlap_full_type_same():
     2: ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('hello', color=chromaterm.Color('b#321321'))
+    rule1 = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('hello', chromaterm.Color('b#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -1024,15 +1073,15 @@ def test_config_highlight_overlap_full_type_same():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_overlap_partial_type_different():
+def test_config_highlight_overlap_partial_type_different(pcre):
     '''Two rules, partially overlapping matches, different color types. The rules
     should not affect each other. Tested in reverse order, too.
     1: ----------
     2:     ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hell', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('llo', color=chromaterm.Color('f#321321'))
+    rule1 = chromaterm.Rule('hell', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('llo', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -1047,7 +1096,7 @@ def test_config_highlight_overlap_partial_type_different():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_overlap_partial_type_mixed():
+def test_config_highlight_overlap_partial_type_mixed(pcre):
     '''Two rules, partially overlapping matches, mixed color types. The different
     color types should not affect each other, but those that are the same should
     correctly update the reset that is in the middle of the other match to that
@@ -1056,8 +1105,12 @@ def test_config_highlight_overlap_partial_type_mixed():
     2:     ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hell', color=chromaterm.Color('b#123123 bold'))
-    rule2 = chromaterm.Rule('llo', color=chromaterm.Color('b#321321 italic'))
+    rule1 = chromaterm.Rule('hell',
+                            chromaterm.Color('b#123123 bold'),
+                            pcre=pcre)
+    rule2 = chromaterm.Rule('llo',
+                            chromaterm.Color('b#321321 italic'),
+                            pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -1073,7 +1126,7 @@ def test_config_highlight_overlap_partial_type_mixed():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_overlap_partial_type_same():
+def test_config_highlight_overlap_partial_type_same(pcre):
     '''Two rules, partially overlapping matches, same color type. The reset of
     the first rule should be replaced with the color code of the second (most
     recent) rule to prevent the reset from interrupting the color. The behavior
@@ -1082,8 +1135,8 @@ def test_config_highlight_overlap_partial_type_same():
     2:     ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hell', color=chromaterm.Color('b#123123'))
-    rule2 = chromaterm.Rule('llo', color=chromaterm.Color('b#321321'))
+    rule1 = chromaterm.Rule('hell', chromaterm.Color('b#123123'), pcre=pcre)
+    rule2 = chromaterm.Rule('llo', chromaterm.Color('b#321321'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -1104,14 +1157,14 @@ def test_config_highlight_no_rules():
     assert config.highlight(b'hello world') == b'hello world'
 
 
-def test_config_highlight_tracking_common_beginning_type_different():
+def test_config_highlight_tracking_common_beginning_type_different(pcre):
     '''A rule with a match that has a color of a different type just before its
     start. The rule's color is closer to the match and the reset is unaffected by
     the existing color.
     1: x-------------'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
     config.rules.append(rule)
 
     data = b'\x1b[33mhello'
@@ -1122,14 +1175,14 @@ def test_config_highlight_tracking_common_beginning_type_different():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_common_beginning_type_same():
+def test_config_highlight_tracking_common_beginning_type_same(pcre):
     '''A rule with a match that has a color of the same type just before its
     start. The rule's color is closer to the match and the reset used is the
     existing color.
     1: x-------------'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule)
 
     data = b'\x1b[33mhello'
@@ -1138,14 +1191,14 @@ def test_config_highlight_tracking_common_beginning_type_same():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_common_end_type_different():
+def test_config_highlight_tracking_common_end_type_different(pcre):
     '''A rule with a match that has a color of a different type just after its
     end. The rule's reset is closer to the match and the reset is unaffected by
     the existing color.
     1: -------------x'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
     config.rules.append(rule)
 
     data = b'hello\x1b[33m'
@@ -1156,14 +1209,14 @@ def test_config_highlight_tracking_common_end_type_different():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_common_end_type_same():
+def test_config_highlight_tracking_common_end_type_same(pcre):
     '''A rule with a match that has a color of the same type just after its end.
     The rule's reset is closer to the match and is unaffected by the existing
     color.
     1: -------------x'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule)
 
     data = b'hello\x1b[33m'
@@ -1174,14 +1227,14 @@ def test_config_highlight_tracking_common_end_type_same():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_full_reset_beginning():
+def test_config_highlight_tracking_full_reset_beginning(pcre):
     '''A rule with a match that has a full reset just before the start of the
     match. The rule's color is closer to the match and the reset used is the
     default for that color type.
     1: R-------------'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule)
 
     data = b'\x1b[0mhello'
@@ -1193,14 +1246,14 @@ def test_config_highlight_tracking_full_reset_beginning():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_full_reset_end():
+def test_config_highlight_tracking_full_reset_end(pcre):
     '''A rule with a match that has a full reset just after the end of the match.
     The rule's reset is closer to the match and the reset used is the default for
     that color type.
     1: -------------R'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule)
 
     data = b'hello\x1b[0m'
@@ -1213,14 +1266,14 @@ def test_config_highlight_tracking_full_reset_end():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_full_reset_middle():
+def test_config_highlight_tracking_full_reset_middle(pcre):
     '''A rule with a match that has a full reset in the middle of it. The full
     reset is changed to the color code of the match and the reset of the match
     is changed to a full reset.
     1: ------R-------'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule)
 
     data = b'hel\x1b[0mlo'
@@ -1231,14 +1284,14 @@ def test_config_highlight_tracking_full_reset_middle():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_malformed():
+def test_config_highlight_tracking_malformed(pcre):
     '''A rule with a match that has a malformed SGR in the middle. It should be
     ignored and inserted back into the match. Highlighting from the rule should
     still go through.
     1: x-------------'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
     config.rules.append(rule)
 
     data = b'he\x1b[38;5mllo'
@@ -1250,13 +1303,13 @@ def test_config_highlight_tracking_malformed():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_mixed_full_reset():
+def test_config_highlight_tracking_mixed_full_reset(pcre):
     '''Track multiple color types and ensure a full reset only defaults the types
     that were not updated by other colors in the data.'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
-    rule2 = chromaterm.Rule('world', color=chromaterm.Color('b#123123'))
+    rule1 = chromaterm.Rule('hello', chromaterm.Color('f#321321'), pcre=pcre)
+    rule2 = chromaterm.Rule('world', chromaterm.Color('b#123123'), pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
@@ -1280,12 +1333,12 @@ def test_config_highlight_tracking_mixed_full_reset():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_multiline_type_different():
+def test_config_highlight_tracking_multiline_type_different(pcre):
     '''Ensure that data with an existing color is tracked across highlights and
     does not affect the reset of a color of a different type.'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('b#123123'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('b#123123'), pcre=pcre)
     config.rules.append(rule)
 
     # Inject a foreground color to have it tracked
@@ -1297,12 +1350,12 @@ def test_config_highlight_tracking_multiline_type_different():
     assert config.highlight(data) == b''.join(expected)
 
 
-def test_config_highlight_tracking_multiline_type_same():
+def test_config_highlight_tracking_multiline_type_same(pcre):
     '''Ensure that data with an existing color is tracked across highlights and
     affects the reset of a color of the same type.'''
     config = chromaterm.Config()
 
-    rule = chromaterm.Rule('hello', color=chromaterm.Color('f#321321'))
+    rule = chromaterm.Rule('hello', chromaterm.Color('f#321321'), pcre=pcre)
     config.rules.append(rule)
 
     # Inject a foreground color to have it tracked
