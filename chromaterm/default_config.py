@@ -37,7 +37,7 @@ RULE_URL = Rule(
     r'''(?ix)\b
     ((htt|ft|lda)ps?|telnet|ssh)://  # Scheme
     ([-%:\w\\/]{1,256}@)?  # User info
-    [-\w]{1,63}(\.[-\w]{1,63}){,126}(:\d{1,5})?  # Host and port
+    [-\w]{1,63}(\.[-\w]{1,63}){0,126}(:\d{1,5})?  # Host and port
     (/[-+=~@%&?#.:;,\w\\/()]*)?  # Path, query, and fragment
 ((?=[.:;,)])|\b)  # Avoid highlighting trailing path characters by matching them in a lookahead
 ''',

@@ -2,7 +2,7 @@
 # Translated to YAML in https://github.com/hSaria/ChromaTerm/pull/79
 
 - description: IP-address:nn RD or RT
-  regex: \b(RT:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d):[1-9]\d{,4}\b
+  regex: \b(RT:)?((25[0-5]|(2[0-4]|[0-1]?\d)?\d)\.){3}(25[0-5]|(2[0-4]|[0-1]?\d)?\d):[1-9]\d{0,4}\b
   color: f#00e0d1
   exclusive: true
 
@@ -21,12 +21,12 @@
   color: b#a35a00
 
 - description: Interfaces
-  regex: (?i)\b(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Eth|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|[BN]VI)(\d+/){,2}\d+(\.\d+)?\b
+  regex: (?i)\b(((Hu(ndredGigabit)?|Fo(rtyGigabit)?|Te(nGigabit)?|Gi(gabit)?|Fa(st)?)(Ethernet)?)|Eth|Se(rial)?|Lo(opback)?|Tu(nnel)?|VL(AN)?|Po(rt-channel)?|Vi(rtual\-(Template|Access))?|Mu(ltilink)?|Di(aler)?|[BN]VI)(\d+/){0,2}\d+(\.\d+)?\b
   color: f#03d28d
   exclusive: true
 
 - description: Bad responses
-  regex: \b(administratively|down|Down|DOWN|fail|failed|not|not active|not activated|bad|never|BLK|fddi|n\-isl|isl|notconnect|blocking|\(tdp\)|tdp|TDP|denied|invalid|err\-disabled|disabled|unusable|DENIED|err\-disable|infinity|inaccessible|wrong|cannot|MM_NO_STATE|MM_KEY_EXCH|UP\-NO\-IKE|K[13]=(\d{2,3}|[02-9])|K[245]=[1-9]\d{,2})\b
+  regex: \b(administratively|down|Down|DOWN|fail|failed|not|not active|not activated|bad|never|BLK|fddi|n\-isl|isl|notconnect|blocking|\(tdp\)|tdp|TDP|denied|invalid|err\-disabled|disabled|unusable|DENIED|err\-disable|infinity|inaccessible|wrong|cannot|MM_NO_STATE|MM_KEY_EXCH|UP\-NO\-IKE|K[13]=(\d{2,3}|[02-9])|K[245]=[1-9]\d{0,2})\b
   color: f#c71800
 
 - description: Good responses
