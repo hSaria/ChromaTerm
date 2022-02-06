@@ -540,16 +540,6 @@ def main(args=None, max_wait=None, write_default=True):
     if args.benchmark:
         atexit.register(config.print_benchmark_results)
 
-    # Create the signal handler to trigger reloading the config
-    def reload_config_handler(*_):
-        config_data = read_file(args.config)
-
-        if config_data:
-            load_config(config, config_data, rgb=args.rgb, pcre=args.pcre)
-
-    # Trigger the initial loading
-    reload_config_handler()
-
     if args.program:
         # ChromaTerm is spawning the program in a controlling terminal; stdin is
         # being forwarded to the program
@@ -559,6 +549,16 @@ def main(args=None, max_wait=None, write_default=True):
         # Data is being piped into ChromaTerm's stdin; no forwarding needed
         data_fd = sys.stdin.fileno()
         forward_fd = None
+
+    # Create the signal handler to trigger reloading the config
+    def reload_config_handler(*_):
+        config_data = read_file(args.config)
+
+        if config_data:
+            load_config(config, config_data, rgb=args.rgb, pcre=args.pcre)
+
+    # Trigger the initial loading
+    reload_config_handler()
 
     # Ignore SIGINT (CTRL+C) and attach reload handler
     signal.signal(signal.SIGINT, signal.SIG_IGN)
