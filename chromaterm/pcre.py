@@ -77,14 +77,17 @@ class Pattern:
         self.groupindex = GroupIndex(self._regex)
 
         self._match_data = PCRE2.pcre2_match_data_create_8(
-            c_uint32(groups.value + 1),
-            None,
-        )
+            c_uint32(self.groups + 1), None)
 
         PCRE2.pcre2_get_ovector_pointer_8.restype = POINTER(
-            2 * (groups.value + 1) * c_size_t)
+            2 * (self.groups + 1) * c_size_t)
 
-        self._match = PCRE2.pcre2_get_ovector_pointer_8(self._match_data)
+        # Emulate `span` method of `re.Match`
+        match = PCRE2.pcre2_get_ovector_pointer_8(self._match_data).contents
+        match.span = lambda gid: (match[2 * gid], match[2 * gid + 1])
+
+        self._match = match
+        self._data_len = c_size_t()
 
     def __del__(self):
         if PCRE2:
@@ -99,40 +102,17 @@ class Pattern:
         Args:
             data (bytes): The subject of the search.
         '''
-        data_len = c_size_t(len(data))
-
         # Reset the startoffset to 0
-        self._match.contents[1] = 0
+        self._match[1] = 0
+        self._data_len.value = len(data)
 
         while PCRE2.pcre2_jit_match_8(
                 self._regex,
                 data,
-                data_len,
-                self._match.contents[1],
+                self._data_len,
+                self._match[1],
                 MATCH_OPTIONS,
                 self._match_data,
                 None,
         ) >= 0:
-            yield Match(self._match)
-
-
-class Match:
-    '''The result of a search. Important: the `match` ovector is not copied; do
-    not mutate until the Match object is no longer needed.'''
-
-    # pylint: disable=too-few-public-methods
-    def __init__(self, match):
-        '''Constructor.
-
-        Args:
-            match (list): `ovector` from PCRE.
-        '''
-        self._groups = match.contents
-
-    def span(self, gid=0):
-        '''Returns a tuple of the start and end indicies of a group.
-
-        Args:
-            gid (int): RegEx group ID.
-        '''
-        return self._groups[2 * gid], self._groups[2 * gid + 1]
+            yield self._match
