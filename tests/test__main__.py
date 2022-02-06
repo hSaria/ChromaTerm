@@ -380,7 +380,7 @@ def test_parse_rule_group_type_error():
 
 def test_parse_rule_group_out_of_bounds():
     '''Parse a rule with `group` number not in the regex.'''
-    msg_re = r'regex only has .* group\(s\); .* is invalid'
+    msg_re = r'regex has .* group\(s\); .* is invalid'
 
     rule = {'regex': 'x(y)z', 'color': {2: 'b#fffaaa'}}
     assert re.search(msg_re, chromaterm.__main__.parse_rule(rule))

@@ -112,8 +112,7 @@ def eprint(*args, **kwargs):
 
 def get_default_config_location():
     '''Returns the first location in `CONFIG_LOCATIONS` that points to a file,
-    defaulting to the first item in the list.
-    '''
+    defaulting to the first item in the list.'''
     resolve = lambda x: os.path.expanduser(os.path.expandvars(x))
 
     for location in CONFIG_LOCATIONS:
@@ -409,7 +408,6 @@ def reload_chromaterm_instances():
             if process.cmdline()[:2] == current_process.cmdline()[:2]:
                 os.kill(process.pid, signal.SIGUSR1)
                 count += 1
-        # As per the docs, expect those errors when accessing the process methods
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             pass
 
@@ -531,8 +529,8 @@ def main(args=None, max_wait=None, write_default=True):
 
         # Write default config if not there
         if write_default and not os.access(args.config, os.F_OK):
-            from chromaterm.default_config import write_default_config
-            write_default_config(args.config)
+            import chromaterm.default_config
+            chromaterm.default_config.write_default_config(args.config)
 
     config = Config(benchmark=args.benchmark)
 

@@ -408,7 +408,7 @@ def test_palette_add_color_invalid_value_name_reserved():
 
 def test_palette_add_color_invalid_value_value():
     '''Add a color with an invalid value value.'''
-    with pytest.raises(ValueError, match='must be in the format of `#123abc`'):
+    with pytest.raises(ValueError, match='must be in `#123abc` format'):
         chromaterm.Palette().add_color('red', 'h#ff0000')
 
 
@@ -574,7 +574,7 @@ def test_rule_set_color_invalid_value_group_index(pcre):
     '''Reference the index of a group that doesn't exist.'''
     rule = chromaterm.Rule(r'he(llo)\1', pcre=pcre)
 
-    with pytest.raises(ValueError, match='regex only has 1 group'):
+    with pytest.raises(ValueError, match='regex has 1 group'):
         rule.set_color(chromaterm.Color('bold'), group=2)
 
 

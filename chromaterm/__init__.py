@@ -140,7 +140,7 @@ class Color:
             color_reset = COLOR_TYPES[style]['reset'] + color_reset
             color_types.append((style, COLOR_TYPES[style]['code']))
 
-        self._color = ' '.join(dict.fromkeys(color.lower().split()))
+        self._color = ' '.join(dict.fromkeys(color.split()))
         self.color_code = color_code
         self.color_reset = color_reset
         self.color_types = color_types
@@ -201,14 +201,14 @@ class Color:
                 else:
                     return [[source_color_code, False, None]]
 
-                colors.append([make_sgr(code), False or is_reset, color_type])
+                colors.append([make_sgr(code), is_reset, color_type])
             # Single-code SGR
             else:
                 color = [make_sgr(b'%d' % int(code)), False, None]
 
                 for name, color_type in COLOR_TYPES.items():
                     if color_type['re'].search(color[0]):
-                        color[1] = color[0] == color_type['reset'] or is_reset
+                        color[1] = is_reset or color[0] == color_type['reset']
                         color[2] = name
 
                         # Types don't overlap; only one can match
@@ -309,10 +309,10 @@ class Palette:
 
         if not re.fullmatch(r'[a-z0-9-_]+', name):
             raise ValueError('name accepts alphanumerics, dashes, and '
-                             'underscores only.')
+                             'underscores only')
 
         if not re.fullmatch(r'#[0-9a-f]{6}', value):
-            raise ValueError('color value must be in the format of `#123abc`')
+            raise ValueError('palette color must be in `#123abc` format')
 
         self.colors[name] = value
 
@@ -469,7 +469,7 @@ class Rule:
             raise TypeError('color must be a chromaterm.Color')
 
         if group > self._regex.groups:
-            raise ValueError(f'regex only has {self._regex.groups} group(s); '
+            raise ValueError(f'regex has {self._regex.groups} group(s); '
                              f'{group} is invalid')
 
         self.colors[group] = color
