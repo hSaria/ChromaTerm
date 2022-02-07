@@ -450,8 +450,8 @@ def run_program(program_args):
 
         try:
             os.execvp(program_args[0], program_args)
-        except FileNotFoundError:
-            eprint(f'command not found: {program_args[0]}')
+        except OSError as exception:
+            eprint(f'{exception.strerror.lower()}: {program_args[0]}')
 
         # exec replaces the fork's process; only hit on exception
         sys.exit(1)
