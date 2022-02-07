@@ -436,7 +436,7 @@ def run_program(program_args):
         attributes = termios.tcgetattr(sys.stdin.fileno())
         atexit.register(termios.tcsetattr, sys.stdin.fileno(), termios.TCSANOW,
                         attributes)
-        tty.setraw(sys.stdin.fileno())
+        tty.setraw(sys.stdin.fileno(), termios.TCSANOW)
     except termios.error:
         attributes = None
 
