@@ -1135,15 +1135,20 @@ def test_config_highlight_overlap_partial_type_same(pcre):
     2:     ----------'''
     config = chromaterm.Config()
 
-    rule1 = chromaterm.Rule('hell', chromaterm.Color('b#123123'), pcre=pcre)
-    rule2 = chromaterm.Rule('llo', chromaterm.Color('b#456456'), pcre=pcre)
+    rule1 = chromaterm.Rule('hell',
+                            chromaterm.Color('b#123123 bold'),
+                            pcre=pcre)
+    rule2 = chromaterm.Rule('llo',
+                            chromaterm.Color('b#456456 bold'),
+                            pcre=pcre)
     config.rules.append(rule1)
     config.rules.append(rule2)
 
     data = b'hello'
     expected = [
         rule1.color.color_code, b'he', rule2.color.color_code, b'll',
-        rule2.color.color_code, b'o', rule2.color.color_reset
+        rule2.color.color_types[1][1], rule2.color.color_types[0][1], b'o',
+        rule2.color.color_reset
     ]
 
     assert config.highlight(data) == b''.join(expected)

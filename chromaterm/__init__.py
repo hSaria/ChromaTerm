@@ -552,23 +552,23 @@ class Config:
             start_index, end_index = self.get_insert_index(start, end, inserts)
 
             # Each color type requires tracking of its respective type
-            for i, (color_type, color_code) in enumerate(color.color_types):
-                start_insert = [start, color_code, False, color_type]
-                end_insert = [
-                    end, self._reset_codes[color_type], True, color_type
-                ]
-
+            for color_type, color_code in color.color_types:
                 # Find the last color before the end of this match (if any) and
                 # use it as the reset code for this color
                 for insert in inserts[end_index:]:
                     if insert[3] == color_type:
-                        end_insert[1] = insert[1]
+                        reset = insert[1]
                         break
 
                     # No type (a full reset); use the default for this type
                     if insert[2] and insert[3] is None:
-                        end_insert[1] = COLOR_TYPES[color_type]['reset']
+                        reset = COLOR_TYPES[color_type]['reset']
                         break
+                else:
+                    reset = self._reset_codes[color_type]
+
+                start_insert = [start, color_code, False, color_type]
+                end_insert = [end, reset, True, color_type]
 
                 # Replace every color reset of the current color type with our
                 # color code to prevent them from interrupting this color
@@ -580,10 +580,14 @@ class Config:
 
                         insert[1:4] = color_code, False, color_type
 
-                # The inserts are added in reverse order LI-FO relative to the
-                # match; end insert intentionally pushes start insert forward.
-                inserts.insert(start_index + i, start_insert)
-                inserts.insert(end_index + i, end_insert)
+                # Relative to data, the inserts are added in reverse order LI-FO
+                inserts.insert(start_index, start_insert)
+                inserts.insert(end_index, end_insert)
+
+                # Advance to ensure the slices above search appropriately if
+                # multiple color types exist
+                start_index += 1
+                end_index += 1
 
         return inserts
 
