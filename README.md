@@ -81,7 +81,8 @@ Optional. It's purely for your sake.
 
 ### RegEx
 
-The RegEx engine used is Python's [re](https://docs.python.org/3/library/re.html).
+The RegEx engine used is Python's [re](https://docs.python.org/3/library/re.html),
+but it can be switched to PCRE2 (see relevant section below).
 
 ### Color
 
