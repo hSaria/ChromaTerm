@@ -1,3 +1,4 @@
+
 Physical interface: ge-0/0/0, Enabled, Physical link is Up
   Interface index: 136, SNMP ifIndex: 510
   Link-level type: Ethernet, MTU: 1514, LAN-PHY mode, Link-mode: Full-duplex, Speed: 1000mbps, BPDU Error: None,
@@ -22,3 +23,4 @@ Physical interface: ge-0/0/0, Enabled, Physical link is Up
     FEC Corrected Errors Rate               0
     FEC Uncorrected Errors Rate             0
   Interface transmit statistics: Disabled
+
