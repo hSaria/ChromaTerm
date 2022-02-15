@@ -888,7 +888,7 @@ def test_main_exit_code():
     assert subprocess.run(command, check=False, shell=True).returncode == 3
 
 
-def test_main_reload_config():
+def test_main_reload_config(pcre):
     '''Reload the configuration while the program is running.'''
     try:
         # The initial configuration file
@@ -907,7 +907,8 @@ def test_main_reload_config():
         stdin_r, stdin_w = os.pipe()
         stdout_r, stdout_w = os.pipe()
 
-        process = subprocess.Popen(CLI + ' --rgb --config ' + __name__ + '3',
+        command = ' --rgb --config ' + __name__ + '3'
+        process = subprocess.Popen(CLI + (' --pcre' if pcre else '') + command,
                                    shell=True,
                                    stdin=stdin_r,
                                    stdout=stdout_w)
