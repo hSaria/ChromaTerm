@@ -288,7 +288,6 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
     try:
         os.set_blocking(sys.stdout.fileno(), True)
     except io.UnsupportedOperation:
-        # In case stdout is replaced with StringIO
         pass
 
     fds = [data_fd] if forward_fd is None else [data_fd, forward_fd]
@@ -346,7 +345,7 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
                 buffer = b''
             # There's more data; fetch it before highlighting, if buffer isn't full
             elif data_read and len(buffer) <= READ_SIZE \
-                    and read_ready(*fds, timeout=wait_duration):
+                    and data_fd in read_ready(*fds, timeout=wait_duration):
                 buffer = data + separator
             else:
                 sys.stdout.buffer.write(config.highlight(data) + separator)

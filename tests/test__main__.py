@@ -449,18 +449,26 @@ def test_process_input_empty(capsys):
     assert capsys.readouterr().out == ''
 
 
-def test_process_input_forward_fd_check(monkeypatch):
+def test_process_input_forward_fd_check(capsys, monkeypatch):
     '''If input is received on `forward_fd` while waiting for data, stop waiting.'''
-    pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
+    config.rules.append(chromaterm.Rule('hello', chromaterm.Color('bold')))
+
+    pipe_r, pipe_w = os.pipe()
+    trigger = threading.Event()
     call_log = []
 
     def patched_read_ready(*fds, timeout=None):
         # If timeout is used, then it's the call to check for more data
         if timeout:
             call_log.append(fds)
-            return []
+            return [666]
 
+        # Set the trigger on the second loop
+        if call_log:
+            trigger.set()
+
+        # The read operation will block while waiting for data
         return [pipe_r]
 
     monkeypatch.setattr(chromaterm.__main__, 'read_ready', patched_read_ready)
@@ -471,12 +479,18 @@ def test_process_input_forward_fd_check(monkeypatch):
 
     try:
         os.write(pipe_w, b'hello')
+
+        # Wait until the second loop
+        trigger.wait()
+
+        # Despite read_ready indicating more input becoming available, it is not
+        # on the data_fd. Therefore, the buffer is fully processed
+        assert capsys.readouterr().out == '\x1b[1mhello\x1b[22m'
+        assert len(call_log) == 1
+        assert call_log[0] == (pipe_r, 666)
     finally:
         os.close(pipe_w)
         worker.join()
-
-    assert len(call_log) == 1
-    assert call_log[0] == (pipe_r, 666)
 
 
 def test_process_input_multibyte_character(capsys, monkeypatch):
