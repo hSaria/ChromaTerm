@@ -31,16 +31,13 @@ jobs:
         run: sudo apt-get install -y pcre2-utils
 
       - name: Install test dependencies
-        run: pip3 install coveralls pylint pytest-cov
+        run: pip3 install coveralls pytest-cov
 
       - name: Install ChromaTerm
         run: python3 setup.py install
 
       - name: PyTest
         run: pytest --cov chromaterm/ --cov tests/ --cov-report term-missing
-
-      - name: PyLint
-        run: pylint chromaterm/ tests/
 
       - name: Coveralls
         if: ${{ github.repository == 'hSaria/ChromaTerm' && github.event_name == 'push' }}
