@@ -946,13 +946,14 @@ def test_main_reload_config(pcre):
         os.write(stdin_w, b'Hello world\n')
         assert select.select([stdout_r], [], [], 1)[0]
         assert repr(os.read(stdout_r, 100).decode()) == repr(''.join(expected))
+
+        process.kill()
     finally:
         os.close(stdin_r)
         os.close(stdin_w)
         os.close(stdout_r)
         os.close(stdout_w)
         os.remove(__name__ + '3')
-        process.kill()
 
 
 def test_main_reload_processes():
