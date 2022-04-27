@@ -159,7 +159,7 @@ def test_color_decode_sgr_full_reset():
 
 def test_color_decode_sgr_malformed():
     '''Malformed colors.'''
-    for code in [b'38;5', b'38;2;1;1', b'38;5;123;38;2;1;1']:
+    for code in [b'38;5', b'38;2;1;1', b'38;5;123;38;2;1;1', b'>1;']:
         colors = chromaterm.Color.decode_sgr(make_sgr(code))
         assert len(colors) == 1
 

@@ -49,8 +49,9 @@ COLOR_TYPES = {
 # The format of a palette color
 PALETTE_COLOR_RE = re.compile(r'\b([bf])\.([a-z0-9-_]+)\b')
 
-# Select Graphic Rendition sequence (any type)
-SGR_RE = re.compile(br'\x1b\[[0-9;]*m')
+# Select Graphic Rendition sequence (any type or only colors)
+SGR_RE = re.compile(br'\x1b\x5b[\x30-\x3f]*[\x20-\x2f]*\x6d')
+SGR_COLOR_RE = re.compile(br'\x1b\x5b[0-9;]*\x6d')
 
 
 class Color:
@@ -171,6 +172,10 @@ class Color:
             source_color_code (bytes): Bytes to be split into individual colors.
             is_reset (bool): Consider all identified colors as resets.
         '''
+        # Includes non-color characters; don't touch it
+        if not SGR_COLOR_RE.search(source_color_code):
+            return [[source_color_code, False, None]]
+
         make_sgr = lambda code_id: b'\x1b[' + code_id + b'm'
         colors = []
         codes = source_color_code.lstrip(b'\x1b[').rstrip(b'm').split(b';')
