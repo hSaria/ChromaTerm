@@ -391,33 +391,6 @@ def read_ready(*fds, timeout=None):
     return [] if not fds else select.select(fds, [], [], timeout)[0]
 
 
-def reload_chromaterm_instances():
-    '''Reloads other ChromaTerm CLI instances by sending them `signal.SIGUSR1`.
-
-    Returns:
-        The number of processes reloaded.
-    '''
-    import psutil
-
-    count = 0
-    current_process = psutil.Process()
-
-    for process in psutil.process_iter():
-        # Don't reload the current process
-        if process.pid == current_process.pid:
-            continue
-
-        try:
-            # Only compare the first two arguments (Python and script paths)
-            if process.cmdline()[:2] == current_process.cmdline()[:2]:
-                os.kill(process.pid, signal.SIGUSR1)
-                count += 1
-        except (psutil.AccessDenied, psutil.NoSuchProcess):
-            pass
-
-    return count
-
-
 def run_program(program_args):
     '''Spawns a program in a pty fork to emulate a controlling terminal.
 
@@ -492,6 +465,33 @@ def run_program(program_args):
         return master_fd
 
 
+def signal_chromaterm_instances(sig):
+    '''Sends `sig` signal to all other ChromaTerm CLI instances.
+
+    Returns:
+        The number of processes reloaded.
+    '''
+    import psutil
+
+    count = 0
+    current_process = psutil.Process()
+
+    for process in psutil.process_iter():
+        # Don't reload the current process
+        if process.pid == current_process.pid:
+            continue
+
+        try:
+            # Only compare the first two arguments (Python and script paths)
+            if process.cmdline()[:2] == current_process.cmdline()[:2]:
+                os.kill(process.pid, sig)
+                count += 1
+        except (psutil.AccessDenied, psutil.NoSuchProcess):
+            pass
+
+    return count
+
+
 def split_buffer(buffer):
     '''Returns a tuple of tuples in the format of (data, separator). data should
     be highlighted while separator should be printed, unchanged, after data.
@@ -525,7 +525,7 @@ def main(args=None, max_wait=None, write_default=True):
     args = args_init(args)
 
     if args.reload:
-        return f'Processes reloaded: {reload_chromaterm_instances()}'
+        return f'Processes reloaded: {signal_chromaterm_instances(signal.SIGUSR1)}'
 
     # Config file wasn't overridden; use default file
     if not args.config:
@@ -552,7 +552,7 @@ def main(args=None, max_wait=None, write_default=True):
         data_fd = sys.stdin.fileno()
         forward_fd = None
 
-    # Create the signal handler to trigger reloading the config
+    # Signal handler to trigger reloading the config
     def reload_config_handler(*_):
         config_data = read_file(args.config)
 
