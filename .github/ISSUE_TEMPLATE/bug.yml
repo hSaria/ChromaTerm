@@ -6,8 +6,8 @@ body:
   - type: input
     attributes:
       label: ChromaTerm version
-      description: Run `pip3 show chromaterm` to get that info.
-      placeholder: v0.9.0
+      description: Run `ct -v` to get that info.
+      placeholder: ct 0.10.4
     validations:
       required: true
   - type: input
