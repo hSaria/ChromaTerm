@@ -572,7 +572,8 @@ def main(args=None, max_wait=None, write_default=True):
     except BrokenPipeError:
         # Surpress the implicit flush that Python runs on exit
         sys.stdout.flush = lambda: None
-        return 0
+    finally:
+        os.close(data_fd)
 
     return os.wait()[1] >> 8 if args.program else 0
 
