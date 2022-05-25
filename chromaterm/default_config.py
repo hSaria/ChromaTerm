@@ -102,7 +102,7 @@ RULE_TIME = Rule(
     r'''(?ix)(?<![\.:])(\b|(?<=T))
     (2[0-3]|[0-1]\d):[0-5]\d  # Hours and minutes
     (:[0-5]\d([\.,]\d{3,6})?)?  # (Seconds (sub-seconds, 3 to 6 decimal places)?)?
-    ([\-\+](\d{2}|\d{4}))?  # (Timezone)?
+    ([\-\+](\d{2}|\d{4})|Z)?  # (Timezone)?
 (?![\.:])\b
 ''',
     Color('b.type-5', palette=PALETTE),
