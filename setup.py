@@ -1,7 +1,23 @@
+import os
 from setuptools import setup
 
-with open('README.md', 'r') as f:
-    LONG_DESCRIPTION = f.read()
+
+def get_version():
+    base_path = os.path.abspath(os.path.dirname(__file__))
+    module_path = os.path.join(base_path, 'chromaterm/__init__.py')
+
+    with open(module_path, 'r', encoding='utf-8') as file:
+        for line in file.readlines():
+            if line.startswith('__version__'):
+                return line.split('"' if '"' in line else "'")[1]
+
+        raise RuntimeError("Unable to find version string.")
+
+
+def get_long_description():
+    with open('README.md', 'r', encoding='utf-8') as file:
+        return file.read()
+
 
 setup(
     name='chromaterm',
@@ -19,10 +35,10 @@ setup(
     entry_points={'console_scripts': ['ct = chromaterm.__main__:main']},
     install_requires=['psutil', 'PyYAML>=5.1'],
     license='MIT',
-    long_description=LONG_DESCRIPTION,
+    long_description=get_long_description(),
     long_description_content_type='text/markdown',
     packages=['chromaterm'],
     python_requires='>=3.6.0',
     url='https://github.com/hSaria/ChromaTerm',
-    version='0.10.4-dev',
+    version=get_version(),
 )

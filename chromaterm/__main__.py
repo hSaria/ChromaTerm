@@ -11,7 +11,7 @@ from ctypes.util import find_library
 
 import yaml
 
-from chromaterm import Color, Config, Palette, Rule
+from chromaterm import __version__, Color, Config, Palette, Rule
 
 # Some sections are rarely used, so avoid unnecessary imports to speed up launch
 # pylint: disable=import-outside-toplevel
@@ -90,6 +90,11 @@ def args_init(args=None):
                         action='store_true',
                         help='use RGB colors (default: detect support, '
                         'fallback to xterm-256)')
+
+    parser.add_argument('-v',
+                        '--version',
+                        action='version',
+                        version=f'%(prog)s {__version__}')
 
     parser.add_argument('--pcre',
                         action='store_true',
