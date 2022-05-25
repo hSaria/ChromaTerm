@@ -847,14 +847,22 @@ def test_main_benchmark():
 
 
 def test_main_broken_pipe():
-    '''Break a pipe while CT is trying to write to it. The echo at the end will
-    close before CT has had the chance to write to the pipe.'''
-    result = subprocess.run('echo | ' + CLI + ' | echo',
-                            check=False,
-                            shell=True,
-                            stderr=subprocess.PIPE)
+    '''Break a pipe while CT is trying to write to it. ChromaTerm should exit
+    gracefully, even if the input data isn't complete.'''
+    commands = [
+        'yes "Hello" | ' + CLI + ' | head -3',
+        CLI + ' yes "Hello" | head -3',
+    ]
 
-    assert b'Broken pipe' not in result.stderr
+    for command in commands:
+        result = subprocess.run(command,
+                                check=False,
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+
+        assert b'Broken pipe' not in result.stderr
+        assert len(result.stdout.splitlines()) == 3
 
 
 def test_main_buffer_close_time():
