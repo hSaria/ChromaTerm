@@ -62,18 +62,18 @@ class STARTUPINFOEX(ctypes.Structure):
                 ('lpAttributeList', ctypes.POINTER(wintypes.LPVOID))]
 
 
-def create_forwarder(read, write, finalize=lambda: None):
-    '''Spawns a thread that runs `write(read())` unless read returns nothing.'''
+def create_forwarder(read, write, finalize=lambda: None, break_on_empty=False):
+    '''Spawns a thread that runs `write(read())`.'''
 
     def work():
         try:
             while True:
                 data = read()
 
-                if not data:
+                if data:
+                    write(data)
+                elif break_on_empty:
                     break
-
-                write(data)
         except OSError:
             pass
         finally:
@@ -194,17 +194,18 @@ def run_program(program_args):
         K32.WriteFile(input_w, write_buffer, len(data), 0, None)
 
     # Read from pty and write it over the socket pipe to master
-    create_forwarder(read=read, write=slave.sendall, finalize=slave.close)
+    create_forwarder(read=read, write=slave.sendall)
 
     # Read from the socket pipe from master and write it to pty
     create_forwarder(read=lambda: slave.recv(BUFSIZE),
                      write=write,
-                     finalize=slave.close)
+                     break_on_empty=True)
 
     # Close the console after the child process ends
     def close():
         K32.WaitForSingleObject(process_info.hThread, -1)
         K32.ClosePseudoConsole(console)
+        slave.close()
 
     threading.Thread(target=close, daemon=True).start()
 

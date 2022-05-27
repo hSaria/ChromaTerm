@@ -34,7 +34,8 @@ def test_create_forwarder():
 
     worker = platform.create_forwarder(read=lambda: os.read(read_out, 100),
                                        write=lambda x: os.write(write_in, x),
-                                       finalize=lambda: os.close(read_out))
+                                       finalize=lambda: os.close(read_out),
+                                       break_on_empty=True)
 
     os.write(read_in, b'hello')
     assert os.read(write_out, 100) == b'hello'
