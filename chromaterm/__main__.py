@@ -276,10 +276,8 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
 
     Args:
         config (chromaterm.Config): Used for highlighting the data.
-        data_fd (int): File descriptor to be read and highlighted.
-        forward_fd (int): File descriptor to forwarded into data_fd. This is used
-            in conjunction with run_program. None indicates forwarding is not
-            required.
+        data_fd (int): File descriptor or socket to be read and highlighted.
+        forward_fd (int): File descriptor or socket to be forwarded into data_fd.
         max_wait (float): The maximum time to wait with no data on either of the
             file descriptors. None will block until at least one ready to be read.
     '''
@@ -290,6 +288,13 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
     except io.UnsupportedOperation:
         pass
 
+    if isinstance(data_fd, int):
+        forward = lambda: os.write(data_fd, os.read(forward_fd, READ_SIZE))
+        read = lambda: os.read(data_fd, READ_SIZE)
+    else:
+        forward = lambda: data_fd.sendall(forward_fd.recv(READ_SIZE))
+        read = lambda: data_fd.recv(READ_SIZE)
+
     fds = [data_fd] if forward_fd is None else [data_fd, forward_fd]
     buffer = b''
 
@@ -299,7 +304,7 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
         # There's some data to forward to the spawned program
         if forward_fd in ready_fds:
             try:
-                os.write(data_fd, os.read(forward_fd, READ_SIZE))
+                forward()
             except OSError:
                 # Spawned program or stdin closed; don't forward anymore
                 fds.remove(forward_fd)
@@ -307,7 +312,7 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
         # Data to be highlighted was received
         if data_fd in ready_fds:
             try:
-                data_read = os.read(data_fd, READ_SIZE)
+                data_read = read()
             except OSError:
                 data_read = b''
 
@@ -443,6 +448,7 @@ def main(args=None, max_wait=None, write_default=True):
     Returns:
         A string indicating status/error. Otherwise, returns None.
     '''
+    # pylint: disable=expression-not-assigned
     args = args_init(args)
 
     if args.reload:
@@ -495,7 +501,8 @@ def main(args=None, max_wait=None, write_default=True):
         # Surpress the implicit flush that Python runs on exit
         sys.stdout.flush = lambda: None
     finally:
-        os.close(data_fd)
+        # Close data_fd to signal to the child process that we're done
+        os.close(data_fd) if isinstance(data_fd, int) else data_fd.close()
 
     return os.wait()[1] >> 8 if args.program else 0
 

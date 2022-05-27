@@ -3,6 +3,7 @@ import itertools
 import os
 import re
 import select
+import socket
 import stat
 import subprocess
 import sys
@@ -605,6 +606,26 @@ def test_process_input_single_character(capsys, pcre):
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
 
     assert capsys.readouterr().out == 'hi\n\x1b[1mx\x1b[22m'
+
+
+def test_process_input_socket(capsys):
+    '''Use sockets instead of a file descriptors.'''
+    config = chromaterm.__main__.Config()
+    config.rules.append(chromaterm.Rule('hello', chromaterm.Color('bold')))
+
+    pipe_r = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    pipe_w = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    pipe_w.bind(('127.0.0.1', 0))
+    pipe_w.listen(1)
+    pipe_r.connect(pipe_w.getsockname())
+    pipe_w, _ = pipe_w.accept()
+
+    pipe_w.sendall(b'hello')
+    pipe_w.close()
+    select.select([pipe_r], [], [])
+    chromaterm.__main__.process_input(config, pipe_r)
+
+    assert capsys.readouterr().out == '\x1b[1mhello\x1b[22m'
 
 
 def test_process_input_trailing_chunk(capsys, pcre):
