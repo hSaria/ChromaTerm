@@ -1,4 +1,5 @@
 '''The command line utility for ChromaTerm'''
+# pylint: disable=import-outside-toplevel
 import argparse
 import atexit
 import io
@@ -11,10 +12,7 @@ from ctypes.util import find_library
 
 import yaml
 
-from chromaterm import __version__, Color, Config, Palette, Rule
-
-# Some sections are rarely used, so avoid unnecessary imports to speed up launch
-# pylint: disable=import-outside-toplevel
+from chromaterm import Color, Config, Palette, Rule, __version__
 
 # Possible locations of the config file, without the extension. Most-specific
 # locations lead in the list.
@@ -23,9 +21,6 @@ CONFIG_LOCATIONS = [
     os.getenv('XDG_CONFIG_HOME', '~/.config') + '/chromaterm/chromaterm',
     '/etc/chromaterm/chromaterm',
 ]
-
-# The frequency to check the child process' `cwd` and update our own
-CWD_UPDATE_INTERVAL = 1 / 4
 
 # Maximum chuck size per read
 READ_SIZE = 8192
@@ -103,7 +98,7 @@ def args_init(args=None):
 
     args = parser.parse_args(args=args)
 
-    # Detect rgb support
+    # Detect rgb support if not specified
     args.rgb = args.rgb or os.getenv('COLORTERM') in ('truecolor', '24bit')
 
     return args
@@ -289,9 +284,9 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
             file descriptors. None will block until at least one ready to be read.
     '''
     # pylint: disable=too-many-branches
-    # Avoid BlockingIOError when output to non-blocking stdout is too fast
+    # #93: Avoid BlockingIOError when output to non-blocking stdout is too fast
     try:
-        os.set_blocking(sys.stdout.fileno(), True)
+        getattr(os, 'set_blocking', lambda *_: None)(sys.stdout.fileno(), True)
     except io.UnsupportedOperation:
         pass
 
@@ -391,80 +386,6 @@ def read_ready(*fds, timeout=None):
     return [] if not fds else select.select(fds, [], [], timeout)[0]
 
 
-def run_program(program_args):
-    '''Spawns a program in a pty fork to emulate a controlling terminal.
-
-    Args:
-        program_args (list): A list of program arguments. The first argument is
-            the program name/location.
-
-    Returns:
-        A file descriptor (int) of the mater end of the pty fork.
-    '''
-    import fcntl
-    import pty
-    import termios
-    import threading
-    import time
-    import tty
-
-    try:
-        # Set to raw as the pty will be handling any processing; restore at exit
-        attributes = termios.tcgetattr(sys.stdin.fileno())
-        atexit.register(termios.tcsetattr, sys.stdin.fileno(), termios.TCSANOW,
-                        attributes)
-        tty.setraw(sys.stdin.fileno(), termios.TCSANOW)
-    except termios.error:
-        attributes = None
-
-    # openpty, login_tty, then fork
-    pid, master_fd = pty.fork()
-
-    if pid == 0:
-        # Update the slave's pty (now on standard fds) attributes
-        if attributes:
-            termios.tcsetattr(sys.stdin.fileno(), termios.TCSANOW, attributes)
-
-        try:
-            os.execvp(program_args[0], program_args)
-        except OSError as exception:
-            eprint(f'{exception.strerror.lower()}: {program_args[0]}')
-
-        # exec replaces the fork's process; only hit on exception
-        sys.exit(1)
-    else:
-        # Update the slave's window size as the master is capturing the signals
-        def window_resize_handler(*_):
-            size = fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, '0000')
-            fcntl.ioctl(master_fd, termios.TIOCSWINSZ, size)
-
-        if sys.stdin.isatty():
-            signal.signal(signal.SIGWINCH, window_resize_handler)
-            window_resize_handler()
-
-        # Some terminals update their titles based on `cwd` (see #94)
-        def update_cwd():  # pragma: no cover
-            # Covered by `test_main_cwd_tracking` but not detected by coverage
-            import psutil
-
-            try:
-                child_process = psutil.Process(pid)
-            except (psutil.AccessDenied, psutil.NoSuchProcess):
-                return
-
-            while True:
-                try:
-                    time.sleep(CWD_UPDATE_INTERVAL)
-                    os.chdir(child_process.cwd())
-                except (OSError, psutil.AccessDenied, psutil.NoSuchProcess):
-                    pass
-
-        # Daemonized to exit immediately with ChromaTerm
-        threading.Thread(target=update_cwd, daemon=True).start()
-
-        return master_fd
-
-
 def signal_chromaterm_instances(sig):
     '''Sends `sig` signal to all other ChromaTerm CLI instances.
 
@@ -542,14 +463,15 @@ def main(args=None, max_wait=None, write_default=True):
     if args.benchmark:
         atexit.register(config.print_benchmark_results)
 
+    import chromaterm.platform.unix as platform
+
     if args.program:
-        # ChromaTerm is spawning the program in a controlling terminal; stdin is
-        # being forwarded to the program
-        data_fd = run_program([args.program] + args.arguments)
-        forward_fd = sys.stdin.fileno()
+        # ChromaTerm is spawning the program in a pty; stdin is forwarded
+        data_fd = platform.run_program([args.program] + args.arguments)
+        forward_fd = platform.get_stdin()
     else:
         # Data is being piped into ChromaTerm's stdin; no forwarding needed
-        data_fd = sys.stdin.fileno()
+        data_fd = platform.get_stdin()
         forward_fd = None
 
     # Signal handler to trigger reloading the config

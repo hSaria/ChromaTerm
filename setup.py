@@ -1,5 +1,6 @@
 import os
-from setuptools import setup
+
+from setuptools import find_packages, setup
 
 
 def get_version():
@@ -37,7 +38,7 @@ setup(
     license='MIT',
     long_description=get_long_description(),
     long_description_content_type='text/markdown',
-    packages=['chromaterm'],
+    packages=find_packages(),
     python_requires='>=3.6.0',
     url='https://github.com/hSaria/ChromaTerm',
     version=get_version(),
