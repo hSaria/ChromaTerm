@@ -14,6 +14,8 @@ import yaml
 
 from chromaterm import Color, Config, Palette, Rule, __version__
 
+WINDOWS = sys.platform == 'win32'
+
 # Possible locations of the config file, without the extension. Most-specific
 # locations lead in the list.
 CONFIG_LOCATIONS = [
@@ -78,7 +80,8 @@ def args_init(args=None):
     parser.add_argument('-r',
                         '--reload',
                         action='store_true',
-                        help='reload the config of all CT instances')
+                        help='reload the config of all CT instances'
+                        if not WINDOWS else argparse.SUPPRESS)
 
     parser.add_argument('-R',
                         '--rgb',
@@ -469,7 +472,10 @@ def main(args=None, max_wait=None, write_default=True):
     if args.benchmark:
         atexit.register(config.print_benchmark_results)
 
-    import chromaterm.platform.unix as platform
+    if WINDOWS:
+        import chromaterm.platform.windows as platform
+    else:
+        import chromaterm.platform.unix as platform
 
     if args.program:
         # ChromaTerm is spawning the program in a pty; stdin is forwarded
@@ -492,7 +498,9 @@ def main(args=None, max_wait=None, write_default=True):
 
     # Ignore SIGINT (CTRL+C) and attach reload handler
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-    signal.signal(signal.SIGUSR1, reload_config_handler)
+
+    if not WINDOWS:
+        signal.signal(signal.SIGUSR1, reload_config_handler)
 
     try:
         # Begin processing the data (blocking operation)
@@ -504,7 +512,7 @@ def main(args=None, max_wait=None, write_default=True):
         # Close data_fd to signal to the child process that we're done
         os.close(data_fd) if isinstance(data_fd, int) else data_fd.close()
 
-    return os.wait()[1] >> 8 if args.program else 0
+    return os.wait()[1] >> 8 if args.program and not WINDOWS else 0
 
 
 if __name__ == '__main__':
