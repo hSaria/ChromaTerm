@@ -211,14 +211,14 @@ def run_program(program_args):
     # the key events will be removed from the buffer. And peeking then flushing
     # doesn't work either as it flushes all events, not just the windows resize ones
     def resize():
-        current_size = COORD(*shutil.get_terminal_size())
+        current_size = shutil.get_terminal_size()
 
         while True:
-            new_size = COORD(*shutil.get_terminal_size())
+            new_size = shutil.get_terminal_size(current_size)
 
             # Avoid aggressive resizing as it scrolls the cursor into view
-            if current_size.X != new_size.X or current_size.Y != new_size.Y:
-                K32.ResizePseudoConsole(console, new_size)
+            if current_size != new_size:
+                K32.ResizePseudoConsole(console, COORD(*new_size))
                 current_size = new_size
 
             time.sleep(WINDOW_RESIZE_INTERVAL)
