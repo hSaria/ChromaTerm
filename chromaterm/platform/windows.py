@@ -1,7 +1,9 @@
 '''Windows functions'''
 import atexit
 import ctypes
+import os
 import shutil
+import signal
 import socket
 import subprocess
 import threading
@@ -98,7 +100,7 @@ def run_program(program_args):
     '''
 
     # pylint: disable=attribute-defined-outside-init,invalid-name,missing-class-docstring
-    # pylint: disable=too-few-public-methods,too-many-locals
+    # pylint: disable=no-member,too-few-public-methods,too-many-locals
 
     class COORD(ctypes.Structure):
         _fields_ = [('X', wintypes.SHORT), ('Y', wintypes.SHORT)]
@@ -224,5 +226,14 @@ def run_program(program_args):
             time.sleep(WINDOW_RESIZE_INTERVAL)
 
     threading.Thread(target=resize, daemon=True).start()
+
+    # Forward SIGBREAK to the child process
+    def ctrl_break(*_):
+        pid = K32.GetProcessId(process_info.hProcess)
+
+        if pid:
+            os.kill(pid, signal.SIGBREAK)
+
+    signal.signal(signal.SIGBREAK, ctrl_break)
 
     return master

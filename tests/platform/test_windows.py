@@ -17,6 +17,10 @@ def patch_functions(monkeypatch):
     monkeypatch.setattr(platform, 'wintypes', MagicMock(), raising=False)
     monkeypatch.setattr(platform.atexit, 'register', MagicMock())
     monkeypatch.setattr(platform.threading, 'Thread', MagicMock())
+    monkeypatch.setattr(platform.signal,
+                        'SIGBREAK',
+                        MagicMock(),
+                        raising=False)
 
     for function in ['create_socket_pipe', 'create_forwarder']:
         monkeypatch.setattr(platform, function, MagicMock())
@@ -202,3 +206,16 @@ def test_run_program_resize(monkeypatch):
         pass
 
     platform.K32.ResizePseudoConsole.assert_called()
+
+
+def test_run_program_ctrl_break(monkeypatch):
+    '''Ensure the signal.'''
+    patch_functions(monkeypatch)
+    monkeypatch.setattr(platform.os, 'kill', MagicMock())
+    monkeypatch.setattr(platform.signal, 'signal', MagicMock())
+    platform.run_program([])
+
+    # Run the handler
+    platform.signal.signal.mock_calls[0][1][1]()
+    platform.os.kill.assert_called_with(platform.K32.GetProcessId.return_value,
+                                        platform.signal.SIGBREAK)
