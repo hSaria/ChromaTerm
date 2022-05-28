@@ -1,5 +1,4 @@
 '''Windows functions'''
-# pylint: disable=invalid-name,missing-class-docstring,too-few-public-methods
 import atexit
 import ctypes
 import shlex
@@ -7,10 +6,12 @@ import shutil
 import socket
 import threading
 import time
-from ctypes import byref, wintypes
+from ctypes import byref
 
 # pytest will import this package during test collection but windll is Windows-only
 if hasattr(ctypes, 'windll'):  # pragma: no cover
+    from ctypes import wintypes
+
     K32 = ctypes.windll.kernel32
     K32.GetProcessHeap.restype = wintypes.HANDLE
     K32.HeapAlloc.argtypes = [wintypes.HANDLE, wintypes.DWORD, ctypes.c_size_t]
@@ -18,47 +19,6 @@ if hasattr(ctypes, 'windll'):  # pragma: no cover
 
 BUFSIZE = 8192
 WINDOW_RESIZE_INTERVAL = 1 / 8
-
-
-class COORD(ctypes.Structure):
-    _fields_ = [('X', wintypes.SHORT), ('Y', wintypes.SHORT)]
-
-
-class PROCESS_INFORMATION(ctypes.Structure):
-    _fields_ = [
-        ('hProcess', wintypes.HANDLE),
-        ('hThread', wintypes.HANDLE),
-        ('dwProcessId', wintypes.DWORD),
-        ('dwThreadId', wintypes.DWORD),
-    ]
-
-
-class STARTUPINFO(ctypes.Structure):
-    _fields_ = [
-        ('cb', wintypes.DWORD),
-        ('lpReserved', ctypes.c_void_p),
-        ('lpDesktop', ctypes.c_void_p),
-        ('lpTitle', ctypes.c_void_p),
-        ('dwX', wintypes.DWORD),
-        ('dwY', wintypes.DWORD),
-        ('dwXSize', wintypes.DWORD),
-        ('dwYSize', wintypes.DWORD),
-        ('dwXCountChars', wintypes.DWORD),
-        ('dwYCountChars', wintypes.DWORD),
-        ('dwFillAttribute', wintypes.DWORD),
-        ('dwFlags', wintypes.DWORD),
-        ('wShowWindow', wintypes.WORD),
-        ('cbReserved2', wintypes.WORD),
-        ('lpReserved2', ctypes.c_char_p),
-        ('hStdInput', wintypes.HANDLE),
-        ('hStdOutput', wintypes.HANDLE),
-        ('hStdError', wintypes.HANDLE),
-    ]
-
-
-class STARTUPINFOEX(ctypes.Structure):
-    _fields_ = [('StartupInfo', STARTUPINFO),
-                ('lpAttributeList', ctypes.POINTER(wintypes.LPVOID))]
 
 
 def create_forwarder(read, write, finalize=lambda: None, break_on_empty=True):
@@ -136,7 +96,47 @@ def run_program(program_args):
         program_args (list): A list of program arguments. The first argument is
             the program name/location.
     '''
-    # pylint: disable=attribute-defined-outside-init,too-many-locals
+
+    # pylint: disable=attribute-defined-outside-init,invalid-name,missing-class-docstring
+    # pylint: disable=too-few-public-methods,too-many-locals
+
+    class COORD(ctypes.Structure):
+        _fields_ = [('X', wintypes.SHORT), ('Y', wintypes.SHORT)]
+
+    class PROCESS_INFORMATION(ctypes.Structure):
+        _fields_ = [
+            ('hProcess', wintypes.HANDLE),
+            ('hThread', wintypes.HANDLE),
+            ('dwProcessId', wintypes.DWORD),
+            ('dwThreadId', wintypes.DWORD),
+        ]
+
+    class STARTUPINFO(ctypes.Structure):
+        _fields_ = [
+            ('cb', wintypes.DWORD),
+            ('lpReserved', ctypes.c_void_p),
+            ('lpDesktop', ctypes.c_void_p),
+            ('lpTitle', ctypes.c_void_p),
+            ('dwX', wintypes.DWORD),
+            ('dwY', wintypes.DWORD),
+            ('dwXSize', wintypes.DWORD),
+            ('dwYSize', wintypes.DWORD),
+            ('dwXCountChars', wintypes.DWORD),
+            ('dwYCountChars', wintypes.DWORD),
+            ('dwFillAttribute', wintypes.DWORD),
+            ('dwFlags', wintypes.DWORD),
+            ('wShowWindow', wintypes.WORD),
+            ('cbReserved2', wintypes.WORD),
+            ('lpReserved2', ctypes.c_char_p),
+            ('hStdInput', wintypes.HANDLE),
+            ('hStdOutput', wintypes.HANDLE),
+            ('hStdError', wintypes.HANDLE),
+        ]
+
+    class STARTUPINFOEX(ctypes.Structure):
+        _fields_ = [('StartupInfo', STARTUPINFO),
+                    ('lpAttributeList', ctypes.POINTER(wintypes.LPVOID))]
+
     # Create the pipes (the program's input and output)
     input_r, input_w = wintypes.HANDLE(), wintypes.HANDLE()
     output_r, output_w = wintypes.HANDLE(), wintypes.HANDLE()

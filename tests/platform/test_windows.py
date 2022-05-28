@@ -1,5 +1,6 @@
 '''platform tests'''
 import atexit
+import ctypes
 import os
 import shutil
 import threading
@@ -15,11 +16,17 @@ import chromaterm.platform.windows as platform
 def patch_functions(monkeypatch):
     '''Replace the functions used by Windows with `MagicMock` objects.'''
     # Initialize to something as that wouldn't happen on a test (Unix) machine
-    platform.K32 = None
+    platform.K32 = platform.wintypes = None
 
     monkeypatch.setattr(platform, 'K32', MagicMock())
+    monkeypatch.setattr(platform, 'wintypes', MagicMock())
     monkeypatch.setattr(atexit, 'register', MagicMock())
     monkeypatch.setattr(threading, 'Thread', MagicMock())
+
+    for wintype in ['SHORT', 'WORD', 'DWORD', 'HANDLE']:
+        setattr(platform.wintypes, wintype, ctypes.c_int)
+
+    platform.wintypes.LPVOID = ctypes.c_void_p
 
     for function in ['create_socket_pipe', 'create_forwarder']:
         monkeypatch.setattr(platform, function, MagicMock())
