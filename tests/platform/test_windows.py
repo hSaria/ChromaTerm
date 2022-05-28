@@ -22,6 +22,10 @@ def patch_functions(monkeypatch):
                         MagicMock(),
                         raising=False)
 
+    # Force compatibility
+    monkeypatch.setattr(platform, 'WINDOWS_BUILD_CURRENT',
+                        platform.WINDOWS_BUILD_MINIMUM)
+
     for function in ['create_socket_pipe', 'create_forwarder']:
         monkeypatch.setattr(platform, function, MagicMock())
 
@@ -139,6 +143,17 @@ def test_get_stdin_console_mode_stdout(monkeypatch):
     # 0x100 is unaffected, 0x7 is added
     assert platform.K32.SetConsoleMode.mock_calls[1][1][1] == 0x107
     assert platform.atexit.register.mock_calls[1][1][2] == 0x100
+
+
+def test_run_program_incompatible_windows_version(monkeypatch):
+    '''Exit if Windows is too old.'''
+    patch_functions(monkeypatch)
+    platform.WINDOWS_BUILD_CURRENT = platform.WINDOWS_BUILD_MINIMUM - 1
+
+    try:
+        platform.run_program([])
+    except SystemExit:
+        pass
 
 
 def test_run_program_close_program_handles(monkeypatch):

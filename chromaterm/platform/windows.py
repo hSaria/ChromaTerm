@@ -2,10 +2,12 @@
 import atexit
 import ctypes
 import os
+import platform
 import shutil
 import signal
 import socket
 import subprocess
+import sys
 import threading
 import time
 from ctypes import byref
@@ -21,6 +23,10 @@ if hasattr(ctypes, 'windll'):  # pragma: no cover
 
 BUFSIZE = 8192
 WINDOW_RESIZE_INTERVAL = 1 / 8
+
+# https://docs.microsoft.com/en-us/windows/console/createpseudoconsole#requirements
+WINDOWS_BUILD_CURRENT = int(platform.win32_ver()[1].split('.')[-1] or '0')
+WINDOWS_BUILD_MINIMUM = 17763
 
 
 def create_forwarder(read, write, finalize=lambda: None, break_on_empty=True):
@@ -138,6 +144,12 @@ def run_program(program_args):
     class STARTUPINFOEX(ctypes.Structure):
         _fields_ = [('StartupInfo', STARTUPINFO),
                     ('lpAttributeList', ctypes.POINTER(wintypes.LPVOID))]
+
+    if WINDOWS_BUILD_CURRENT < WINDOWS_BUILD_MINIMUM:
+        sys.exit(
+            f'Windows version not supported; minimum {WINDOWS_BUILD_MINIMUM}, '
+            f'current {WINDOWS_BUILD_CURRENT}. Consider piping data into `ct`.'
+        )
 
     # Create the pipes (the program's input and output)
     input_r, input_w = wintypes.HANDLE(), wintypes.HANDLE()
