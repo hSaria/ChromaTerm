@@ -1,9 +1,6 @@
 '''platform tests'''
-import atexit
 import ctypes
 import os
-import shutil
-import threading
 from unittest.mock import MagicMock, call
 
 import pytest
@@ -15,22 +12,19 @@ import chromaterm.platform.windows as platform
 
 def patch_functions(monkeypatch):
     '''Replace the functions used by Windows with `MagicMock` objects.'''
-    # Initialize to something as that wouldn't happen on a test (Unix) machine
-    platform.K32 = platform.wintypes = None
+    # Some attributes won't exist on the test (Unix) platform
+    monkeypatch.setattr(platform, 'K32', MagicMock(), raising=False)
+    monkeypatch.setattr(platform, 'wintypes', MagicMock(), raising=False)
+    monkeypatch.setattr(platform.atexit, 'register', MagicMock())
+    monkeypatch.setattr(platform.threading, 'Thread', MagicMock())
 
-    monkeypatch.setattr(platform, 'K32', MagicMock())
-    monkeypatch.setattr(platform, 'wintypes', MagicMock())
-    monkeypatch.setattr(atexit, 'register', MagicMock())
-    monkeypatch.setattr(threading, 'Thread', MagicMock())
+    for function in ['create_socket_pipe', 'create_forwarder']:
+        monkeypatch.setattr(platform, function, MagicMock())
 
     for wintype in ['SHORT', 'WORD', 'DWORD', 'HANDLE']:
         setattr(platform.wintypes, wintype, ctypes.c_int)
 
     platform.wintypes.LPVOID = ctypes.c_void_p
-
-    for function in ['create_socket_pipe', 'create_forwarder']:
-        monkeypatch.setattr(platform, function, MagicMock())
-
     platform.K32.HeapAlloc.return_value = 1
     platform.create_socket_pipe.return_value = MagicMock(), MagicMock()
 
@@ -125,7 +119,7 @@ def test_get_stdin_console_mode(monkeypatch):
 
     # 0x7 is removed, 0x100 is unaffected, 0x200 is added
     assert platform.K32.SetConsoleMode.mock_calls[0][1][1] == 0x300
-    assert atexit.register.mock_calls[0][1][2] == 0x107
+    assert platform.atexit.register.mock_calls[0][1][2] == 0x107
 
 
 def test_get_stdin_console_mode_stdout(monkeypatch):
@@ -140,7 +134,7 @@ def test_get_stdin_console_mode_stdout(monkeypatch):
 
     # 0x100 is unaffected, 0x7 is added
     assert platform.K32.SetConsoleMode.mock_calls[1][1][1] == 0x107
-    assert atexit.register.mock_calls[1][1][2] == 0x100
+    assert platform.atexit.register.mock_calls[1][1][2] == 0x100
 
 
 def test_run_program_close_program_handles(monkeypatch):
@@ -187,7 +181,7 @@ def test_run_program_close(monkeypatch):
     '''When the program exits, the console and slave socket should be closed.'''
     patch_functions(monkeypatch)
     platform.run_program([])
-    threading.Thread.mock_calls[0][2]['target']()
+    platform.threading.Thread.mock_calls[0][2]['target']()
 
     platform.K32.WaitForSingleObject.assert_called()
     platform.K32.ClosePseudoConsole.assert_called()
@@ -197,13 +191,13 @@ def test_run_program_close(monkeypatch):
 def test_run_program_resize(monkeypatch):
     '''When the program exits, the console and slave socket should be closed.'''
     patch_functions(monkeypatch)
-    monkeypatch.setattr(shutil, 'get_terminal_size', MagicMock())
-    shutil.get_terminal_size.side_effect = [(1, 2), (3, 4), (5, 6)]
+    monkeypatch.setattr(platform.shutil, 'get_terminal_size', MagicMock())
+    platform.shutil.get_terminal_size.side_effect = [(1, 2), (3, 4), (5, 6)]
 
     try:
         platform.run_program([])
         # The `.start()` accounts for one mock call
-        threading.Thread.mock_calls[2][2]['target']()
+        platform.threading.Thread.mock_calls[2][2]['target']()
     except StopIteration:
         pass
 

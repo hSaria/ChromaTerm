@@ -184,18 +184,18 @@ def run_program(program_args):
     write_buffer = ctypes.create_string_buffer(BUFSIZE)
     bytes_read = wintypes.DWORD()
 
+    # Read from pty and write it over the socket pipe to master
     def read():
         K32.ReadFile(output_r, read_buffer, BUFSIZE, byref(bytes_read), None)
         return read_buffer.raw[:bytes_read.value]
 
-    # Read from pty and write it over the socket pipe to master
     create_forwarder(read=read, write=slave.sendall, break_on_empty=False)
 
+    # Read from the socket pipe from master and write it to pty
     def write(data):
         write_buffer.value = data
         K32.WriteFile(input_w, write_buffer, len(data), 0, None)
 
-    # Read from the socket pipe from master and write it to pty
     create_forwarder(read=lambda: slave.recv(BUFSIZE), write=write)
 
     # Close the console after the child process ends
@@ -206,10 +206,10 @@ def run_program(program_args):
 
     threading.Thread(target=close, daemon=True).start()
 
-    # Update the window size of the pty when the main window size changes
-    # Using ENABLE_WINDOW_INPUT along with ReadConsoleInputW doesn't work because
-    # the key events will be removed from the buffer. And peeking then flushing
-    # doesn't work either as it flushes all events, not just the windows resize ones
+    # Update the window size of the pty when the main window size changes. Using
+    # ReadConsoleInputW would suppress some keyboard input because the key events
+    # will be removed from the buffer. And peeking then flushing doesn't work
+    # either as it flushes all events, not just the windows resize ones.
     def resize():
         current_size = shutil.get_terminal_size()
 
