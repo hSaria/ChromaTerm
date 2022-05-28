@@ -159,7 +159,7 @@ def test_run_program_escape_program_args(monkeypatch):
     '''The program arguments should be escaped properly.'''
     patch_functions(monkeypatch)
     platform.run_program(['foo bar', '1', '2'])
-    assert platform.K32.CreateProcessW.mock_calls[0][1][1] == "'foo bar' 1 2"
+    assert platform.K32.CreateProcessW.mock_calls[0][1][1] == '"foo bar" 1 2'
 
 
 def test_run_program_read(monkeypatch):

@@ -1,9 +1,9 @@
 '''Windows functions'''
 import atexit
 import ctypes
-import shlex
 import shutil
 import socket
+import subprocess
 import threading
 import time
 from ctypes import byref
@@ -174,9 +174,9 @@ def run_program(program_args):
 
     # EXTENDED_STARTUPINFO_PRESENT = 0x80000
     process_info = PROCESS_INFORMATION()
-    K32.CreateProcessW(None, shlex.join(program_args), None, None, False,
-                       0x80000, None, None, byref(startup_info_ex.StartupInfo),
-                       byref(process_info))
+    K32.CreateProcessW(None, subprocess.list2cmdline(program_args), None, None,
+                       False, 0x80000, None, None,
+                       byref(startup_info_ex.StartupInfo), byref(process_info))
 
     # Create pipe and necessary forwarder threads
     master, slave = create_socket_pipe()
