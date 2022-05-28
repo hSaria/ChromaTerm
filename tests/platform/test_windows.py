@@ -34,8 +34,7 @@ def test_create_forwarder():
 
     worker = platform.create_forwarder(read=lambda: os.read(read_out, 100),
                                        write=lambda x: os.write(write_in, x),
-                                       finalize=lambda: os.close(read_out),
-                                       break_on_empty=True)
+                                       finalize=lambda: os.close(read_out))
 
     os.write(read_in, b'hello')
     assert os.read(write_out, 100) == b'hello'
@@ -75,26 +74,37 @@ def test_create_socket_pipe():
     assert side_a.recv(100) == b'hello from b'
 
 
-def test_get_stdin_tty(monkeypatch):
-    '''ReadConsoleW should be used if stdin is a tty.'''
+def test_get_stdin_read(monkeypatch):
+    '''Successfully completing a read operation and getting an empty string should
+    emit CTRL-z (EOF on Windows).'''
     patch_functions(monkeypatch)
     monkeypatch.setattr(sys.stdin, 'isatty', lambda: True)
 
+    def ReadFile(*args):
+        args[1].value = b'hello'
+        args[3]._obj.value = 4
+        return True
+
+    platform.K32.ReadFile = ReadFile
     platform.get_stdin()
-    platform.create_forwarder.mock_calls[0][2]['read']()
 
-    assert platform.K32.ReadConsoleW.called
+    assert platform.create_forwarder.mock_calls[0][2]['read']() == b'hell'
 
 
-def test_get_stdin_not_tty(monkeypatch):
-    '''ReadFile should be used if stdin is not a tty.'''
+def test_get_stdin_read_empty(monkeypatch):
+    '''Successfully completing a read operation and getting an empty string should
+    emit CTRL-z (EOF on Windows).'''
     patch_functions(monkeypatch)
-    monkeypatch.setattr(sys.stdin, 'isatty', lambda: False)
+    monkeypatch.setattr(sys.stdin, 'isatty', lambda: True)
 
+    def ReadFile(*args):
+        args[3]._obj.value = 0
+        return True
+
+    platform.K32.ReadFile = ReadFile
     platform.get_stdin()
-    platform.create_forwarder.mock_calls[0][2]['read']()
 
-    assert platform.K32.ReadFile.called
+    assert platform.create_forwarder.mock_calls[0][2]['read']() == b'\x1a'
 
 
 def test_get_stdin_console_mode(monkeypatch):

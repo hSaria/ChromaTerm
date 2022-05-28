@@ -5,7 +5,6 @@ import ctypes
 import shlex
 import shutil
 import socket
-import sys
 import threading
 import time
 from ctypes import byref, wintypes
@@ -62,7 +61,7 @@ class STARTUPINFOEX(ctypes.Structure):
                 ('lpAttributeList', ctypes.POINTER(wintypes.LPVOID))]
 
 
-def create_forwarder(read, write, finalize=lambda: None, break_on_empty=False):
+def create_forwarder(read, write, finalize=lambda: None, break_on_empty=True):
     '''Spawns a thread that runs `write(read())`.'''
 
     def work():
@@ -101,11 +100,6 @@ def create_socket_pipe():
 
 def get_stdin():
     '''Returns a socket for stdin.'''
-    # CTRL-Z (EOF on Windows) cannot be read with ReadFile, but ReadConsoleW can.
-    # However, ReadConsoleW doesn't work on pipes, so ReadFile is used when piped
-    reader = K32.ReadConsoleW if sys.stdin.isatty() else K32.ReadFile
-    read_buffer = ctypes.create_string_buffer(BUFSIZE)
-    bytes_read = wintypes.DWORD()
     console_mode = wintypes.DWORD()
     stdin_handle = K32.GetStdHandle(-10)
     stdout_handle = K32.GetStdHandle(-11)
@@ -120,10 +114,15 @@ def get_stdin():
 
     # `select` on Windows only accepts sockets, so we use one for stdin
     stdin, source = create_socket_pipe()
+    buffer = ctypes.create_string_buffer(BUFSIZE)
+    count = wintypes.DWORD()
 
     def read():
-        reader(stdin_handle, read_buffer, BUFSIZE, byref(bytes_read), None)
-        return read_buffer.value[:bytes_read.value]
+        if K32.ReadFile(stdin_handle, buffer, BUFSIZE, byref(count), None):
+            # CTRL-z (EOF on Windows) would return 0
+            if not count.value:
+                return b'\x1a'  # CTRL-z
+        return buffer.raw[:count.value]
 
     create_forwarder(read=read, write=source.sendall, finalize=source.close)
 
@@ -187,19 +186,17 @@ def run_program(program_args):
 
     def read():
         K32.ReadFile(output_r, read_buffer, BUFSIZE, byref(bytes_read), None)
-        return read_buffer.value[:bytes_read.value]
+        return read_buffer.raw[:bytes_read.value]
+
+    # Read from pty and write it over the socket pipe to master
+    create_forwarder(read=read, write=slave.sendall, break_on_empty=False)
 
     def write(data):
         write_buffer.value = data
         K32.WriteFile(input_w, write_buffer, len(data), 0, None)
 
-    # Read from pty and write it over the socket pipe to master
-    create_forwarder(read=read, write=slave.sendall)
-
     # Read from the socket pipe from master and write it to pty
-    create_forwarder(read=lambda: slave.recv(BUFSIZE),
-                     write=write,
-                     break_on_empty=True)
+    create_forwarder(read=lambda: slave.recv(BUFSIZE), write=write)
 
     # Close the console after the child process ends
     def close():
