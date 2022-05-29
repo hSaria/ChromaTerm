@@ -466,6 +466,12 @@ def main(args=None, max_wait=None, write_default=True):
             import chromaterm.default_config
             chromaterm.default_config.write_default_config(args.config)
 
+    config = Config(benchmark=args.benchmark)
+
+    # Print benchmark after cleanup in `run_program`
+    if args.benchmark:
+        atexit.register(config.print_benchmark_results)
+
     if WINDOWS:
         import chromaterm.platform.windows as platform
     else:
@@ -479,12 +485,6 @@ def main(args=None, max_wait=None, write_default=True):
         # Data is being piped into ChromaTerm's stdin; no forwarding needed
         forward_fd = None
         data_fd = platform.get_stdin()
-
-    config = Config(benchmark=args.benchmark)
-
-    # Print benchmark after cleanup in `run_program`
-    if args.benchmark:
-        atexit.register(config.print_benchmark_results)
 
     # Signal handler to trigger reloading the config
     def reload_config_handler(*_):
