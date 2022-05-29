@@ -74,10 +74,10 @@ def get_stdin():
 
     # See https://docs.microsoft.com/en-us/windows/console/setconsolemode
     K32.GetConsoleMode(stdin_handle, byref(console_mode))
-    K32.SetConsoleMode(stdin_handle, console_mode.value & ~0x7 | 0x200)
+    K32.SetConsoleMode(stdin_handle, console_mode.value & ~0x17 | 0x200)
     atexit.register(K32.SetConsoleMode, stdin_handle, console_mode.value)
     K32.GetConsoleMode(stdout_handle, byref(console_mode))
-    K32.SetConsoleMode(stdout_handle, console_mode.value | 0x7)
+    K32.SetConsoleMode(stdout_handle, console_mode.value | 0x4)
     atexit.register(K32.SetConsoleMode, stdout_handle, console_mode.value)
 
     # `select` on Windows only accepts sockets, so we use one for stdin

@@ -119,15 +119,15 @@ def test_get_stdin_console_mode(monkeypatch):
     '''Verify the correct console mode is set and restored.'''
 
     def GetConsoleMode(_, console_mode_ref):
-        console_mode_ref._obj.value = 0x107
+        console_mode_ref._obj.value = 0x117
 
     patch_functions(monkeypatch)
     platform.K32.GetConsoleMode = GetConsoleMode
     platform.get_stdin()
 
-    # 0x7 is removed, 0x100 is unaffected, 0x200 is added
+    # 0x17 is removed, 0x100 is unaffected, 0x200 is added
     assert platform.K32.SetConsoleMode.mock_calls[0][1][1] == 0x300
-    assert platform.atexit.register.mock_calls[0][1][2] == 0x107
+    assert platform.atexit.register.mock_calls[0][1][2] == 0x117
 
 
 def test_get_stdin_console_mode_stdout(monkeypatch):
@@ -140,8 +140,8 @@ def test_get_stdin_console_mode_stdout(monkeypatch):
     platform.K32.GetConsoleMode = GetConsoleMode
     platform.get_stdin()
 
-    # 0x100 is unaffected, 0x7 is added
-    assert platform.K32.SetConsoleMode.mock_calls[1][1][1] == 0x107
+    # 0x100 is unaffected, 0x4 is added
+    assert platform.K32.SetConsoleMode.mock_calls[1][1][1] == 0x104
     assert platform.atexit.register.mock_calls[1][1][2] == 0x100
 
 
