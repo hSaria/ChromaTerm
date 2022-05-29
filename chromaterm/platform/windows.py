@@ -26,7 +26,7 @@ WINDOW_RESIZE_INTERVAL = 1 / 8
 
 # https://docs.microsoft.com/en-us/windows/console/createpseudoconsole#requirements
 WINDOWS_BUILD_CURRENT = int(platform.win32_ver()[1].split('.')[-1] or '0')
-WINDOWS_BUILD_MINIMUM = 17763
+WINDOWS_BUILD_MINIMUM = 18362
 
 
 def create_forwarder(read, write, finalize=lambda: None, break_on_empty=True):
