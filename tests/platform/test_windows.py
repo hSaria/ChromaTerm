@@ -150,10 +150,8 @@ def test_run_program_incompatible_windows_version(monkeypatch):
     patch_functions(monkeypatch)
     platform.WINDOWS_BUILD_CURRENT = platform.WINDOWS_BUILD_MINIMUM - 1
 
-    try:
+    with pytest.raises(SystemExit, match='Windows version not supported'):
         platform.run_program([])
-    except SystemExit:
-        pass
 
 
 def test_run_program_close_program_handles(monkeypatch):
@@ -173,6 +171,17 @@ def test_run_program_escape_program_args(monkeypatch):
     patch_functions(monkeypatch)
     platform.run_program(['foo bar', '1', '2'])
     assert platform.K32.CreateProcessW.mock_calls[0][1][1] == '"foo bar" 1 2'
+
+
+def test_run_program_create_process_error(monkeypatch):
+    '''If an error is encountered during process creation, ChromaTerm should exit
+    with the relevant message from `GetLastError`.'''
+    patch_functions(monkeypatch)
+    monkeypatch.setattr(ctypes, 'FormatError', lambda: 'Hello', raising=False)
+    platform.K32.CreateProcessW.return_value = False
+
+    with pytest.raises(SystemExit, match='Hello'):
+        platform.run_program([])
 
 
 def test_run_program_read(monkeypatch):
