@@ -1,4 +1,5 @@
 '''Windows functions'''
+# pylint: disable=no-member
 import atexit
 import ctypes
 import os
@@ -93,6 +94,7 @@ def get_stdin():
         return buffer.raw[:count.value]
 
     create_forwarder(read=read, write=source.sendall, finalize=source.close)
+    signal.signal(signal.SIGBREAK, lambda *_: source.close())
 
     return stdin
 
@@ -106,7 +108,7 @@ def run_program(program_args):
     '''
 
     # pylint: disable=attribute-defined-outside-init,invalid-name,missing-class-docstring
-    # pylint: disable=no-member,too-few-public-methods,too-many-locals
+    # pylint: disable=too-few-public-methods,too-many-locals,too-many-statements
 
     class COORD(ctypes.Structure):
         _fields_ = [('X', wintypes.SHORT), ('Y', wintypes.SHORT)]

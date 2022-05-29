@@ -473,12 +473,12 @@ def main(args=None, max_wait=None, write_default=True):
 
     if args.program:
         # ChromaTerm is spawning the program in a pty; stdin is forwarded
-        data_fd = platform.run_program([args.program] + args.arguments)
         forward_fd = platform.get_stdin()
+        data_fd = platform.run_program([args.program] + args.arguments)
     else:
         # Data is being piped into ChromaTerm's stdin; no forwarding needed
-        data_fd = platform.get_stdin()
         forward_fd = None
+        data_fd = platform.get_stdin()
 
     config = Config(benchmark=args.benchmark)
 
