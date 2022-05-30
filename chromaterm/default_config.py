@@ -87,7 +87,9 @@ RULE_MAC = Rule(
 
 RULE_DATE = Rule(
     r'''(?ix)\b(
-    (\d{2}|\d{4})\-(0?[1-9]|1[0-2])\-(3[0-1]|[1-2]\d|0?[1-9])|  # YYYY-MM-DD, YY-MM-DD
+    (\d{2}|\d{4})(?P<sep1>[-/])(0?[1-9]|1[0-2])(?P=sep1)(3[0-1]|[1-2]\d|0?[1-9])|  # YYYY-MM-DD, YY-MM-DD, YYYY/MM/DD, YY/MM/DD
+    (3[0-1]|[1-2]\d|0?[1-9])(?P<sep2>[-/])(0?[1-9]|1[0-2])(?P=sep2)(\d{2}|\d{4})|  # DD-MM-YYYY, DD-MM-YY, DD/MM/YYYY, DD/MM/YY
+    (0?[1-9]|1[0-2])(?P<sep3>[-/])(3[0-1]|[1-2]\d|0?[1-9])(?P=sep3)(\d{2}|\d{4})|  # MM-DD-YYYY, MM-DD-YY, MM/DD/YYYY, MM/DD/YY
     (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(  # MMM
         (3[0-1]|[1-2]\d|0?[1-9])(\s+\d{4})?|\d{4}  # DD (YYYY)?, YYYY
     )|(3[0-1]|[1-2]\d|0?[1-9])\s(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(?!\s+(3[0-1]|[1-2]\d|0?[1-9])([^\w:]|$))(\s+\d{4})?  # DD MMM (YYYY)?
