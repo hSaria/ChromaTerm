@@ -5,6 +5,8 @@ If you're interested in testing it, you can install this version with:
 pip install https://github.com/hSaria/ChromaTerm/archive/windows.zip
 ```
 
+Alternatively, please use the [Windows Subsystem for Linux (`WSL`)](https://docs.microsoft.com/en-us/windows/wsl/about) to install ChromaTerm. It's way better. I promise.
+
 # ChromaTerm
 
 [![Build status](https://img.shields.io/github/workflow/status/hSaria/ChromaTerm/CI/main)](https://github.com/hSaria/ChromaTerm/actions?query=workflow%3ACI)
