@@ -3,7 +3,7 @@ import re
 import sys
 import time
 
-__version__ = '0.10.4'
+__version__ = '0.10.5-dev'
 
 # Color types, their color codes if it's style, their default reset codes, and
 # RegEx's for detecting their color type.
