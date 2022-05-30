@@ -586,12 +586,13 @@ def test_process_input_read_size(capsys, pcre):
     assert capsys.readouterr().out == '\x1b[1m' + 'x' * write_size + '\x1b[22m'
 
 
-def test_process_input_single_character(capsys, pcre):
+def test_process_input_single_character(capsys, monkeypatch, pcre):
     '''Input processing for a single character. Even with a rule that matches
     single character, the output should not be highlighted as it is typically
     just keyboard input.'''
     pipe_r, pipe_w = os.pipe()
     config = chromaterm.__main__.Config()
+    run_once = threading.Event()
 
     rule = chromaterm.Rule('x', chromaterm.Color('bold'), pcre=pcre)
     config.rules.append(rule)
@@ -601,11 +602,22 @@ def test_process_input_single_character(capsys, pcre):
 
     assert capsys.readouterr().out == 'x'
 
-    # A single character after a separator is not keyboard input
-    os.write(pipe_w, b'hi\nx')
+    # A single character in a trailing chunk is not considered keyboard input
+    def patched_read_ready(*_, timeout=None):
+        # If timeout is used, then it's the call to check for more data
+        if timeout and not run_once.is_set():
+            # Write a single character to attempt to trick it into thinking it's keyboard input
+            os.write(pipe_w, b'x')
+            os.close(pipe_w)
+            run_once.set()
+
+        return [pipe_r]
+
+    monkeypatch.setattr(chromaterm.__main__, 'read_ready', patched_read_ready)
+    os.write(pipe_w, b'hi')
     chromaterm.__main__.process_input(config, pipe_r, max_wait=0)
 
-    assert capsys.readouterr().out == 'hi\n\x1b[1mx\x1b[22m'
+    assert capsys.readouterr().out == 'hi\x1b[1mx\x1b[22m'
 
 
 def test_process_input_socket(capsys):

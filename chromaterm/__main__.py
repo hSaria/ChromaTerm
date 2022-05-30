@@ -345,7 +345,7 @@ def process_input(config, data_fd, forward_fd=None, max_wait=None):
                 buffer = data + separator
             # A single character indicates keyboard typing; don't highlight
             # Account for backspaces added by some shells, like zsh
-            elif 0 < len(data_read) < 2 + data_read.count(b'\b') * 2:
+            elif 0 < len(buffer) < 2 + data_read.count(b'\b') * 2:
                 sys.stdout.buffer.write(data + separator)
                 buffer = b''
             # There's more data; fetch it before highlighting, if buffer isn't full
