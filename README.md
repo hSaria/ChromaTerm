@@ -1,3 +1,10 @@
+This branch contains native Windows support though ConPTY, albeit with some
+bugs/caveats. More info can be found in issue [#54](https://github.com/hSaria/ChromaTerm/issues/54).
+If you're interested in testing it, you can install this version with:
+```
+pip install https://github.com/hSaria/ChromaTerm/archive/windows.zip
+```
+
 # ChromaTerm
 
 [![Build status](https://img.shields.io/github/workflow/status/hSaria/ChromaTerm/CI/main)](https://github.com/hSaria/ChromaTerm/actions?query=workflow%3ACI)
