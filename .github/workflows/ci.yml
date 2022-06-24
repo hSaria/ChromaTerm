@@ -31,7 +31,7 @@ jobs:
         run: sudo apt-get install -y pcre2-utils
 
       - name: Install test dependencies
-        run: pip3 install coveralls pytest-cov
+        run: pip3 install coveralls pytest-cov PyYAML psutil
 
       - name: Install ChromaTerm
         run: python3 setup.py install
