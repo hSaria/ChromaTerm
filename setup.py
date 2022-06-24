@@ -12,7 +12,7 @@ def get_version():
             if line.startswith('__version__'):
                 return line.split('"' if '"' in line else "'")[1]
 
-        raise RuntimeError("Unable to find version string.")
+        raise RuntimeError('Unable to find version string.')
 
 
 def get_long_description():
