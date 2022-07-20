@@ -33,8 +33,8 @@ def test_free_memory(monkeypatch):
     monkeypatch.setattr(chromaterm.pcre.PCRE2, 'pcre2_code_free_8', mock)
 
     del regex
-    assert list(mock.mock_calls[0])[1][0] is _match_data
-    assert list(mock.mock_calls[1])[1][0] is _regex
+    assert mock.mock_calls[0][1][0] is _match_data
+    assert mock.mock_calls[1][1][0] is _regex
 
 
 def test_groupindex():

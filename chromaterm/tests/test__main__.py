@@ -150,7 +150,7 @@ def test_load_config_simple():
 
     assert len(config.rules) == 1
     assert config.rules[0].regex == 'hello world'
-    assert config.rules[0]._regex.pattern == b'hello world'
+    assert config.rules[0]._regex_object.pattern == b'hello world'
     assert config.rules[0].color.color == 'f#fffaaa'
 
 

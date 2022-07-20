@@ -600,9 +600,9 @@ def test_rule_change_pcre(pcre):
     # pylint: disable=protected-access
     rule = chromaterm.Rule('hello', chromaterm.Color('bold'), pcre=pcre)
 
-    old_regex = rule._regex
+    old_regex_object = rule._regex_object
     rule.pcre = not rule.pcre
-    assert old_regex is not rule._regex
+    assert old_regex_object is not rule._regex_object
 
 
 def test_rule_format_color_dict(pcre):

@@ -3,7 +3,7 @@ import re
 import sys
 import time
 
-__version__ = '0.10.5-dev'
+__version__ = '0.10.7-dev'
 
 # Color types, their color codes if it's style, their default reset codes, and
 # RegEx's for detecting their color type.
@@ -160,7 +160,7 @@ class Color:
 
         self._rgb = value
 
-        # Update the color if preset; it won't be during __init__
+        # Update the color if present; it won't be during __init__
         if hasattr(self, '_color'):
             self.color = self._color
 
@@ -355,7 +355,7 @@ class Palette:
 class Rule:
     '''A rule containing a regex and colors corresponding to the regex's groups.'''
 
-    # pylint: disable=import-outside-toplevel,too-many-arguments
+    # pylint: disable=import-outside-toplevel,too-many-arguments,too-many-instance-attributes
     def __init__(self,
                  regex,
                  color=None,
@@ -378,17 +378,14 @@ class Rule:
         if description is not None and not isinstance(description, str):
             raise TypeError('description must be a string')
 
-        if not isinstance(regex, str):
-            raise TypeError('regex must be a string')
-
         if not isinstance(exclusive, bool):
             raise TypeError('exclusive must be a boolean')
 
-        self.regex = regex
         self.colors = {}
         self.description = description
         self.exclusive = exclusive
-        self.pcre = pcre  # Compiles regex into self._regex
+        self.pcre = pcre
+        self.regex = regex
 
         if not isinstance(color, dict):
             color = {0: color}
@@ -417,11 +414,27 @@ class Rule:
 
         self._pcre = value
 
-        if value:
+        # Recompile the regex if present; it won't be during __init__
+        if hasattr(self, '_regex'):
+            self.regex = self._regex
+
+    @property
+    def regex(self):
+        '''The regex pattern.'''
+        return self._regex
+
+    @regex.setter
+    def regex(self, value):
+        if not isinstance(value, str):
+            raise TypeError('regex must be a string')
+
+        self._regex = value
+
+        if self.pcre:
             import chromaterm.pcre
-            self._regex = chromaterm.pcre.Pattern(self.regex.encode())
+            self._regex_object = chromaterm.pcre.Pattern(value.encode())
         else:
-            self._regex = re.compile(self.regex.encode())
+            self._regex_object = re.compile(value.encode())
 
     def get_matches(self, data):
         '''Returns a list of tuples, each containing a start index, an end index,
@@ -432,7 +445,7 @@ class Rule:
         '''
         matches = []
 
-        for match in self._regex.finditer(data):
+        for match in self._regex_object.finditer(data):
             for group in self.colors:
                 start, end = match.span(group)
 
@@ -462,11 +475,11 @@ class Rule:
             raise TypeError('group must be an integer or a string')
 
         if isinstance(group, str):
-            if not self._regex.groupindex.get(group):
+            if not self._regex_object.groupindex.get(group):
                 raise ValueError(f'named group {repr(group)} not in regex')
 
             # Resolve the named group to its index
-            group = self._regex.groupindex[group]
+            group = self._regex_object.groupindex[group]
 
         if color is None:
             self.colors.pop(group, None)
@@ -475,9 +488,9 @@ class Rule:
         if not isinstance(color, Color):
             raise TypeError('color must be a chromaterm.Color')
 
-        if group > self._regex.groups:
-            raise ValueError(f'regex has {self._regex.groups} group(s); '
-                             f'{group} is invalid')
+        if group > self._regex_object.groups:
+            raise ValueError(f'regex has {self._regex_object.groups} group(s);'
+                             f' {group} is invalid')
 
         self.colors[group] = color
 
