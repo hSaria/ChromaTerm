@@ -1,4 +1,4 @@
-This branch contains native Windows support though ConPTY, albeit with some
+This branch contains native Windows support through ConPTY, albeit with some
 bugs/caveats. More info can be found in issue [#54](https://github.com/hSaria/ChromaTerm/issues/54).
 If you're interested in testing it, you can install this version with:
 ```
