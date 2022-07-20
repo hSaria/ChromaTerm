@@ -21,4 +21,4 @@ jobs:
       run: python3 setup.py install
 
     - name: PyLint
-      run: pylint --disable unnecessary-lambda-assignment chromaterm/ tests/
+      run: pylint --disable unnecessary-lambda-assignment chromaterm/
