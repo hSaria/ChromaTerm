@@ -355,7 +355,7 @@ class Palette:
 class Rule:
     '''A rule containing a regex and colors corresponding to the regex's groups.'''
 
-    # pylint: disable=import-outside-toplevel,too-many-arguments
+    # pylint: disable=import-outside-toplevel,too-many-arguments,too-many-instance-attributes
     def __init__(self,
                  regex,
                  color=None,
