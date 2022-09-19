@@ -909,7 +909,7 @@ def test_main_buffer_close_time():
 
 @pytest.mark.skipif(sys.platform != 'darwin',
                     reason='Not all CI environments support tracking')
-def test_main_cwd_tracking():
+def test_main_cwd_tracking():  # pragma: no cover  # Coverall.io bug
     '''The `cwd` of ChromaTerm should match that of the spawned process.'''
     test_script = '''import os, time
     os.chdir('../')
