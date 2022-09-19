@@ -14,6 +14,36 @@ import tty
 CWD_UPDATE_INTERVAL = 1 / 4
 
 
+def create_cwd_watcher(pid):
+    '''
+    Creates a daemon thread that checks the `cwd` of a process, then updates the
+    `cwd` of the current process.
+
+    Args:
+        pid (int): PID of the process whose `cwd` is checked.
+    '''
+
+    def update_cwd():  # pragma: no cover
+        # Covered by `test_main_cwd_tracking` but not detected by coverage
+        # pylint: disable=import-outside-toplevel
+        import psutil
+
+        try:
+            child_process = psutil.Process(pid)
+        except (psutil.AccessDenied, psutil.NoSuchProcess):
+            return
+
+        while True:
+            try:
+                time.sleep(CWD_UPDATE_INTERVAL)
+                os.chdir(child_process.cwd())
+            except (OSError, psutil.AccessDenied, psutil.NoSuchProcess):
+                pass
+
+    # Daemonized to exit immediately with ChromaTerm
+    threading.Thread(target=update_cwd, daemon=True).start()
+
+
 def get_stdin():
     '''Returns the file descriptor for stdin.'''
     return sys.stdin.fileno()
@@ -59,24 +89,6 @@ def run_program(program_args):
         window_resize_handler()
 
     # Some terminals update their titles based on `cwd` (see #94)
-    def update_cwd():  # pragma: no cover
-        # Covered by `test_main_cwd_tracking` but not detected by coverage
-        # pylint: disable=import-outside-toplevel
-        import psutil
-
-        try:
-            child_process = psutil.Process(pid)
-        except (psutil.AccessDenied, psutil.NoSuchProcess):
-            return
-
-        while True:
-            try:
-                time.sleep(CWD_UPDATE_INTERVAL)
-                os.chdir(child_process.cwd())
-            except (OSError, psutil.AccessDenied, psutil.NoSuchProcess):
-                pass
-
-    # Daemonized to exit immediately with ChromaTerm
-    threading.Thread(target=update_cwd, daemon=True).start()
+    create_cwd_watcher(pid)
 
     return master_fd
